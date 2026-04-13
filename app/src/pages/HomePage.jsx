@@ -3,7 +3,7 @@ import { getPopular, getRecommend, getRegionDynamic, getFollowFeed, getLiveList 
 import VideoGrid from '../components/VideoGrid';
 import { getCurrentFocusId, setFocus, onFocusChange } from '../hooks/useFocus';
 
-const COLS = 2;
+const COLS = 4;
 const FETCH_SIZE = 20;
 
 async function fetchByMode(mode, pn) {

@@ -121,7 +121,7 @@ html, body, #root {
 
 /* ===== Video Card ===== */
 .video-card {
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
   background: #12122a;
   cursor: pointer;
@@ -129,16 +129,17 @@ html, body, #root {
   contain: content;
   content-visibility: auto;
   transform: scale(1);
-  transition: transform 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 .video-card.focused {
   z-index: 10;
   position: relative;
-  transform: scale(1.03);
+  transform: scale(1.04);
+  box-shadow: 0 8px 30px rgba(0,161,214,0.25);
 }
 .video-card.focused .video-card-thumb {
-  outline: 4px solid #00a1d6;
-  outline-offset: -4px;
+  outline: 3px solid #00a1d6;
+  outline-offset: -3px;
 }
 .video-card-thumb {
   width: 100%;
@@ -152,36 +153,44 @@ html, body, #root {
   height: 100%;
   object-fit: cover;
   will-change: auto;
+  transition: transform 0.2s ease;
+}
+.video-card.focused .video-card-thumb img {
+  transform: scale(1.05);
 }
 .video-card-duration {
   position: absolute;
-  bottom: 6px;
-  right: 8px;
-  background: rgba(0,0,0,0.8);
+  bottom: 4px;
+  right: 6px;
+  background: rgba(0,0,0,0.75);
   color: #fff;
-  font-size: 13px;
-  padding: 2px 8px;
-  border-radius: 4px;
+  font-size: 12px;
+  padding: 1px 6px;
+  border-radius: 3px;
 }
 .video-card-info {
-  padding: 16px 10px 10px;
+  padding: 10px 8px 8px;
 }
 .video-card-title {
-  font-size: 28px;
+  font-size: 18px;
   line-height: 1.35;
-  color: #ddd;
+  color: #ccc;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 .video-card.focused .video-card-title { color: #fff; }
 .video-card-meta {
-  font-size: 22px;
+  font-size: 14px;
   color: #6a6a8a;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
-.video-card-meta span { margin-right: 14px; }
+.video-card-meta span { white-space: nowrap; }
 
 /* ===== Loading ===== */
 .loading {

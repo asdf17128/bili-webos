@@ -17,7 +17,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const [showQuality, setShowQuality] = useState(false);
   const [showRelated, setShowRelated] = useState(false);
   const [danmakus, setDanmakus] = useState([]);
-  const [danmakuEnabled, setDanmakuEnabled] = useState(true);
+  const [danmakuEnabled, setDanmakuEnabled] = useState(storage.getSettings().danmaku ?? true);
   const [videoTitle, setVideoTitle] = useState(video?.title || '');
   const [loading, setLoading] = useState(true);
   const [ended, setEnded] = useState(false);

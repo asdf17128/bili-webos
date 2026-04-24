@@ -9,16 +9,16 @@ import { useEffect, useCallback, useRef } from 'react';
 const focusRegistry = new Map(); // id -> { ref, row, col, group, onSelect }
 let currentFocusId = null;
 
-// Track last sidebar focus position
-let lastSidebarFocus = 'sidebar-0-0';
+// Track last nav focus position
+let lastNavFocus = 'nav-0-0';
 
 // Direct DOM focus update - no React involved
 function applyFocus(newId) {
   const prevId = currentFocusId;
   currentFocusId = newId;
 
-  // Remember sidebar position
-  if (newId?.startsWith('sidebar-')) lastSidebarFocus = newId;
+  // Remember nav position
+  if (newId?.startsWith('nav-')) lastNavFocus = newId;
 
   // Remove focus from previous element
   if (prevId) {
@@ -112,7 +112,8 @@ export function initKeyboardNav() {
 
     if (e.keyCode === 461 || key === 'Backspace' || key === 'GoBack') {
       e.preventDefault(); e.stopPropagation();
-      window.dispatchEvent(new CustomEvent('tv-back'));
+      const event = new CustomEvent('tv-back', { bubbles: true, cancelable: true });
+      document.dispatchEvent(event);
       return;
     }
 
@@ -130,25 +131,40 @@ export function initKeyboardNav() {
 
     const dir = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' }[key];
 
+    // Vertical navigation
     if (dir === 'up' || dir === 'down') {
       const next = navigateGrid(currentFocusId, dir);
-      if (next) setFocus(next);
+      if (next) {
+        setFocus(next);
+      } else if (dir === 'down' && from.group === 'nav') {
+        const target = findInGroup('content', 0);
+        if (target) setFocus(target);
+      } else if (dir === 'up' && from.group !== 'nav') {
+        const target = lastNavFocus || 'nav-0-0';
+        if (focusRegistry.has(target)) setFocus(target);
+        else {
+          const found = findInGroup('nav', 0);
+          if (found) setFocus(found);
+        }
+      }
       return;
     }
 
-    let next = navigateGrid(currentFocusId, dir);
-    if (!next) {
-      if (dir === 'left' && from.group !== 'sidebar') {
-        // Go back to the last focused sidebar item
-        next = lastSidebarFocus || 'sidebar-0-0';
-        if (!focusRegistry.has(next)) next = findInGroup('sidebar', 0);
-      } else if (dir === 'right' && from.group === 'sidebar') {
-        // Always go to first content item
-        next = 'content-0-0';
-        if (!focusRegistry.has(next)) next = findInGroup('content', 0);
+    // Horizontal navigation
+    if (dir === 'left' || dir === 'right') {
+      const next = navigateGrid(currentFocusId, dir);
+      if (next) {
+        setFocus(next);
+      } else if (dir === 'left' && from.group !== 'nav') {
+        const target = lastNavFocus || 'nav-0-0';
+        if (focusRegistry.has(target)) setFocus(target);
+        else {
+          const found = findInGroup('nav', 0);
+          if (found) setFocus(found);
+        }
       }
+      return;
     }
-    if (next) setFocus(next);
   };
   window.addEventListener('keydown', keyHandler);
 }

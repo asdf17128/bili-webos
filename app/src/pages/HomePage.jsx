@@ -1,10 +1,30 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getPopular, getRecommend, getRegionDynamic, getFollowFeed, getLiveList } from '../api/client';
-import VideoGrid from '../components/VideoGrid';
-import { getCurrentFocusId, setFocus, onFocusChange } from '../hooks/useFocus';
+import { useFocusable, setFocus, onFocusChange, getCurrentFocusId } from '../hooks/useFocus';
+import { formatCount, formatDuration, formatTime } from '../utils/format';
+import { storage } from '../utils/storage';
 
-const COLS = 4;
-const FETCH_SIZE = 20;
+const FETCH_SIZE = 30;
+
+function getProxyBase() {
+  return (typeof window !== 'undefined' && window.webOS)
+    ? 'http://127.0.0.1:7654'
+    : storage.getProxyUrl();
+}
+
+function proxyImg(url) {
+  if (!url) return '';
+  let u = url.startsWith('//') ? 'https:' + url : url;
+  if (u.includes('hdslb.com') && !u.includes('@')) {
+    u += '@720w_450h_1c.webp';
+  }
+  try {
+    const parsed = new URL(u);
+    return `${getProxyBase()}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
+  } catch {
+    return u;
+  }
+}
 
 async function fetchByMode(mode, pn) {
   if (mode === 'hot') {
@@ -45,32 +65,76 @@ async function fetchByMode(mode, pn) {
   }
 }
 
+function VideoListItem({ video, index, group, onSelect, isSelected }) {
+  const handleSelect = useCallback(() => {
+    onSelect?.(video);
+  }, [video, onSelect]);
+
+  const { props } = useFocusable({
+    id: `${group}-${index}-0`,
+    row: index,
+    col: 0,
+    group,
+    onSelect: handleSelect,
+  });
+
+  return (
+    <div
+      {...props}
+      className={`tv-list-item ${isSelected ? 'selected' : ''}`}
+    >
+      <div className="tv-list-thumb">
+        {video.pic && <img src={proxyImg(video.pic)} alt="" loading="lazy" decoding="async" />}
+        {video.duration != null && (
+          <span className="tv-list-duration">
+            {typeof video.duration === 'number' ? formatDuration(video.duration) : video.duration}
+          </span>
+        )}
+        {video.isLive && <span className="tv-list-live-badge">直播中</span>}
+      </div>
+      <div className="tv-list-info">
+        <div className="tv-list-title">{video.title}</div>
+        <div className="tv-list-meta">
+          {video.owner?.name && <span className="tv-list-up">{video.owner.name}</span>}
+          {video.stat?.view != null && <span>{formatCount(video.stat.view)}次观看</span>}
+          {video.play != null && <span>{formatCount(video.play)}次观看</span>}
+          {video.pubdate && <span>{formatTime(video.pubdate)}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }) {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [focusRow, setFocusRow] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [isPlayerVisible, setIsPlayerVisible] = useState(false);
   const pageRef = useRef(1);
   const seenRef = useRef(new Set());
   const fetchingRef = useRef(false);
+  const autoPlayTimerRef = useRef(null);
+  const containerRef = useRef(null);
 
-  // Load
+  // Load videos
   useEffect(() => {
     let cancelled = false;
     seenRef.current = new Set();
     pageRef.current = 1;
     setLoading(true);
     setVideos([]);
-    setFocusRow(0);
+    setSelectedIndex(0);
+    setIsPlayerVisible(false);
 
     fetchByMode(mode, 1).then(items => {
       if (cancelled) return;
-      setVideos(dedupe(items));
+      const unique = dedupe(items);
+      setVideos(unique);
       setLoading(false);
       pageRef.current = 2;
-      // Only focus content if not currently in sidebar
       setTimeout(() => {
         const cur = getCurrentFocusId();
-        if (!cur || !cur.startsWith('sidebar-')) {
+        if (!cur || !cur.startsWith('nav-')) {
           setFocus('content-0-0');
         }
       }, 50);
@@ -88,18 +152,26 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
     });
   }
 
-  // Track focus row for transform scroll + load more
+  // Track focus changes for selected index and auto-play
   useEffect(() => {
     return onFocusChange((fid) => {
-      if (!fid) return;
+      if (!fid || !fid.startsWith('content-')) return;
       const m = fid.match(/^content-(\d+)-/);
       if (!m) return;
-      const row = parseInt(m[1]);
-      setFocusRow(row);
+      const idx = parseInt(m[1]);
+      setSelectedIndex(idx);
+
+      // Auto-play after 3 seconds of staying on same item
+      if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
+      autoPlayTimerRef.current = setTimeout(() => {
+        if (!isPlayerVisible && videos[idx]) {
+          // In TV mode, auto-play preview could be implemented here
+          // For now we just keep the background
+        }
+      }, 3000);
 
       // Load more when near bottom
-      const totalRows = Math.ceil(videos.length / COLS);
-      if (row >= totalRows - 2 && !fetchingRef.current) {
+      if (idx >= videos.length - 5 && !fetchingRef.current) {
         fetchingRef.current = true;
         fetchByMode(mode, pageRef.current).then(items => {
           const unique = dedupe(items);
@@ -109,20 +181,156 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
         }).catch(() => { fetchingRef.current = false; });
       }
     });
-  }, [videos.length, mode]);
+  }, [videos.length, mode, isPlayerVisible]);
+
+  // Listen for tv-back to close internal player overlay (capture phase = runs before App)
+  useEffect(() => {
+    const handleBack = (e) => {
+      if (isPlayerVisible) {
+        e.stopImmediatePropagation();
+        setIsPlayerVisible(false);
+      }
+    };
+    window.addEventListener('tv-back', handleBack, true);
+    return () => window.removeEventListener('tv-back', handleBack, true);
+  }, [isPlayerVisible]);
+
+  // Restore focus when player closes
+  useEffect(() => {
+    if (!isPlayerVisible) {
+      setTimeout(() => setFocus(`content-${selectedIndex}-0`), 80);
+    }
+  }, [isPlayerVisible, selectedIndex]);
+
+  // Scroll selected item into view
+  useEffect(() => {
+    if (containerRef.current) {
+      const item = containerRef.current.querySelector(`[data-focus-id="content-${selectedIndex}-0"]`);
+      if (item) {
+        item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+  }, [selectedIndex]);
+
+  const selectedVideo = videos[selectedIndex];
 
   if (loading) {
-    return <div className="loading"><div className="loading-spinner" />加载中...</div>;
+    return (
+      <div className="tv-home">
+        <div className="tv-loading"><div className="loading-spinner" />加载中...</div>
+      </div>
+    );
   }
 
   return (
-    <VideoGrid
-      videos={videos}
-      group="content"
-      startRow={0}
-      cols={COLS}
-      onSelect={onPlayVideo}
-      focusRow={focusRow}
-    />
+    <div className="tv-home">
+      {/* Background layer */}
+      <div className="tv-bg-layer">
+        {selectedVideo?.pic && (
+          <>
+            <img
+              className="tv-bg-image"
+              src={proxyImg(selectedVideo.pic)}
+              alt=""
+            />
+            <div className="tv-bg-overlay" />
+          </>
+        )}
+      </div>
+
+      {/* Left video list */}
+      <div className="tv-list-panel" ref={containerRef}>
+        <div className="tv-list-header">
+          {mode === 'recommend' && '推荐'}
+          {mode === 'hot' && '热门'}
+          {mode === 'live' && '直播'}
+          {mode === 'partition' && '分区'}
+          {mode === 'follow' && '关注'}
+        </div>
+        <div className="tv-list">
+          {videos.map((video, idx) => (
+            <VideoListItem
+              key={video.bvid || video.bv_id || `v-${idx}`}
+              video={video}
+              index={idx}
+              group="content"
+              onSelect={(v) => {
+                setSelectedIndex(idx);
+                setIsPlayerVisible(true);
+              }}
+              isSelected={selectedIndex === idx}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Right preview info */}
+      <div className="tv-preview-panel">
+        {selectedVideo && (
+          <div className="tv-preview-content">
+            <div className="tv-preview-title">{selectedVideo.title}</div>
+            <div className="tv-preview-meta">
+              {selectedVideo.owner?.name && (
+                <span className="tv-preview-up">UP主: {selectedVideo.owner.name}</span>
+              )}
+              {selectedVideo.stat?.view != null && (
+                <span>{formatCount(selectedVideo.stat.view)}次观看</span>
+              )}
+              {selectedVideo.pubdate && (
+                <span>{formatTime(selectedVideo.pubdate)}</span>
+              )}
+            </div>
+            <div className="tv-preview-hint">
+              按「确定」播放视频 · 按「返回」返回列表
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Full-screen player overlay */}
+      {isPlayerVisible && selectedVideo && (
+        <div className="tv-player-overlay">
+          <PlayerWrapper
+            video={selectedVideo}
+            onClose={() => {
+              setIsPlayerVisible(false);
+              setTimeout(() => setFocus(`content-${selectedIndex}-0`), 50);
+            }}
+            onPlayNext={(v) => {
+              // Find next video index
+              const nextIdx = videos.findIndex(x => (x.bvid || x.bv_id) === (v?.bvid || v?.bv_id));
+              if (nextIdx >= 0) {
+                setSelectedIndex(nextIdx);
+              }
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Inline player wrapper that uses existing PlayerPage/LivePlayerPage
+function PlayerWrapper({ video, onClose, onPlayNext }) {
+  const [key, setKey] = useState(0);
+
+  // No extra key handling needed: PlayerPage sets its own customKeyHandler
+  // and calls onBack (which is onClose) on back/escape keys.
+
+  if (video.isLive && video.roomid) {
+    return (
+      <div style={{ position: 'fixed', top: 0, left: 0, width: 1920, height: 1080, zIndex: 150 }}>
+        <LivePlayerPage key={video.roomid} room={video} onBack={onClose} />
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: 'fixed', top: 0, left: 0, width: 1920, height: 1080, zIndex: 150 }}>
+      <PlayerPage key={video.bvid} video={video} onBack={onClose} onPlayNext={(v) => {
+        onPlayNext(v);
+        setKey(k => k + 1);
+      }} />
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 {
   "name": "bili-webos-tv",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Bilibili client for LG webOS TV",
   "private": true,
   "type": "module",

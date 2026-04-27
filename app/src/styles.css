@@ -118,6 +118,10 @@ html, body, #root {
   display: flex;
   overflow: hidden;
 }
+.tv-home-loading {
+  align-items: center;
+  justify-content: center;
+}
 
 /* Background layer with blur */
 .tv-bg-layer {
@@ -150,17 +154,17 @@ html, body, #root {
 .tv-list-panel {
   position: relative;
   z-index: 1;
-  width: 620px;
+  width: 720px;
   height: 100%;
   display: flex;
   flex-direction: column;
   padding: 30px 0 30px 40px;
 }
 .tv-list-header {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 700;
   color: #fff;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   padding-left: 16px;
   border-left: 4px solid #00a1d6;
 }
@@ -175,12 +179,12 @@ html, body, #root {
 .tv-list-item {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px 16px;
+  gap: 18px;
+  padding: 16px 20px;
   border-radius: 12px;
   cursor: pointer;
   transition: background 0.15s ease, transform 0.15s ease;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   outline: none;
 }
 .tv-list-item:hover {
@@ -199,9 +203,9 @@ html, body, #root {
 }
 
 .tv-list-thumb {
-  width: 160px;
-  height: 90px;
-  border-radius: 8px;
+  width: 200px;
+  height: 112px;
+  border-radius: 10px;
   overflow: hidden;
   background: #1a1a2e;
   position: relative;
@@ -214,22 +218,22 @@ html, body, #root {
 }
 .tv-list-duration {
   position: absolute;
-  bottom: 4px;
-  right: 6px;
+  bottom: 6px;
+  right: 8px;
   background: rgba(0,0,0,0.75);
   color: #fff;
-  font-size: 12px;
-  padding: 1px 6px;
-  border-radius: 3px;
+  font-size: 14px;
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 .tv-list-live-badge {
   position: absolute;
-  top: 6px;
-  left: 6px;
+  top: 8px;
+  left: 8px;
   background: #ff6699;
   color: #fff;
-  font-size: 11px;
-  padding: 2px 8px;
+  font-size: 13px;
+  padding: 3px 10px;
   border-radius: 4px;
   font-weight: 600;
 }
@@ -239,24 +243,24 @@ html, body, #root {
   min-width: 0;
 }
 .tv-list-title {
-  font-size: 18px;
+  font-size: 22px;
   line-height: 1.4;
   color: #ccc;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 .tv-list-item.focused .tv-list-title {
   color: #fff;
 }
 .tv-list-meta {
-  font-size: 14px;
+  font-size: 16px;
   color: #6a6a8a;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   flex-wrap: wrap;
 }
 .tv-list-up {
@@ -327,17 +331,17 @@ html, body, #root {
   align-items: center;
   justify-content: center;
   height: 100%;
-  font-size: 22px;
+  font-size: 28px;
   color: #6a6a8a;
 }
 .loading-spinner {
-  width: 36px;
-  height: 36px;
-  border: 3px solid #2a2a4a;
+  width: 48px;
+  height: 48px;
+  border: 4px solid #2a2a4a;
   border-top-color: #00a1d6;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-  margin-right: 14px;
+  margin-right: 18px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 

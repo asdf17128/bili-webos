@@ -70,7 +70,7 @@ function VideoListItem({ video, index, group, onSelect, isSelected }) {
     onSelect?.(video);
   }, [video, onSelect]);
 
-  const { props } = useFocusable({
+  const { props, isFocused } = useFocusable({
     id: `${group}-${index}-0`,
     row: index,
     col: 0,
@@ -81,7 +81,7 @@ function VideoListItem({ video, index, group, onSelect, isSelected }) {
   return (
     <div
       {...props}
-      className={`tv-list-item ${isSelected ? 'selected' : ''}`}
+      className={`tv-list-item ${isSelected ? 'selected' : ''} ${isFocused ? 'focused' : ''}`}
     >
       <div className="tv-list-thumb">
         {video.pic && <img src={proxyImg(video.pic)} alt="" loading="lazy" decoding="async" />}
@@ -109,11 +109,9 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isPlayerVisible, setIsPlayerVisible] = useState(false);
   const pageRef = useRef(1);
   const seenRef = useRef(new Set());
   const fetchingRef = useRef(false);
-  const autoPlayTimerRef = useRef(null);
   const containerRef = useRef(null);
 
   // Load videos
@@ -124,7 +122,6 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
     setLoading(true);
     setVideos([]);
     setSelectedIndex(0);
-    setIsPlayerVisible(false);
 
     fetchByMode(mode, 1).then(items => {
       if (cancelled) return;
@@ -152,7 +149,7 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
     });
   }
 
-  // Track focus changes for selected index and auto-play
+  // Track focus changes for selected index
   useEffect(() => {
     return onFocusChange((fid) => {
       if (!fid || !fid.startsWith('content-')) return;
@@ -160,15 +157,6 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
       if (!m) return;
       const idx = parseInt(m[1]);
       setSelectedIndex(idx);
-
-      // Auto-play after 3 seconds of staying on same item
-      if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
-      autoPlayTimerRef.current = setTimeout(() => {
-        if (!isPlayerVisible && videos[idx]) {
-          // In TV mode, auto-play preview could be implemented here
-          // For now we just keep the background
-        }
-      }, 3000);
 
       // Load more when near bottom
       if (idx >= videos.length - 5 && !fetchingRef.current) {
@@ -181,26 +169,7 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
         }).catch(() => { fetchingRef.current = false; });
       }
     });
-  }, [videos.length, mode, isPlayerVisible]);
-
-  // Listen for tv-back to close internal player overlay (capture phase = runs before App)
-  useEffect(() => {
-    const handleBack = (e) => {
-      if (isPlayerVisible) {
-        e.stopImmediatePropagation();
-        setIsPlayerVisible(false);
-      }
-    };
-    window.addEventListener('tv-back', handleBack, true);
-    return () => window.removeEventListener('tv-back', handleBack, true);
-  }, [isPlayerVisible]);
-
-  // Restore focus when player closes
-  useEffect(() => {
-    if (!isPlayerVisible) {
-      setTimeout(() => setFocus(`content-${selectedIndex}-0`), 80);
-    }
-  }, [isPlayerVisible, selectedIndex]);
+  }, [videos.length, mode]);
 
   // Scroll selected item into view
   useEffect(() => {
@@ -216,7 +185,7 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
 
   if (loading) {
     return (
-      <div className="tv-home">
+      <div className="tv-home tv-home-loading">
         <div className="tv-loading"><div className="loading-spinner" />加载中...</div>
       </div>
     );
@@ -256,7 +225,7 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
               group="content"
               onSelect={(v) => {
                 setSelectedIndex(idx);
-                setIsPlayerVisible(true);
+                onPlayVideo?.(v);
               }}
               isSelected={selectedIndex === idx}
             />
@@ -287,50 +256,7 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
         )}
       </div>
 
-      {/* Full-screen player overlay */}
-      {isPlayerVisible && selectedVideo && (
-        <div className="tv-player-overlay">
-          <PlayerWrapper
-            video={selectedVideo}
-            onClose={() => {
-              setIsPlayerVisible(false);
-              setTimeout(() => setFocus(`content-${selectedIndex}-0`), 50);
-            }}
-            onPlayNext={(v) => {
-              // Find next video index
-              const nextIdx = videos.findIndex(x => (x.bvid || x.bv_id) === (v?.bvid || v?.bv_id));
-              if (nextIdx >= 0) {
-                setSelectedIndex(nextIdx);
-              }
-            }}
-          />
-        </div>
-      )}
     </div>
   );
 }
 
-// Inline player wrapper that uses existing PlayerPage/LivePlayerPage
-function PlayerWrapper({ video, onClose, onPlayNext }) {
-  const [key, setKey] = useState(0);
-
-  // No extra key handling needed: PlayerPage sets its own customKeyHandler
-  // and calls onBack (which is onClose) on back/escape keys.
-
-  if (video.isLive && video.roomid) {
-    return (
-      <div style={{ position: 'fixed', top: 0, left: 0, width: 1920, height: 1080, zIndex: 150 }}>
-        <LivePlayerPage key={video.roomid} room={video} onBack={onClose} />
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: 1920, height: 1080, zIndex: 150 }}>
-      <PlayerPage key={video.bvid} video={video} onBack={onClose} onPlayNext={(v) => {
-        onPlayNext(v);
-        setKey(k => k + 1);
-      }} />
-    </div>
-  );
-}

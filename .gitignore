@@ -5,3 +5,4 @@ screenshot*.png
 verify-screenshot.png
 proxy/cookies.json
 .claude/
+.roo/

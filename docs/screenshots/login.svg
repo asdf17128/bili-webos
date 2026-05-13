@@ -1,0 +1,11 @@
+<svg width="1280" height="720" viewBox="0 0 1280 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="1280" height="720" fill="#0A1020"/>
+<rect x="340" y="120" width="600" height="480" rx="20" fill="#141F33"/>
+<rect x="380" y="170" width="260" height="260" rx="10" fill="#F2F4F8"/>
+<rect x="400" y="190" width="220" height="220" fill="#111"/>
+<rect x="680" y="190" width="220" height="44" rx="8" fill="#2C6CFF"/>
+<rect x="680" y="250" width="220" height="16" rx="8" fill="#3D4C6D"/>
+<rect x="680" y="278" width="220" height="16" rx="8" fill="#3D4C6D"/>
+<rect x="680" y="306" width="220" height="16" rx="8" fill="#3D4C6D"/>
+<text x="380" y="470" fill="#BFD0F0" font-family="Arial, sans-serif" font-size="24">扫码登录流程（示意）</text>
+</svg>

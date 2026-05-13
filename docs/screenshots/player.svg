@@ -1,0 +1,11 @@
+<svg width="1280" height="720" viewBox="0 0 1280 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="1280" height="720" fill="#000"/>
+<rect x="70" y="50" width="1140" height="620" rx="16" fill="#0D111A"/>
+<rect x="100" y="520" width="1080" height="120" rx="12" fill="#101827"/>
+<rect x="130" y="560" width="840" height="10" rx="5" fill="#2D3B58"/>
+<rect x="130" y="560" width="360" height="10" rx="5" fill="#2C6CFF"/>
+<circle cx="490" cy="565" r="12" fill="#2C6CFF"/>
+<circle cx="1060" cy="578" r="24" fill="#1A2439" stroke="#2C6CFF" stroke-width="3"/>
+<polygon points="1052,566 1072,578 1052,590" fill="#2C6CFF"/>
+<text x="130" y="605" fill="#BFD0F0" font-family="Arial, sans-serif" font-size="20">播放器控制栏：进度条 / 画质 / 弹幕 / 推荐列表（示意）</text>
+</svg>

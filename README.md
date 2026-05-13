@@ -5,6 +5,28 @@ LG webOS 智能电视的第三方哔哩哔哩客户端。
 ![Platform](https://img.shields.io/badge/platform-LG%20webOS%20TV-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
+## 项目简介
+
+BiliTV for webOS 是一个专为 LG webOS 电视设计的第三方 B 站客户端，目标是把移动端/网页端常用能力迁移到「大屏 + 遥控器」场景：
+
+- **10-foot UI 体验**：针对电视观看距离优化字号、布局和焦点态。
+- **遥控器优先交互**：完整的方向键焦点导航、返回栈和快捷操作。
+- **播放闭环**：支持 DASH 分段流、多清晰度切换、播放进度同步。
+- **账号能力**：扫码登录、历史记录、关注动态、收藏与搜索。
+
+## 界面预览
+
+> 以下为当前版本的界面示意图，用于帮助快速理解信息架构与交互路径。
+
+| 首页 / 视频流 | 播放器控制栏 |
+|---|---|
+| ![首页预览](docs/screenshots/home.svg) | ![播放器预览](docs/screenshots/player.svg) |
+
+| 扫码登录 |
+|---|
+| ![扫码登录预览](docs/screenshots/login.svg) |
+
+
 ## 功能
 
 - **视频浏览** — 推荐、热门、分区、关注动态

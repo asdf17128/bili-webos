@@ -1,0 +1,17 @@
+<svg width="1280" height="720" viewBox="0 0 1280 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="1280" height="720" fill="#0B1220"/>
+<rect x="0" y="0" width="260" height="720" fill="#121A2B"/>
+<rect x="28" y="40" width="204" height="34" rx="8" fill="#1D2A44"/>
+<rect x="28" y="98" width="204" height="34" rx="8" fill="#2C6CFF"/>
+<rect x="28" y="156" width="204" height="34" rx="8" fill="#1D2A44"/>
+<rect x="28" y="214" width="204" height="34" rx="8" fill="#1D2A44"/>
+<rect x="300" y="40" width="940" height="200" rx="16" fill="#1A2439"/>
+<rect x="320" y="64" width="360" height="24" rx="8" fill="#2C6CFF"/>
+<rect x="320" y="104" width="620" height="16" rx="8" fill="#30405F"/>
+<rect x="300" y="280" width="220" height="320" rx="12" fill="#1A2439"/>
+<rect x="540" y="280" width="220" height="320" rx="12" fill="#1A2439"/>
+<rect x="780" y="280" width="220" height="320" rx="12" fill="#1A2439"/>
+<rect x="1020" y="280" width="220" height="320" rx="12" fill="#1A2439"/>
+<rect x="540" y="280" width="220" height="320" rx="12" stroke="#2C6CFF" stroke-width="4"/>
+<text x="320" y="220" fill="#9FB3D9" font-family="Arial, sans-serif" font-size="20">首页：推荐流 + 分区导航（示意）</text>
+</svg>

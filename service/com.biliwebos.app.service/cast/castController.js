@@ -22,6 +22,7 @@ function toNumber(value) {
 
 function normalizePlayPayload(payload) {
   payload = payload || {};
+  var seekTs = toNumber(payload.seekTs || payload.seek_ts || payload.position || payload.positionSec);
   var roomId = toNumber(payload.roomId || payload.room_id);
   if (roomId > 0) {
     return {
@@ -29,6 +30,7 @@ function normalizePlayPayload(payload) {
       contentType: 'live',
       roomId: roomId,
       title: payload.title || '',
+      seekTs: seekTs,
     };
   }
 
@@ -46,6 +48,7 @@ function normalizePlayPayload(payload) {
     epid: epid || undefined,
     bvid: bvid || undefined,
     title: payload.title || '',
+    seekTs: seekTs,
   };
 }
 

@@ -11,6 +11,7 @@ test('parse play command into video intent', () => {
     bvid: 'BV1xx411c7mD',
     cid: 456,
     title: 'test video',
+    seekTs: 123.4,
   }));
 
   assert.equal(intent.type, 'play');
@@ -19,6 +20,7 @@ test('parse play command into video intent', () => {
   assert.equal(intent.bvid, 'BV1xx411c7mD');
   assert.equal(intent.cid, 456);
   assert.equal(intent.title, 'test video');
+  assert.equal(intent.seekTs, 123.4);
 });
 
 test('parse play command into live intent', () => {
@@ -91,4 +93,11 @@ test('reporting state and progress produces outbound NVA events', () => {
     { action: 'OnPlayState', content: { playState: 4 } },
     { action: 'OnProgress', content: { duration: 100, position: 45 } },
   ]);
+});
+
+
+test('parse seek command with seekTs field', () => {
+  const controller = new CastController();
+  const intent = controller.handleCommand('session-1', 'Seek', JSON.stringify({ seekTs: 88 }));
+  assert.deepEqual(intent, { type: 'seek', positionSec: 88 });
 });

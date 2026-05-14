@@ -30,6 +30,29 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const cidRef = useRef(null);
   const startTimeRef = useRef(Date.now());
 
+  const pendingSeekRef = useRef(null);
+
+  const queueOrApplySeek = useCallback((seekSec) => {
+    const target = Math.max(0, Number(seekSec) || 0);
+    if (!videoRef.current) return;
+    const canSeekNow = Number.isFinite(videoRef.current.duration) && videoRef.current.duration > 0;
+    if (canSeekNow) {
+      const max = Math.max(0, (videoRef.current.duration || 0) - 0.2);
+      videoRef.current.currentTime = Math.min(target, max || target);
+      pendingSeekRef.current = null;
+      return;
+    }
+    pendingSeekRef.current = target;
+  }, []);
+
+  const flushPendingSeek = useCallback(() => {
+    if (pendingSeekRef.current == null || !videoRef.current) return;
+    if (!(Number.isFinite(videoRef.current.duration) && videoRef.current.duration > 0)) return;
+    const max = Math.max(0, (videoRef.current.duration || 0) - 0.2);
+    videoRef.current.currentTime = Math.min(pendingSeekRef.current, max || pendingSeekRef.current);
+    pendingSeekRef.current = null;
+  }, []);
+
   const CONTROLS = ['play', 'danmaku', 'quality'];
 
   // Initialize Shaka Player
@@ -90,8 +113,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       await player.load(mpdUrl);
       URL.revokeObjectURL(mpdUrl);
 
-      if (video.progress && video.progress > 0 && video.progress < (dash.duration || 9999) - 10) {
-        videoRef.current.currentTime = video.progress;
+      if (video.progress && video.progress > 0) {
+        queueOrApplySeek(video.progress);
       }
 
       videoRef.current.play();
@@ -117,7 +140,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       setLoading(false);
       castReportState({ playState: 'error', error: err?.message || 'load-failed' }).catch(() => {});
     }
-  }, [video]);
+  }, [video, queueOrApplySeek]);
 
   function buildMPD(dash) {
     const duration = dash.duration || 0;
@@ -184,6 +207,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       setPlaying(true);
       castReportState({ playState: 'playing' }).catch(() => {});
     };
+    const handleLoadedMetadata = () => flushPendingSeek();
+    const handleCanPlay = () => flushPendingSeek();
+
     const handlePause = () => {
       if (!ended) castReportState({ playState: 'paused' }).catch(() => {});
       setPlaying(false);
@@ -191,11 +217,15 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
     el.addEventListener('play', handlePlay);
     el.addEventListener('pause', handlePause);
+    el.addEventListener('loadedmetadata', handleLoadedMetadata);
+    el.addEventListener('canplay', handleCanPlay);
     return () => {
       el.removeEventListener('play', handlePlay);
       el.removeEventListener('pause', handlePause);
+      el.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      el.removeEventListener('canplay', handleCanPlay);
     };
-  }, [ended]);
+  }, [ended, flushPendingSeek]);
 
   useEffect(() => {
     return () => {
@@ -309,7 +339,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         return;
       }
       if (command.type === 'seek') {
-        videoRef.current.currentTime = Math.max(0, command.positionSec || 0);
+        queueOrApplySeek(command.positionSec);
         castReportProgress({
           duration: Math.floor(videoRef.current.duration || 0),
           position: Math.floor(videoRef.current.currentTime || 0),
@@ -328,7 +358,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
     window.addEventListener('bili-cast-command', handleCastCommand);
     return () => window.removeEventListener('bili-cast-command', handleCastCommand);
-  }, [onBack]);
+  }, [onBack, queueOrApplySeek]);
 
   // ========== Keyboard handler ==========
   useEffect(() => {

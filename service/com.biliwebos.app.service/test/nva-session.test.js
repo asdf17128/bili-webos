@@ -167,3 +167,23 @@ test('sendBuffer is a no-op after session is closed', () => {
 
   assert.equal(socket.written.length, 0);
 });
+
+test('session tolerates missing callbacks and socket destroy errors', () => {
+  const { EventEmitter } = require('node:events');
+  const { NvaSession } = require('../cast/nvaSession');
+
+  class FakeSocket extends EventEmitter {
+    constructor() { super(); this.written = []; }
+    write(buf) { this.written.push(buf); }
+    destroy() { throw new Error('destroy failed'); }
+  }
+
+  const socket = new FakeSocket();
+  const session = new NvaSession('s4', socket, null, null);
+
+  const ping = Buffer.from([0xe4, 0x00, 0x00, 0x00, 0x00, 0x09]);
+  socket.emit('data', ping);
+  assert.equal(session.currentVersion, 9);
+
+  assert.doesNotThrow(() => session.close());
+});

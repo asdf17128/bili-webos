@@ -77,3 +77,22 @@ test('getProxyUrl falls back to default in non-browser or localhost environments
     else globalThis.window = originalWindow;
   });
 });
+
+test('getSettings returns defaults and getProxyUrl supports env/127 localhost fallback', () => {
+  withMockLocalStorage((map) => {
+    map.delete('bili_settings');
+    map.delete('bili_proxyUrl');
+
+    expect(storage.getSettings()).toEqual({ danmaku: true, quality: 80 });
+
+    const originalWindow = globalThis.window;
+    globalThis.window = { location: { hostname: '127.0.0.1' } };
+    expect(storage.getProxyUrl()).toBe('http://127.0.0.1:9527');
+
+    globalThis.window = { location: { hostname: '' } };
+    expect(storage.getProxyUrl()).toBe('http://127.0.0.1:9527');
+
+    if (typeof originalWindow === 'undefined') delete globalThis.window;
+    else globalThis.window = originalWindow;
+  });
+});

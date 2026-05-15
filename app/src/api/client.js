@@ -87,8 +87,15 @@ async function smartFetch(host, path, options) {
   // Fallback to proxy
   var proxyRes = await proxyFetchRaw(url, opts);
   var ct = proxyRes.headers.get('content-type') || '';
-  if (ct.indexOf('json') >= 0 || ct.indexOf('text/plain') >= 0) {
+  if (ct.indexOf('json') >= 0) {
     return proxyRes.json();
+  }
+  if (ct.indexOf('text/plain') >= 0) {
+    try {
+      return await proxyRes.json();
+    } catch (e) {
+      return proxyRes.text();
+    }
   }
   return proxyRes;
 }

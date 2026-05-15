@@ -50,11 +50,16 @@ function proxyFetchRaw(url, options) {
   var parsed = new URL(url);
   var proxyUrl = base + '/proxy/' + parsed.host + parsed.pathname + parsed.search;
 
+  var headers = Object.assign({}, options.headers || {});
+  if (options.contentType) {
+    headers['Content-Type'] = options.contentType;
+  } else if (options.body && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   return fetch(proxyUrl, {
     method: options.method || 'GET',
-    headers: {
-      'Content-Type': options.contentType || 'application/json',
-    },
+    headers: headers,
     body: options.body,
   }).then(function(res) {
     var setCookie = res.headers.get('X-Set-Cookie');

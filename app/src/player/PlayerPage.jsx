@@ -20,6 +20,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const [danmakuEnabled, setDanmakuEnabled] = useState(storage.getSettings().danmaku ?? true);
   const [videoTitle, setVideoTitle] = useState(video?.title || '');
   const [loading, setLoading] = useState(true);
+  const [firstFrameReady, setFirstFrameReady] = useState(false);
   const [ended, setEnded] = useState(false);
   const [relatedVideos, setRelatedVideos] = useState([]);
   // Focus: 'none' (no UI) | 'controls' | 'quality' | 'related' | 'endscreen'
@@ -63,6 +64,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       shaka.polyfill.installAll();
       if (!shaka.Player.isBrowserSupported()) return;
       const player = new shaka.Player();
+      player.configure({
+        streaming: {
+          bufferingGoal: 2,
+          rebufferingGoal: 0.5,
+          bufferBehind: 15,
+        },
+      });
       await player.attach(videoRef.current);
       shakaRef.current = player;
       player.addEventListener('error', (e) => console.error('Shaka error:', e.detail));
@@ -75,6 +83,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const loadVideo = useCallback(async (player) => {
     if (!video?.bvid && !video?.aid) return;
     setLoading(true);
+    setFirstFrameReady(false);
     castReportState({ playState: 'loading' }).catch(() => {});
     try {
       let cid = video.cid;
@@ -110,6 +119,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }
       });
 
+      const danmakuPromise = getDanmaku(cid).catch(() => []);
+      const relatedPromise = getRelated(video.bvid).catch(() => ({ data: [] }));
+
       await player.load(mpdUrl);
       URL.revokeObjectURL(mpdUrl);
 
@@ -117,9 +129,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         queueOrApplySeek(video.progress);
       }
 
-      videoRef.current.play();
+      videoRef.current.play().catch(() => {});
       setPlaying(true);
-      setLoading(false);
       castReportState({ playState: 'playing' }).catch(() => {});
 
       videoRef.current.addEventListener('ended', () => {
@@ -130,11 +141,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         castReportState({ playState: 'end' }).catch(() => {});
       });
 
-      try { setDanmakus(await getDanmaku(cid)); } catch {}
-      try {
-        const rel = await getRelated(video.bvid);
-        setRelatedVideos((rel?.data || []).slice(0, 12));
-      } catch {}
+      const [danmakuData, rel] = await Promise.all([danmakuPromise, relatedPromise]);
+      setDanmakus(danmakuData);
+      setRelatedVideos((rel?.data || []).slice(0, 12));
     } catch (err) {
       console.error('Load video error:', err);
       setLoading(false);
@@ -209,6 +218,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     };
     const handleLoadedMetadata = () => flushPendingSeek();
     const handleCanPlay = () => flushPendingSeek();
+    const handleLoadedData = () => {
+      setFirstFrameReady(true);
+      setLoading(false);
+    };
 
     const handlePause = () => {
       if (!ended) castReportState({ playState: 'paused' }).catch(() => {});
@@ -219,11 +232,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     el.addEventListener('pause', handlePause);
     el.addEventListener('loadedmetadata', handleLoadedMetadata);
     el.addEventListener('canplay', handleCanPlay);
+    el.addEventListener('loadeddata', handleLoadedData);
     return () => {
       el.removeEventListener('play', handlePlay);
       el.removeEventListener('pause', handlePause);
       el.removeEventListener('loadedmetadata', handleLoadedMetadata);
       el.removeEventListener('canplay', handleCanPlay);
+      el.removeEventListener('loadeddata', handleLoadedData);
     };
   }, [ended, flushPendingSeek]);
 
@@ -575,9 +590,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
   return (
     <div className="player-page">
-      <video ref={videoRef} className="player-video" />
+      <video ref={videoRef} className="player-video" preload="auto" playsInline />
 
-      <DanmakuLayer danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} />
+      <DanmakuLayer danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled && firstFrameReady} />
 
       {loading && (
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',

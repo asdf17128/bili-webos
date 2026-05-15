@@ -19,6 +19,12 @@ bun --env-file=.env tools/screenshot.mjs
 
 # Run API tests (proxy must be running)
 bun tools/test-e2e.mjs
+
+# Run unit tests
+bun test
+
+# Run tests with coverage report
+bun test:coverage
 ```
 
 ## Required skills when applicable:

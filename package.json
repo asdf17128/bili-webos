@@ -9,7 +9,7 @@
     "dev:proxy": "bun --cwd proxy run dev",
     "build": "bun --cwd app run build",
     "test": "bun test service/com.biliwebos.app.service/test/*.test.js app/src/**/*.test.mjs",
-    "test:coverage": "bun test --preload ./tools/coverage-preload.mjs --coverage --coverage-reporter=text --coverage-reporter=lcov --coverage-dir=coverage service/com.biliwebos.app.service/test/*.test.js app/src/**/*.test.mjs",
+    "test:coverage": "bun test --preload ./tools/coverage-preload.mjs --coverage --coverage-reporter=text --coverage-reporter=lcov --coverage-dir=coverage",
     "analyze:tv": "bun --env-file=.env tools/debug.mjs",
     "screenshot:tv": "bun --env-file=.env tools/screenshot.mjs"
   },

@@ -96,3 +96,25 @@ test('getSettings returns defaults and getProxyUrl supports env/127 localhost fa
     else globalThis.window = originalWindow;
   });
 });
+
+
+test('getProxyUrl prefers VITE_BILI_PROXY_URL when provided', () => {
+  withMockLocalStorage((map) => {
+    map.delete('bili_proxyUrl');
+
+    const env = import.meta.env || (import.meta.env = {});
+    const originalProxy = env.VITE_BILI_PROXY_URL;
+    env.VITE_BILI_PROXY_URL = 'http://env-proxy.example:9527';
+
+    const originalWindow = globalThis.window;
+    globalThis.window = { location: { hostname: '192.168.1.7' } };
+
+    expect(storage.getProxyUrl()).toBe('http://env-proxy.example:9527');
+
+    if (typeof originalProxy === 'undefined') delete env.VITE_BILI_PROXY_URL;
+    else env.VITE_BILI_PROXY_URL = originalProxy;
+
+    if (typeof originalWindow === 'undefined') delete globalThis.window;
+    else globalThis.window = originalWindow;
+  });
+});

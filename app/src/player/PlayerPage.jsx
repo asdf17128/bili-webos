@@ -1,22 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { getPlayUrl, getDanmaku, getVideoInfo, reportHeartbeat, getRelated, castReportProgress, castReportState } from '../api/client';
 import { formatDuration, QUALITY_MAP } from '../utils/format';
-import { storage } from '../utils/storage';
+import { getProxyBase } from '../utils/proxy';
 import { setCustomKeyHandler } from '../hooks/useFocus';
+import { storage } from '../utils/storage';
 import DanmakuLayer from './DanmakuLayer';
-
-function isLunaBridgeReady() {
-  if (typeof window === 'undefined') return false;
-  const hasWebOS = !!window.webOS;
-  const hasServiceMethod = typeof window.webOS?.service === 'function';
-  const hasPalmServiceBridge = typeof window.PalmServiceBridge === 'function';
-  const hasPalmSystemBridge = !!window.PalmSystem?.serviceBridge;
-  return hasWebOS && hasServiceMethod && (hasPalmServiceBridge || hasPalmSystemBridge);
-}
-
-function getProxyBase() {
-  return isLunaBridgeReady() ? 'http://127.0.0.1:7654' : storage.getProxyUrl();
-}
 
 export default function PlayerPage({ video, onBack, onPlayNext }) {
   const videoRef = useRef(null);

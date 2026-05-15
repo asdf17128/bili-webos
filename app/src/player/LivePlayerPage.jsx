@@ -1,19 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getLiveStreamSource, castReportState } from '../api/client';
-import { storage } from '../utils/storage';
+import { buildProxyUrl, getProxyBase } from '../utils/proxy';
 import { setCustomKeyHandler } from '../hooks/useFocus';
-
-function getProxyBase() {
-  return (typeof window !== 'undefined' && window.webOS)
-    ? 'http://127.0.0.1:7654'
-    : storage.getProxyUrl();
-}
-
-function buildProxyUrl(url) {
-  const proxyBase = getProxyBase();
-  const parsed = new URL(url);
-  return `${proxyBase}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
-}
 
 function getMpegtsModule(mod) {
   return mod?.default || mod;

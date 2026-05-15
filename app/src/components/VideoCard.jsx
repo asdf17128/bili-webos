@@ -1,19 +1,7 @@
 import React, { useCallback } from 'react';
 import { useFocusable } from '../hooks/useFocus';
 import { formatCount, formatDuration, formatTime } from '../utils/format';
-import { storage } from '../utils/storage';
-
-function getProxyBase() {
-  if (typeof window === 'undefined') return storage.getProxyUrl();
-
-  const hasPalmServiceBridge = typeof window.PalmServiceBridge !== 'undefined'
-    || !!(window.PalmSystem && typeof window.PalmSystem.serviceBridge === 'function');
-  const hasLunaService = typeof window.webOS !== 'undefined'
-    && !!window.webOS.service
-    && hasPalmServiceBridge;
-
-  return hasLunaService ? 'http://127.0.0.1:7654' : storage.getProxyUrl();
-}
+import { buildProxyUrl } from '../utils/proxy';
 
 function proxyImg(url) {
   if (!url) return '';
@@ -22,8 +10,7 @@ function proxyImg(url) {
     u += '@672w_420h_1c.webp';
   }
   try {
-    const parsed = new URL(u);
-    return `${getProxyBase()}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
+    return buildProxyUrl(u);
   } catch {
     return u;
   }

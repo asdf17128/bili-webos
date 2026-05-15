@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { searchVideo } from '../api/client';
-import VideoRow from '../components/VideoRow';
+import VideoGrid from '../components/VideoGrid';
 import OSKey from '../components/OSKey';
 
 const KEYBOARD_ROWS = [
@@ -79,8 +79,7 @@ export default function SearchPage({ onPlayVideo }) {
         <div className="empty-state">未找到相关视频</div>
       ) : results.length > 0 ? (
         <div style={{ marginTop: 8 }}>
-          <VideoRow title="搜索结果" videos={results.slice(0, 10)} rowIndex={10} group="content" onSelect={onPlayVideo} />
-          {results.length > 10 && <VideoRow title="" videos={results.slice(10)} rowIndex={11} group="content" onSelect={onPlayVideo} />}
+          <VideoGrid videos={results} startRow={10} cols={2} group="content" onSelect={onPlayVideo} />
         </div>
       ) : null}
     </div>

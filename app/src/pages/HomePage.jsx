@@ -1,30 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getPopular, getRecommend, getRegionDynamic, getFollowFeed, getLiveList } from '../api/client';
-import { useFocusable, setFocus, onFocusChange, getCurrentFocusId } from '../hooks/useFocus';
-import { formatCount, formatDuration, formatTime } from '../utils/format';
-import { storage } from '../utils/storage';
+import VideoGrid from '../components/VideoGrid';
+import { getCurrentFocusId, setFocus, onFocusChange } from '../hooks/useFocus';
 
-const FETCH_SIZE = 30;
-
-function getProxyBase() {
-  return (typeof window !== 'undefined' && window.webOS)
-    ? 'http://127.0.0.1:7654'
-    : storage.getProxyUrl();
-}
-
-function proxyImg(url) {
-  if (!url) return '';
-  let u = url.startsWith('//') ? 'https:' + url : url;
-  if (u.includes('hdslb.com') && !u.includes('@')) {
-    u += '@720w_450h_1c.webp';
-  }
-  try {
-    const parsed = new URL(u);
-    return `${getProxyBase()}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
-  } catch {
-    return u;
-  }
-}
+const COLS = 2;
+const FETCH_SIZE = 20;
 
 async function fetchByMode(mode, pn) {
   if (mode === 'hot') {
@@ -65,73 +45,32 @@ async function fetchByMode(mode, pn) {
   }
 }
 
-function VideoListItem({ video, index, group, onSelect, isSelected }) {
-  const handleSelect = useCallback(() => {
-    onSelect?.(video);
-  }, [video, onSelect]);
-
-  const { props, isFocused } = useFocusable({
-    id: `${group}-${index}-0`,
-    row: index,
-    col: 0,
-    group,
-    onSelect: handleSelect,
-  });
-
-  return (
-    <div
-      {...props}
-      className={`tv-list-item ${isSelected ? 'selected' : ''} ${isFocused ? 'focused' : ''}`}
-    >
-      <div className="tv-list-thumb">
-        {video.pic && <img src={proxyImg(video.pic)} alt="" loading="lazy" decoding="async" />}
-        {video.duration != null && (
-          <span className="tv-list-duration">
-            {typeof video.duration === 'number' ? formatDuration(video.duration) : video.duration}
-          </span>
-        )}
-        {video.isLive && <span className="tv-list-live-badge">直播中</span>}
-      </div>
-      <div className="tv-list-info">
-        <div className="tv-list-title">{video.title}</div>
-        <div className="tv-list-meta">
-          {video.owner?.name && <span className="tv-list-up">{video.owner.name}</span>}
-          {video.stat?.view != null && <span>{formatCount(video.stat.view)}次观看</span>}
-          {video.play != null && <span>{formatCount(video.play)}次观看</span>}
-          {video.pubdate && <span>{formatTime(video.pubdate)}</span>}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }) {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [focusRow, setFocusRow] = useState(0);
   const pageRef = useRef(1);
   const seenRef = useRef(new Set());
   const fetchingRef = useRef(false);
-  const containerRef = useRef(null);
 
-  // Load videos
+  // Load
   useEffect(() => {
     let cancelled = false;
     seenRef.current = new Set();
     pageRef.current = 1;
     setLoading(true);
     setVideos([]);
-    setSelectedIndex(0);
+    setFocusRow(0);
 
     fetchByMode(mode, 1).then(items => {
       if (cancelled) return;
-      const unique = dedupe(items);
-      setVideos(unique);
+      setVideos(dedupe(items));
       setLoading(false);
       pageRef.current = 2;
+      // Only focus content if not currently in sidebar
       setTimeout(() => {
         const cur = getCurrentFocusId();
-        if (!cur || !cur.startsWith('nav-')) {
+        if (!cur || !cur.startsWith('sidebar-')) {
           setFocus('content-0-0');
         }
       }, 50);
@@ -149,17 +88,18 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
     });
   }
 
-  // Track focus changes for selected index
+  // Track focus row for transform scroll + load more
   useEffect(() => {
     return onFocusChange((fid) => {
-      if (!fid || !fid.startsWith('content-')) return;
+      if (!fid) return;
       const m = fid.match(/^content-(\d+)-/);
       if (!m) return;
-      const idx = parseInt(m[1]);
-      setSelectedIndex(idx);
+      const row = parseInt(m[1]);
+      setFocusRow(row);
 
       // Load more when near bottom
-      if (idx >= videos.length - 5 && !fetchingRef.current) {
+      const totalRows = Math.ceil(videos.length / COLS);
+      if (row >= totalRows - 2 && !fetchingRef.current) {
         fetchingRef.current = true;
         fetchByMode(mode, pageRef.current).then(items => {
           const unique = dedupe(items);
@@ -171,92 +111,18 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
     });
   }, [videos.length, mode]);
 
-  // Scroll selected item into view
-  useEffect(() => {
-    if (containerRef.current) {
-      const item = containerRef.current.querySelector(`[data-focus-id="content-${selectedIndex}-0"]`);
-      if (item) {
-        item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      }
-    }
-  }, [selectedIndex]);
-
-  const selectedVideo = videos[selectedIndex];
-
   if (loading) {
-    return (
-      <div className="tv-home tv-home-loading">
-        <div className="tv-loading"><div className="loading-spinner" />加载中...</div>
-      </div>
-    );
+    return <div className="loading"><div className="loading-spinner" />加载中...</div>;
   }
 
   return (
-    <div className="tv-home">
-      {/* Background layer */}
-      <div className="tv-bg-layer">
-        {selectedVideo?.pic && (
-          <>
-            <img
-              className="tv-bg-image"
-              src={proxyImg(selectedVideo.pic)}
-              alt=""
-            />
-            <div className="tv-bg-overlay" />
-          </>
-        )}
-      </div>
-
-      {/* Left video list */}
-      <div className="tv-list-panel" ref={containerRef}>
-        <div className="tv-list-header">
-          {mode === 'recommend' && '推荐'}
-          {mode === 'hot' && '热门'}
-          {mode === 'live' && '直播'}
-          {mode === 'partition' && '分区'}
-          {mode === 'follow' && '关注'}
-        </div>
-        <div className="tv-list">
-          {videos.map((video, idx) => (
-            <VideoListItem
-              key={video.bvid || video.bv_id || `v-${idx}`}
-              video={video}
-              index={idx}
-              group="content"
-              onSelect={(v) => {
-                setSelectedIndex(idx);
-                onPlayVideo?.(v);
-              }}
-              isSelected={selectedIndex === idx}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Right preview info */}
-      <div className="tv-preview-panel">
-        {selectedVideo && (
-          <div className="tv-preview-content">
-            <div className="tv-preview-title">{selectedVideo.title}</div>
-            <div className="tv-preview-meta">
-              {selectedVideo.owner?.name && (
-                <span className="tv-preview-up">UP主: {selectedVideo.owner.name}</span>
-              )}
-              {selectedVideo.stat?.view != null && (
-                <span>{formatCount(selectedVideo.stat.view)}次观看</span>
-              )}
-              {selectedVideo.pubdate && (
-                <span>{formatTime(selectedVideo.pubdate)}</span>
-              )}
-            </div>
-            <div className="tv-preview-hint">
-              按「确定」播放视频 · 按「返回」返回列表
-            </div>
-          </div>
-        )}
-      </div>
-
-    </div>
+    <VideoGrid
+      videos={videos}
+      group="content"
+      startRow={0}
+      cols={COLS}
+      onSelect={onPlayVideo}
+      focusRow={focusRow}
+    />
   );
 }
-

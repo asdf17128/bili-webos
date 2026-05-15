@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import { searchVideo } from '../api/client';
-import { setFocus } from '../hooks/useFocus';
 import VideoRow from '../components/VideoRow';
 import OSKey from '../components/OSKey';
 
@@ -33,9 +32,6 @@ export default function SearchPage({ onPlayVideo }) {
         duration: item.duration,
       }));
       setResults(items);
-      if (items.length > 0) {
-        setTimeout(() => setFocus('content-4-0'), 50);
-      }
     } catch (err) {
       console.error('Search error:', err);
     }
@@ -83,8 +79,8 @@ export default function SearchPage({ onPlayVideo }) {
         <div className="empty-state">未找到相关视频</div>
       ) : results.length > 0 ? (
         <div style={{ marginTop: 8 }}>
-          <VideoRow title="搜索结果" videos={results.slice(0, 10)} rowIndex={4} group="content" onSelect={onPlayVideo} />
-          {results.length > 10 && <VideoRow title="" videos={results.slice(10)} rowIndex={5} group="content" onSelect={onPlayVideo} />}
+          <VideoRow title="搜索结果" videos={results.slice(0, 10)} rowIndex={10} group="content" onSelect={onPlayVideo} />
+          {results.length > 10 && <VideoRow title="" videos={results.slice(10)} rowIndex={11} group="content" onSelect={onPlayVideo} />}
         </div>
       ) : null}
     </div>

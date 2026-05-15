@@ -13,7 +13,7 @@ function proxyImg(url) {
   if (!url) return '';
   let u = url.startsWith('//') ? 'https:' + url : url;
   if (u.includes('hdslb.com') && !u.includes('@')) {
-    u += '@480w_300h_1c.webp';
+    u += '@672w_420h_1c.webp';
   }
   try {
     const parsed = new URL(u);

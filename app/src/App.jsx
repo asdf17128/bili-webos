@@ -21,12 +21,12 @@ const NAV_ITEMS = [
   { key: 'settings', label: '我的', icon: '⚙️' },
 ];
 
-function TopNav({ activePage, onPageChange, user }) {
-  // Listen for nav focus changes to auto-switch page
+function Sidebar({ activePage, onPageChange, user }) {
+  // Listen for sidebar focus changes to auto-switch page
   useEffect(() => {
     return onFocusChange((fid) => {
-      if (!fid?.startsWith('nav-')) return;
-      const match = fid.match(/^nav-0-(\d+)/);
+      if (!fid?.startsWith('sidebar-')) return;
+      const match = fid.match(/^sidebar-(\d+)-/);
       if (!match) return;
       const idx = parseInt(match[1]);
       if (idx < NAV_ITEMS.length) {
@@ -37,38 +37,36 @@ function TopNav({ activePage, onPageChange, user }) {
   }, [onPageChange]);
 
   return (
-    <div className="top-nav">
-      <div className="top-nav-logo">
+    <div className="sidebar">
+      <div className="sidebar-logo">
         <h1>B站</h1>
         <span>webOS</span>
       </div>
-      <div className="top-nav-items">
-        {NAV_ITEMS.map((item, i) => (
-          <React.Fragment key={item.key}>
-            {item.dividerBefore && <div className="top-nav-divider" />}
-            <SidebarItem
-              id={`nav-0-${i}`}
-              row={0}
-              col={i}
-              label={item.label}
-              icon={item.icon}
-              active={activePage === item.key}
-              onSelect={() => onPageChange(item.key)}
-              group="nav"
-            />
-          </React.Fragment>
-        ))}
-      </div>
-      <div className="top-nav-user">
+
+      {NAV_ITEMS.map((item, i) => (
+        <React.Fragment key={item.key}>
+          {item.dividerBefore && <div className="sidebar-divider" />}
+          <SidebarItem
+            id={`sidebar-${i}-0`}
+            row={i}
+            label={item.label}
+            icon={item.icon}
+            active={activePage === item.key}
+            onSelect={() => onPageChange(item.key)}
+          />
+        </React.Fragment>
+      ))}
+
+      <div className="sidebar-user">
         {user ? (
           <>
-            <div className="top-nav-user-avatar">
+            <div className="sidebar-user-avatar">
               {user.face && <img src={user.face} alt="" />}
             </div>
-            <div className="top-nav-user-name">{user.uname}</div>
+            <div className="sidebar-user-name">{user.uname}</div>
           </>
         ) : (
-          <div className="top-nav-user-login">未登录</div>
+          <div className="sidebar-user-login">未登录</div>
         )}
       </div>
     </div>
@@ -209,6 +207,7 @@ export default function App() {
     setPlayerVideo(video);
   }, []);
 
+  // Sidebar hover = switch page, click same page = refresh
   const handlePageChange = useCallback((key) => {
     if ((key === 'follow') && !loggedIn) {
       setShowLogin(true);
@@ -229,7 +228,7 @@ export default function App() {
   return (
     <>
       <div className="app-container" style={{ display: (playerVideo || liveRoom) ? 'none' : 'flex' }}>
-        <TopNav activePage={page} onPageChange={handlePageChange} user={user} />
+        <Sidebar activePage={page} onPageChange={handlePageChange} user={user} />
         <div className="main-content">
           {page === 'recommend' && <HomePage onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="recommend" />}
           {page === 'hot' && <HomePage onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="hot" />}

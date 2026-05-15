@@ -16,6 +16,12 @@ describe('wbi helpers', () => {
     expect(md5('hello')).toBe('5d41402abc4b2a76b9719d911017c592');
   });
 
+
+  it('md5 handles long inputs across block and tail branches', () => {
+    expect(md5('a'.repeat(64))).toBe('014842d480b571495a4a0363793f7367');
+    expect(md5('a'.repeat(60))).toBe('cc7ed669cf88f201c3297c6a91e1d18d');
+  });
+
   it('getWbiKeys fetches and caches values within ttl', async () => {
     globalThis.Date.now = () => 1_000_000;
     const calls = [];

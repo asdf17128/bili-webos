@@ -18,7 +18,9 @@ export const storage = {
   },
 
   remove(key) {
-    localStorage.removeItem(PREFIX + key);
+    try {
+      localStorage.removeItem(PREFIX + key);
+    } catch { /* ignore unavailable storage env */ }
   },
 
   // Auth helpers

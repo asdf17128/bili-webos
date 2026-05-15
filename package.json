@@ -4,6 +4,6 @@
     "ws": "^8.20.0"
   },
   "scripts": {
-    "test": "node --test service/com.biliwebos.app.service/test/*.test.js app/src/api/*.test.mjs"
+    "test": "node --test service/com.biliwebos.app.service/test/*.test.js app/src/**/*.test.mjs"
   }
 }

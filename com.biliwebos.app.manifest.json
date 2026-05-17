@@ -4,7 +4,7 @@
   "type": "web",
   "title": "BiliTV",
   "appDescription": "Bilibili client for webOS TV",
-  "iconUri": "https://raw.githubusercontent.com/asdf17128/bili-webos/main/app/webos-meta/largeIcon.png",
+  "iconUri": "https://raw.githubusercontent.com/asdf17128/bili-webos/main/webos/meta/largeIcon.png",
   "sourceUrl": "https://github.com/asdf17128/bili-webos",
   "rootRequired": false,
   "ipkUrl": "com.biliwebos.app_1.0.0_all.ipk",

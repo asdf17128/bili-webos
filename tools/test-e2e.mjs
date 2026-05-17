@@ -1,10 +1,10 @@
 // End-to-end test script for Bilibili webOS TV app
-// Tests all API endpoints through the proxy server
+// Tests all API endpoints through the Vite dev server proxy
 // Run: bun tools/test-e2e.mjs
 
 import crypto from 'node:crypto';
 
-const PROXY = 'http://localhost:9527';
+const PROXY = 'http://localhost:5173';
 let passed = 0;
 let failed = 0;
 
@@ -54,8 +54,8 @@ async function run() {
     if (ping.status === 'ok') ok('Health check', 'ok');
     else fail('Health check', JSON.stringify(ping));
   } catch (e) {
-    fail('Health check', e.message + ' -- is proxy running?');
-    console.log('\nProxy not running. Start with: cd proxy && bun server.js\n');
+    fail('Health check', e.message + ' -- is the Vite dev server running?');
+    console.log('\nVite dev server not running. Start with: bun run dev\n');
     process.exit(1);
   }
 

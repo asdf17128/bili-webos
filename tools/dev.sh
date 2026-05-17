@@ -12,16 +12,7 @@ cleanup() {
 
 trap cleanup EXIT INT TERM
 
-(
-  cd app
-  bun run dev
-) &
+bun run dev &
 APP_PID=$!
 
-(
-  cd proxy
-  bun server.js
-) &
-PROXY_PID=$!
-
-wait -n "$APP_PID" "$PROXY_PID"
+wait "$APP_PID"

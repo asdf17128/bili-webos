@@ -35,6 +35,14 @@
 | 图片（封面缩略图） | `<img>` → HTTP → Local Proxy(:7654) → HTTPS → B站图片 CDN | 需要 Referer 头 |
 | 直播流（HLS） | `<video>` → HTTP → Local Proxy(:7654) → HTTPS → 直播 CDN | 同上 |
 
+### 浏览器开发模式
+
+浏览器开发不再依赖单独的 `proxy/` 进程。当前流程是：
+
+| 请求类型 | 通信路径 | 原因 |
+|---------|---------|------|
+| 本地浏览器开发 API / 图片 / 流媒体请求 | Web App → Vite Dev Server `/proxy/*` → HTTPS → B站 API/CDN | 保持单进程开发，并复用与 TV 代理相同的头部与 HLS 重写策略 |
+
 ### 为什么需要两种通信
 
 - **Luna bus**：适合 JSON 数据交换，支持异步回调，但无法直接给 `<video>` 或 `<img>` 标签提供数据
@@ -110,8 +118,8 @@ content-1-0   content-1-1
 
 | 层 | 技术 | 版本 |
 |---|------|------|
-| 前端框架 | React | 18.3 |
-| 构建工具 | Vite | 6.x |
+| 前端框架 | React | 19.2 |
+| 构建工具 | Vite | 8.x |
 | 视频播放 | Shaka Player | 4.12 |
 | QR码 | qrcode | 1.5 |
 | TV Service | webos-service (Node.js) | v16.20.2 |
@@ -146,9 +154,9 @@ content-1-0   content-1-1
 
 | 文件 | 职责 |
 |------|------|
-| app/src/api/client.js | 所有 API 封装，Luna/Proxy 双模式 |
-| app/src/api/wbi.js | WBI 签名算法 + MD5 实现 |
-| app/src/hooks/useFocus.js | 焦点管理（零渲染，纯 DOM） |
-| service/.../service.js | Luna 方法 + 本地 HTTP 代理 |
+| src/api/client.js | 所有 API 封装，Luna/Proxy 双模式 |
+| src/api/wbi.js | WBI 签名算法 + MD5 实现 |
+| src/hooks/useFocus.js | 焦点管理（零渲染，纯 DOM） |
+| webos/service/.../service.js | Luna 方法 + 本地 HTTP 代理 |
 | tools/deploy.mjs | SSH 部署（绕过 ares-cli 兼容问题） |
 | tools/debug.mjs | CDP 远程调试（SSH 隧道） |

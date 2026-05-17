@@ -75,7 +75,6 @@ cd bili-webos
 
 # 2. 安装依赖
 bun install
-cd app && bun install && cd ..
 
 # 3. 安装 webOS CLI（如果没有）
 bun add -g @webos-tools/cli
@@ -89,7 +88,7 @@ bash build.sh
 ### 开发模式
 
 ```bash
-# 一键启动开发模式（同时启动 proxy + app dev server）
+# 一键启动开发模式（Vite dev server 内置 /proxy）
 bun run dev
 # 浏览器打开 http://localhost:5173
 ```
@@ -100,7 +99,7 @@ bun run dev
 # 运行单元测试（直播流选择 + HLS 播放列表重写）
 bun test
 
-# 运行代理联调测试（需要先启动 proxy）
+# 运行代理联调测试（需要先启动 Vite dev server）
 bun tools/test-e2e.mjs
 ```
 
@@ -108,24 +107,23 @@ bun tools/test-e2e.mjs
 
 ```
 bili-webos/
-├── app/                          # 前端 React 应用
-│   ├── src/
-│   │   ├── api/                  # B站 API 封装、WBI 签名、直播流选择
-│   │   ├── hooks/useFocus.js     # 电视遥控器焦点导航
-│   │   ├── components/           # 视频卡片、侧边栏、键盘
-│   │   ├── pages/                # 各页面
-│   │   ├── player/               # 视频/直播播放器 + 弹幕
-│   │   └── utils/                # 工具函数
-│   ├── public/webOSTVjs-1.2.13/  # webOS Luna bus 通信库
-│   └── webos-meta/               # appinfo.json + 图标
-│
-├── service/                      # TV 后台服务
-│   └── com.biliwebos.app.service/
+├── src/
+│   ├── api/                      # B站 API 封装、WBI 签名、直播流选择
+│   ├── hooks/useFocus.js         # 电视遥控器焦点导航
+│   ├── components/               # 视频卡片、侧边栏、键盘
+│   ├── pages/                    # 各页面
+│   ├── player/                   # 视频/直播播放器 + 弹幕
+│   └── utils/                    # 工具函数
+├── public/webOSTVjs-1.2.13/      # webOS Luna bus 通信库
+├── vite.config.js                # Vite + browser-dev /proxy
+├── webos/
+│   ├── meta/                     # appinfo.json + 图标
+│   └── service/
+│       └── com.biliwebos.app.service/
 │       ├── service.js            # API 代理 + 本地 HTTP 服务
 │       ├── cast/hlsPlaylist.js   # HLS 播放列表重写，保持分片继续走本地代理
 │       └── test/                 # service 侧单元测试
 │
-├── proxy/                        # 开发用备用代理（含 m3u8 重写）
 ├── tools/                        # 部署/调试/测试工具
 ├── build.sh                      # 一键构建部署
 ├── CLAUDE.md                     # 开发指南
@@ -152,7 +150,7 @@ bili-webos/
 
 ## 技术栈
 
-- **前端**: React 18 + Vite 6
+- **前端**: React 19 + Vite 8
 - **视频**: Shaka Player (DASH)
 - **直播**: `mpegts.js` (HTTP-FLV) + HLS fallback
 - **TV Service**: Node.js v16 (webOS 内置)

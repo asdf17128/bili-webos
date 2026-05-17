@@ -9,9 +9,9 @@ const TV_PORT = process.env.TV_PORT;
 const TV_USER = process.env.TV_USER;
 const TV_PASS = process.env.TV_PASS;
 const SSH_KEY_PATH = process.env.SSH_KEY_PATH;
-// Find latest ipk in app/dist
-const distFiles = readdirSync('app/dist').filter(f => f.endsWith('.ipk')).sort();
-const IPK_PATH = 'app/dist/' + (distFiles[distFiles.length - 1] || 'com.biliwebos.app_1.0.0_all.ipk');
+// Find latest ipk in dist
+const distFiles = readdirSync('dist').filter(f => f.endsWith('.ipk')).sort();
+const IPK_PATH = 'dist/' + (distFiles[distFiles.length - 1] || 'com.biliwebos.app_1.0.0_all.ipk');
 const APP_ID = 'com.biliwebos.app';
 const REMOTE_DIR = '/media/developer/temp/';
 

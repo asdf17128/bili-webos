@@ -12,6 +12,12 @@ let shakaLoads;
 let shakaDestroyed;
 let mpegtsDestroyed;
 let originalConsoleError;
+let shakaSupported;
+let shakaLoadError;
+let shakaPlayers;
+let mpegtsSupported;
+let mpegtsFeatureList;
+let mpegtsPlayers;
 const apiPath = new URL('../api/client.js', import.meta.url).pathname;
 const storagePath = new URL('../utils/storage.js', import.meta.url).pathname;
 const proxyPath = new URL('../utils/proxy.js', import.meta.url).pathname;
@@ -23,7 +29,7 @@ const realHooks = await import(hooksPath);
 const NativeURL = globalThis.URL;
 
 async function importFresh(pathname) {
-  return import(`${pathname}?t=${Date.now()}-${Math.random()}`);
+  return import(`${pathname}?fixture=player-render`);
 }
 
 function event(key, keyCode = 0) {
@@ -70,10 +76,16 @@ beforeEach(() => {
   eventTarget = createEventTarget();
   timers = [];
   intervals = [];
-  queryCards = [{ scrollIntoView: mock(() => {}) }, { scrollIntoView: mock(() => {}) }];
+  queryCards = Array.from({ length: 8 }, () => ({ scrollIntoView: mock(() => {}) }));
   shakaLoads = [];
   shakaDestroyed = 0;
   mpegtsDestroyed = 0;
+  shakaSupported = true;
+  shakaLoadError = null;
+  shakaPlayers = [];
+  mpegtsSupported = true;
+  mpegtsFeatureList = { mseLivePlayback: true };
+  mpegtsPlayers = [];
 
   globalThis.window = Object.assign(eventTarget, {});
   globalThis.document = {
@@ -122,13 +134,20 @@ beforeEach(() => {
 
   mock.module(apiPath, () => ({
     ...realApi,
-    ...api,
+    getPlayUrl: (...args) => api.getPlayUrl(...args),
+    getDanmaku: (...args) => api.getDanmaku(...args),
+    getVideoInfo: (...args) => api.getVideoInfo(...args),
+    reportHeartbeat: (...args) => api.reportHeartbeat(...args),
+    getRelated: (...args) => api.getRelated(...args),
+    castReportProgress: (...args) => api.castReportProgress(...args),
+    castReportState: (...args) => api.castReportState(...args),
+    getLiveStreamSource: (...args) => api.getLiveStreamSource(...args),
   }));
   mock.module(storagePath, () => ({
     ...realStorage,
     storage: {
       ...realStorage.storage,
-      getSettings: () => storageState.settings,
+      getSettings: (...args) => realStorage.storage.getSettings ? storageState.settings : storageState.settings,
       setSettings: (value) => {
         storageState.settings = value;
       },
@@ -154,18 +173,31 @@ beforeEach(() => {
     default: null,
     polyfill: { installAll() {} },
     Player: class {
-      static isBrowserSupported() {
-        return true;
+      constructor() {
+        this.config = null;
+        this.errorHandler = null;
+        this.requestFilter = null;
+        shakaPlayers.push(this);
       }
-      configure() {}
+      static isBrowserSupported() {
+        return shakaSupported;
+      }
+      configure(config) {
+        this.config = config;
+      }
       async attach() {}
-      addEventListener() {}
+      addEventListener(type, handler) {
+        if (type === 'error') this.errorHandler = handler;
+      }
       getNetworkingEngine() {
         return {
-          registerRequestFilter() {},
+          registerRequestFilter: (handler) => {
+            this.requestFilter = handler;
+          },
         };
       }
       async load(url) {
+        if (shakaLoadError) throw shakaLoadError;
         shakaLoads.push(url);
       }
       async destroy() {
@@ -175,12 +207,17 @@ beforeEach(() => {
   }));
   mock.module('mpegts.js', () => ({
     default: null,
-    isSupported: () => true,
-    getFeatureList: () => ({ mseLivePlayback: true }),
+    isSupported: () => mpegtsSupported,
+    getFeatureList: () => mpegtsFeatureList,
     Events: { ERROR: 'error' },
-    createPlayer() {
-      return {
-        on() {},
+    createPlayer(config, options) {
+      const player = {
+        config,
+        options,
+        errorHandler: null,
+        on(_event, handler) {
+          this.errorHandler = handler;
+        },
         attachMediaElement() {},
         load() {},
         async play() {},
@@ -188,6 +225,8 @@ beforeEach(() => {
           mpegtsDestroyed += 1;
         },
       };
+      mpegtsPlayers.push(player);
+      return player;
     },
   }));
   originalConsoleError = console.error;
@@ -248,9 +287,10 @@ describe('DanmakuLayer', () => {
 });
 
 describe('PlayerPage', () => {
-  test('loads video, handles cast commands and remote keys, and cleans up', async () => {
+  test('loads video, handles controls, related, quality, cast commands, and remote keys', async () => {
     const { default: PlayerPage } = await importFresh('./PlayerPage.jsx');
     const video = createVideoMock();
+    video.duration = Number.NaN;
     const onBack = mock(() => {});
     const onPlayNext = mock(() => {});
 
@@ -274,17 +314,62 @@ describe('PlayerPage', () => {
     expect(api.getPlayUrl).toHaveBeenCalledWith(expect.any(Object), 7, 80);
     expect(shakaLoads[0]).toBe('blob:test');
     expect(video.playCalls).toBeGreaterThan(0);
+    expect(shakaPlayers[0].config.streaming.bufferBehind).toBe(15);
 
+    const proxiedRequest = { uris: ['https://cdn.test/path/seg.m4s?token=1'] };
+    shakaPlayers[0].requestFilter(null, proxiedRequest);
+    expect(proxiedRequest.uris[0]).toBe('http://proxy.test/proxy/cdn.test/path/seg.m4s?token=1');
+
+    await interact(() => video.dispatch('loadedmetadata'));
+    expect(video.currentTime).toBe(0);
+
+    video.duration = 120;
     video.readyState = 2;
+    await interact(() => video.dispatch('canplay'));
+    expect(video.currentTime).toBeCloseTo(25, 1);
     await interact(() => video.dispatch('loadeddata'));
+    await interact(() => video.dispatch('play'));
     expect(api.castReportState).toHaveBeenCalledWith({ playState: 'playing' });
+    expect(JSON.stringify(renderer.toJSON())).toContain('"作者"," · 2024/3/9"');
+
+    video.currentTime = 30;
+    await interact(() => customKeyHandler(event('ArrowLeft')));
+    expect(video.currentTime).toBe(20);
+    await interact(() => customKeyHandler(event('ArrowRight')));
+    expect(video.currentTime).toBe(30);
+    video.paused = true;
+    await interact(() => customKeyHandler(event('Enter')));
+    expect(video.playCalls).toBeGreaterThan(1);
+
+    await interact(() => customKeyHandler(event('MediaRewind', 412)));
+    expect(video.currentTime).toBe(20);
+    video.duration = 35;
+    await interact(() => customKeyHandler(event('MediaFastForward', 417)));
+    expect(video.currentTime).toBe(30);
+    await interact(() => customKeyHandler(event('MediaPause', 19)));
+    await interact(() => customKeyHandler(event('MediaPlay', 415)));
+    video.paused = false;
+    await interact(() => customKeyHandler(event('MediaPlayPause')));
+    expect(video.pauseCalls).toBeGreaterThan(1);
 
     await interact(() => customKeyHandler(event('ArrowUp')));
-    expect(JSON.stringify(renderer.toJSON())).toContain('⏸ 暂停');
+    expect(JSON.stringify(renderer.toJSON())).toContain('▶ 播放');
+    await interact(() => customKeyHandler(event('Enter')));
+    expect(video.playCalls).toBeGreaterThan(2);
 
     await interact(() => customKeyHandler(event('ArrowRight')));
+    await interact(() => customKeyHandler(event('Enter')));
+    expect(JSON.stringify(renderer.toJSON())).toContain('弹幕 关');
+
     await interact(() => customKeyHandler(event('ArrowRight')));
-    expect(JSON.stringify(renderer.toJSON())).toContain('player-btn focused');
+    await interact(() => customKeyHandler(event('Enter')));
+    expect(JSON.stringify(renderer.toJSON())).toContain('quality-panel');
+    await interact(() => customKeyHandler(event('ArrowDown')));
+    await interact(() => customKeyHandler(event('ArrowUp')));
+    await interact(() => customKeyHandler(event('ArrowDown')));
+    await interact(() => customKeyHandler(event('Enter')));
+    expect(api.getPlayUrl).toHaveBeenCalledWith(expect.any(Object), 7, 64);
+    expect(storageState.settings.quality).toBe(64);
 
     await interact(() => eventTarget.dispatchEvent(new CustomEvent('bili-cast-command', { detail: { type: 'pause' } })));
     await interact(() => eventTarget.dispatchEvent(new CustomEvent('bili-cast-command', { detail: { type: 'resume' } })));
@@ -293,13 +378,43 @@ describe('PlayerPage', () => {
     await interact(() => eventTarget.dispatchEvent(new CustomEvent('bili-cast-command', { detail: { type: 'stop' } })));
     expect(video.currentTime).toBe(33);
     expect(onBack).toHaveBeenCalled();
+    expect(storageState.settings.danmaku).toBe(false);
+
+    await interact(() => customKeyHandler(event('ArrowUp')));
+    await interact(() => customKeyHandler(event('ArrowDown')));
+    await interact(() => customKeyHandler(event('ArrowDown')));
+    expect(JSON.stringify(renderer.toJSON())).toContain('related-card');
+    await interact(() => customKeyHandler(event('ArrowRight')));
+    timers.find((item) => item.delay === 30 && !item.cleared)?.fn();
+    await interact(() => customKeyHandler(event('ArrowDown')));
+    expect(api.getRelated).toHaveBeenCalledWith('BV3');
+    expect(queryCards[1].scrollIntoView).toHaveBeenCalled();
+    await act(async () => {
+      await flush();
+      await flush();
+    });
+    await interact(() => customKeyHandler(event('ArrowUp')));
+    expect(JSON.stringify(renderer.toJSON())).toContain('⏸ 暂停');
+    await interact(() => customKeyHandler(event('ArrowUp')));
+    expect(JSON.stringify(renderer.toJSON())).toContain('player-controls hidden');
+    await interact(() => customKeyHandler(event('Backspace', 461)));
+    expect(onBack).toHaveBeenCalledTimes(2);
+
+    await interact(() => video.dispatch('pause'));
+    expect(api.castReportState).toHaveBeenCalledWith({ playState: 'paused' });
 
     await interact(() => video.dispatch('ended'));
     expect(JSON.stringify(renderer.toJSON())).toContain('播放结束');
 
+    await interact(() => customKeyHandler(event('ArrowLeft')));
     await interact(() => customKeyHandler(event('ArrowRight')));
     await interact(() => customKeyHandler(event('Enter')));
     expect(onPlayNext).toHaveBeenCalled();
+    await interact(() => customKeyHandler(event('Backspace', 461)));
+    expect(onBack).toHaveBeenCalledTimes(3);
+
+    timers.at(-1).fn();
+    expect(JSON.stringify(renderer.toJSON())).toContain('播放结束');
 
     intervals[0].fn();
     expect(api.castReportProgress).toHaveBeenCalled();
@@ -313,6 +428,108 @@ describe('PlayerPage', () => {
     });
     expect(customKeyHandler).toBeNull();
     expect(shakaDestroyed).toBeGreaterThan(0);
+  });
+
+  test('covers load fallback and error branches for on-demand player', async () => {
+    const { default: PlayerPage } = await importFresh('./PlayerPage.jsx');
+    const onBack = mock(() => {});
+
+    const noSourceRenderer = await render(
+      React.createElement(PlayerPage, {
+        video: { title: '无源视频' },
+        onBack,
+      }),
+      {
+        createNodeMock: (element) => (element.type === 'video' ? createVideoMock() : null),
+      },
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+    });
+    expect(api.getVideoInfo).not.toHaveBeenCalled();
+    await act(async () => {
+      noSourceRenderer.unmount();
+    });
+
+    api.getVideoInfo.mockResolvedValueOnce({ data: { title: '无 CID' } });
+    const noCidRenderer = await render(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-NOCID', title: '缺少 cid' },
+        onBack,
+      }),
+      {
+        createNodeMock: (element) => (element.type === 'video' ? createVideoMock() : null),
+      },
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+    });
+    expect(api.getPlayUrl).not.toHaveBeenCalledWith(expect.objectContaining({ bvid: 'BV-NOCID' }), undefined, expect.anything());
+    await act(async () => {
+      noCidRenderer.unmount();
+    });
+
+    api.getPlayUrl.mockResolvedValueOnce({ data: {} });
+    const noDashVideo = createVideoMock();
+    const noDashRenderer = await render(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-NODASH', cid: 9, title: '无 dash' },
+        onBack,
+      }),
+      {
+        createNodeMock: (element) => (element.type === 'video' ? noDashVideo : null),
+      },
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+    });
+    expect(shakaLoads).not.toContain('blob:test');
+    await act(async () => {
+      noDashRenderer.unmount();
+    });
+
+    shakaLoadError = new Error('boom');
+    const errorVideo = createVideoMock();
+    const errorRenderer = await render(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-ERR', cid: 10, title: '错误视频' },
+        onBack,
+      }),
+      {
+        createNodeMock: (element) => (element.type === 'video' ? errorVideo : null),
+      },
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+    });
+    expect(api.castReportState).toHaveBeenCalledWith({ playState: 'error', error: 'boom' });
+    expect(JSON.stringify(errorRenderer.toJSON())).not.toContain('加载中...');
+    await act(async () => {
+      errorRenderer.unmount();
+    });
+
+    shakaSupported = false;
+    const unsupportedRenderer = await render(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-UNSUPPORTED', cid: 11, title: '不支持' },
+        onBack,
+      }),
+      {
+        createNodeMock: (element) => (element.type === 'video' ? createVideoMock() : null),
+      },
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+    });
+    expect(api.getPlayUrl).not.toHaveBeenCalledWith(expect.objectContaining({ bvid: 'BV-UNSUPPORTED' }), 11, expect.anything());
+    await act(async () => {
+      unsupportedRenderer.unmount();
+    });
   });
 });
 
@@ -360,5 +577,117 @@ describe('LivePlayerPage', () => {
     });
     expect(customKeyHandler).toBeNull();
     expect(mpegtsDestroyed).toBeGreaterThan(0);
+  });
+
+  test('covers hls playback, request filtering, media keys, and live error paths', async () => {
+    const { default: LivePlayerPage } = await importFresh('./LivePlayerPage.jsx');
+    const video = createVideoMock();
+    const onBack = mock(() => {});
+
+    api.getLiveStreamSource.mockResolvedValueOnce({ type: 'hls', url: 'https://live.test/master.m3u8?token=1' });
+    const renderer = await render(
+      React.createElement(LivePlayerPage, {
+        room: { roomid: 10, title: 'HLS 直播间', owner: { name: 'HLS 主播' } },
+        onBack,
+      }),
+      {
+        createNodeMock: (element) => (element.type === 'video' ? video : null),
+      },
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+      await flush();
+    });
+
+    expect(shakaLoads.at(-1)).toBe('http://proxy.test/proxy/live.test/master.m3u8?token=1');
+    const directReq = { uris: ['segment-1.ts'] };
+    shakaPlayers.at(-1).requestFilter(null, directReq);
+    expect(directReq.uris[0]).toBe('http://proxy.test/proxy/live.test/segment-1.ts');
+    const passthroughReq = { uris: ['http://proxy.test/proxy/live.test/segment-2.ts'] };
+    shakaPlayers.at(-1).requestFilter(null, passthroughReq);
+    expect(passthroughReq.uris[0]).toBe('http://proxy.test/proxy/live.test/segment-2.ts');
+
+    video.currentTime = 1;
+    await interact(() => video.dispatch('timeupdate'));
+    await interact(() => video.dispatch('waiting'));
+    video.ended = false;
+    await interact(() => video.dispatch('pause'));
+    await interact(() => video.dispatch('ended'));
+    expect(api.castReportState).toHaveBeenCalledWith({ playState: 'loading' });
+    expect(api.castReportState).toHaveBeenCalledWith({ playState: 'paused' });
+    expect(api.castReportState).toHaveBeenCalledWith({ playState: 'stop' });
+
+    shakaPlayers.at(-1).errorHandler?.({ detail: { message: 'stream broke' } });
+    expect(api.castReportState).toHaveBeenCalledWith({ playState: 'error', error: 'stream broke' });
+
+    await interact(() => customKeyHandler(event('MediaPlayPause')));
+    await interact(() => customKeyHandler(event('MediaFastForward', 417)));
+    await interact(() => customKeyHandler(event('ArrowDown')));
+    timers.at(-1).fn();
+    expect(JSON.stringify(renderer.toJSON())).not.toContain('HLS 直播间');
+
+    await act(async () => {
+      renderer.unmount();
+    });
+
+    api.getLiveStreamSource.mockResolvedValueOnce(null);
+    const missingRenderer = await render(
+      React.createElement(LivePlayerPage, {
+        room: { roomid: 11, title: '缺失直播源', owner: { name: '主播' } },
+        onBack,
+      }),
+      {
+        createNodeMock: (element) => (element.type === 'video' ? createVideoMock() : null),
+      },
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+    });
+    expect(api.castReportState).toHaveBeenCalledWith({ playState: 'error', error: 'live-stream-source-missing' });
+    await act(async () => {
+      missingRenderer.unmount();
+    });
+
+    mpegtsSupported = false;
+    api.getLiveStreamSource.mockResolvedValueOnce({ type: 'flv', url: 'https://live.test/fallback.flv' });
+    const unsupportedRenderer = await render(
+      React.createElement(LivePlayerPage, {
+        room: { roomid: 12, title: 'FLV 不支持', owner: { name: '主播' } },
+        onBack,
+      }),
+      {
+        createNodeMock: (element) => (element.type === 'video' ? createVideoMock() : null),
+      },
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+    });
+    expect(api.castReportState).toHaveBeenCalledWith({ playState: 'error', error: 'mpegts-live-not-supported' });
+    await act(async () => {
+      unsupportedRenderer.unmount();
+    });
+
+    shakaSupported = false;
+    api.getLiveStreamSource.mockResolvedValueOnce({ type: 'hls', url: 'https://live.test/fail.m3u8' });
+    const shakaUnsupportedRenderer = await render(
+      React.createElement(LivePlayerPage, {
+        room: { roomid: 13, title: 'HLS 不支持', owner: { name: '主播' } },
+        onBack,
+      }),
+      {
+        createNodeMock: (element) => (element.type === 'video' ? createVideoMock() : null),
+      },
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+    });
+    expect(api.castReportState).toHaveBeenCalledWith({ playState: 'error', error: 'shaka-live-not-supported' });
+    await act(async () => {
+      shakaUnsupportedRenderer.unmount();
+    });
   });
 });

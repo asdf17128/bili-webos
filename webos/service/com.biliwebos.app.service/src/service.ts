@@ -8,8 +8,10 @@ import childProcess from 'node:child_process';
 import fs from 'node:fs';
 import http from 'node:http';
 import https from 'node:https';
+import Module, { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import zlib from 'node:zlib';
 import { CastController } from './cast/castController.js';
 import { createDeviceProfile } from './cast/deviceProfile.js';
@@ -19,7 +21,28 @@ import WebOSServiceStub from './webos-service-stub.js';
 
 let WebOSService = WebOSServiceStub;
 try {
-  const module = await import('webos-service');
+  const require = createRequire(import.meta.url);
+  const serviceNodeModules = path.join(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '..',
+    'node_modules',
+  );
+  const serviceShimModules = path.join(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '..',
+    'shims',
+  );
+  process.env.NODE_PATH = [
+    '/usr/lib/nodejs',
+    '/usr/lib/iotjs',
+    serviceShimModules,
+    serviceNodeModules,
+    process.env.NODE_PATH,
+  ]
+    .filter(Boolean)
+    .join(path.delimiter);
+  Module._initPaths();
+  const module = require('webos-service');
   WebOSService = module.default || module;
 } catch {}
 

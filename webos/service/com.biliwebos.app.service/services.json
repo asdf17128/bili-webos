@@ -4,7 +4,20 @@
   "services": [
     {
       "name": "com.biliwebos.app.service",
-      "description": "Bilibili API proxy service"
+      "description": "Bilibili API proxy service",
+      "commands": [
+        { "name": "fetch", "public": true },
+        { "name": "getCookies", "public": true },
+        { "name": "setCookies", "public": true },
+        { "name": "clearCookies", "public": true },
+        { "name": "ping", "public": true },
+        { "name": "castSubscribe", "public": true },
+        { "name": "castAck", "public": true },
+        { "name": "castReportState", "public": true },
+        { "name": "castReportProgress", "public": true },
+        { "name": "castGetStatus", "public": true },
+        { "name": "castSetConfig", "public": true }
+      ]
     }
   ]
 }

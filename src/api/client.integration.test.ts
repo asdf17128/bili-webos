@@ -121,6 +121,44 @@ describe('api client integration paths', () => {
     expect(raw.returnValue).toBe(true);
   });
 
+  it('prefers luna on TV even when Palm bridge globals are missing', async () => {
+    const requests = [];
+    const fetchCalls = [];
+
+    globalThis.window = {
+      webOS: {
+        service: {
+          request: (_uri, options) => {
+            requests.push(options.method);
+            options.onSuccess({
+              returnValue: true,
+              body: JSON.stringify({ code: 0, data: { source: 'luna' } }),
+            });
+          },
+        },
+      },
+      location: {
+        hostname: 'tv',
+        origin: 'file://',
+        protocol: 'file:',
+      },
+    };
+
+    globalThis.fetch = mock((url) => {
+      fetchCalls.push(String(url));
+      return Promise.resolve({
+        headers: { get: () => 'application/json' },
+        json: async () => ({ code: 0, data: { source: 'proxy' } }),
+      });
+    });
+
+    const res = await apiFetch('/x/test-on-tv');
+
+    expect(res.data.source).toBe('luna');
+    expect(requests).toEqual(['fetch']);
+    expect(fetchCalls).toEqual([]);
+  });
+
   it('covers live-list fallback and stream selector helpers', async () => {
     const payloads = [
       { data: { rooms: [] } },

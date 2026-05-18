@@ -23,12 +23,18 @@ function hasPalmServiceBridge() {
   );
 }
 
+function isLocalDevRuntime() {
+  if (typeof window === 'undefined') return false;
+  const hostname = window.location?.hostname;
+  return hostname === 'localhost' || hostname === '127.0.0.1';
+}
+
 function hasLunaService() {
   return (
     typeof window !== 'undefined' &&
     typeof window.webOS !== 'undefined' &&
-    window.webOS.service &&
-    hasPalmServiceBridge()
+    typeof window.webOS.service?.request === 'function' &&
+    (hasPalmServiceBridge() || !isLocalDevRuntime())
   );
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "com.biliwebos.app.service",
   "type": "module",
-  "main": "dist/service.js",
+  "main": "bootstrap.cjs",
   "version": "1.5.0"
 }

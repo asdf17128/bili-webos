@@ -15,6 +15,14 @@ import { setCustomKeyHandler } from '../hooks/useFocus';
 import { storage } from '../utils/storage';
 import DanmakuLayer from './DanmakuLayer';
 
+const SEEK_BASE_STEP_SEC = 5;
+const SEEK_IDLE_RESET_MS = 250;
+const SEEK_MIN_EVENT_GAP_MS = 10;
+const SEEK_MULTIPLIER_INCREMENT = 0.5;
+const SEEK_MAX_MULTIPLIER = 6;
+const SEEK_END_BUFFER_SEC = 1;
+const SEEK_EPSILON = 0.001;
+
 export default function PlayerPage({ video, onBack, onPlayNext }) {
   const videoRef = useRef(null);
   const shakaRef = useRef(null);
@@ -33,13 +41,22 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const [firstFrameReady, setFirstFrameReady] = useState(false);
   const [ended, setEnded] = useState(false);
   const [relatedVideos, setRelatedVideos] = useState([]);
-  // Focus: 'none' (no UI) | 'controls' | 'quality' | 'related' | 'endscreen'
+  // Focus: 'none' (no UI) | 'timeline' | 'controls' | 'quality' | 'related' | 'endscreen'
   const [focusArea, setFocusArea] = useState('none');
   const [focusIdx, setFocusIdx] = useState(0);
   const controlsTimer = useRef(null);
   const timeUpdateRef = useRef(null);
   const cidRef = useRef(null);
   const startTimeRef = useRef(Date.now());
+  const displayTimeRef = useRef(0);
+  const scrubActiveRef = useRef(false);
+  const lastSeekEventAtRef = useRef(0);
+  const lastSeekDirectionRef = useRef(0);
+  const seekMultiplierRef = useRef(1);
+  const blockedSeekDirectionRef = useRef(0);
+  const seekCommitTimerRef = useRef(null);
+  const progressFillRef = useRef(null);
+  const timeTextRef = useRef(null);
 
   const pendingSeekRef = useRef(null);
 
@@ -76,6 +93,177 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   }, []);
 
   const CONTROLS = ['play', 'danmaku', 'quality'];
+
+  const clearSeekCommitTimer = useCallback(() => {
+    if (seekCommitTimerRef.current) {
+      clearTimeout(seekCommitTimerRef.current);
+      seekCommitTimerRef.current = null;
+    }
+  }, []);
+
+  const resetSeekController = useCallback(() => {
+    clearSeekCommitTimer();
+    scrubActiveRef.current = false;
+    lastSeekEventAtRef.current = 0;
+    lastSeekDirectionRef.current = 0;
+    seekMultiplierRef.current = 1;
+    blockedSeekDirectionRef.current = 0;
+  }, [clearSeekCommitTimer]);
+
+  const getSeekBounds = useCallback(() => {
+    const mediaDuration = Number(videoRef.current?.duration);
+    const safeDuration =
+      Number.isFinite(mediaDuration) && mediaDuration > 0
+        ? mediaDuration
+        : Number.isFinite(duration) && duration > 0
+          ? duration
+          : 0;
+    if (!safeDuration) return null;
+    return {
+      duration: safeDuration,
+      max: Math.max(0, safeDuration - SEEK_END_BUFFER_SEC),
+    };
+  }, [duration]);
+
+  const renderTimelinePreview = useCallback((timeSec, durationSec) => {
+    const safeDuration =
+      Number.isFinite(durationSec) && durationSec > 0 ? durationSec : 0;
+    const safeTime = Math.max(0, Number(timeSec) || 0);
+    displayTimeRef.current = safeTime;
+    if (progressFillRef.current) {
+      const progress = safeDuration > 0 ? (safeTime / safeDuration) * 100 : 0;
+      progressFillRef.current.style.width = `${progress}%`;
+    }
+    if (timeTextRef.current) {
+      timeTextRef.current.textContent = `${formatDuration(safeTime)} / ${formatDuration(safeDuration)}`;
+    }
+  }, []);
+
+  const syncTimelineFromPlayer = useCallback(() => {
+    if (scrubActiveRef.current) return;
+    const nextTime = Number(videoRef.current?.currentTime) || 0;
+    const nextDuration = Number(videoRef.current?.duration) || duration || 0;
+    renderTimelinePreview(nextTime, nextDuration);
+  }, [duration, renderTimelinePreview]);
+
+  const commitPreviewSeek = useCallback(() => {
+    const bounds = getSeekBounds();
+    clearSeekCommitTimer();
+    if (!scrubActiveRef.current) return;
+
+    if (bounds && videoRef.current) {
+      const target = Math.min(
+        bounds.max,
+        Math.max(0, Number(displayTimeRef.current) || 0),
+      );
+      if (
+        Math.abs((Number(videoRef.current.currentTime) || 0) - target) >
+        SEEK_EPSILON
+      ) {
+        videoRef.current.currentTime = target;
+      }
+      setCurrentTime(target);
+      setDuration(bounds.duration);
+      renderTimelinePreview(target, bounds.duration);
+    }
+
+    scrubActiveRef.current = false;
+    lastSeekEventAtRef.current = 0;
+    lastSeekDirectionRef.current = 0;
+    seekMultiplierRef.current = 1;
+    blockedSeekDirectionRef.current = 0;
+  }, [clearSeekCommitTimer, getSeekBounds, renderTimelinePreview]);
+
+  const scheduleSeekCommit = useCallback(() => {
+    clearSeekCommitTimer();
+    seekCommitTimerRef.current = setTimeout(() => {
+      commitPreviewSeek();
+    }, SEEK_IDLE_RESET_MS);
+  }, [clearSeekCommitTimer, commitPreviewSeek]);
+
+  const applySeekInput = useCallback(
+    (direction) => {
+      const bounds = getSeekBounds();
+      if (!bounds) return true;
+
+      const now = Date.now();
+      const gap = now - lastSeekEventAtRef.current;
+      if (
+        direction === lastSeekDirectionRef.current &&
+        gap >= 0 &&
+        gap < SEEK_MIN_EVENT_GAP_MS
+      ) {
+        return true;
+      }
+
+      if (gap >= SEEK_IDLE_RESET_MS) {
+        blockedSeekDirectionRef.current = 0;
+      }
+      if (
+        blockedSeekDirectionRef.current &&
+        blockedSeekDirectionRef.current !== direction
+      ) {
+        blockedSeekDirectionRef.current = 0;
+      }
+      if (
+        blockedSeekDirectionRef.current === direction &&
+        gap >= 0 &&
+        gap < SEEK_IDLE_RESET_MS
+      ) {
+        return true;
+      }
+
+      const nextMultiplier =
+        direction === lastSeekDirectionRef.current &&
+        gap >= 0 &&
+        gap < SEEK_IDLE_RESET_MS
+          ? Math.min(
+              seekMultiplierRef.current + SEEK_MULTIPLIER_INCREMENT,
+              SEEK_MAX_MULTIPLIER,
+            )
+          : 1;
+      seekMultiplierRef.current = nextMultiplier;
+      lastSeekEventAtRef.current = now;
+      lastSeekDirectionRef.current = direction;
+
+      const baseTime = scrubActiveRef.current
+        ? displayTimeRef.current
+        : Number(videoRef.current?.currentTime) || 0;
+      const unclampedTarget =
+        baseTime + direction * SEEK_BASE_STEP_SEC * nextMultiplier;
+      const target = Math.min(bounds.max, Math.max(0, unclampedTarget));
+      const changed = Math.abs(target - baseTime) > SEEK_EPSILON;
+
+      if (!changed) {
+        blockedSeekDirectionRef.current = direction;
+        seekMultiplierRef.current = 1;
+        clearSeekCommitTimer();
+        renderTimelinePreview(target, bounds.duration);
+        return true;
+      }
+
+      scrubActiveRef.current = true;
+      renderTimelinePreview(target, bounds.duration);
+
+      const hitMin = target <= 0 && direction < 0;
+      const hitMax = target >= bounds.max && direction > 0;
+      if (hitMin || hitMax) {
+        blockedSeekDirectionRef.current = direction;
+        seekMultiplierRef.current = 1;
+      } else {
+        blockedSeekDirectionRef.current = 0;
+      }
+
+      scheduleSeekCommit();
+      return true;
+    },
+    [
+      clearSeekCommitTimer,
+      getSeekBounds,
+      renderTimelinePreview,
+      scheduleSeekCommit,
+    ],
+  );
 
   // Initialize Shaka Player
   useEffect(() => {
@@ -269,6 +457,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     const handleLoadedData = () => {
       setFirstFrameReady(true);
       setLoading(false);
+      syncTimelineFromPlayer();
     };
 
     const handlePause = () => {
@@ -288,13 +477,14 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       el.removeEventListener('canplay', handleCanPlay);
       el.removeEventListener('loadeddata', handleLoadedData);
     };
-  }, [ended, flushPendingSeek]);
+  }, [ended, flushPendingSeek, syncTimelineFromPlayer]);
 
   useEffect(() => {
     return () => {
+      resetSeekController();
       castReportState({ playState: 'stop' }).catch(() => {});
     };
-  }, []);
+  }, [resetSeekController]);
 
   // Heartbeat
   useEffect(() => {
@@ -321,17 +511,20 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     if (controlsTimer.current) clearTimeout(controlsTimer.current);
     controlsTimer.current = setTimeout(() => {
       if (!ended) {
+        commitPreviewSeek();
         setShowControls(false);
         setShowRelated(false);
         setShowQuality(false);
         setFocusArea('none');
       }
     }, 5000);
-  }, [ended]);
+  }, [commitPreviewSeek, ended]);
 
-  const openControls = useCallback(() => {
+  const showTimelineControls = useCallback(() => {
     setShowControls(true);
-    setFocusArea('controls');
+    setShowRelated(false);
+    setShowQuality(false);
+    setFocusArea('timeline');
     setFocusIdx(0);
     hideControlsLater();
   }, [hideControlsLater]);
@@ -368,6 +561,33 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       relatedVideos.map((v) => v.bvid).filter(Boolean),
     );
   }, [relatedVideos.length === 0]);
+
+  useEffect(() => {
+    syncTimelineFromPlayer();
+  }, [currentTime, duration, focusArea, syncTimelineFromPlayer]);
+
+  useEffect(() => {
+    const registerMediaKeys = () => {
+      const registerKey =
+        window.webOS?.platform?.tv?.registerKey ||
+        window.webOS?.tv?.registerKey ||
+        window.webOSDev?.registerKey;
+      if (typeof registerKey !== 'function') return;
+      for (const key of [
+        'MediaPlay',
+        'MediaPause',
+        'MediaPlayPause',
+        'MediaRewind',
+        'MediaFastForward',
+      ]) {
+        try {
+          registerKey(key);
+        } catch {}
+      }
+    };
+
+    registerMediaKeys();
+  }, []);
 
   // Change quality
   const changeQuality = useCallback(
@@ -463,31 +683,28 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         if (!videoRef.current) return true;
 
         if (isMediaRewind) {
-          videoRef.current.currentTime = Math.max(
-            0,
-            (videoRef.current.currentTime || 0) - 10,
-          );
+          showTimelineControls();
+          applySeekInput(-1);
         } else if (isMediaFastForward) {
-          const durationSafe = Number.isFinite(videoRef.current.duration)
-            ? videoRef.current.duration
-            : Infinity;
-          videoRef.current.currentTime = Math.min(
-            durationSafe,
-            (videoRef.current.currentTime || 0) + 10,
-          );
+          showTimelineControls();
+          applySeekInput(1);
         } else if (isMediaPause) {
+          commitPreviewSeek();
           videoRef.current.pause();
           setPlaying(false);
           castReportState({ playState: 'paused' }).catch(() => {});
         } else if (isMediaPlay) {
+          commitPreviewSeek();
           videoRef.current.play();
           setPlaying(true);
           castReportState({ playState: 'playing' }).catch(() => {});
         } else if (videoRef.current.paused) {
+          commitPreviewSeek();
           videoRef.current.play();
           setPlaying(true);
           castReportState({ playState: 'playing' }).catch(() => {});
         } else {
+          commitPreviewSeek();
           videoRef.current.pause();
           setPlaying(false);
           castReportState({ playState: 'paused' }).catch(() => {});
@@ -507,9 +724,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
         if (ended) {
           // End screen: back exits player
+          commitPreviewSeek();
           onBack();
         } else if (showControls || showQuality || showRelated) {
           // Controls/quality/related visible: close them
+          commitPreviewSeek();
           setShowControls(false);
           setShowQuality(false);
           setShowRelated(false);
@@ -517,6 +736,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           if (controlsTimer.current) clearTimeout(controlsTimer.current);
         } else {
           // Nothing visible: exit player
+          commitPreviewSeek();
           onBack();
         }
         return true;
@@ -526,17 +746,19 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       if (focusArea === 'none') {
         if (key === 'ArrowLeft') {
           e.preventDefault();
-          if (videoRef.current) videoRef.current.currentTime -= 10;
+          showTimelineControls();
+          applySeekInput(-1);
           return true;
         }
         if (key === 'ArrowRight') {
           e.preventDefault();
-          if (videoRef.current) videoRef.current.currentTime += 10;
+          showTimelineControls();
+          applySeekInput(1);
           return true;
         }
         if (key === 'ArrowUp' || key === 'ArrowDown') {
           e.preventDefault();
-          openControls();
+          showTimelineControls();
           return true;
         }
         if (key === 'Enter') {
@@ -555,6 +777,45 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             videoRef.current.pause();
             setPlaying(false);
           }
+          return true;
+        }
+        return false;
+      }
+
+      if (focusArea === 'timeline') {
+        if (key === 'ArrowLeft') {
+          e.preventDefault();
+          applySeekInput(-1);
+          hideControlsLater();
+          return true;
+        }
+        if (key === 'ArrowRight') {
+          e.preventDefault();
+          applySeekInput(1);
+          hideControlsLater();
+          return true;
+        }
+        if (key === 'ArrowDown') {
+          e.preventDefault();
+          commitPreviewSeek();
+          setFocusArea('controls');
+          setFocusIdx(0);
+          hideControlsLater();
+          return true;
+        }
+        if (key === 'ArrowUp') {
+          e.preventDefault();
+          commitPreviewSeek();
+          setShowControls(false);
+          setShowRelated(false);
+          setShowQuality(false);
+          setFocusArea('none');
+          if (controlsTimer.current) clearTimeout(controlsTimer.current);
+          return true;
+        }
+        if (key === 'Enter') {
+          e.preventDefault();
+          hideControlsLater();
           return true;
         }
         return false;
@@ -586,18 +847,17 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }
         if (e.key === 'ArrowUp') {
           e.preventDefault();
-          // Close controls
-          setShowControls(false);
+          commitPreviewSeek();
           setShowRelated(false);
           setShowQuality(false);
-          setFocusArea('none');
-          if (controlsTimer.current) clearTimeout(controlsTimer.current);
+          setFocusArea('timeline');
           return true;
         }
         if (key === 'Enter') {
           e.preventDefault();
           const btn = CONTROLS[focusIdx];
           if (btn === 'play') {
+            commitPreviewSeek();
             if (isMediaPause) {
               videoRef.current.pause();
               setPlaying(false);
@@ -755,9 +1015,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     relatedVideos,
     onBack,
     onPlayNext,
-    openControls,
+    applySeekInput,
+    commitPreviewSeek,
     hideControlsLater,
     changeQuality,
+    showTimelineControls,
   ]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -809,8 +1071,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               ` · ${new Date(video.pubdate * 1000).toLocaleDateString('zh-CN')}`}
           </div>
         )}
-        <div className="player-progress-bar">
+        <div
+          className={`player-progress-bar ${focusArea === 'timeline' ? 'focused' : ''}`}
+        >
           <div
+            ref={progressFillRef}
             className="player-progress-fill"
             style={{ width: `${progress}%` }}
           />
@@ -832,7 +1097,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                   : QUALITY_MAP[currentQuality] || `${currentQuality}`}
             </button>
           ))}
-          <span className="player-time">
+          <span ref={timeTextRef} className="player-time">
             {formatDuration(currentTime)} / {formatDuration(duration)}
           </span>
         </div>

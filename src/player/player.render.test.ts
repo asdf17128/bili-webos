@@ -27,6 +27,8 @@ let shakaPlayers;
 let mpegtsSupported;
 let mpegtsFeatureList;
 let mpegtsPlayers;
+let currentNow;
+let originalDateNow;
 const apiPath = new URL('../api/client.ts', import.meta.url).pathname;
 const storagePath = new URL('../utils/storage.ts', import.meta.url).pathname;
 const proxyPath = new URL('../utils/proxy.ts', import.meta.url).pathname;
@@ -157,6 +159,9 @@ beforeEach(() => {
   mpegtsSupported = true;
   mpegtsFeatureList = { mseLivePlayback: true };
   mpegtsPlayers = [];
+  currentNow = 1_000;
+  originalDateNow = Date.now;
+  Date.now = () => currentNow;
 
   globalThis.window = Object.assign(eventTarget, {});
   const domDocument = globalThis.__TEST_DOCUMENT__;
@@ -315,6 +320,7 @@ afterEach(() => {
   mock.restore();
   globalThis.URL = NativeURL;
   console.error = originalConsoleError;
+  Date.now = originalDateNow;
 });
 
 describe('DanmakuLayer', () => {
@@ -404,26 +410,41 @@ describe('PlayerPage', () => {
     expect(JSON.stringify(renderer.toJSON())).toContain('"作者"," · 2024/3/9"');
 
     video.currentTime = 30;
-    await interact(() => customKeyHandler(event('ArrowLeft')));
-    expect(video.currentTime).toBe(20);
+    currentNow += 50;
     await interact(() => customKeyHandler(event('ArrowRight')));
+    expect(JSON.stringify(renderer.toJSON())).toContain('player-progress-bar focused');
     expect(video.currentTime).toBe(30);
+    await interact(() =>
+      timers.find((item) => item.delay === 250 && !item.cleared)?.fn(),
+    );
+    expect(video.currentTime).toBe(35);
+    await interact(() => customKeyHandler(event('ArrowUp')));
+    expect(JSON.stringify(renderer.toJSON())).toContain('player-controls hidden');
+
     video.paused = true;
     await interact(() => customKeyHandler(event('Enter')));
     expect(video.playCalls).toBeGreaterThan(1);
 
     await interact(() => customKeyHandler(event('MediaRewind', 412)));
-    expect(video.currentTime).toBe(20);
+    expect(video.currentTime).toBe(35);
+    await interact(() =>
+      timers.find((item) => item.delay === 250 && !item.cleared)?.fn(),
+    );
+    expect(video.currentTime).toBe(30);
     video.duration = 35;
     await interact(() => customKeyHandler(event('MediaFastForward', 417)));
     expect(video.currentTime).toBe(30);
+    await interact(() =>
+      timers.find((item) => item.delay === 250 && !item.cleared)?.fn(),
+    );
+    expect(video.currentTime).toBe(34);
     await interact(() => customKeyHandler(event('MediaPause', 19)));
     await interact(() => customKeyHandler(event('MediaPlay', 415)));
     video.paused = false;
     await interact(() => customKeyHandler(event('MediaPlayPause')));
     expect(video.pauseCalls).toBeGreaterThan(1);
 
-    await interact(() => customKeyHandler(event('ArrowUp')));
+    await interact(() => customKeyHandler(event('ArrowDown')));
     expect(JSON.stringify(renderer.toJSON())).toContain('▶ 播放');
     await interact(() => customKeyHandler(event('Enter')));
     expect(video.playCalls).toBeGreaterThan(2);
@@ -498,6 +519,7 @@ describe('PlayerPage', () => {
     });
     await interact(() => customKeyHandler(event('ArrowUp')));
     expect(JSON.stringify(renderer.toJSON())).toContain('⏸ 暂停');
+    await interact(() => customKeyHandler(event('ArrowUp')));
     await interact(() => customKeyHandler(event('ArrowUp')));
     expect(JSON.stringify(renderer.toJSON())).toContain(
       'player-controls hidden',
@@ -713,6 +735,7 @@ describe('PlayerPage', () => {
 
     await interact(() => customKeyHandler(event('ArrowDown')));
     await interact(() => customKeyHandler(event('ArrowDown')));
+    await interact(() => customKeyHandler(event('ArrowDown')));
     expect(customKeyHandler(event('X'))).toBe(false);
     await interact(() => customKeyHandler(event('ArrowRight')));
     timers.find((item) => item.delay === 30 && !item.cleared)?.fn();
@@ -720,11 +743,9 @@ describe('PlayerPage', () => {
     timers.find((item) => item.delay === 30 && !item.cleared)?.fn();
     await interact(() => customKeyHandler(event('ArrowDown')));
     timers.find((item) => item.delay === 30 && !item.cleared)?.fn();
-    await interact(() => customKeyHandler(event('ArrowUp')));
-    timers.find((item) => item.delay === 30 && !item.cleared)?.fn();
     await interact(() => customKeyHandler(event('Enter')));
     expect(onPlayNext).toHaveBeenCalledWith(
-      expect.objectContaining({ bvid: 'BV-R1' }),
+      expect.objectContaining({ bvid: 'BV-R5' }),
     );
 
     await interact(() => video.dispatch('ended'));
@@ -733,6 +754,177 @@ describe('PlayerPage', () => {
     await interact(() => customKeyHandler(event('ArrowLeft')));
     await interact(() => customKeyHandler(event('Enter')));
     expect(onPlayNext).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      renderer.unmount();
+    });
+  });
+
+  test('uses timeline preview seeking with debounced commit and control-focus commit handoff', async () => {
+    const { default: PlayerPage } = await importFresh('./PlayerPage.tsx');
+    const video = createVideoMock();
+    let currentTimeWrites = 0;
+    let currentTimeValue = 0;
+    Object.defineProperty(video, 'currentTime', {
+      configurable: true,
+      get() {
+        return currentTimeValue;
+      },
+      set(value) {
+        currentTimeValue = value;
+        currentTimeWrites += 1;
+      },
+    });
+
+    const renderer = await renderWithNodeMock(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-SCRUB', cid: 21, title: '时间轴视频' },
+      }),
+      (element) => (element.type === 'video' ? video : null),
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+      await flush();
+    });
+
+    video.duration = 300;
+    video.readyState = 2;
+    video.currentTime = 40;
+    currentTimeWrites = 0;
+    await interact(() => video.dispatch('loadeddata'));
+    await interact(() => video.dispatch('play'));
+
+    await interact(() => customKeyHandler(event('ArrowUp')));
+    const progressBar = renderer.container.querySelector('.player-progress-bar');
+    const progressFill =
+      renderer.container.querySelector('.player-progress-fill');
+    const timeText = renderer.container.querySelector('.player-time');
+    expect(progressBar.className).toContain('focused');
+    expect(timeText.textContent).toContain('0:40 / 5:00');
+
+    currentNow += 50;
+    await interact(() => customKeyHandler(event('ArrowRight')));
+    expect(currentTimeWrites).toBe(0);
+    expect(progressFill.style.width).toBe('15%');
+    expect(timeText.textContent).toContain('0:45 / 5:00');
+
+    currentNow += 50;
+    await interact(() => customKeyHandler(event('ArrowRight')));
+    expect(currentTimeWrites).toBe(0);
+    expect(progressFill.style.width).toBe('17.5%');
+    expect(timeText.textContent).toContain('0:52 / 5:00');
+
+    await interact(() => customKeyHandler(event('ArrowDown')));
+    expect(currentTimeWrites).toBe(1);
+    expect(video.currentTime).toBeCloseTo(52.5, 3);
+    expect(
+      renderer.container.querySelector('.player-btn.focused')?.textContent,
+    ).toContain('⏸');
+
+    currentNow += 50;
+    await interact(() => customKeyHandler(event('ArrowUp')));
+    currentNow += 50;
+    await interact(() => customKeyHandler(event('ArrowLeft')));
+    expect(currentTimeWrites).toBe(1);
+    await interact(() => customKeyHandler(event('Backspace', 461)));
+    expect(currentTimeWrites).toBe(2);
+    expect(video.currentTime).toBeCloseTo(47.5, 3);
+  });
+
+  test('caps accelerated scrubbing, ignores flood events, and suppresses redundant clamp writes', async () => {
+    const { default: PlayerPage } = await importFresh('./PlayerPage.tsx');
+    const video = createVideoMock();
+    let currentTimeWrites = 0;
+    let currentTimeValue = 0;
+    Object.defineProperty(video, 'currentTime', {
+      configurable: true,
+      get() {
+        return currentTimeValue;
+      },
+      set(value) {
+        currentTimeValue = value;
+        currentTimeWrites += 1;
+      },
+    });
+
+    const renderer = await renderWithNodeMock(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-STRESS', cid: 22, title: '压力视频' },
+      }),
+      (element) => (element.type === 'video' ? video : null),
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+      await flush();
+    });
+
+    video.duration = 1000;
+    video.readyState = 2;
+    video.currentTime = 0;
+    currentTimeWrites = 0;
+    await interact(() => video.dispatch('loadeddata'));
+    await interact(() => video.dispatch('play'));
+    await interact(() => customKeyHandler(event('ArrowUp')));
+
+    for (let index = 0; index < 20; index += 1) {
+      currentNow += 50;
+      await interact(() => customKeyHandler(event('ArrowRight')));
+    }
+    const timeText = renderer.container.querySelector('.player-time');
+    expect(timeText.textContent).toContain('7:42 / 16:40');
+    expect(currentTimeWrites).toBe(0);
+
+    timers.find((item) => item.delay === 250 && !item.cleared)?.fn();
+    expect(video.currentTime).toBeCloseTo(462.5, 3);
+    expect(currentTimeWrites).toBe(1);
+
+    video.duration = 120;
+    video.currentTime = 0;
+    currentTimeWrites = 0;
+    currentNow += 50;
+    await interact(() => customKeyHandler(event('ArrowLeft')));
+    currentNow += 5;
+    await interact(() => customKeyHandler(event('ArrowLeft')));
+    currentNow += 5;
+    await interact(() => customKeyHandler(event('ArrowLeft')));
+    expect(currentTimeWrites).toBe(0);
+    expect(timeText.textContent).toContain('0:00 / 2:00');
+    expect(
+      timers.filter((item) => item.delay === 250 && !item.cleared),
+    ).toHaveLength(0);
+
+    currentNow += 15;
+    await interact(() => customKeyHandler(event('ArrowRight')));
+    currentNow += 5;
+    await interact(() => customKeyHandler(event('ArrowRight')));
+    currentNow += 10;
+    await interact(() => customKeyHandler(event('ArrowRight')));
+    expect(timeText.textContent).toContain('0:12 / 2:00');
+
+    const noMetadataVideo = createVideoMock();
+    const noMetadataRenderer = await renderWithNodeMock(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-NOMETA', cid: 23, title: '无元数据' },
+      }),
+      (element) => (element.type === 'video' ? noMetadataVideo : null),
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+      await flush();
+    });
+    noMetadataVideo.duration = Number.NaN;
+    noMetadataVideo.currentTime = 3;
+    await interact(() => noMetadataVideo.dispatch('loadeddata'));
+    await interact(() => customKeyHandler(event('ArrowUp')));
+    currentNow += 50;
+    await interact(() => customKeyHandler(event('ArrowRight')));
+    expect(noMetadataVideo.currentTime).toBe(3);
+    await act(async () => {
+      noMetadataRenderer.unmount();
+    });
 
     await act(async () => {
       renderer.unmount();

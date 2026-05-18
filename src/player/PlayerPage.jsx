@@ -67,9 +67,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       const player = new shaka.Player();
       player.configure({
         streaming: {
-          bufferingGoal: 2,
-          rebufferingGoal: 0.5,
-          bufferBehind: 15,
+          bufferingGoal: 5,
+          rebufferingGoal: 1,
+          bufferBehind: 20,
         },
       });
       await player.attach(videoRef.current);

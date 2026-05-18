@@ -333,7 +333,7 @@ describe('PlayerPage', () => {
     expect(api.getPlayUrl).toHaveBeenCalledWith(expect.any(Object), 7, 80);
     expect(shakaLoads[0]).toBe('blob:test');
     expect(video.playCalls).toBeGreaterThan(0);
-    expect(shakaPlayers[0].config.streaming.bufferBehind).toBe(15);
+    expect(shakaPlayers[0].config.streaming.bufferBehind).toBe(20);
 
     const proxiedRequest = { uris: ['https://cdn.test/path/seg.m4s?token=1'] };
     shakaPlayers[0].requestFilter(null, proxiedRequest);

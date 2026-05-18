@@ -103,6 +103,23 @@ bun test
 bun tools/test-e2e.mjs
 ```
 
+## Release 流程
+
+- 仓库使用 `release-please` + Conventional Commits 自动维护版本号、`CHANGELOG.md` 和 GitHub Release。
+- 只有可发布的提交类型会推动版本演进：通常 `feat:` 触发 minor，`fix:` 触发 patch。
+- `docs:`、`test:`、`chore:` 这类提交默认不会触发新版本发布。
+- PR 会运行 `commitlint` 校验提交信息，不符合 Conventional Commits 的提交会直接让 CI 失败。
+- 发布时会自动构建 `com.biliwebos.app_<version>_all.ipk`，并上传发布版 `manifest.json` 与 source archive。
+- 如需让 `release-please` 创建的 Release PR 也完整触发后续工作流，建议在仓库 Secrets 中配置 `RELEASE_PLEASE_TOKEN`（repo-scoped PAT）；未配置时会回退到 `GITHUB_TOKEN`。
+
+### 推荐的提交前缀
+
+- `feat:` 新功能
+- `fix:` 修复问题
+- `docs:` 文档更新
+- `test:` 测试调整
+- `chore:` 构建、依赖或流程维护
+
 ## 项目结构
 
 ```

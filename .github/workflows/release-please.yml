@@ -1,0 +1,97 @@
+name: Release Please
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      - name: Stop when no GitHub release was created
+        if: steps.release.outputs.release_created != 'true'
+        run: echo "release-please updated PR state only; no release artifacts to publish."
+
+      - name: Setup Bun
+        if: steps.release.outputs.release_created == 'true'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Setup Node
+        if: steps.release.outputs.release_created == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        if: steps.release.outputs.release_created == 'true'
+        run: bun install --frozen-lockfile
+
+      - name: Install webOS CLI
+        if: steps.release.outputs.release_created == 'true'
+        run: npm install --global @webos-tools/cli
+
+      - name: Package release IPK
+        if: steps.release.outputs.release_created == 'true'
+        run: bun run package:release
+
+      - name: Verify packaged IPK
+        if: steps.release.outputs.release_created == 'true'
+        id: package
+        run: |
+          VERSION=$(node -p "JSON.parse(require('fs').readFileSync('package.json','utf8')).version")
+          EXPECTED="com.biliwebos.app_${VERSION}_all.ipk"
+          COUNT=$(find dist -maxdepth 1 -name '*.ipk' | wc -l | tr -d ' ')
+
+          if [ "$COUNT" != "1" ]; then
+            echo "Expected exactly 1 packaged IPK in dist, found $COUNT"
+            find dist -maxdepth 1 -name '*.ipk' -print
+            exit 1
+          fi
+
+          if [ ! -f "dist/$EXPECTED" ]; then
+            echo "Expected packaged IPK dist/$EXPECTED"
+            find dist -maxdepth 1 -name '*.ipk' -print
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "ipk=dist/$EXPECTED" >> "$GITHUB_OUTPUT"
+
+      - name: Generate release manifest
+        if: steps.release.outputs.release_created == 'true'
+        run: bun run release:manifest
+
+      - name: Create source archive
+        if: steps.release.outputs.release_created == 'true'
+        run: |
+          git archive --format=tar.gz --output "dist/bili-webos-${{ steps.package.outputs.version }}-source.tar.gz" HEAD
+
+      - name: Upload release assets
+        if: steps.release.outputs.release_created == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ steps.release.outputs.tag_name }}" \
+            "${{ steps.package.outputs.ipk }}" \
+            "dist/com.biliwebos.app.manifest.release.json" \
+            "dist/bili-webos-${{ steps.package.outputs.version }}-source.tar.gz" \
+            --clobber

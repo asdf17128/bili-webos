@@ -14,6 +14,8 @@
     "ws": "^8.20.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
     "@vitejs/plugin-react": "6.0.2",
     "happy-dom": "^20.9.0",
     "http-proxy": "1.18.1",
@@ -24,7 +26,10 @@
     "build": "vite build",
     "preview": "vite preview",
     "package": "vite build && cp -r webos/meta/* dist/ && cd dist && ares-package .",
-    "test": "bun test webos/service/com.biliwebos.app.service/test/*.test.js src/**/*.test.mjs",
+    "package:release": "vite build && cp -r webos/meta/* dist/ && cd dist && ares-package --no-minify . ../webos/service/com.biliwebos.app.service",
+    "release:manifest": "node tools/release-manifest.mjs --template com.biliwebos.app.manifest.json --dist dist --output dist/com.biliwebos.app.manifest.release.json",
+    "commitlint": "commitlint",
+    "test": "bun test webos/service/com.biliwebos.app.service/test/*.test.js src/**/*.test.mjs tools/**/*.test.mjs",
     "test:coverage": "bun test --preload ./tools/coverage-preload.mjs --coverage --coverage-reporter=text --coverage-reporter=lcov --coverage-dir=coverage",
     "analyze:tv": "bun --env-file=.env tools/debug.mjs",
     "screenshot:tv": "bun --env-file=.env tools/screenshot.mjs"

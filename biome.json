@@ -9,6 +9,7 @@
       "src/test/**/*",
       "tools/**/*.test.ts",
       "webos/service/com.biliwebos.app.service/test/**/*.ts",
+      "webos/meta/appinfo.json",
       "webos/service/com.biliwebos.app.service/dist"
     ]
   },

@@ -79,16 +79,16 @@ bun install
 # 3. 安装 webOS CLI（如果没有）
 bun add -g @webos-tools/cli
 
-# 4. 配置电视连接（修改 tools/deploy.mjs 中的 IP）
+# 4. 配置电视连接（修改 `.env` 或 `tools/deploy.ts` 读取的连接信息）
 
 # 5. 一键构建部署
-bash build.sh
+bun run build-and-deploy
 ```
 
 ### 开发模式
 
 ```bash
-# 一键启动开发模式（Vite dev server 内置 /proxy）
+# 一键启动开发模式（会先生成 service dist 运行时，再启动 Vite dev server）
 bun run dev
 # 浏览器打开 http://localhost:5173
 ```
@@ -96,11 +96,11 @@ bun run dev
 ### 测试
 
 ```bash
-# 运行单元测试（直播流选择 + HLS 播放列表重写）
+# 运行单元测试
 bun test
 
 # 运行代理联调测试（需要先启动 Vite dev server）
-bun tools/test-e2e.mjs
+bun tools/test-e2e.ts
 ```
 
 ## Release 流程
@@ -126,19 +126,19 @@ bun tools/test-e2e.mjs
 bili-webos/
 ├── src/
 │   ├── api/                      # B站 API 封装、WBI 签名、直播流选择
-│   ├── hooks/useFocus.js         # 电视遥控器焦点导航
+│   ├── hooks/useFocus.ts         # 电视遥控器焦点导航
 │   ├── components/               # 视频卡片、侧边栏、键盘
 │   ├── pages/                    # 各页面
 │   ├── player/                   # 视频/直播播放器 + 弹幕
 │   └── utils/                    # 工具函数
 ├── public/webOSTVjs-1.2.13/      # webOS Luna bus 通信库
-├── vite.config.js                # Vite + browser-dev /proxy
+├── vite.config.ts                # Vite + browser-dev /proxy
 ├── webos/
 │   ├── meta/                     # appinfo.json + 图标
 │   └── service/
 │       └── com.biliwebos.app.service/
-│       ├── service.js            # API 代理 + 本地 HTTP 服务
-│       ├── cast/hlsPlaylist.js   # HLS 播放列表重写，保持分片继续走本地代理
+│       ├── src/                  # TypeScript service source
+│       ├── dist/                 # 编译后的运行时产物
 │       └── test/                 # service 侧单元测试
 │
 ├── tools/                        # 部署/调试/测试工具
@@ -177,8 +177,9 @@ bili-webos/
 ## 开发工具
 
 ```bash
-bun --env-file=.env tools/debug.mjs       # 远程调试（console、DOM、性能指标）
-bun --env-file=.env tools/screenshot.mjs   # 远程截图
+bun --env-file=.env tools/debug.ts        # 远程调试（console、DOM、性能指标）
+bun --env-file=.env tools/screenshot.ts   # 远程截图
+bun run build-and-deploy                  # 一键构建、打包、部署
 bash tools/verify.sh        # 构建→部署→验证完整流程
 ```
 

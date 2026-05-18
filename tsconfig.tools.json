@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "types": ["bun-types", "node"]
+  },
+  "include": ["tools/**/*.ts", "vite.config.ts", "types/**/*"],
+  "exclude": ["tools/**/*.test.ts"]
+}

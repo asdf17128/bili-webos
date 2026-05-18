@@ -15,16 +15,18 @@ echo "====================="
 set -e
 cd "$(dirname "$0")"
 
+BUN_BIN="${BUN_BIN:-$HOME/.bun/bin/bun}"
+if [ ! -x "$BUN_BIN" ]; then
+  echo "bun not found at $BUN_BIN"
+  exit 1
+fi
+
 echo "=== [1/3] Build & Package ==="
-bun run build 2>&1 | tail -2
-cp webos/meta/* dist/
-cd dist
-ares-package --no-minify . ../webos/service/com.biliwebos.app.service 2>&1 | grep -E "Success|ERR|Create"
-cd ..
+"$BUN_BIN" run package:release 2>&1 | grep -E "vite v|built in|Success|ERR|Create" || true
 
 echo ""
 echo "=== [2/3] Deploy ==="
-bun tools/deploy.mjs 2>&1 | grep -E "Done|Error|Connected"
+"$BUN_BIN" tools/deploy.ts 2>&1 | grep -E "Done|Error|Connected"
 
 echo ""
 echo "=== [3/3] Done ==="

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "files": {
+    "ignore": [
+      "coverage",
+      "dist",
+      "node_modules",
+      "src/**/*.test.ts",
+      "src/test/**/*",
+      "tools/**/*.test.ts",
+      "webos/service/com.biliwebos.app.service/test/**/*.ts",
+      "webos/service/com.biliwebos.app.service/dist"
+    ]
+  },
+  "organizeImports": {
+    "enabled": false
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space"
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": false,
+      "suspicious": {
+        "noImplicitAnyLet": "off"
+      },
+      "nursery": {
+        "noCommonJs": "error"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "always"
+    }
+  }
+}

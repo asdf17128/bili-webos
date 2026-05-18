@@ -1,8 +1,10 @@
 {
   "id": "com.biliwebos.app.service",
   "description": "Bilibili API proxy service",
-  "services": [{
-    "name": "com.biliwebos.app.service",
-    "description": "Bilibili API proxy service"
-  }]
+  "services": [
+    {
+      "name": "com.biliwebos.app.service",
+      "description": "Bilibili API proxy service"
+    }
+  ]
 }

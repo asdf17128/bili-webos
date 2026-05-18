@@ -3,24 +3,24 @@
 ## Quick Commands
 ```bash
 # Build + deploy (one command)
-bash build.sh
+bun run build-and-deploy
 
 # Dev mode (browser preview, Vite dev server includes /proxy)
 bun run dev
 
 # Remote debug TV app
-bun --env-file=.env tools/debug.mjs
+bun --env-file=.env tools/debug.ts
 
 # Take screenshot from TV
-bun --env-file=.env tools/screenshot.mjs
+bun --env-file=.env tools/screenshot.ts
 
 # Run API tests (Vite dev server must be running)
-bun tools/test-e2e.mjs
+bun tools/test-e2e.ts
 
 # Run unit tests
 bun test
 
-# Run tests with coverage report
+# Run tests with coverage report, Must be greater than 90% to pass CI while changing existing code.
 bun test:coverage
 ```
 
@@ -38,28 +38,29 @@ bun test:coverage
 ```
 bili_webos/
 ├── src/                          # Frontend source (React + Vite)
-│   ├── api/client.js             # B站 API (Luna service on TV, proxy fallback)
-│   ├── api/wbi.js                # WBI signature algorithm
-│   ├── hooks/useFocus.js         # Zero-render focus (direct DOM classList)
+│   ├── api/client.ts             # B站 API (Luna service on TV, proxy fallback)
+│   ├── api/wbi.ts                # WBI signature algorithm
+│   ├── hooks/useFocus.ts         # Zero-render focus (direct DOM classList)
 │   ├── components/               # VideoCard, VideoGrid, SidebarItem, OSKey
 │   ├── pages/                    # HomePage, SearchPage, SettingsPage, LoginPage
 │   ├── player/                   # PlayerPage (DASH), LivePlayerPage (HLS), DanmakuLayer
-│   └── utils/                    # storage.js, format.js
+│   └── utils/                    # storage.ts, format.ts
 ├── public/webOSTVjs-1.2.13/      # webOS Luna bus library
-├── vite.config.js                # target: chrome108, dev /proxy handler
+├── vite.config.ts                # target: chrome108, dev /proxy handler
 ├── webos/
 │   ├── meta/                     # appinfo.json, icons
 │   └── service/                  # TV Background Service (Node.js v16)
 │       └── com.biliwebos.app.service/
-│       ├── service.js            # Luna methods + local HTTP proxy (:7654)
+│       ├── src/                  # TypeScript service source
+│       ├── dist/                 # Compiled Luna methods + local HTTP proxy (:7654)
 │       ├── services.json
 │       └── package.json
 │
 ├── tools/                        # Dev tools
-│   ├── deploy.mjs                # SSH deploy via ssh2
-│   ├── debug.mjs                 # CDP remote debugger
-│   ├── screenshot.mjs            # Remote screenshot
-│   ├── test-e2e.mjs              # API integration tests
+│   ├── deploy.ts                 # SSH deploy via ssh2
+│   ├── debug.ts                  # CDP remote debugger
+│   ├── screenshot.ts             # Remote screenshot
+│   ├── test-e2e.ts               # API integration tests
 │   └── verify.sh                 # Full verification pipeline
 │
 ├── build.sh                      # One-command build + deploy
@@ -76,3 +77,6 @@ On TV:  Web App ──Luna bus──▶ JS Service (Node.js) ──HTTPS──�
 
 In Dev: Web App ──HTTP──────▶ Vite Dev Server (/proxy) ──HTTPS──▶ B站 API/CDN
 ```
+
+# Development Workflow
+- Use `semantic-release` commit title and message format for automatic changelog and versioning.

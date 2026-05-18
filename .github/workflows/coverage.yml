@@ -29,7 +29,7 @@ jobs:
         run: bun test:coverage
 
       - name: Convert lcov to json summary
-        run: node tools/coverage-summary.mjs coverage
+        run: bun tools/coverage-summary.ts coverage
 
       - name: Verify coverage summary exists
         run: test -f coverage/coverage-summary.json

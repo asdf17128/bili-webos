@@ -5,16 +5,14 @@ set -e
 
 cd "$(dirname "$0")/.."
 PASS="${1:-4E7082}"
+BUN_BIN="${BUN_BIN:-$HOME/.bun/bin/bun}"
 
 echo "=== [1/4] Build ==="
-bun run build 2>&1 | tail -3
-cp webos/meta/* dist/
-cd dist && ares-package --no-minify . ../webos/service/com.biliwebos.app.service 2>&1 | grep -E "Success|ERR"
-cd ..
+"$BUN_BIN" run package:release 2>&1 | grep -E "vite v|built in|Success|ERR|Create" || true
 
 echo ""
 echo "=== [2/4] Deploy ==="
-bun tools/deploy.mjs 2>&1 | grep -E "Done|Error|Connected"
+"$BUN_BIN" tools/deploy.ts 2>&1 | grep -E "Done|Error|Connected"
 
 echo ""
 echo "=== [3/4] Wait for app to load ==="

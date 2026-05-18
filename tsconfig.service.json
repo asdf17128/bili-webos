@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "rootDir": "./webos/service/com.biliwebos.app.service/src",
+    "outDir": "./webos/service/com.biliwebos.app.service/dist",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "types": ["node"]
+  },
+  "include": ["webos/service/com.biliwebos.app.service/src/**/*"],
+  "exclude": ["node_modules", "webos/service/com.biliwebos.app.service/dist"]
+}

@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.6.0](https://github.com/dotennin/bili-webos/compare/bili-webos-tv-v1.5.0...bili-webos-tv-v1.6.0) (2026-05-19)
+
+
+### Features
+
+* media player FF/FW go through ([#83](https://github.com/dotennin/bili-webos/issues/83)) ([038933d](https://github.com/dotennin/bili-webos/commit/038933d8b256da9cbf7d654b8942dabb0dd05848))
+
+
+### Bug Fixes
+
+* service on webos ([#84](https://github.com/dotennin/bili-webos/issues/84)) ([0e33210](https://github.com/dotennin/bili-webos/commit/0e332104143f2d780f9e42ce1565a3e161b957ad))
+
 ## [1.5.0](https://github.com/dotennin/bili-webos/compare/bili-webos-tv-v1.4.0...bili-webos-tv-v1.5.0) (2026-05-18)
 
 

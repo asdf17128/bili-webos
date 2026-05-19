@@ -22,8 +22,35 @@ const SEEK_MULTIPLIER_INCREMENT = 0.5;
 const SEEK_MAX_MULTIPLIER = 6;
 const SEEK_END_BUFFER_SEC = 1;
 const SEEK_EPSILON = 0.001;
+const SEEK_COMMIT_ANCHOR_MS = 1000;
+const SEEK_COMMIT_MAX_DRIFT_SEC = 30;
+const SEEK_MEDIUM_VIDEO_SEC = 30 * 60;
+const SEEK_LONG_VIDEO_SEC = 60 * 60;
 const RESUME_REWIND_SEC = 2;
 const RELATED_GRID_COLS = 4;
+
+function getSeekProfile(durationSec) {
+  const safeDuration = Math.max(0, Number(durationSec) || 0);
+  if (safeDuration >= SEEK_LONG_VIDEO_SEC) {
+    return {
+      baseStepSec: 18,
+      multiplierIncrement: 1.5,
+      maxMultiplier: 16,
+    };
+  }
+  if (safeDuration >= SEEK_MEDIUM_VIDEO_SEC) {
+    return {
+      baseStepSec: 10,
+      multiplierIncrement: 1,
+      maxMultiplier: 12,
+    };
+  }
+  return {
+    baseStepSec: SEEK_BASE_STEP_SEC,
+    multiplierIncrement: SEEK_MULTIPLIER_INCREMENT,
+    maxMultiplier: SEEK_MAX_MULTIPLIER,
+  };
+}
 
 export default function PlayerPage({ video, onBack, onPlayNext }) {
   const videoRef = useRef(null);
@@ -59,6 +86,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const seekCommitTimerRef = useRef(null);
   const progressFillRef = useRef(null);
   const timeTextRef = useRef(null);
+  const committedSeekTargetRef = useRef(null);
+  const persistResumeFromPlayerRef = useRef(() => {});
 
   const pendingSeekRef = useRef(null);
   const endedRef = useRef(false);
@@ -149,7 +178,28 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     lastSeekDirectionRef.current = 0;
     seekMultiplierRef.current = 1;
     blockedSeekDirectionRef.current = 0;
+    committedSeekTargetRef.current = null;
   }, [clearSeekCommitTimer]);
+
+  const getStablePlaybackTime = useCallback(() => {
+    const playerTime = Number(videoRef.current?.currentTime) || 0;
+    const committedSeek = committedSeekTargetRef.current;
+    if (committedSeek == null) return playerTime;
+    if (
+      Math.abs(playerTime - committedSeek.target) > SEEK_COMMIT_MAX_DRIFT_SEC
+    ) {
+      committedSeekTargetRef.current = null;
+      return playerTime;
+    }
+    if (Date.now() < committedSeek.protectedUntil) {
+      return committedSeek.target;
+    }
+    if (Math.abs(playerTime - committedSeek.target) <= SEEK_EPSILON) {
+      committedSeekTargetRef.current = null;
+      return playerTime;
+    }
+    return committedSeek.target;
+  }, []);
 
   const getSeekBounds = useCallback(() => {
     const mediaDuration = Number(videoRef.current?.duration);
@@ -182,10 +232,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
   const syncTimelineFromPlayer = useCallback(() => {
     if (scrubActiveRef.current) return;
-    const nextTime = Number(videoRef.current?.currentTime) || 0;
+    const nextTime = getStablePlaybackTime();
     const nextDuration = Number(videoRef.current?.duration) || duration || 0;
     renderTimelinePreview(nextTime, nextDuration);
-  }, [duration, renderTimelinePreview]);
+  }, [duration, getStablePlaybackTime, renderTimelinePreview]);
 
   const commitPreviewSeek = useCallback(() => {
     const bounds = getSeekBounds();
@@ -203,6 +253,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       ) {
         videoRef.current.currentTime = target;
       }
+      committedSeekTargetRef.current = {
+        target,
+        protectedUntil: Date.now() + SEEK_COMMIT_ANCHOR_MS,
+      };
       setCurrentTime(target);
       setDuration(bounds.duration);
       renderTimelinePreview(target, bounds.duration);
@@ -254,13 +308,15 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         return true;
       }
 
+      const profile = getSeekProfile(bounds.duration);
+
       const nextMultiplier =
         direction === lastSeekDirectionRef.current &&
         gap >= 0 &&
         gap < SEEK_IDLE_RESET_MS
           ? Math.min(
-              seekMultiplierRef.current + SEEK_MULTIPLIER_INCREMENT,
-              SEEK_MAX_MULTIPLIER,
+              seekMultiplierRef.current + profile.multiplierIncrement,
+              profile.maxMultiplier,
             )
           : 1;
       seekMultiplierRef.current = nextMultiplier;
@@ -269,9 +325,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
       const baseTime = scrubActiveRef.current
         ? displayTimeRef.current
-        : Number(videoRef.current?.currentTime) || 0;
+        : getStablePlaybackTime();
       const unclampedTarget =
-        baseTime + direction * SEEK_BASE_STEP_SEC * nextMultiplier;
+        baseTime + direction * profile.baseStepSec * nextMultiplier;
       const target = Math.min(bounds.max, Math.max(0, unclampedTarget));
       const changed = Math.abs(target - baseTime) > SEEK_EPSILON;
 
@@ -481,7 +537,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   useEffect(() => {
     timeUpdateRef.current = setInterval(() => {
       if (videoRef.current) {
-        const nextCurrentTime = videoRef.current.currentTime;
+        const nextCurrentTime = getStablePlaybackTime();
         const nextDuration = videoRef.current.duration || 0;
         setCurrentTime(nextCurrentTime);
         setDuration(nextDuration);
@@ -493,7 +549,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       }
     }, 500);
     return () => clearInterval(timeUpdateRef.current);
-  }, [syncResumeProgress]);
+  }, [getStablePlaybackTime, syncResumeProgress]);
 
   useEffect(() => {
     const el = videoRef.current;
@@ -531,12 +587,18 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   }, [ended, flushPendingSeek, syncTimelineFromPlayer]);
 
   useEffect(() => {
+    persistResumeFromPlayerRef.current = persistResumeFromPlayer;
+  }, [persistResumeFromPlayer]);
+
+  useEffect(() => {
     return () => {
       resetSeekController();
-      if (video?.bvid && !endedRef.current) persistResumeFromPlayer();
+      if (video?.bvid && !endedRef.current) {
+        persistResumeFromPlayerRef.current();
+      }
       castReportState({ playState: 'stop' }).catch(() => {});
     };
-  }, [persistResumeFromPlayer, resetSeekController, video?.bvid]);
+  }, [resetSeekController, video?.bvid]);
 
   // Heartbeat
   useEffect(() => {

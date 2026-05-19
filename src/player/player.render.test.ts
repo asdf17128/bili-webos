@@ -1009,6 +1009,151 @@ describe('PlayerPage', () => {
       renderer.unmount();
     });
   });
+
+  test('keeps accelerated seek anchored to the committed preview target when player time reports stale values', async () => {
+    const { default: PlayerPage } = await importFresh('./PlayerPage.tsx');
+    const video = createVideoMock();
+    let currentTimeValue = 100;
+    Object.defineProperty(video, 'currentTime', {
+      configurable: true,
+      get() {
+        return currentTimeValue;
+      },
+      set(value) {
+        currentTimeValue = value;
+      },
+    });
+
+    const renderer = await renderWithNodeMock(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-SEEK-STALE', cid: 24, title: '长按进度回跳' },
+      }),
+      (element) => (element.type === 'video' ? video : null),
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+      await flush();
+    });
+
+    video.duration = 300;
+    video.readyState = 2;
+    await interact(() => video.dispatch('loadeddata'));
+    await interact(() => video.dispatch('play'));
+
+    await interact(() => customKeyHandler(event('ArrowUp')));
+    currentNow += 50;
+    await interact(() => customKeyHandler(event('ArrowRight')));
+    currentNow += 50;
+    await interact(() => customKeyHandler(event('ArrowRight')));
+    await interact(() =>
+      timers.find((item) => item.delay === 250 && !item.cleared)?.fn(),
+    );
+    expect(video.currentTime).toBeCloseTo(112.5, 3);
+
+    currentTimeValue = 100;
+    await interact(() => intervals.find((item) => item.delay === 500)?.fn());
+
+    currentNow += 50;
+    await interact(() => customKeyHandler(event('ArrowRight')));
+    currentNow += 50;
+    await interact(() => customKeyHandler(event('ArrowRight')));
+    expect(
+      renderer.container.querySelector('.player-time')?.textContent,
+    ).toContain('2:05 / 5:00');
+
+    await act(async () => {
+      renderer.unmount();
+    });
+  });
+
+  test('keeps short videos precise while accelerating long videos more aggressively', async () => {
+    const { default: PlayerPage } = await importFresh('./PlayerPage.tsx');
+
+    const shortVideo = createVideoMock();
+    let shortCurrentTimeValue = 0;
+    Object.defineProperty(shortVideo, 'currentTime', {
+      configurable: true,
+      get() {
+        return shortCurrentTimeValue;
+      },
+      set(value) {
+        shortCurrentTimeValue = value;
+      },
+    });
+
+    const shortRenderer = await renderWithNodeMock(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-SHORT', cid: 25, title: '短视频' },
+      }),
+      (element) => (element.type === 'video' ? shortVideo : null),
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+      await flush();
+    });
+
+    shortVideo.duration = 300;
+    shortVideo.readyState = 2;
+    await interact(() => shortVideo.dispatch('loadeddata'));
+    await interact(() => shortVideo.dispatch('play'));
+    await interact(() => customKeyHandler(event('ArrowUp')));
+    currentNow += 50;
+    await interact(() => customKeyHandler(event('ArrowRight')));
+    currentNow += 50;
+    await interact(() => customKeyHandler(event('ArrowRight')));
+    expect(
+      shortRenderer.container.querySelector('.player-time')?.textContent,
+    ).toContain('0:12 / 5:00');
+
+    await act(async () => {
+      shortRenderer.unmount();
+    });
+
+    const longVideo = createVideoMock();
+    let longCurrentTimeValue = 0;
+    Object.defineProperty(longVideo, 'currentTime', {
+      configurable: true,
+      get() {
+        return longCurrentTimeValue;
+      },
+      set(value) {
+        longCurrentTimeValue = value;
+      },
+    });
+
+    const longRenderer = await renderWithNodeMock(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-LONG', cid: 26, title: '长视频' },
+      }),
+      (element) => (element.type === 'video' ? longVideo : null),
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+      await flush();
+    });
+
+    longVideo.duration = 7200;
+    longVideo.readyState = 2;
+    await interact(() => longVideo.dispatch('loadeddata'));
+    await interact(() => longVideo.dispatch('play'));
+    await interact(() => customKeyHandler(event('ArrowUp')));
+
+    for (let index = 0; index < 10; index += 1) {
+      currentNow += 50;
+      await interact(() => customKeyHandler(event('ArrowRight')));
+    }
+
+    expect(
+      longRenderer.container.querySelector('.player-time')?.textContent,
+    ).toContain('23:15 / 2:00:00');
+
+    await act(async () => {
+      longRenderer.unmount();
+    });
+  });
 });
 
 describe('LivePlayerPage', () => {

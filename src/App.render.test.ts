@@ -31,6 +31,7 @@ beforeEach(() => {
   navFailure = null;
   storageState = {
     auth: { SESSDATA: 'sess' },
+    values: {},
   };
   sidebarItems = [];
   pageProps = [];
@@ -79,15 +80,20 @@ beforeEach(() => {
   };
   globalThis.localStorage = {
     getItem(key) {
-      if (key === 'bili_auth')
+      if (key === 'bili_auth') {
         return storageState.auth ? JSON.stringify(storageState.auth) : null;
-      return null;
+      }
+      return key in storageState.values
+        ? JSON.stringify(storageState.values[key])
+        : null;
     },
     setItem(key, value) {
       if (key === 'bili_auth') storageState.auth = JSON.parse(value);
+      else storageState.values[key] = JSON.parse(value);
     },
     removeItem(key) {
       if (key === 'bili_auth') storageState.auth = null;
+      else delete storageState.values[key];
     },
   };
   globalThis.CustomEvent = class CustomEvent {
@@ -325,4 +331,98 @@ test('App loads user info, routes pages, handles cast commands, login, logout, a
 
   const appAgain = React.createElement(App);
   await update(freshRenderer, appAgain);
+});
+
+test('App prefers newer locally saved resume progress when opening a video', async () => {
+  storageState.values.bili_resume_progress = {
+    'BV-resume': {
+      bvid: 'BV-resume',
+      cid: 12,
+      progress: 88,
+      duration: 120,
+      updatedAt: 1234,
+    },
+  };
+
+  const { default: App } = await import('./App.tsx');
+  const renderer = await render(React.createElement(App));
+  await flush();
+
+  const recommendEntry = pageProps.find(
+    (entry) => entry.page === 'HomePage' && entry.props.mode === 'recommend',
+  );
+
+  await interact(() =>
+    recommendEntry.props.onPlayVideo({
+      bvid: 'BV-resume',
+      cid: 12,
+      title: '本地恢复视频',
+      progress: 10,
+    }),
+  );
+
+  expect(playerProps.video.video).toMatchObject({
+    bvid: 'BV-resume',
+    cid: 12,
+    progress: 88,
+  });
+
+  await interact(() => renderer.unmount());
+});
+
+test('App ignores saved resume progress when it is older or from another cid', async () => {
+  storageState.values.bili_resume_progress = {
+    'BV-resume': {
+      bvid: 'BV-resume',
+      cid: 99,
+      progress: 88,
+      duration: 120,
+      updatedAt: 1234,
+    },
+    'BV-older': {
+      bvid: 'BV-older',
+      cid: 21,
+      progress: 8,
+      duration: 120,
+      updatedAt: 1235,
+    },
+  };
+
+  const { default: App } = await import('./App.tsx');
+  const renderer = await render(React.createElement(App));
+  await flush();
+
+  const recommendEntry = pageProps.find(
+    (entry) => entry.page === 'HomePage' && entry.props.mode === 'recommend',
+  );
+
+  await interact(() =>
+    recommendEntry.props.onPlayVideo({
+      bvid: 'BV-resume',
+      cid: 12,
+      title: 'cid 不匹配',
+      progress: 10,
+    }),
+  );
+  expect(playerProps.video.video).toMatchObject({
+    bvid: 'BV-resume',
+    cid: 12,
+    progress: 10,
+  });
+
+  await interact(() =>
+    recommendEntry.props.onPlayVideo({
+      bvid: 'BV-older',
+      cid: 21,
+      title: '本地更旧',
+      progress: 18,
+    }),
+  );
+  expect(playerProps.video.video).toMatchObject({
+    bvid: 'BV-older',
+    cid: 21,
+    progress: 18,
+  });
+
+  await interact(() => renderer.unmount());
 });

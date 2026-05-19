@@ -222,7 +222,18 @@ export default function App() {
       showToastMsg('无法播放此视频');
       return;
     }
-    setPlayerVideo(video);
+    const savedResume = storage.getResumeProgress(video.bvid, video.cid);
+    const nextVideo =
+      savedResume &&
+      savedResume.progress > Math.max(0, Number(video.progress) || 0)
+        ? {
+            ...video,
+            progress: savedResume.progress,
+            duration:
+              savedResume.duration > 0 ? savedResume.duration : video.duration,
+          }
+        : video;
+    setPlayerVideo(nextVideo);
   }, []);
 
   // Sidebar select (Enter/click) = switch page, select same page = refresh

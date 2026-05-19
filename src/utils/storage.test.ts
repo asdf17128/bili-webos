@@ -71,3 +71,49 @@ test('getSettings tolerates invalid stored payloads', () => {
     expect(storage.getSettings()).toEqual({ danmaku: true, quality: 80 });
   });
 });
+
+test('resume progress helpers roundtrip entries and enforce cid matching', () => {
+  withMockLocalStorage(() => {
+    storage.setResumeProgress({
+      bvid: 'BV1',
+      cid: 7,
+      progress: 48,
+      duration: 120,
+      updatedAt: 111,
+    });
+
+    expect(storage.getResumeProgress('BV1', 7)).toEqual({
+      bvid: 'BV1',
+      cid: 7,
+      progress: 48,
+      duration: 120,
+      updatedAt: 111,
+    });
+    expect(storage.getResumeProgress('BV1', 8)).toBeNull();
+
+    storage.clearResumeProgress('BV1');
+    expect(storage.getResumeProgress('BV1', 7)).toBeNull();
+  });
+});
+
+test('resume progress helpers normalize values and detect near-end playback', () => {
+  withMockLocalStorage(() => {
+    storage.setResumeProgress({
+      bvid: 'BV2',
+      cid: '',
+      progress: '15.8',
+      duration: '100',
+    });
+
+    expect(storage.getResumeProgress('BV2')).toEqual({
+      bvid: 'BV2',
+      cid: null,
+      progress: 15.8,
+      duration: 100,
+      updatedAt: expect.any(Number),
+    });
+    expect(storage.shouldClearResumeProgress(98, 100)).toBe(true);
+    expect(storage.shouldClearResumeProgress(90, 100)).toBe(false);
+    expect(storage.shouldClearResumeProgress(5, 0)).toBe(false);
+  });
+});

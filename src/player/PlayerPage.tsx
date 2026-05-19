@@ -22,6 +22,7 @@ const SEEK_MULTIPLIER_INCREMENT = 0.5;
 const SEEK_MAX_MULTIPLIER = 6;
 const SEEK_END_BUFFER_SEC = 1;
 const SEEK_EPSILON = 0.001;
+const RESUME_REWIND_SEC = 2;
 
 export default function PlayerPage({ video, onBack, onPlayNext }) {
   const videoRef = useRef(null);
@@ -59,6 +60,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const timeTextRef = useRef(null);
 
   const pendingSeekRef = useRef(null);
+  const endedRef = useRef(false);
 
   const queueOrApplySeek = useCallback((seekSec) => {
     const target = Math.max(0, Number(seekSec) || 0);
@@ -93,6 +95,38 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   }, []);
 
   const CONTROLS = ['play', 'danmaku', 'quality'];
+
+  const syncResumeProgress = useCallback(
+    (timeSec, durationSec) => {
+      if (!video?.bvid) return;
+
+      const safeTime = Math.max(0, Number(timeSec) || 0);
+      const safeDuration = Math.max(0, Number(durationSec) || 0);
+      if (!safeTime) return;
+
+      if (storage.shouldClearResumeProgress(safeTime, safeDuration)) {
+        storage.clearResumeProgress(video.bvid);
+        return;
+      }
+
+      storage.setResumeProgress({
+        bvid: video.bvid,
+        cid: cidRef.current || video.cid || null,
+        progress: safeTime,
+        duration: safeDuration,
+        updatedAt: Date.now(),
+      });
+    },
+    [video],
+  );
+
+  const persistResumeFromPlayer = useCallback(() => {
+    if (endedRef.current) return;
+    syncResumeProgress(
+      videoRef.current?.currentTime || currentTime,
+      videoRef.current?.duration || duration,
+    );
+  }, [currentTime, duration, syncResumeProgress]);
 
   const clearSeekCommitTimer = useCallback(() => {
     if (seekCommitTimerRef.current) {
@@ -299,6 +333,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       if (!video?.bvid && !video?.aid) return;
       setLoading(true);
       setFirstFrameReady(false);
+      setEnded(false);
+      endedRef.current = false;
       castReportState({ playState: 'loading' }).catch(() => {});
       try {
         let cid = video.cid;
@@ -346,7 +382,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         URL.revokeObjectURL(mpdUrl);
 
         if (video.progress && video.progress > 0) {
-          queueOrApplySeek(video.progress);
+          queueOrApplySeek(
+            Math.max(0, Number(video.progress) - RESUME_REWIND_SEC),
+          );
         }
 
         videoRef.current.play().catch(() => {});
@@ -354,10 +392,14 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         castReportState({ playState: 'playing' }).catch(() => {});
 
         videoRef.current.addEventListener('ended', () => {
+          endedRef.current = true;
           setEnded(true);
           setShowControls(true);
           setFocusArea('endscreen');
           setFocusIdx(0);
+          if (video?.bvid) {
+            storage.clearResumeProgress(video.bvid);
+          }
           castReportState({ playState: 'end' }).catch(() => {});
         });
 
@@ -435,6 +477,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         const nextDuration = videoRef.current.duration || 0;
         setCurrentTime(nextCurrentTime);
         setDuration(nextDuration);
+        syncResumeProgress(nextCurrentTime, nextDuration);
         castReportProgress({
           duration: Math.floor(nextDuration),
           position: Math.floor(nextCurrentTime),
@@ -442,7 +485,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       }
     }, 500);
     return () => clearInterval(timeUpdateRef.current);
-  }, []);
+  }, [syncResumeProgress]);
 
   useEffect(() => {
     const el = videoRef.current;
@@ -482,9 +525,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   useEffect(() => {
     return () => {
       resetSeekController();
+      if (video?.bvid && !endedRef.current) persistResumeFromPlayer();
       castReportState({ playState: 'stop' }).catch(() => {});
     };
-  }, [resetSeekController]);
+  }, [persistResumeFromPlayer, resetSeekController, video?.bvid]);
 
   // Heartbeat
   useEffect(() => {
@@ -725,6 +769,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         if (ended) {
           // End screen: back exits player
           commitPreviewSeek();
+          persistResumeFromPlayer();
           onBack();
         } else if (showControls || showQuality || showRelated) {
           // Controls/quality/related visible: close them
@@ -737,6 +782,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         } else {
           // Nothing visible: exit player
           commitPreviewSeek();
+          persistResumeFromPlayer();
           onBack();
         }
         return true;

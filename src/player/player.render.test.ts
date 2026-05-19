@@ -142,6 +142,7 @@ beforeEach(() => {
   };
   storageState = {
     settings: { danmaku: true, quality: 80 },
+    resumeProgress: {},
   };
   customKeyHandler = null;
   eventTarget = createEventTarget();
@@ -224,6 +225,21 @@ beforeEach(() => {
           : storageState.settings,
       setSettings: (value) => {
         storageState.settings = value;
+      },
+      getResumeProgress(bvid, cid) {
+        const entry = storageState.resumeProgress[bvid];
+        if (!entry) return null;
+        if (cid != null && entry.cid != null && entry.cid !== cid) return null;
+        return entry;
+      },
+      setResumeProgress(video) {
+        storageState.resumeProgress[video.bvid] = video;
+      },
+      clearResumeProgress(bvid) {
+        delete storageState.resumeProgress[bvid];
+      },
+      shouldClearResumeProgress(progress, duration) {
+        return Number(duration) - Number(progress) <= 3;
       },
     },
   }));
@@ -403,7 +419,7 @@ describe('PlayerPage', () => {
     video.duration = 120;
     video.readyState = 2;
     await interact(() => video.dispatch('canplay'));
-    expect(video.currentTime).toBeCloseTo(25, 1);
+    expect(video.currentTime).toBeCloseTo(23, 1);
     await interact(() => video.dispatch('loadeddata'));
     await interact(() => video.dispatch('play'));
     expect(api.castReportState).toHaveBeenCalledWith({ playState: 'playing' });
@@ -1143,6 +1159,50 @@ describe('LivePlayerPage', () => {
     });
     await act(async () => {
       shakaUnsupportedRenderer.unmount();
+    });
+  });
+
+  test('persists resume progress on exit and clears it after playback ends', async () => {
+    const { default: PlayerPage } = await importFresh('./PlayerPage.tsx');
+    const video = createVideoMock();
+    const onBack = mock(() => {});
+
+    const renderer = await renderWithNodeMock(
+      React.createElement(PlayerPage, {
+        video: {
+          bvid: 'BV-RESUME',
+          cid: 77,
+          title: '继续播放视频',
+          duration: 120,
+        },
+        onBack,
+      }),
+      (element) => (element.type === 'video' ? video : null),
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+      await flush();
+    });
+
+    video.duration = 120;
+    video.currentTime = 48;
+    await interact(() => customKeyHandler(event('Backspace', 461)));
+
+    expect(storageState.resumeProgress['BV-RESUME']).toMatchObject({
+      bvid: 'BV-RESUME',
+      cid: 77,
+      progress: 48,
+      duration: 120,
+    });
+    expect(onBack).toHaveBeenCalledTimes(1);
+
+    video.currentTime = 120;
+    await interact(() => video.dispatch('ended'));
+    expect(storageState.resumeProgress['BV-RESUME']).toBeUndefined();
+
+    await act(async () => {
+      renderer.unmount();
     });
   });
 });

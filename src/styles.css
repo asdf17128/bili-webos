@@ -148,21 +148,21 @@ body,
   border-radius: 12px;
   overflow: hidden;
   background: #12122a;
+  border: 1px solid rgba(255, 255, 255, 0.05);
   cursor: pointer;
   outline: none;
   contain: content;
   content-visibility: auto;
   transform: scale(1);
-  transition: transform 0.15s ease;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s
+    ease;
 }
-.video-card.focused {
+.card-focus-unified.focused {
   z-index: 10;
   position: relative;
-  transform: scale(1.03);
-}
-.video-card.focused .video-card-thumb {
-  outline: 4px solid #102e38;
-  outline-offset: -4px;
+  background: var(--card-focus-bg);
+  border-color: var(--card-focus-border);
+  transform: scale(var(--card-focus-scale));
 }
 .video-card-thumb {
   width: 100%;
@@ -200,8 +200,9 @@ body,
   overflow: hidden;
   margin-bottom: 8px;
 }
-.video-card.focused .video-card-title {
-  color: #fff;
+.card-focus-unified.focused .video-card-title,
+.card-focus-unified.focused .subscription-card-title {
+  color: var(--card-focus-title-color);
 }
 .video-card-meta {
   font-size: 22px;
@@ -463,6 +464,21 @@ body,
 }
 
 /* ===== Tabs ===== */
+:root {
+  --tab-focus-bg: #102e38;
+  --tab-focus-color: #fff;
+  --tab-focus-scale: 1.05;
+  --tab-active-color: #00a1d6;
+  --tab-secondary-bg: rgba(20, 24, 44, 0.92);
+  --tab-secondary-border: rgba(255, 255, 255, 0.05);
+  --tab-secondary-active-bg: rgba(0, 161, 214, 0.2);
+  --tab-secondary-active-border: rgba(0, 161, 214, 0.45);
+  --card-focus-bg: #102e38;
+  --card-focus-border: rgba(0, 161, 214, 0.7);
+  --card-focus-scale: 1.03;
+  --card-focus-title-color: #fff;
+}
+
 .tabs {
   display: flex;
   gap: 8px;
@@ -478,13 +494,53 @@ body,
   cursor: pointer;
   /* no transition */
 }
+
+.tab-focus-unified.focused,
 .tab.focused {
-  background: #102e38;
-  color: #fff;
-  transform: scale(1.05);
+  background: var(--tab-focus-bg);
+  color: var(--tab-focus-color);
+  transform: scale(var(--tab-focus-scale));
 }
 .tab.active {
-  color: #00a1d6;
+  color: var(--tab-active-color);
+}
+
+.tabs-primary {
+  gap: 28px;
+  margin-bottom: 34px;
+}
+
+.tab-primary {
+  padding: 5px 10px;
+  font-size: 20px;
+  color: #7f88ab;
+  border-bottom: 3px solid transparent;
+  border-radius: 10px 10px 6px 6px;
+}
+
+.tab-primary.active {
+  color: var(--tab-active-color);
+  border-bottom-color: var(--tab-active-color);
+}
+
+.tabs-secondary {
+  gap: 14px;
+  margin-bottom: 26px;
+}
+
+.tab-secondary {
+  padding: 12px 22px;
+  font-size: 18px;
+  color: #9198b8;
+  background: var(--tab-secondary-bg);
+  border: 1px solid var(--tab-secondary-border);
+  border-radius: 12px;
+}
+
+.tab-secondary.active {
+  color: #eaf8ff;
+  background: var(--tab-secondary-active-bg);
+  border-color: var(--tab-secondary-active-border);
 }
 
 /* ===== Empty State ===== */
@@ -496,6 +552,90 @@ body,
   height: 300px;
   color: #6a6a8a;
   font-size: 22px;
+}
+
+.subscription-list {
+  display: grid;
+  gap: 24px 20px;
+  padding: 0 40px 32px;
+}
+
+.subscription-card {
+  overflow: hidden;
+  min-width: 0;
+  border-radius: 16px;
+  background: #12122a;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #f6f8ff;
+  transform: scale(1);
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s
+    ease;
+}
+
+.subscription-card-thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #1a1a2e;
+}
+
+.subscription-card-thumb img,
+.subscription-card-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.subscription-card-thumb-placeholder {
+  background: linear-gradient(
+    135deg,
+    rgba(37, 44, 75, 0.95),
+    rgba(20, 24, 44, 0.95)
+  );
+}
+
+.subscription-card-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  padding: 6px 14px;
+  border-radius: 12px;
+  background: #0b8f4f;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.subscription-card-body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 12px 14px;
+}
+
+.subscription-card-title {
+  font-size: 28px;
+  line-height: 1.35;
+  color: #ddd;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 76px;
+  word-break: break-word;
+}
+
+.subscription-card-meta {
+  font-size: 22px;
+  color: #8a8fae;
+}
+
+.subscription-card.invalid .subscription-card-title {
+  color: #c7c9d9;
 }
 
 /* ===== Toast ===== */

@@ -36,7 +36,7 @@ export default React.memo(function VideoCard({
   const thumbUrl = proxyImg(video.pic || video.cover || '');
 
   return (
-    <div {...props} className="video-card">
+    <div {...props} className="video-card card-focus-unified">
       <div className="video-card-thumb">
         {thumbUrl && (
           <img src={thumbUrl} alt="" loading="lazy" decoding="async" />

@@ -10,10 +10,14 @@ export default React.memo(function FocusableTab({
   label,
   active,
   onSelect,
+  variant = 'default',
 }) {
   const { props } = useFocusable({ id, row, col, group, onSelect });
   return (
-    <div {...props} className={`tab ${active ? 'active' : ''}`}>
+    <div
+      {...props}
+      className={`tab tab-focus-unified tab-${variant} ${active ? 'active' : ''}`}
+    >
       {label}
     </div>
   );

@@ -58,7 +58,7 @@ describe('rendered components', () => {
     );
 
     const tab = renderer.container.querySelector('div');
-    expect(tab.className).toBe('tab active');
+    expect(tab.className).toBe('tab tab-focus-unified tab-default active');
     expect(textOf(tab)).toBe('推荐');
     expect(focusConfigs.at(-1).onSelect).toBe(onSelect);
     tab.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -238,5 +238,62 @@ describe('rendered components', () => {
     cards[2].dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(selectCalls).toEqual(['三']);
     gridRenderer.unmount();
+  });
+
+  test('SubscriptionList renders rows, empty state, and selection wiring', async () => {
+    const { default: SubscriptionList } =
+      await importComponent('./SubscriptionList.tsx');
+
+    const emptyRenderer = await render(
+      React.createElement(SubscriptionList, {
+        items: [],
+        onSelect: () => {},
+      }),
+    );
+    expect(textOf(emptyRenderer.toJSON())).toContain('暂无订阅内容');
+    emptyRenderer.unmount();
+
+    const selected = [];
+    const renderer = await render(
+      React.createElement(SubscriptionList, {
+        items: [
+          {
+            id: 'season-1-100',
+            title: '订阅 1',
+            cover: 'https://example.com/one.jpg',
+            ownerName: 'UP 主 1',
+            total: 12,
+            isInvalid: false,
+          },
+          {
+            id: 'season-2-100',
+            title: '视频已失效',
+            cover: '',
+            total: 0,
+            isInvalid: true,
+          },
+        ],
+        cols: 4,
+        onSelect: (item, index) => selected.push([item.id, index]),
+      }),
+    );
+
+    const rows = Array.from(
+      renderer.container.querySelectorAll('.subscription-card'),
+    );
+    expect(rows).toHaveLength(2);
+    expect(rows[0].getAttribute('data-focus-id')).toBe('subscription-0-0');
+    expect(rows[1].getAttribute('data-focus-id')).toBe('subscription-0-1');
+    expect(rows[1].className).toContain('invalid');
+    expect(textOf(renderer.toJSON())).toContain('订阅 1');
+    expect(textOf(renderer.toJSON())).toContain('UP主: UP 主 1');
+    expect(textOf(renderer.toJSON())).toContain('暂无可用视频');
+    expect(textOf(renderer.toJSON())).toContain('合集');
+    expect(rows[0].querySelector('img')).not.toBeNull();
+    expect(rows[1].querySelector('.subscription-card-thumb-placeholder')).not.toBeNull();
+
+    rows[1].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(selected).toEqual([['season-2-100', 1]]);
+    renderer.unmount();
   });
 });

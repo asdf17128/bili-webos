@@ -7,6 +7,7 @@ const ALLOWED_HOSTS = [
   'api.bilibili.com',
   'passport.bilibili.com',
   'api.live.bilibili.com',
+  'archive.biliimg.com',
   's1.hdslb.com',
   'i0.hdslb.com',
   'i1.hdslb.com',
@@ -121,6 +122,8 @@ function readStream(stream) {
 
 function sendProxyRequest(req, res, target) {
   const isCdn =
+    target.hostname?.includes('biliimg') ||
+    target.hostname?.includes('hdslb') ||
     target.hostname?.includes('bilivideo') ||
     target.hostname?.includes('akamaized');
   const clientCookies = parseCookies(req.headers['x-cookie']);

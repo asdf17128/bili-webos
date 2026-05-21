@@ -16,6 +16,8 @@ import {
   getHistory,
   getFavFolders,
   getFavList,
+  getMySubscriptions,
+  getSubscriptionVideos,
   castReportState,
   castReportProgress,
   castGetStatus,
@@ -270,6 +272,130 @@ describe('api client integration paths', () => {
 
   it('throws when getVideoInfo is called without aid/bvid', async () => {
     await expect(getVideoInfo({})).rejects.toThrow('Missing video identifier');
+  });
+
+  it('maps subscribed channel directory items into safe subscription rows', async () => {
+    globalThis.fetch = mock((url) => {
+      return Promise.resolve({
+        headers: { get: () => 'application/json' },
+        json: async () => ({
+          code: 0,
+          data: {
+            list: [
+              {
+                id: 11,
+                title: '已收藏列表',
+                cover: 'cover-a',
+                media_count: 30,
+                upper: { mid: 22 },
+              },
+              {
+                id: 12,
+                title: '',
+                cover: '',
+                media_count: 0,
+              },
+            ],
+            pn: 1,
+            ps: 20,
+            count: 2,
+          },
+        }),
+      });
+    });
+
+    const res = await getMySubscriptions(100, 1, 20);
+
+    expect(res.items[0]).toMatchObject({
+      id: 'collected-folder-11',
+      mediaId: 11,
+      ownerMid: 22,
+      title: '已收藏列表',
+      cover: 'cover-a',
+      total: 30,
+      isInvalid: false,
+    });
+    expect(res.items[1]).toMatchObject({
+      id: 'collected-folder-12',
+      mediaId: 12,
+      ownerMid: 0,
+      title: '未命名订阅',
+      cover: '',
+      total: 0,
+      isInvalid: true,
+    });
+    expect(res.page).toEqual({
+      pageNum: 1,
+      pageSize: 20,
+      total: 2,
+    });
+  });
+
+  it('maps subscription detail videos into playable cards with invalid fallbacks', async () => {
+    globalThis.fetch = mock((url) => {
+      return Promise.resolve({
+        headers: { get: () => 'application/json' },
+        json: async () => ({
+          code: 0,
+          data: {
+            medias: [
+              {
+                aid: 7,
+                bvid: 'BV1X',
+                cid: 8,
+                title: '第一集',
+                pic: 'pic-a',
+                duration: 61,
+                pubdate: 123,
+                upper: { name: 'UP' },
+                cnt_info: { play: 9 },
+              },
+              {
+                bvid: '',
+                title: '',
+                pic: '',
+              },
+            ],
+            info: { id: 11, title: '已收藏列表', media_count: 2 },
+            pn: 1,
+            ps: 30,
+          },
+        }),
+      });
+    });
+
+    const res = await getSubscriptionVideos({
+      seasonId: 11,
+      pageNum: 1,
+      pageSize: 40,
+    });
+
+    expect(res.items[0]).toMatchObject({
+      aid: 7,
+      bvid: 'BV1X',
+      cid: 8,
+      title: '第一集',
+      pic: 'pic-a',
+      duration: 61,
+      pubdate: 123,
+      owner: { name: 'UP' },
+      stat: { view: 9 },
+      isInvalid: false,
+    });
+    expect(res.items[1]).toMatchObject({
+      bvid: '',
+      title: '视频已失效',
+      pic: '',
+      duration: 0,
+      owner: { name: '未知UP主' },
+      stat: { view: 0 },
+      isInvalid: true,
+    });
+    expect(res.page).toEqual({
+      pageNum: 1,
+      pageSize: 30,
+      total: 2,
+    });
   });
 
   it('covers wrapper APIs and luna fallback/error branches', async () => {

@@ -29,6 +29,7 @@ test('extractProxyTarget parses host and upstream path from /proxy requests', ()
 
 test('isAllowedHost accepts bilivideo and hdslb domains but rejects others', () => {
   expect(isAllowedHost('i0.hdslb.com')).toBe(true);
+  expect(isAllowedHost('archive.biliimg.com')).toBe(true);
   expect(isAllowedHost('upos-sz-static.bilivideo.com')).toBe(true);
   expect(isAllowedHost('example.com')).toBe(false);
 });

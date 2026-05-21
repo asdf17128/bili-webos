@@ -421,6 +421,112 @@ export async function getFavList(mediaId, pn, ps) {
   });
 }
 
+function normalizeSubscriptionRow(item) {
+  const meta = item || {};
+  const mediaId = Number(
+    meta.id || meta.media_id || meta.mediaId || meta.fid || 0,
+  );
+  const ownerMid = Number(meta.upper?.mid || meta.mid || meta.owner_mid || 0);
+  const rawTitle = meta.title || meta.name || '';
+  const cover = meta.cover || '';
+  const total = Number(
+    meta.media_count || meta.count || meta.cnt_info?.media_count || 0,
+  );
+  const isInvalid = !mediaId || !rawTitle || !cover;
+
+  return {
+    id: `collected-folder-${mediaId || 'invalid'}`,
+    mediaId,
+    seasonId: mediaId,
+    ownerMid,
+    title: rawTitle || '未命名订阅',
+    cover,
+    total,
+    isInvalid,
+  };
+}
+
+function normalizeSubscriptionVideo(archive) {
+  const bvid = archive?.bvid || '';
+  const rawTitle = archive?.title || archive?.arc?.title || '';
+  const pic = archive?.pic || archive?.cover || '';
+  const duration = Number(archive?.duration || archive?.arc?.duration || 0);
+  const pubdate = Number(archive?.pubdate || archive?.ptime || 0);
+  const ownerName =
+    archive?.owner?.name ||
+    archive?.upper?.name ||
+    archive?.author ||
+    archive?.author_name ||
+    '';
+  const viewCount =
+    archive?.stat?.view ||
+    archive?.stat?.play ||
+    archive?.cnt_info?.play ||
+    archive?.play ||
+    0;
+  const isInvalid = !bvid || !rawTitle;
+
+  return {
+    aid: archive?.aid || archive?.id || 0,
+    bvid,
+    cid: archive?.cid || 0,
+    title: isInvalid ? '视频已失效' : rawTitle,
+    pic,
+    duration,
+    pubdate,
+    owner: { name: ownerName || '未知UP主' },
+    stat: { view: Number(viewCount || 0) },
+    isInvalid,
+  };
+}
+
+export async function getMySubscriptions(userMid, pn, ps) {
+  const res = await apiFetch('/x/v3/fav/folder/collected/list', {
+    up_mid: userMid,
+    pn: pn || 1,
+    ps: ps || 50,
+    platform: 'web',
+    web_location: '333.1387',
+  });
+  const data = res?.data || {};
+  const items = data?.list || data?.items || [];
+
+  return {
+    items: items.map(normalizeSubscriptionRow),
+    page: {
+      pageNum: Number(data?.pn || pn || 1),
+      pageSize: Number(data?.ps || ps || 50),
+      total: Number(data?.count || data?.total || items.length || 0),
+    },
+  };
+}
+
+export async function getSubscriptionVideos(params) {
+  const res = await apiFetch('/x/space/fav/season/list', {
+    season_id: params.seasonId || params.mediaId,
+    pn: params.pageNum || 1,
+    ps: params.pageSize || 40,
+    web_location: '333.1387',
+  });
+
+  return {
+    meta: res?.data?.info || res?.data?.meta || {},
+    items: (res?.data?.medias || res?.data?.archives || []).map(
+      normalizeSubscriptionVideo,
+    ),
+    page: {
+      pageNum: Number(res?.data?.pn || params.pageNum || 1),
+      pageSize: Number(res?.data?.ps || params.pageSize || 40),
+      total: Number(
+        res?.data?.info?.media_count ||
+          res?.data?.count ||
+          res?.data?.total ||
+          0,
+      ),
+    },
+  };
+}
+
 // ============ Heartbeat ============
 
 export async function reportHeartbeat(bvid, cid, playedTime, realTime) {

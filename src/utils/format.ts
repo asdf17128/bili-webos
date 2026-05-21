@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Format view/play count: 12345 -> 1.2万
 export function formatCount(n) {
   if (!n && n !== 0) return '';

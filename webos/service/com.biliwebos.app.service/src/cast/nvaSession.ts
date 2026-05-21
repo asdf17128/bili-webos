@@ -1,4 +1,3 @@
-// @ts-nocheck
 function readUInt32BE(buffer, offset) {
   return buffer.readUInt32BE(offset);
 }
@@ -87,6 +86,15 @@ function encodePing(version) {
 }
 
 export class NvaSession {
+  id: string;
+  socket: any;
+  currentVersion: number;
+  buffer: Buffer;
+  onFrame?: (session: NvaSession, frame: any) => void;
+  onClose?: (session: NvaSession) => void;
+  closed: boolean;
+  pingTimer: ReturnType<typeof setInterval> | null;
+
   constructor(id, socket, onFrame, onClose) {
     this.id = id;
     this.socket = socket;

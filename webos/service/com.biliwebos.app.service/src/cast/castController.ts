@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { EventEmitter } from 'node:events';
 
 export const PLAY_STATE_MAP = {

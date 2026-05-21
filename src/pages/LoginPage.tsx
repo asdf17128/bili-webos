@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { qrCodeGenerate, qrCodePoll } from '../api/client';
 import { storage } from '../utils/storage';
@@ -12,7 +11,11 @@ const STATUS_TEXT = {
   error: '登录失败，请重试',
 };
 
-export default function LoginPage({ onLogin }) {
+type LoginPageProps = {
+  onLogin: () => void;
+};
+
+export default function LoginPage({ onLogin }: LoginPageProps) {
   const [status, setStatus] = useState('waiting');
   const [qrUrl, setQrUrl] = useState('');
   const canvasRef = useRef(null);

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useRef, useEffect } from 'react';
 
 // Danmaku rendering layer over video

@@ -1,12 +1,20 @@
-// @ts-nocheck
 const LOCAL_PROXY_BASE = 'http://127.0.0.1:7654';
 
-function isLocalDevLocation(location) {
+type ProxyLocation = {
+  hostname?: string;
+  origin?: string;
+};
+
+type ProxyOptions = {
+  location?: ProxyLocation;
+};
+
+function isLocalDevLocation(location?: ProxyLocation) {
   const hostname = location?.hostname;
   return hostname === 'localhost' || hostname === '127.0.0.1';
 }
 
-export function getProxyBase(options = {}) {
+export function getProxyBase(options: ProxyOptions = {}) {
   const {
     location = typeof window !== 'undefined' ? window.location : undefined,
   } = options;
@@ -18,7 +26,7 @@ export function getProxyBase(options = {}) {
   return LOCAL_PROXY_BASE;
 }
 
-export function buildProxyUrl(url, options = {}) {
+export function buildProxyUrl(url: string, options: ProxyOptions = {}) {
   const parsed = new URL(url);
   const proxyBase = getProxyBase(options);
   return `${proxyBase}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;

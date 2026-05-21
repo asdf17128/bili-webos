@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState } from 'react';
 import { searchVideo } from '../api/client';
 import VideoGrid from '../components/VideoGrid';
@@ -12,7 +11,11 @@ const KEYBOARD_ROWS = [
   ['Z', 'X', 'C', 'V', 'B', 'N', 'M', '删除', '搜索'],
 ];
 
-export default function SearchPage({ onPlayVideo }) {
+type SearchPageProps = {
+  onPlayVideo?: (video: any) => void;
+};
+
+export default function SearchPage({ onPlayVideo }: SearchPageProps) {
   const [keyword, setKeyword] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);

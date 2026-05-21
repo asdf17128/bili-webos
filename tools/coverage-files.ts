@@ -1,4 +1,3 @@
-// @ts-nocheck
 const EXCLUDE_PATTERNS = [
   /\.test\.ts$/,
   /\/test\//,

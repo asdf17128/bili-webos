@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Bilibili API client
 // On webOS TV: uses Luna JS Service (no external proxy needed)
 // In browser dev: uses the Vite /proxy fallback
@@ -13,6 +12,30 @@ import {
 const API_HOST = 'api.bilibili.com';
 const PASSPORT_HOST = 'passport.bilibili.com';
 const SERVICE_URI = 'luna://com.biliwebos.app.service/';
+
+type FetchOptions = {
+  method?: string;
+  body?: BodyInit | null;
+  contentType?: string;
+  range?: string;
+  headers?: Record<string, string>;
+  host?: string;
+};
+
+type LunaFetchResponse = {
+  returnValue?: boolean;
+  error?: string;
+  errorText?: string;
+  body?: string;
+  newCookies?: Record<string, string>;
+  [key: string]: any;
+};
+
+type LunaRequestHandlers = {
+  allowMissing?: boolean;
+  onSuccess?: (response: any) => void;
+  onFailure?: (error: any) => void;
+};
 
 // Detect if running on webOS with Luna service available
 function hasPalmServiceBridge() {
@@ -39,14 +62,17 @@ function hasLunaService() {
 }
 
 // Luna service fetch (on TV)
-function lunaFetch(url, options) {
-  return new Promise(function (resolve, reject) {
+function lunaFetch(url: string, options: FetchOptions = {}) {
+  return new Promise<LunaFetchResponse>(function (resolve, reject) {
     if (!hasLunaService()) {
       reject(new Error('Luna not available'));
       return;
     }
 
-    var params = { url: url, method: options.method || 'GET' };
+    var params: Record<string, any> = {
+      url: url,
+      method: options.method || 'GET',
+    };
     if (options.body) params.body = options.body;
     if (options.contentType) params.contentType = options.contentType;
     if (options.range) params.range = options.range;
@@ -69,7 +95,7 @@ function lunaFetch(url, options) {
 }
 
 // Proxy fetch (fallback for browser dev)
-function proxyFetchRaw(url, options) {
+function proxyFetchRaw(url: string, options: FetchOptions = {}) {
   var proxyUrl = buildProxyUrl(url);
 
   var headers = Object.assign({}, options.headers || {});
@@ -97,13 +123,17 @@ function proxyFetchRaw(url, options) {
 }
 
 // Smart fetch: try Luna first, fallback to proxy
-async function smartFetch(host, path, options) {
+async function smartFetch(
+  host: string,
+  path: string,
+  options: FetchOptions = {},
+) {
   var url = 'https://' + host + path;
   var opts = options || {};
 
   if (hasLunaService()) {
     try {
-      var res = await lunaFetch(url, opts);
+      var res: LunaFetchResponse = await lunaFetch(url, opts);
       if (!res.returnValue) throw new Error(res.error);
       // Parse JSON body if applicable
       if (res.body) {
@@ -142,7 +172,11 @@ async function smartFetch(host, path, options) {
 }
 
 // API fetch
-export async function apiFetch(path, params, options) {
+export async function apiFetch(
+  path: string,
+  params?: Record<string, any>,
+  options?: FetchOptions,
+) {
   params = params || {};
   options = options || {};
   var host = options.host || API_HOST;
@@ -152,14 +186,14 @@ export async function apiFetch(path, params, options) {
 }
 
 // API fetch with WBI signature
-export async function wbiFetch(path, params) {
+export async function wbiFetch(path: string, params?: Record<string, any>) {
   var keys = await getWbiKeys(apiFetch);
   var signedQuery = signWbi(params || {}, keys.imgKey, keys.subKey);
   return smartFetch(API_HOST, path + '?' + signedQuery);
 }
 
 // Raw fetch for special cases (returns Response or Luna result)
-export async function rawFetch(url, options) {
+export async function rawFetch(url: string, options: FetchOptions = {}) {
   options = options || {};
   if (hasLunaService()) {
     return lunaFetch(url, options);
@@ -167,8 +201,12 @@ export async function rawFetch(url, options) {
   return proxyFetchRaw(url, options);
 }
 
-function lunaRequest(method, parameters, subscribe, handlers) {
-  handlers = handlers || {};
+function lunaRequest(
+  method: string,
+  parameters?: Record<string, unknown>,
+  subscribe = false,
+  handlers: LunaRequestHandlers = {},
+) {
   return new Promise(function (resolve, reject) {
     if (!hasLunaService()) {
       if (handlers.allowMissing) {
@@ -195,7 +233,10 @@ function lunaRequest(method, parameters, subscribe, handlers) {
   });
 }
 
-export function castSubscribe(onEvent, onFailure) {
+export function castSubscribe(
+  onEvent?: (event: any, status: any) => void,
+  onFailure?: (error: any) => void,
+) {
   if (!hasLunaService()) return function () {};
 
   let cancelled = false;
@@ -216,17 +257,17 @@ export function castSubscribe(onEvent, onFailure) {
   };
 }
 
-export async function castAck(payload) {
+export async function castAck(payload?: Record<string, unknown>) {
   return lunaRequest('castAck', payload || {}, false, { allowMissing: true });
 }
 
-export async function castReportState(payload) {
+export async function castReportState(payload?: Record<string, unknown>) {
   return lunaRequest('castReportState', payload || {}, false, {
     allowMissing: true,
   });
 }
 
-export async function castReportProgress(payload) {
+export async function castReportProgress(payload?: Record<string, unknown>) {
   return lunaRequest('castReportProgress', payload || {}, false, {
     allowMissing: true,
   });
@@ -290,7 +331,7 @@ export async function getVideoInfo(video) {
 }
 
 export async function getPlayUrl(videoOrBvid, cid, qn) {
-  var payload = {
+  var payload: Record<string, any> = {
     cid: cid,
     qn: qn || 80,
     fnval: 4048,
@@ -324,9 +365,12 @@ export async function getFollowFeed(page, ps) {
 
 // ============ Live ============
 
-export async function getLiveList(page, pageSize) {
+export async function getLiveList(
+  page?: number,
+  pageSize?: number,
+): Promise<any> {
   // Try followed streamers first
-  var followed = await smartFetch(
+  var followed: any = await smartFetch(
     'api.live.bilibili.com',
     '/xlive/web-ucenter/v1/xfetter/GetWebList?page=' +
       (page || 1) +
@@ -339,7 +383,7 @@ export async function getLiveList(page, pageSize) {
     return { data: { list: rooms } };
   }
   // Fallback to general recommendations
-  var rec = await smartFetch(
+  var rec: any = await smartFetch(
     'api.live.bilibili.com',
     '/xlive/web-interface/v1/webMain/getMoreRecList?platform=web&page=' +
       (page || 1) +
@@ -385,7 +429,11 @@ export async function getLiveStreamSource(roomId) {
 
 // ============ Search ============
 
-export async function searchVideo(keyword, page, pageSize) {
+export async function searchVideo(
+  keyword: string,
+  page?: number,
+  pageSize?: number,
+) {
   return wbiFetch('/x/web-interface/search/type', {
     search_type: 'video',
     keyword: keyword,
@@ -557,7 +605,7 @@ export async function getDanmaku(cid) {
   var url = 'https://api.bilibili.com/x/v1/dm/list.so?oid=' + cid;
 
   if (hasLunaService()) {
-    var res = await lunaFetch(url, {});
+    var res: LunaFetchResponse = await lunaFetch(url, {});
     if (res.body) return parseDanmakuXml(res.body);
     return [];
   }

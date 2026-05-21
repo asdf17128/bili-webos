@@ -1,10 +1,15 @@
-// @ts-nocheck
 // Take a screenshot from the TV app via CDP over SSH tunnel
 import { Client } from 'ssh2';
 import { readFileSync, writeFileSync } from 'fs';
 import http from 'http';
 import net from 'net';
 import { WebSocket } from 'ws';
+import type { RawData } from 'ws';
+
+type DevtoolsPage = {
+  title?: string;
+  webSocketDebuggerUrl: string;
+};
 
 const TV_HOST = process.env.TV_HOST;
 const TV_PORT = process.env.TV_PORT;
@@ -30,7 +35,9 @@ conn.on('ready', () => {
       let d = '';
       res.on('data', (c) => (d += c));
       res.on('end', () => {
-        const app = JSON.parse(d).find((p) => p.title?.includes('哔哩'));
+        const app = (JSON.parse(d) as DevtoolsPage[]).find((p) =>
+          p.title?.includes('哔哩'),
+        );
         if (!app) {
           console.log('App not running');
           process.exit(1);
@@ -52,8 +59,8 @@ conn.on('ready', () => {
             );
           }, 500);
         });
-        ws.on('message', (raw) => {
-          const msg = JSON.parse(raw);
+        ws.on('message', (raw: RawData) => {
+          const msg = JSON.parse(raw.toString());
           if (msg.id === 1 && msg.result?.data) {
             writeFileSync(OUT, Buffer.from(msg.result.data, 'base64'));
             console.log(`Screenshot saved: ${OUT}`);

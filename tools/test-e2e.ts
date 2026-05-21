@@ -1,4 +1,3 @@
-// @ts-nocheck
 // End-to-end test script for Bilibili webOS TV app
 // Tests all API endpoints through the Vite dev server proxy
 // Run: bun tools/test-e2e.ts

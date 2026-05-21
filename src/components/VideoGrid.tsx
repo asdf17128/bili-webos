@@ -1,6 +1,14 @@
-// @ts-nocheck
 import React from 'react';
 import VideoCard from './VideoCard';
+
+type VideoGridProps = {
+  videos: any[];
+  group?: string;
+  startRow?: number;
+  cols?: number;
+  onSelect?: (video: any) => void;
+  focusRow?: number;
+};
 
 // Use transform:translateY for scrolling instead of overflow:scroll
 // This pushes scroll to GPU compositor, avoiding layout recalculation
@@ -11,7 +19,7 @@ export default React.memo(function VideoGrid({
   cols = 2,
   onSelect,
   focusRow = 0,
-}) {
+}: VideoGridProps) {
   if (!videos || videos.length === 0) {
     return <div className="empty-state">暂无内容</div>;
   }

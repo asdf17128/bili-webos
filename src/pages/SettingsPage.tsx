@@ -1,9 +1,14 @@
-// @ts-nocheck
 import React, { useState } from 'react';
 import { storage } from '../utils/storage';
 import { useFocusable } from '../hooks/useFocus';
 
-export default function SettingsPage({ onLogout, user }) {
+type SettingsPageProps = {
+  onLogout: () => void;
+  user?: { uname?: string } | null;
+  onPlayVideo?: (video: any) => void;
+};
+
+export default function SettingsPage({ onLogout, user }: SettingsPageProps) {
   const [settings, setSettings] = useState(storage.getSettings());
 
   const { props: danmakuProps } = useFocusable({

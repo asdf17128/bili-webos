@@ -1,4 +1,3 @@
-// @ts-nocheck
 import zlib from 'node:zlib';
 import https from 'node:https';
 import { rewriteHlsPlaylist } from '../../webos/service/com.biliwebos.app.service/src/cast/hlsPlaylist.ts';
@@ -185,9 +184,11 @@ function sendProxyRequest(req, res, target) {
       try {
         if (isHlsPlaylistResponse(contentType, target.upstreamPath || '')) {
           const body = await readStream(proxyRes);
-          const decoded = await decompressBuffer(body, encoding);
+          const decoded = (await decompressBuffer(body, encoding)) as
+            | Buffer
+            | Uint8Array;
           const playlist = rewriteHlsPlaylist(
-            decoded.toString('utf-8'),
+            Buffer.from(decoded).toString('utf-8'),
             `https://${target.host}${target.upstreamPath}`,
             buildProxyBase(req),
           );

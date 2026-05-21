@@ -1,4 +1,3 @@
-// @ts-nocheck
 export function buildProxyUrl(proxyBase, host, pathWithSearch) {
   return proxyBase.replace(/\/$/, '') + '/proxy/' + host + pathWithSearch;
 }

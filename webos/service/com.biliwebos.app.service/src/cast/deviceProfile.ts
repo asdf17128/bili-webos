@@ -1,4 +1,3 @@
-// @ts-nocheck
 import crypto from 'node:crypto';
 
 const SERVER_NAME = 'Linux/3.0.0, UPnP/1.0, Platinum/1.0.5.13';
@@ -11,7 +10,7 @@ function xmlEscape(str) {
     .replace(/"/g, '&quot;');
 }
 
-function formatHttpDate(date) {
+function formatHttpDate(date?: string | number | Date) {
   return new Date(date || Date.now()).toUTCString();
 }
 

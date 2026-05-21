@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { afterEach, describe, expect, it } from 'bun:test';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';

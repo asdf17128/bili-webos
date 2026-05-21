@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { getHistory } from '../api/client';
 import VideoGrid from '../components/VideoGrid';

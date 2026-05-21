@@ -1,9 +1,9 @@
-// @ts-nocheck
 // Remote debug: connect to TV's Chrome DevTools via SSH tunnel
 import { Client } from 'ssh2';
 import { readFileSync } from 'fs';
 import http from 'http';
 import net from 'net';
+import type { RawData } from 'ws';
 
 const TV_HOST = process.env.TV_HOST;
 const TV_PORT = process.env.TV_PORT;
@@ -14,6 +14,12 @@ const SSH_KEY_PATH = process.env.SSH_KEY_PATH;
 const TV = { host: TV_HOST, port: TV_PORT, user: TV_USER };
 const REMOTE_DEBUG_PORT = 9998;
 const LOCAL_PORT = 19998;
+
+type DevtoolsPage = {
+  title?: string;
+  url?: string;
+  webSocketDebuggerUrl: string;
+};
 
 async function main() {
   console.log('Connecting to TV...');
@@ -50,11 +56,15 @@ async function main() {
     );
   });
 
-  await new Promise((r) => server.listen(LOCAL_PORT, '127.0.0.1', r));
+  await new Promise<void>((resolve) =>
+    server.listen(LOCAL_PORT, '127.0.0.1', () => resolve()),
+  );
   console.log(`Tunnel: localhost:${LOCAL_PORT} -> TV:${REMOTE_DEBUG_PORT}`);
 
   // Fetch DevTools JSON
-  const pages = await fetchJSON(`http://127.0.0.1:${LOCAL_PORT}/json`);
+  const pages = await fetchJSON<DevtoolsPage[]>(
+    `http://127.0.0.1:${LOCAL_PORT}/json`,
+  );
   console.log('\n=== Pages ===');
   pages.forEach((p, i) => {
     console.log(`[${i}] ${p.title}`);
@@ -124,8 +134,8 @@ async function main() {
     }, 3000);
   });
 
-  ws.on('message', (data) => {
-    const msg = JSON.parse(data);
+  ws.on('message', (data: RawData) => {
+    const msg = JSON.parse(data.toString());
 
     if (msg.method === 'Console.messageAdded') {
       const m = msg.params?.message;
@@ -182,7 +192,7 @@ async function main() {
   }
 }
 
-function fetchJSON(url) {
+function fetchJSON<T>(url: string): Promise<T> {
   return new Promise((resolve, reject) => {
     http
       .get(url, (res) => {

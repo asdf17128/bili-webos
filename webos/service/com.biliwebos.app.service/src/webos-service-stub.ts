@@ -1,4 +1,3 @@
-// @ts-nocheck
 export default class WebOSServiceStub {
   static __instances = [];
 

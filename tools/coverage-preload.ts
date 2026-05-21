@@ -1,4 +1,3 @@
-// @ts-nocheck
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { shouldIncludeCoverageFile } from './coverage-files.ts';

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { initKeyboardNav, setFocus, useFocusable } from './hooks/useFocus';
 import { castAck, castSubscribe, getNavInfo } from './api/client';
@@ -15,7 +14,14 @@ import SettingsPage from './pages/SettingsPage';
 import PlayerPage from './player/PlayerPage';
 import LivePlayerPage from './player/LivePlayerPage';
 
-const NAV_ITEMS = [
+type NavItem = {
+  key: string;
+  label: string;
+  icon: string;
+  dividerBefore?: boolean;
+};
+
+const NAV_ITEMS: NavItem[] = [
   { key: 'recommend', label: '推荐', icon: '🏠' },
   { key: 'hot', label: '热门', icon: '🔥' },
   { key: 'live', label: '直播', icon: '📡' },
@@ -27,7 +33,19 @@ const NAV_ITEMS = [
   { key: 'settings', label: '设置', icon: '⚙️' },
 ];
 
-function Sidebar({ activePage, onPageChange, onLoginSelect, user }) {
+type SidebarProps = {
+  activePage: string;
+  onPageChange: (page: string) => void;
+  onLoginSelect: () => void;
+  user?: { face?: string; uname?: string } | null;
+};
+
+function Sidebar({
+  activePage,
+  onPageChange,
+  onLoginSelect,
+  user,
+}: SidebarProps) {
   const { props: loginProps } = useFocusable({
     id: `sidebar-${NAV_ITEMS.length}-0`,
     row: NAV_ITEMS.length,
@@ -145,7 +163,9 @@ export default function App() {
       },
     );
 
-    return () => unsubscribe?.();
+    return () => {
+      unsubscribe?.();
+    };
   }, []);
 
   useEffect(() => {
@@ -183,7 +203,9 @@ export default function App() {
       }
     };
     window.addEventListener('tv-back', handleBack);
-    return () => window.removeEventListener('tv-back', handleBack);
+    return () => {
+      window.removeEventListener('tv-back', handleBack);
+    };
   }, [playerVideo, liveRoom, showLogin, page]);
 
   const loadUserInfo = useCallback(async () => {

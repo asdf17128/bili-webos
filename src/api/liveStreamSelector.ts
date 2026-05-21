@@ -1,4 +1,3 @@
-// @ts-nocheck
 function buildUrl(codec) {
   const info = (codec.url_info || [{}])[0];
   return (info.host || '') + (codec.base_url || '') + (info.extra || '');

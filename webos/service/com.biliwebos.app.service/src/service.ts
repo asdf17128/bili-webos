@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Bilibili API proxy service for webOS TV
 // Runs as background Node.js service, communicates via Luna bus
 // Also starts a local HTTP proxy for video segments and images
@@ -41,7 +40,7 @@ try {
   ]
     .filter(Boolean)
     .join(path.delimiter);
-  Module._initPaths();
+  (Module as any)._initPaths();
   const module = require('webos-service');
   WebOSService = module.default || module;
 } catch {}
@@ -49,7 +48,7 @@ try {
 export const service = new WebOSService('com.biliwebos.app.service');
 
 const COOKIE_FILE = path.join('/media/internal', 'bili_cookies.json');
-let storedCookies = {};
+let storedCookies: Record<string, string> = {};
 try {
   if (fs.existsSync(COOKIE_FILE)) {
     storedCookies = JSON.parse(fs.readFileSync(COOKIE_FILE, 'utf-8'));
@@ -63,7 +62,8 @@ function saveCookies() {
 }
 
 const CAST_CONFIG_FILE = path.join('/media/internal', 'bili_cast_config.json');
-let castConfig = {};
+let castConfig: { friendlyName?: string; uuid?: string; [key: string]: any } =
+  {};
 try {
   if (fs.existsSync(CAST_CONFIG_FILE)) {
     castConfig = JSON.parse(fs.readFileSync(CAST_CONFIG_FILE, 'utf-8'));
@@ -115,7 +115,7 @@ function makeRequest(parsedUrl, method, body, contentType, range, callback) {
   const isCDN =
     hostname.indexOf('bilivideo') >= 0 || hostname.indexOf('akamaized') >= 0;
 
-  const headers = {
+  const headers: Record<string, string> = {
     'User-Agent':
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     Referer: 'https://www.bilibili.com/',
@@ -430,7 +430,7 @@ service.register('fetch', (message) => {
         return;
       }
       decompressResponse(res, (buf) => {
-        const response = {
+        const response: any = {
           returnValue: true,
           status: res.statusCode,
           headers: res.headers,

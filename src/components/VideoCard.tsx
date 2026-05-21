@@ -1,10 +1,18 @@
-// @ts-nocheck
 import React from 'react';
 import { useFocusable } from '../hooks/useFocus';
 import { formatCount, formatDuration, formatTime } from '../utils/format';
 import { buildProxyUrl } from '../utils/proxy';
 
-function proxyImg(url) {
+type VideoCardProps = {
+  video: any;
+  focusId: string;
+  row: number;
+  col: number;
+  group?: string;
+  onSelect?: (video: any) => void;
+};
+
+function proxyImg(url: string) {
   if (!url) return '';
   let u = url.startsWith('//') ? 'https:' + url : url;
   if (u.includes('hdslb.com') && !u.includes('@')) {
@@ -24,7 +32,7 @@ export default React.memo(function VideoCard({
   col,
   group,
   onSelect,
-}) {
+}: VideoCardProps) {
   const { props } = useFocusable({
     id: focusId,
     row,

@@ -4,6 +4,7 @@ interface PalmServiceBridgeConstructor {
 
 interface PalmSystemServiceBridge {
   serviceBridge?: () => unknown;
+  identifier?: string;
 }
 
 interface WebOSServiceRequestOptions {
@@ -20,6 +21,15 @@ interface WebOSServiceApi {
 
 interface WebOSApi {
   service?: WebOSServiceApi;
+  platformBack?: () => void;
+  platform?: {
+    tv?: {
+      registerKey?: (key: string) => void;
+    };
+  };
+  tv?: {
+    registerKey?: (key: string) => void;
+  };
 }
 
 declare global {
@@ -27,6 +37,9 @@ declare global {
     PalmServiceBridge?: PalmServiceBridgeConstructor;
     PalmSystem?: PalmSystemServiceBridge;
     webOS?: WebOSApi;
+    webOSDev?: {
+      registerKey?: (key: string) => void;
+    };
   }
 
   var __TEST_WINDOW__: Window | undefined;

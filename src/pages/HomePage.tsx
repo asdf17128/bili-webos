@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect, useRef } from 'react';
 import {
   getPopular,
@@ -57,11 +56,17 @@ async function fetchByMode(mode, pn) {
   }
 }
 
+type HomePageProps = {
+  onPlayVideo?: (video: any) => void;
+  refreshKey?: number;
+  mode?: string;
+};
+
 export default function HomePage({
   onPlayVideo,
   refreshKey,
   mode = 'recommend',
-}) {
+}: HomePageProps) {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [focusRow, setFocusRow] = useState(0);

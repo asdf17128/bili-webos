@@ -1,4 +1,3 @@
-// @ts-nocheck
 // WBI Signature for Bilibili Web API
 // Reference: bilibili-API-collect wbi.md
 

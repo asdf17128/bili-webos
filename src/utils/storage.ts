@@ -1,4 +1,3 @@
-// @ts-nocheck
 const PREFIX = 'bili_';
 const RESUME_PROGRESS_KEY = 'resume_progress';
 const RESUME_END_THRESHOLD_SEC = 3;

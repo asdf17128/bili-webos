@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect, useRef } from 'react';
 import { getLiveStreamSource, castReportState } from '../api/client';
 import { buildProxyUrl, getProxyBase } from '../utils/proxy';
@@ -21,7 +20,12 @@ function configureShakaForLive(player) {
   });
 }
 
-export default function LivePlayerPage({ room, onBack }) {
+type LivePlayerPageProps = {
+  room: { roomid: string | number; title?: string; owner?: { name?: string } };
+  onBack?: () => void;
+};
+
+export default function LivePlayerPage({ room, onBack }: LivePlayerPageProps) {
   const videoRef = useRef(null);
   const playerRef = useRef(null);
   const playerKindRef = useRef(null);
@@ -57,7 +61,7 @@ export default function LivePlayerPage({ room, onBack }) {
     }
 
     async function loadHlsPlayer(url) {
-      const shaka = await import('shaka-player');
+      const shaka: any = await import('shaka-player');
       shaka.polyfill.installAll();
       if (!shaka.Player.isBrowserSupported()) {
         throw new Error('shaka-live-not-supported');

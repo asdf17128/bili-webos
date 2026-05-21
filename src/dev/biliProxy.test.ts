@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { afterEach, expect, mock, test } from 'bun:test';
 import https from 'node:https';
 import zlib from 'node:zlib';

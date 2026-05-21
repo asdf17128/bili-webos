@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   getPlayUrl,
@@ -61,7 +60,17 @@ function supportsPlaybackSpeedControl() {
   return appId === WEBOS_BROWSER_APP_ID;
 }
 
-export default function PlayerPage({ video, onBack, onPlayNext }) {
+type PlayerPageProps = {
+  video: any;
+  onBack?: () => void;
+  onPlayNext?: (video: any) => void;
+};
+
+export default function PlayerPage({
+  video,
+  onBack,
+  onPlayNext,
+}: PlayerPageProps) {
   const videoRef = useRef(null);
   const shakaRef = useRef(null);
   const [playing, setPlaying] = useState(false);
@@ -396,7 +405,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   useEffect(() => {
     let mounted = true;
     async function init() {
-      const shaka = await import('shaka-player');
+      const shaka: any = await import('shaka-player');
       shaka.polyfill.installAll();
       if (!shaka.Player.isBrowserSupported()) return;
       const player = new shaka.Player();
@@ -580,7 +589,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }).catch(() => {});
       }
     }, 500);
-    return () => clearInterval(timeUpdateRef.current);
+    return () => {
+      clearInterval(timeUpdateRef.current);
+    };
   }, [getStablePlaybackTime, syncResumeProgress]);
 
   useEffect(() => {
@@ -689,7 +700,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         );
       }
     }, 15000);
-    return () => clearInterval(hb);
+    return () => {
+      clearInterval(hb);
+    };
   }, [video?.bvid]);
 
   // Auto-hide controls
@@ -756,8 +769,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
   useEffect(() => {
     const registerMediaKeys = () => {
+      const webOsPlatform = window.webOS?.platform as
+        | { tv?: { registerKey?: (key: string) => void } }
+        | undefined;
       const registerKey =
-        window.webOS?.platform?.tv?.registerKey ||
+        webOsPlatform?.tv?.registerKey ||
         window.webOS?.tv?.registerKey ||
         window.webOSDev?.registerKey;
       if (typeof registerKey !== 'function') return;

@@ -1,9 +1,23 @@
-// @ts-nocheck
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
-export function expectedIpkName({ appId, version }) {
+type ReleaseManifestTemplate = {
+  id?: string;
+  version?: string;
+  ipkUrl?: string;
+  [key: string]: any;
+};
+
+type ParsedArgs = Record<string, string>;
+
+export function expectedIpkName({
+  appId,
+  version,
+}: {
+  appId?: string;
+  version?: string;
+}) {
   if (!appId || !version) {
     throw new Error(
       'appId and version are required to derive the packaged IPK name',
@@ -13,7 +27,13 @@ export function expectedIpkName({ appId, version }) {
   return `${appId}_${version}_all.ipk`;
 }
 
-export function renderReleaseManifest({ template, sha256 }) {
+export function renderReleaseManifest({
+  template,
+  sha256,
+}: {
+  template: ReleaseManifestTemplate;
+  sha256: string;
+}) {
   if (!template || typeof template !== 'object') {
     throw new Error('A manifest template object is required');
   }
@@ -40,7 +60,7 @@ export function renderReleaseManifest({ template, sha256 }) {
   };
 }
 
-export async function sha256File(filePath) {
+export async function sha256File(filePath: string) {
   const hash = crypto.createHash('sha256');
   const stream = fs.createReadStream(filePath);
 
@@ -51,7 +71,15 @@ export async function sha256File(filePath) {
   return hash.digest('hex');
 }
 
-export function findExpectedIpk({ distDir, appId, version }) {
+export function findExpectedIpk({
+  distDir,
+  appId,
+  version,
+}: {
+  distDir: string;
+  appId?: string;
+  version?: string;
+}) {
   const expectedName = expectedIpkName({ appId, version });
   const expectedPath = path.join(distDir, expectedName);
 
@@ -72,6 +100,10 @@ export async function generateReleaseManifest({
   templatePath,
   distDir,
   outputPath,
+}: {
+  templatePath: string;
+  distDir: string;
+  outputPath: string;
 }) {
   const template = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
   const ipkPath = findExpectedIpk({
@@ -88,8 +120,8 @@ export async function generateReleaseManifest({
   return { manifest, ipkPath, sha256 };
 }
 
-function parseArgs(argv) {
-  const args = {};
+function parseArgs(argv: string[]): ParsedArgs {
+  const args: ParsedArgs = {};
 
   for (let index = 0; index < argv.length; index += 1) {
     const key = argv[index];

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -8,18 +7,25 @@ const summaryPath = path.join(coverageDir, 'coverage-summary.json');
 
 const text = fs.readFileSync(lcovPath, 'utf8');
 
-const total = {
+type CoverageMetric = {
+  total: number;
+  covered: number;
+  skipped: number;
+  pct?: number;
+};
+
+const total: Record<string, CoverageMetric> = {
   lines: { total: 0, covered: 0, skipped: 0 },
   statements: { total: 0, covered: 0, skipped: 0 },
   functions: { total: 0, covered: 0, skipped: 0 },
   branches: { total: 0, covered: 0, skipped: 0 },
 };
-const files = [];
+const files: Array<Record<string, CoverageMetric>> = [];
 
 for (const record of text.split('end_of_record')) {
   if (!record.trim()) continue;
 
-  const file = {
+  const file: Record<string, CoverageMetric> = {
     lines: { total: 0, covered: 0, skipped: 0 },
     statements: { total: 0, covered: 0, skipped: 0 },
     functions: { total: 0, covered: 0, skipped: 0 },
@@ -75,7 +81,7 @@ for (const metric of Object.values(total)) {
       : Number(((metric.covered / metric.total) * 100).toFixed(2));
 }
 
-function averagePct(metricName) {
+function averagePct(metricName: string) {
   if (files.length === 0) return 100;
   const value =
     files.reduce((sum, file) => sum + file[metricName].pct, 0) / files.length;

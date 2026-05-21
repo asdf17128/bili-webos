@@ -1,14 +1,29 @@
-// @ts-nocheck
 import fs from 'node:fs';
 import path from 'node:path';
 
 const METRICS = ['lines', 'statements', 'functions', 'branches'];
 
+type CoverageMetric = {
+  pct?: number;
+};
+
+type CoverageSection = Record<string, CoverageMetric | undefined>;
+type CoverageSummary = {
+  average?: CoverageSection;
+  total?: CoverageSection;
+};
+type PullRequestCommentOptions = {
+  baselineLabel?: string;
+};
+type ParsedArgs = Record<string, string>;
+
 function metricLabel(metric) {
   return metric[0].toUpperCase() + metric.slice(1);
 }
 
-function pickCoverageSection(summary) {
+function pickCoverageSection(
+  summary?: CoverageSummary | null,
+): CoverageSection {
   return summary?.average ?? summary?.total ?? {};
 }
 
@@ -58,7 +73,10 @@ export function buildCoverageReport(
   };
 }
 
-export function renderPullRequestComment(report, options = {}) {
+export function renderPullRequestComment(
+  report: ReturnType<typeof buildCoverageReport>,
+  options: PullRequestCommentOptions = {},
+) {
   const baselineLabel = options.baselineLabel ?? 'main';
   const lines = [
     '## Coverage Report',
@@ -100,8 +118,8 @@ export function renderPullRequestComment(report, options = {}) {
   return lines.join('\n');
 }
 
-function parseArgs(argv) {
-  const args = {};
+function parseArgs(argv: string[]): ParsedArgs {
+  const args: ParsedArgs = {};
   for (let i = 2; i < argv.length; i += 1) {
     const arg = argv[i];
     if (!arg.startsWith('--')) continue;
@@ -117,7 +135,7 @@ function parseArgs(argv) {
   return args;
 }
 
-function readJsonIfPresent(filePath) {
+function readJsonIfPresent(filePath?: string | null) {
   if (!filePath || !fs.existsSync(filePath)) return null;
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }

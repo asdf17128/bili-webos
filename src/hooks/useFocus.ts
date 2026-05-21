@@ -1,5 +1,23 @@
-// @ts-nocheck
 import { useEffect, useRef } from 'react';
+import type { MouseEvent as ReactMouseEvent } from 'react';
+
+type FocusableEntry = {
+  row: number;
+  col: number;
+  group: string;
+  onSelect?: () => void;
+};
+
+type FocusDirection = 'up' | 'down' | 'left' | 'right';
+type FocusListener = (id: string | null) => void;
+type KeyEventHandler = (event: KeyboardEvent) => boolean;
+type FocusableOptions = {
+  id: string;
+  row?: number;
+  col?: number;
+  group?: string;
+  onSelect?: () => void;
+};
 
 // ======================================================
 // Zero-React-render focus system
@@ -7,14 +25,14 @@ import { useEffect, useRef } from 'react';
 // no React setState, no re-renders, no virtual DOM diff.
 // ======================================================
 
-const focusRegistry = new Map(); // id -> { ref, row, col, group, onSelect }
-let currentFocusId = null;
+const focusRegistry = new Map<string, FocusableEntry>();
+let currentFocusId: string | null = null;
 
 // Track last sidebar focus position
 let lastSidebarFocus = 'sidebar-0-0';
 
 // Direct DOM focus update - no React involved
-function applyFocus(newId) {
+function applyFocus(newId: string | null) {
   const prevId = currentFocusId;
   currentFocusId = newId;
 
@@ -59,14 +77,16 @@ export function getCurrentFocusId() {
 }
 
 // Global listeners (minimal - only for things like page switching)
-const globalListeners = new Set();
-export function onFocusChange(fn) {
+const globalListeners = new Set<FocusListener>();
+export function onFocusChange(fn: FocusListener) {
   globalListeners.add(fn);
-  return () => globalListeners.delete(fn);
+  return () => {
+    globalListeners.delete(fn);
+  };
 }
 
 // O(1) grid navigation
-function navigateGrid(fromId, direction) {
+function navigateGrid(fromId: string, direction: FocusDirection) {
   const from = focusRegistry.get(fromId);
   if (!from) return null;
   const { row, col, group } = from;
@@ -90,7 +110,7 @@ function navigateGrid(fromId, direction) {
   return null;
 }
 
-function findInGroup(group, preferRow) {
+function findInGroup(group: string, preferRow: number) {
   const id = `${group}-${preferRow}-0`;
   if (focusRegistry.has(id)) return id;
   for (let d = 1; d <= 8; d++) {
@@ -106,15 +126,15 @@ function findInGroup(group, preferRow) {
 }
 
 // Keyboard handler
-let keyHandler = null;
-let customKeyHandler = null;
-export function setCustomKeyHandler(handler) {
+let keyHandler: ((event: KeyboardEvent) => void) | null = null;
+let customKeyHandler: KeyEventHandler | null = null;
+export function setCustomKeyHandler(handler: KeyEventHandler | null) {
   customKeyHandler = handler;
 }
 
 export function initKeyboardNav() {
   if (keyHandler) return;
-  keyHandler = (e) => {
+  keyHandler = (e: KeyboardEvent) => {
     if (customKeyHandler && customKeyHandler(e)) return;
     const key = e.key;
 
@@ -147,7 +167,7 @@ export function initKeyboardNav() {
       ArrowDown: 'down',
       ArrowLeft: 'left',
       ArrowRight: 'right',
-    }[key];
+    }[key] as FocusDirection;
 
     if (dir === 'up' || dir === 'down') {
       const next = navigateGrid(currentFocusId, dir);
@@ -172,9 +192,9 @@ export function initKeyboardNav() {
   window.addEventListener('keydown', keyHandler);
 }
 
-export function createFocusableHandlers(id, onSelect) {
+export function createFocusableHandlers(id: string, onSelect?: () => void) {
   return {
-    onClick(e) {
+    onClick(e: ReactMouseEvent<HTMLElement>) {
       e.preventDefault();
       setFocus(id);
       onSelect?.();
@@ -192,7 +212,7 @@ export function useFocusable({
   col = 0,
   group = 'content',
   onSelect,
-}) {
+}: FocusableOptions) {
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
 
@@ -220,14 +240,14 @@ export function useFocusable({
 }
 
 export const __testing = {
-  hasFocusable(id) {
+  hasFocusable(id: string) {
     return focusRegistry.has(id);
   },
   createFocusableHandlers,
   getKeyHandler() {
     return keyHandler;
   },
-  invokeCustomKeyHandler(event) {
+  invokeCustomKeyHandler(event: KeyboardEvent) {
     return customKeyHandler?.(event) ?? false;
   },
   reset() {

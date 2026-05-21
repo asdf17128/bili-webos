@@ -1,4 +1,3 @@
-// @ts-nocheck
 import dgram from 'node:dgram';
 import net from 'node:net';
 import {
@@ -41,6 +40,15 @@ function httpResponse(statusCode, statusText, headers, body) {
 }
 
 export class CastLanServer {
+  profile: any;
+  controller: any;
+  onFrame: any;
+  tcpPort: number;
+  udpServer: dgram.Socket | null;
+  tcpServer: net.Server | null;
+  broadcastTimer: ReturnType<typeof setInterval> | null;
+  nextSessionId: number;
+
   constructor(options) {
     options = options || {};
     this.profile = options.profile;
@@ -95,7 +103,7 @@ export class CastLanServer {
     this.tcpServer = net.createServer((socket) => {
       this.handleSocket(socket);
     });
-    this.tcpServer.on('error', (err) => {
+    this.tcpServer.on('error', (err: NodeJS.ErrnoException) => {
       console.error('[Cast][TCP] error:', err.message);
       if (err.code === 'EADDRINUSE') {
         this.tcpPort += 1;

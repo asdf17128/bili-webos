@@ -93,6 +93,7 @@ export function isAllowedHost(host) {
     'api.bilibili.com',
     'passport.bilibili.com',
     'api.live.bilibili.com',
+    'archive.biliimg.com',
     's1.hdslb.com',
     'i0.hdslb.com',
     'i1.hdslb.com',

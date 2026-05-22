@@ -30,6 +30,7 @@ describe('service helpers', () => {
 
   it('isAllowedHost permits whitelisted and bilivideo domains', () => {
     expect(isAllowedHost('api.bilibili.com')).toBe(true);
+    expect(isAllowedHost('archive.biliimg.com')).toBe(true);
     expect(isAllowedHost('cn-gotcha204-2.bilivideo.com')).toBe(true);
     expect(isAllowedHost('example.com')).toBe(false);
   });

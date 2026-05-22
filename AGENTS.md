@@ -78,6 +78,11 @@ On TV:  Web App ──Luna bus──▶ JS Service (Node.js) ──HTTPS──�
 In Dev: Web App ──HTTP──────▶ Vite Dev Server (/proxy) ──HTTPS──▶ B站 API/CDN
 ```
 
+## Dev Environment Differences
+- Browser/web development runs through the Vite dev server. Asset and API proxy traffic should use the current localhost origin via `/proxy/...`.
+- webOS TV runtime does not use the Vite proxy. It relies on the background service's local HTTP proxy at `http://127.0.0.1:7654/proxy/...`.
+- If an image, stream, or API call works on web but fails on TV, compare `src/dev/biliProxy.ts` with `webos/service/com.biliwebos.app.service/src/service.ts` first, especially host allowlists and proxy request headers.
+
 ## Development Workflow
 - Use `semantic-release` commit message format for automatic changelog and versioning, also when creating pull requests. Example: `feat: add search page` or `fix: correct video duration format`.
 - Run `bun format` and `bun lint` before committing to ensure consistent code style.

@@ -148,21 +148,20 @@ body,
   border-radius: 12px;
   overflow: hidden;
   background: #12122a;
-  border: 1px solid rgba(255, 255, 255, 0.05);
   cursor: pointer;
   outline: none;
   contain: content;
   content-visibility: auto;
   transform: scale(1);
-  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s
-    ease;
+  transition: transform 0.15s ease;
 }
-.card-focus-unified.focused {
+.video-card.focused,
+.subscription-card.focused {
   z-index: 10;
   position: relative;
-  background: var(--card-focus-bg);
-  border-color: var(--card-focus-border);
-  transform: scale(var(--card-focus-scale));
+  background: #102e38;
+  border-color: rgba(0, 161, 214, 0.7);
+  transform: scale(1.03);
 }
 .video-card-thumb {
   width: 100%;
@@ -200,9 +199,9 @@ body,
   overflow: hidden;
   margin-bottom: 8px;
 }
-.card-focus-unified.focused .video-card-title,
-.card-focus-unified.focused .subscription-card-title {
-  color: var(--card-focus-title-color);
+.video-card.focused .video-card-title,
+.subscription-card.focused .subscription-card-title {
+  color: #fff;
 }
 .video-card-meta {
   font-size: 22px;
@@ -473,10 +472,6 @@ body,
   --tab-secondary-border: rgba(255, 255, 255, 0.05);
   --tab-secondary-active-bg: rgba(0, 161, 214, 0.2);
   --tab-secondary-active-border: rgba(0, 161, 214, 0.45);
-  --card-focus-bg: #102e38;
-  --card-focus-border: rgba(0, 161, 214, 0.7);
-  --card-focus-scale: 1.03;
-  --card-focus-title-color: #fff;
 }
 
 .tabs {
@@ -565,11 +560,8 @@ body,
   min-width: 0;
   border-radius: 16px;
   background: #12122a;
-  border: 1px solid rgba(255, 255, 255, 0.05);
   color: #f6f8ff;
   transform: scale(1);
-  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s
-    ease;
 }
 
 .subscription-card-thumb {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { initKeyboardNav, setFocus, onFocusChange } from './hooks/useFocus';
+import { initKeyboardNav, setFocus, onFocusChange, getCurrentFocusId, focusFirstContent, focusSidebar } from './hooks/useFocus';
 import { castAck, castSubscribe, getNavInfo } from './api/client';
 import { storage } from './utils/storage';
 import SidebarItem from './components/SidebarItem';
@@ -23,20 +23,17 @@ const NAV_ITEMS = [
   { key: 'config', label: '设置', icon: '⚙️' },
 ];
 
-function Sidebar({ activePage, onPageChange, user }) {
-  // Listen for sidebar focus changes to auto-switch page
+function Sidebar({ activePage, onPreview, onSelect, user }) {
+  // Arrowing onto a sidebar item previews that page (no refresh).
   useEffect(() => {
     return onFocusChange((fid) => {
       if (!fid?.startsWith('sidebar-')) return;
       const match = fid.match(/^sidebar-(\d+)-/);
       if (!match) return;
       const idx = parseInt(match[1]);
-      if (idx < NAV_ITEMS.length) {
-        const item = NAV_ITEMS[idx];
-        onPageChange(item.key);
-      }
+      if (idx < NAV_ITEMS.length) onPreview(NAV_ITEMS[idx].key);
     });
-  }, [onPageChange]);
+  }, [onPreview]);
 
   return (
     <div className="sidebar">
@@ -54,7 +51,7 @@ function Sidebar({ activePage, onPageChange, user }) {
             label={item.label}
             icon={item.icon}
             active={activePage === item.key}
-            onSelect={() => onPageChange(item.key)}
+            onSelect={() => onSelect(item.key)}
           />
         </React.Fragment>
       ))}
@@ -162,8 +159,13 @@ export default function App() {
         setLiveRoom(null);
       } else if (showLogin) {
         setShowLogin(false);
+      } else if (getCurrentFocusId()?.startsWith('content-')) {
+        // First Back from inside a page returns to the sidebar menu — one press
+        // to escape the search keyboard or any content grid.
+        focusSidebar();
       } else if (page !== 'recommend') {
-        setPage('recommend');
+        // On the sidebar already → go home (focusing item 0 previews 推荐).
+        setFocus('sidebar-0-0');
       } else {
         try { window.webOS?.platformBack?.(); } catch { window.close(); }
       }
@@ -209,17 +211,20 @@ export default function App() {
     setPlayerVideo(video);
   }, []);
 
-  // Sidebar hover = switch page, click same page = refresh
-  const handlePageChange = useCallback((key) => {
-    if ((key === 'follow') && !loggedIn) {
-      setShowLogin(true);
-      return;
-    }
-    if (key === page) {
-      setRefreshKey(n => n + 1);
-    } else {
-      setPage(key);
-    }
+  // Arrowing onto a sidebar item just previews its page — no refresh, no
+  // jumping into the content.
+  const previewPage = useCallback((key) => {
+    if (key === 'follow' && !loggedIn) { setShowLogin(true); return; }
+    if (key !== page) setPage(key);
+  }, [loggedIn, page]);
+
+  // OK/click on a sidebar item commits: switch (or refresh if already active)
+  // and move focus into the content so the user doesn't need a second key.
+  const selectPage = useCallback((key) => {
+    if (key === 'follow' && !loggedIn) { setShowLogin(true); return; }
+    if (key === page) setRefreshKey(n => n + 1);
+    else setPage(key);
+    focusFirstContent();
   }, [loggedIn, page]);
 
   const showToastMsg = useCallback((msg) => {
@@ -230,7 +235,7 @@ export default function App() {
   return (
     <>
       <div className="app-container" style={{ display: (playerVideo || liveRoom) ? 'none' : 'flex' }}>
-        <Sidebar activePage={page} onPageChange={handlePageChange} user={user} />
+        <Sidebar activePage={page} onPreview={previewPage} onSelect={selectPage} user={user} />
         <div className="main-content">
           {page === 'recommend' && <HomePage onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="recommend" />}
           {page === 'hot' && <HomePage onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="hot" />}

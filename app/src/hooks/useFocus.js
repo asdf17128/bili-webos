@@ -55,6 +55,27 @@ export function setFocus(id) {
 
 export function getCurrentFocusId() { return currentFocusId; }
 
+// Move focus into the page's content area (used when "entering" a section via
+// OK). The content may still be loading, so retry briefly until a card has
+// registered. Aborts if the user has already navigated into content.
+export function focusFirstContent(maxMs = 1500) {
+  const start = Date.now();
+  const attempt = () => {
+    if (currentFocusId && currentFocusId.startsWith('content-')) return; // already inside
+    const id = focusRegistry.has('content-0-0') ? 'content-0-0' : findInGroup('content', 0);
+    if (id) { setFocus(id); return; }
+    if (Date.now() - start < maxMs) setTimeout(attempt, 60);
+  };
+  setTimeout(attempt, 30);
+}
+
+// Return focus to the sidebar — the last item the user was on, else the first.
+export function focusSidebar() {
+  let id = lastSidebarFocus;
+  if (!id || !focusRegistry.has(id)) id = findInGroup('sidebar', 0);
+  if (id) setFocus(id);
+}
+
 // Global listeners (minimal - only for things like page switching)
 const globalListeners = new Set();
 export function onFocusChange(fn) {

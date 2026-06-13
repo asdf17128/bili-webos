@@ -340,8 +340,16 @@ service.register('castGetStatus', function (message) {
 
 service.register('castSetConfig', function (message) {
   if (message.payload && message.payload.friendlyName) {
-    castConfig.friendlyName = String(message.payload.friendlyName).slice(0, 64);
-    saveCastConfig();
+    var name = String(message.payload.friendlyName).slice(0, 64).trim();
+    if (name) {
+      castConfig.friendlyName = name;
+      saveCastConfig();
+      // Apply live: the LAN server reads profile.friendlyName at request time,
+      // so updating the shared profile + re-advertising makes the new name show
+      // up in the phone's cast list without a service restart.
+      castProfile.friendlyName = name;
+      try { castLanServer.broadcastAlive(); } catch (e) { }
+    }
   }
   message.respond({ returnValue: true, config: castConfig });
 });

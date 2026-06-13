@@ -178,6 +178,11 @@ export async function castGetStatus() {
   return lunaRequest('castGetStatus', {}, false, { allowMissing: true });
 }
 
+// Rename the cast receiver as shown in the phone's 投屏 list (applies live).
+export async function castSetConfig(payload) {
+  return lunaRequest('castSetConfig', payload || {}, false, { allowMissing: true });
+}
+
 // ============ Login ============
 
 export async function qrCodeGenerate() {

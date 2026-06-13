@@ -423,3 +423,25 @@ html, body, #root {
   transform: scale(1.05);
   box-shadow: 0 0 0 3px #00a1d6, 0 4px 15px rgba(0,161,214,0.4);
 }
+
+/* Settings list rows (设置 page) */
+.settings-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px; margin-bottom: 10px; max-width: 640px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  font-size: 18px; color: #ddd; cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+.settings-row-value { color: #888; font-size: 15px; }
+.settings-row.focused {
+  background: rgba(0,161,214,0.18);
+  box-shadow: 0 0 0 2px #00a1d6;
+  color: #fff;
+}
+.settings-row.focused .settings-row-value { color: #d6f1ff; }
+.settings-row-danger.focused {
+  background: rgba(214,64,64,0.18);
+  box-shadow: 0 0 0 2px #d64a4a;
+}

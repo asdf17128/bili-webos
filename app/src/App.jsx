@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import SearchPage from './pages/SearchPage';
 import SettingsPage from './pages/SettingsPage';
+import ConfigPage from './pages/ConfigPage';
 import PlayerPage from './player/PlayerPage';
 import LivePlayerPage from './player/LivePlayerPage';
 
@@ -18,7 +19,8 @@ const NAV_ITEMS = [
   { key: 'partition', label: '分区', icon: '📁' },
   { key: 'follow', label: '关注', icon: '👤' },
   { key: 'search', label: '搜索', icon: '🔍', dividerBefore: true },
-  { key: 'settings', label: '我的', icon: '⚙️' },
+  { key: 'settings', label: '我的', icon: '🕘' },
+  { key: 'config', label: '设置', icon: '⚙️' },
 ];
 
 function Sidebar({ activePage, onPageChange, user }) {
@@ -236,7 +238,8 @@ export default function App() {
           {page === 'partition' && <HomePage onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="partition" />}
           {page === 'follow' && <HomePage onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="follow" />}
           {page === 'search' && <SearchPage onPlayVideo={handlePlayVideo} />}
-          {page === 'settings' && <SettingsPage onLogout={handleLogout} user={user} onPlayVideo={handlePlayVideo} />}
+          {page === 'settings' && <SettingsPage user={user} onPlayVideo={handlePlayVideo} />}
+          {page === 'config' && <ConfigPage onLogout={handleLogout} user={user} />}
         </div>
         {toast && <div className="toast">{toast}</div>}
       </div>

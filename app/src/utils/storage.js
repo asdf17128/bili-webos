@@ -51,5 +51,24 @@ export const storage = {
 
   setSettings(settings) {
     this.set('settings', settings);
+  },
+
+  // Locally-tracked recently watched live rooms (B站's history API doesn't
+  // record live viewing without its obfuscated heartbeat, so we keep our own).
+  getRecentLive() {
+    return this.get('recentLive') || [];
+  },
+
+  addRecentLive(room) {
+    if (!room || !room.roomid) return;
+    let list = this.getRecentLive().filter(r => r.roomid !== room.roomid);
+    list.unshift({
+      roomid: room.roomid,
+      title: room.title || '',
+      cover: room.cover || room.pic || '',
+      uname: room.uname || (room.owner && room.owner.name) || '',
+    });
+    if (list.length > 8) list = list.slice(0, 8);
+    this.set('recentLive', list);
   }
 };

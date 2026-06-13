@@ -15,6 +15,15 @@ function proxyImg(url) {
 export default function SettingsPage({ user, onPlayVideo }) {
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [recentLive] = useState(() => storage.getRecentLive());
+
+  // Locally-tracked live rooms shown alongside B站 video history. duration='直播'
+  // renders as a badge; isLive+roomid lets App re-open the live stream.
+  const liveItems = recentLive.map(r => ({
+    isLive: true, roomid: r.roomid, bvid: 'live-' + r.roomid,
+    title: r.title, pic: r.cover, owner: { name: r.uname }, duration: '直播',
+  }));
+  const recentItems = [...liveItems, ...history];
 
   React.useEffect(() => {
     if (!user) return;
@@ -56,19 +65,13 @@ export default function SettingsPage({ user, onPlayVideo }) {
         </div>
       </div>
 
-      {user ? (
-        <>
-          <div style={{ fontSize: 20, color: '#aaa', marginBottom: 14 }}>最近观看</div>
-          {history.length > 0 ? (
-            <VideoGrid videos={history} group="content" startRow={0} cols={2} onSelect={onPlayVideo} />
-          ) : (
-            <div style={{ color: '#666', fontSize: 16 }}>
-              {historyLoading ? '加载中…' : '暂无观看记录'}
-            </div>
-          )}
-        </>
+      <div style={{ fontSize: 20, color: '#aaa', marginBottom: 14 }}>最近观看</div>
+      {recentItems.length > 0 ? (
+        <VideoGrid videos={recentItems} group="content" startRow={0} cols={2} onSelect={onPlayVideo} />
       ) : (
-        <div style={{ color: '#888', fontSize: 16 }}>登录后可查看观看历史</div>
+        <div style={{ color: '#666', fontSize: 16 }}>
+          {historyLoading ? '加载中…' : (user ? '暂无观看记录' : '登录后可查看视频历史')}
+        </div>
       )}
     </div>
   );

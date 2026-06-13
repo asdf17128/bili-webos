@@ -16,6 +16,7 @@ export default function LivePlayerPage({ room, onBack }) {
     async function load() {
       try {
         castReportState({ playState: 'loading' }).catch(() => {});
+        storage.addRecentLive(room); // local "recent live" history
         const hlsUrl = await getLiveStreamUrl(room.roomid);
         if (!hlsUrl || !videoRef.current) return;
 

@@ -118,6 +118,71 @@ export async function rawFetch(url, options) {
   return proxyFetchRaw(url, options);
 }
 
+function lunaRequest(method, parameters, subscribe, handlers) {
+  handlers = handlers || {};
+  return new Promise(function(resolve, reject) {
+    if (!hasLunaService()) {
+      if (handlers.allowMissing) { resolve(null); return; }
+      reject(new Error('Luna not available'));
+      return;
+    }
+
+    window.webOS.service.request(SERVICE_URI, {
+      method: method,
+      subscribe: !!subscribe,
+      parameters: parameters || {},
+      onSuccess: function(res) {
+        if (handlers.onSuccess) handlers.onSuccess(res);
+        resolve(res);
+      },
+      onFailure: function(err) {
+        if (handlers.onFailure) handlers.onFailure(err);
+        reject(new Error(err.errorText || err.error || (method + ' failed')));
+      },
+    });
+  });
+}
+
+export function castSubscribe(onEvent, onFailure) {
+  if (!hasLunaService()) return function () {};
+
+  let cancelled = false;
+  window.webOS.service.request(SERVICE_URI, {
+    method: 'castSubscribe',
+    subscribe: true,
+    parameters: { subscribe: true },
+    onSuccess: function(res) {
+      if (!cancelled && res?.event && onEvent) onEvent(res.event, res.status);
+    },
+    onFailure: function(err) {
+      if (!cancelled && onFailure) onFailure(err);
+    }
+  });
+
+  return function () { cancelled = true; };
+}
+
+export async function castAck(payload) {
+  return lunaRequest('castAck', payload || {}, false, { allowMissing: true });
+}
+
+export async function castReportState(payload) {
+  return lunaRequest('castReportState', payload || {}, false, { allowMissing: true });
+}
+
+export async function castReportProgress(payload) {
+  return lunaRequest('castReportProgress', payload || {}, false, { allowMissing: true });
+}
+
+export async function castGetStatus() {
+  return lunaRequest('castGetStatus', {}, false, { allowMissing: true });
+}
+
+// Rename the cast receiver as shown in the phone's 投屏 list (applies live).
+export async function castSetConfig(payload) {
+  return lunaRequest('castSetConfig', payload || {}, false, { allowMissing: true });
+}
+
 // ============ Login ============
 
 export async function qrCodeGenerate() {
@@ -150,14 +215,24 @@ export async function getRanking(rid, type) {
   return wbiFetch('/x/web-interface/ranking/v2', { rid: rid || 0, type: type || 'all' });
 }
 
-export async function getVideoInfo(bvid) {
-  return wbiFetch('/x/web-interface/view', { bvid: bvid });
+export async function getVideoInfo(video) {
+  if (typeof video === 'string') {
+    return wbiFetch('/x/web-interface/view', { bvid: video });
+  }
+  video = video || {};
+  if (video.bvid) return wbiFetch('/x/web-interface/view', { bvid: video.bvid });
+  if (video.aid) return wbiFetch('/x/web-interface/view', { aid: video.aid });
+  throw new Error('Missing video identifier');
 }
 
-export async function getPlayUrl(bvid, cid, qn) {
-  return wbiFetch('/x/player/playurl', {
-    bvid: bvid, cid: cid, qn: qn || 80, fnval: 4048, fnver: 0, fourk: 1, platform: 'pc',
-  });
+export async function getPlayUrl(videoOrBvid, cid, qn) {
+  var payload = {
+    cid: cid, qn: qn || 80, fnval: 4048, fnver: 0, fourk: 1, platform: 'pc',
+  };
+  if (typeof videoOrBvid === 'string') payload.bvid = videoOrBvid;
+  else if (videoOrBvid?.bvid) payload.bvid = videoOrBvid.bvid;
+  else if (videoOrBvid?.aid) payload.avid = videoOrBvid.aid;
+  return wbiFetch('/x/player/playurl', payload);
 }
 
 // Partition/region
@@ -165,9 +240,17 @@ export async function getRegionDynamic(rid, pn, ps) {
   return wbiFetch('/x/web-interface/dynamic/region', { rid: rid || 0, pn: pn || 1, ps: ps || 6 });
 }
 
-// Follow feed
-export async function getFollowFeed(page, ps) {
-  return smartFetch(API_HOST, '/x/polymer/web-dynamic/v1/feed/all?timezone_offset=-480&type=video&page=' + (page || 1));
+// Follow feed — paginates by the `offset` cursor returned in data.offset,
+// NOT by page number (page alone re-returns the first page).
+export async function getFollowFeed(page, offset) {
+  var url = '/x/polymer/web-dynamic/v1/feed/all?timezone_offset=-480&type=video&page=' + (page || 1);
+  if (offset) url += '&offset=' + encodeURIComponent(offset);
+  return smartFetch(API_HOST, url);
+}
+
+// Logged-in user's followings (Cookie auth). Used to badge "已关注" on cards.
+export async function getFollowings(vmid, pn, ps) {
+  return apiFetch('/x/relation/followings', { vmid: vmid, pn: pn || 1, ps: ps || 50, order: 'desc' });
 }
 
 // ============ Live ============
@@ -294,4 +377,14 @@ function parseDanmakuXml(xml) {
 
 export async function getRelated(bvid) {
   return wbiFetch('/x/web-interface/archive/related', { bvid: bvid });
+}
+
+// ============ UP uploader ============
+
+// This uploader's submitted videos, newest first (space arc search, WBI signed)
+export async function getUpVideos(mid, pn, ps) {
+  return wbiFetch('/x/space/wbi/arc/search', {
+    mid: mid, pn: pn || 1, ps: ps || 30, order: 'pubdate', tid: 0, keyword: '',
+    platform: 'web', web_location: 1550101,
+  });
 }

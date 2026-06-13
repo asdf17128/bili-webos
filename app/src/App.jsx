@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { initKeyboardNav, setFocus, onFocusChange } from './hooks/useFocus';
-import { getNavInfo } from './api/client';
+import { castAck, castSubscribe, getNavInfo } from './api/client';
 import { storage } from './utils/storage';
 import SidebarItem from './components/SidebarItem';
 
@@ -82,6 +82,7 @@ export default function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [toast, setToast] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
+  const pendingCastAckRef = useRef(null);
 
   useEffect(() => {
     initKeyboardNav();
@@ -92,6 +93,64 @@ export default function App() {
     }
     setTimeout(() => setFocus('content-0-0'), 500);
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = castSubscribe(async (event) => {
+      if (!event || event.kind !== 'command' || !event.command) return;
+      const command = event.command;
+
+      if (command.type === 'play') {
+        pendingCastAckRef.current = command;
+        if (command.contentType === 'live') {
+          setPlayerVideo(null);
+          setLiveRoom({
+            roomid: command.roomId,
+            title: command.title || '投屏直播',
+            owner: { name: '' },
+          });
+        } else {
+          setLiveRoom(null);
+          setPlayerVideo({
+            aid: command.aid,
+            bvid: command.bvid,
+            cid: command.cid,
+            epid: command.epid,
+            title: command.title || '投屏视频',
+            owner: { name: '' },
+            fromCast: true,
+            progress: Math.max(0, Number(command.seekTs || 0)),
+          });
+        }
+        return;
+      }
+
+      if (command.type === 'stop') {
+        window.dispatchEvent(new CustomEvent('bili-cast-command', { detail: command }));
+        setPlayerVideo(null);
+        setLiveRoom(null);
+        return;
+      }
+
+      window.dispatchEvent(new CustomEvent('bili-cast-command', { detail: command }));
+    }, (err) => {
+      console.error('Cast subscribe error:', err);
+    });
+
+    return () => unsubscribe?.();
+  }, []);
+
+  useEffect(() => {
+    const pending = pendingCastAckRef.current;
+    if (!pending) return;
+    if ((pending.contentType === 'video' && playerVideo) || (pending.contentType === 'live' && liveRoom)) {
+      castAck({
+        accepted: true,
+        command: pending,
+        at: Date.now(),
+      }).catch(() => {});
+      pendingCastAckRef.current = null;
+    }
+  }, [playerVideo, liveRoom]);
 
   useEffect(() => {
     const handleBack = () => {
@@ -182,7 +241,7 @@ export default function App() {
         {toast && <div className="toast">{toast}</div>}
       </div>
 
-      {playerVideo && <PlayerPage key={playerVideo.bvid} video={playerVideo} onBack={() => setPlayerVideo(null)} onPlayNext={(v) => setPlayerVideo(v)} />}
+      {playerVideo && <PlayerPage key={playerVideo.bvid || playerVideo.aid || playerVideo.cid} video={playerVideo} onBack={() => setPlayerVideo(null)} onPlayNext={(v) => setPlayerVideo(v)} />}
       {liveRoom && <LivePlayerPage key={liveRoom.roomid} room={liveRoom} onBack={() => setLiveRoom(null)} />}
 
       {showLogin && (

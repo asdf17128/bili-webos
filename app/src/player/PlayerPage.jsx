@@ -1,9 +1,25 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getPlayUrl, getDanmaku, getVideoInfo, reportHeartbeat, getRelated } from '../api/client';
-import { formatDuration, QUALITY_MAP } from '../utils/format';
+import { getPlayUrl, getDanmaku, getVideoInfo, reportHeartbeat, getRelated, getUpVideos, castReportProgress, castReportState } from '../api/client';
+import { formatDuration, formatTime, QUALITY_MAP } from '../utils/format';
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
 import DanmakuLayer from './DanmakuLayer';
+
+// Proxy + resize card thumbnails (same as VideoCard): the proxy adds the
+// Referer B站 image CDN needs, and @672w webp keeps the TV's image decoder from
+// choking on full-size covers (which is why direct-loaded thumbs failed).
+function proxyImg(url) {
+  if (!url) return '';
+  let u = url.startsWith('//') ? 'https:' + url : url;
+  if (u.includes('hdslb.com') && !u.includes('@')) u += '@672w_420h_1c.webp';
+  const base = (typeof window !== 'undefined' && window.webOS) ? 'http://127.0.0.1:7654' : storage.getProxyUrl();
+  try {
+    const parsed = new URL(u);
+    return `${base}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
+  } catch {
+    return u;
+  }
+}
 
 export default function PlayerPage({ video, onBack, onPlayNext }) {
   const videoRef = useRef(null);
@@ -20,17 +36,50 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const [danmakuEnabled, setDanmakuEnabled] = useState(true);
   const [videoTitle, setVideoTitle] = useState(video?.title || '');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [ended, setEnded] = useState(false);
   const [relatedVideos, setRelatedVideos] = useState([]);
-  // Focus: 'none' (no UI) | 'controls' | 'quality' | 'related' | 'endscreen'
+  // Bottom panel: 'related' (相关推荐) | 'up' (UP主投稿)
+  const [panelTab, setPanelTab] = useState('related');
+  const [upVideos, setUpVideos] = useState([]);
+  const [upName, setUpName] = useState('');
+  // Focus: 'none' | 'controls' | 'quality' | 'tabs' | 'related' (=grid) | 'endscreen'
   const [focusArea, setFocusArea] = useState('none');
   const [focusIdx, setFocusIdx] = useState(0);
   const controlsTimer = useRef(null);
   const timeUpdateRef = useRef(null);
   const cidRef = useRef(null);
   const startTimeRef = useRef(Date.now());
+  const upMidRef = useRef(null);
+  const upLoadingRef = useRef(false);
+  const upPnRef = useRef(1);
+  const upSeenRef = useRef(new Set());
+
+  const pendingSeekRef = useRef(null);
+
+  const queueOrApplySeek = useCallback((seekSec) => {
+    const target = Math.max(0, Number(seekSec) || 0);
+    if (!videoRef.current) return;
+    const canSeekNow = Number.isFinite(videoRef.current.duration) && videoRef.current.duration > 0;
+    if (canSeekNow) {
+      const max = Math.max(0, (videoRef.current.duration || 0) - 0.2);
+      videoRef.current.currentTime = Math.min(target, max || target);
+      pendingSeekRef.current = null;
+      return;
+    }
+    pendingSeekRef.current = target;
+  }, []);
+
+  const flushPendingSeek = useCallback(() => {
+    if (pendingSeekRef.current == null || !videoRef.current) return;
+    if (!(Number.isFinite(videoRef.current.duration) && videoRef.current.duration > 0)) return;
+    const max = Math.max(0, (videoRef.current.duration || 0) - 0.2);
+    videoRef.current.currentTime = Math.min(pendingSeekRef.current, max || pendingSeekRef.current);
+    pendingSeekRef.current = null;
+  }, []);
 
   const CONTROLS = ['play', 'danmaku', 'quality'];
+  const END_SCREEN_MAX = 8; // up to 2 rows of 4 on the end screen
 
   // Initialize Shaka Player
   useEffect(() => {
@@ -42,42 +91,40 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       const player = new shaka.Player();
       await player.attach(videoRef.current);
       shakaRef.current = player;
-      player.addEventListener('error', (e) => console.error('Shaka error:', e.detail));
-      if (mounted) loadVideo(player);
-    }
-    init();
-    return () => { mounted = false; shakaRef.current?.destroy(); };
-  }, []);
 
-  const loadVideo = useCallback(async (player) => {
-    if (!video?.bvid) return;
-    setLoading(true);
-    try {
-      let cid = video.cid;
-      if (!cid) {
-        const info = await getVideoInfo(video.bvid);
-        cid = info?.data?.cid;
-        if (info?.data?.title) setVideoTitle(info.data.title);
-      }
-      if (!cid) return;
-      cidRef.current = cid;
+      // Resilience: more retries + longer timeouts so a flaky segment fetch is
+      // retried instead of fataling the whole playback (TV CDN is unreliable).
+      player.configure({
+        // ABR off: the app has an explicit quality selector, so don't let
+        // Shaka silently downgrade bitrate mid-playback on bandwidth wobble.
+        abr: { enabled: false },
+        // No exponential backoff: keep retries for reliability but a flat,
+        // short delay so a transient failure doesn't add seconds of dead wait
+        // (an aggressive backoff here added ~7.5s to every load).
+        manifest: { retryParameters: { maxAttempts: 4, baseDelay: 150, backoffFactor: 1, timeout: 15000 } },
+        streaming: {
+          retryParameters: { maxAttempts: 6, baseDelay: 200, backoffFactor: 1, fuzzFactor: 0.5, timeout: 20000 },
+          bufferingGoal: 30,
+          rebufferingGoal: 2,
+        },
+      });
 
-      const settings = storage.getSettings();
-      const res = await getPlayUrl(video.bvid, cid, settings.quality || 80);
-      const dash = res?.data?.dash;
-      if (!dash) return;
+      // On a network/media error, resume streaming instead of dying silently.
+      // category 1 = NETWORK, 3 = MEDIA — usually recoverable mid-playback.
+      player.addEventListener('error', (e) => {
+        const err = e.detail;
+        console.error('Shaka error code:', err?.code, 'category:', err?.category, err);
+        if (err && (err.category === 1 || err.category === 3)) {
+          try { player.retryStreaming(); } catch {}
+        }
+      });
 
-      setQualities((res?.data?.accept_quality || []).map(q => ({ qn: q, label: QUALITY_MAP[q] || `${q}` })));
-      setCurrentQuality(res?.data?.quality || 80);
-
-      const mpd = buildMPD(dash);
-      const blob = new Blob([mpd], { type: 'application/dash+xml' });
-      const mpdUrl = URL.createObjectURL(blob);
-
+      // Rewrite all media/segment URLs through the local proxy (TV) or Mac
+      // proxy. Registered once here — not per load — so retries don't stack
+      // duplicate filters.
       player.getNetworkingEngine().registerRequestFilter((type, request) => {
-        if (request.uris[0].startsWith('http')) {
+        if (request.uris[0] && request.uris[0].startsWith('http')) {
           const originalUrl = new URL(request.uris[0]);
-          // Use local proxy on TV (JS Service), fallback to Mac proxy
           const proxyBase = (typeof window !== 'undefined' && window.webOS)
             ? 'http://127.0.0.1:7654'
             : storage.getProxyUrl();
@@ -85,22 +132,101 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }
       });
 
-      await player.load(mpdUrl);
-      URL.revokeObjectURL(mpdUrl);
+      if (mounted) loadVideo(player);
+    }
+    init();
+    return () => { mounted = false; shakaRef.current?.destroy(); };
+  }, []);
 
-      if (video.progress && video.progress > 0 && video.progress < (dash.duration || 9999) - 10) {
-        videoRef.current.currentTime = video.progress;
+  const loadVideo = useCallback(async (player) => {
+    if (!video?.bvid && !video?.aid) return;
+    setLoading(true);
+    setLoadError(false);
+    castReportState({ playState: 'loading' }).catch(() => {});
+    try {
+      let cid = video.cid;
+      let ownerMid = video.owner?.mid || null;
+      let ownerName = video.owner?.name || '';
+      if (!cid) {
+        const info = await getVideoInfo(video);
+        cid = info?.data?.cid;
+        if (info?.data?.title) setVideoTitle(info.data.title);
+        if (info?.data?.owner) {
+          ownerMid = ownerMid || info.data.owner.mid;
+          ownerName = ownerName || info.data.owner.name;
+        }
+        // Cast can hand us an aid-only video (no bvid). Backfill bvid from the
+        // view response so heartbeat/related (which key on bvid) keep working.
+        if (!video.bvid && info?.data?.bvid) video.bvid = info.data.bvid;
+      }
+      if (!cid) throw new Error('No cid for video');
+      cidRef.current = cid;
+      // Reset the "UP主投稿" tab for this uploader
+      upMidRef.current = ownerMid;
+      upPnRef.current = 1;
+      upSeenRef.current = new Set();
+      setUpVideos([]);
+      setUpName(ownerName || '');
+      setPanelTab('related');
+
+      const settings = storage.getSettings();
+      let loaded = false;
+      let lastErr = null;
+      // Re-fetch playurl + retry: a fresh playurl hands back different CDN
+      // nodes, and buildMPD now carries backup URLs, so a bad node fails over
+      // instead of leaving a black "loading forever" screen.
+      // Pass the whole `video` (not just bvid) so a cast-initiated, aid-only
+      // payload still resolves to a playurl via getPlayUrl's object overload.
+      for (let attempt = 0; attempt < 3 && !loaded; attempt++) {
+        try {
+          const res = await getPlayUrl(video, cid, settings.quality || 80);
+          const dash = res?.data?.dash;
+          if (!dash) throw new Error('No DASH stream in playurl (DRM/bangumi?)');
+
+          setQualities((res?.data?.accept_quality || []).map(q => ({ qn: q, label: QUALITY_MAP[q] || `${q}` })));
+          setCurrentQuality(res?.data?.quality || 80);
+
+          const mpd = buildMPD(dash);
+          const blob = new Blob([mpd], { type: 'application/dash+xml' });
+          const mpdUrl = URL.createObjectURL(blob);
+          // Resume directly at the saved position via load()'s startTime — don't
+          // load at 0 then seek, which buffers the intro and immediately throws
+          // it away (the main cause of the long resume-load wait).
+          const resumeAt = (video.progress && video.progress > 0 && video.progress < (dash.duration || 9999) - 10)
+            ? video.progress : 0;
+          try {
+            await player.load(mpdUrl, resumeAt || undefined);
+          } finally {
+            URL.revokeObjectURL(mpdUrl);
+          }
+          loaded = true;
+        } catch (e) {
+          lastErr = e;
+          console.warn('[loadVideo] attempt ' + (attempt + 1) + ' failed:', e?.message || e);
+          if (attempt < 2) await new Promise(r => setTimeout(r, 800));
+        }
+      }
+      if (!loaded) throw lastErr || new Error('Playback load failed');
+
+      // load(mpdUrl, resumeAt) already started playback at the saved offset.
+      // For a cast-initiated resume, also queue the seek through
+      // queueOrApplySeek so it still lands if duration isn't ready yet.
+      if (video.progress && video.progress > 0) {
+        queueOrApplySeek(video.progress);
       }
 
+      selectBestVariant(player);
       videoRef.current.play();
       setPlaying(true);
       setLoading(false);
+      castReportState({ playState: 'playing' }).catch(() => {});
 
       videoRef.current.addEventListener('ended', () => {
         setEnded(true);
         setShowControls(true);
         setFocusArea('endscreen');
         setFocusIdx(0);
+        castReportState({ playState: 'end' }).catch(() => {});
       });
 
       try { setDanmakus(await getDanmaku(cid)); } catch {}
@@ -109,20 +235,29 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         setRelatedVideos((rel?.data || []).slice(0, 12));
       } catch {}
     } catch (err) {
-      console.error('Load video error:', err);
+      console.error('Load video error:', err?.message || err);
       setLoading(false);
+      setLoadError(true);
+      castReportState({ playState: 'error', error: err?.message || 'load-failed' }).catch(() => {});
     }
-  }, [video]);
+  }, [video, queueOrApplySeek]);
 
   function buildMPD(dash) {
     const duration = dash.duration || 0;
     const minBuffer = dash.minBufferTime || 1.5;
+    // ABR is off and manual quality re-fetches playurl, so the MPD only needs
+    // the single highest-bitrate video + audio. Emitting every quality/codec
+    // (B站 returns AVC+HEVC+AV1 × resolutions) makes Shaka's parse/codec-probe
+    // on the TV's weak CPU take several seconds before the first byte loads.
+    const pickBest = (arr) => (arr && arr.length)
+      ? [arr.reduce((a, b) => ((b.bandwidth || 0) > (a.bandwidth || 0) ? b : a))] : [];
+    const videoList = pickBest(dash.video);
+    const audioList = pickBest(dash.audio);
     let videoAdaptations = '';
-    if (dash.video?.length > 0) {
-      const reps = dash.video.map(v => {
-        const baseUrl = v.baseUrl || v.base_url || '';
+    if (videoList.length > 0) {
+      const reps = videoList.map(v => {
         return `<Representation id="${v.id}" bandwidth="${v.bandwidth || 1000000}" codecs="${v.codecs || 'avc1.640032'}" mimeType="${v.mimeType || 'video/mp4'}" width="${v.width || 1920}" height="${v.height || 1080}" frameRate="${v.frameRate || v.frame_rate || '30'}">
-          <BaseURL>${escapeXml(baseUrl)}</BaseURL>
+          ${buildBaseUrls(v)}
           <SegmentBase indexRange="${v.SegmentBase?.indexRange || v.segment_base?.index_range || '0-0'}">
             <Initialization range="${v.SegmentBase?.Initialization || v.segment_base?.initialization || '0-0'}" />
           </SegmentBase>
@@ -131,11 +266,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       videoAdaptations = `<AdaptationSet contentType="video" mimeType="video/mp4" segmentAlignment="true">${reps}</AdaptationSet>`;
     }
     let audioAdaptations = '';
-    if (dash.audio?.length > 0) {
-      const reps = dash.audio.map(a => {
-        const baseUrl = a.baseUrl || a.base_url || '';
+    if (audioList.length > 0) {
+      const reps = audioList.map(a => {
         return `<Representation id="${a.id}" bandwidth="${a.bandwidth || 128000}" codecs="${a.codecs || 'mp4a.40.2'}" mimeType="${a.mimeType || 'audio/mp4'}">
-          <BaseURL>${escapeXml(baseUrl)}</BaseURL>
+          ${buildBaseUrls(a)}
           <SegmentBase indexRange="${a.SegmentBase?.indexRange || a.segment_base?.index_range || '0-0'}">
             <Initialization range="${a.SegmentBase?.Initialization || a.segment_base?.initialization || '0-0'}" />
           </SegmentBase>
@@ -154,15 +288,97 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  // Emit primary + backup CDN URLs as multiple <BaseURL> elements so Shaka can
+  // fail over when a node returns bad/short data (the cause of the "Payload
+  // length does not match range requested bytes" + Shaka 1001 load failures).
+  //
+  // B站's primary baseUrl is usually a flaky PCDN/P2P node (mcdn.bilivideo.cn
+  // on a non-standard port), while a stable origin CDN (upos / *.bilivideo.com
+  // on :443) sits in backupUrl. Order origin FIRST so Shaka prefers it and only
+  // falls back to PCDN if the origin is unreachable.
+  function buildBaseUrls(rep) {
+    let urls = [];
+    const primary = rep.baseUrl || rep.base_url;
+    if (primary) urls.push(primary);
+    const backups = rep.backupUrl || rep.backup_url || [];
+    for (let i = 0; i < backups.length; i++) {
+      if (backups[i]) urls.push(backups[i]);
+    }
+    const seen = {};
+    urls = urls.filter(u => (seen[u] ? false : (seen[u] = true)));
+    const isPcdn = (u) => /mcdn\.|szbdyd|\bxy[\dx]+xy\b|:\d{4,5}\//i.test(u);
+    urls.sort((a, b) => (isPcdn(a) ? 1 : 0) - (isPcdn(b) ? 1 : 0));
+    return urls
+      .map(u => `<BaseURL>${escapeXml(u)}</BaseURL>`)
+      .join('\n          ') || '<BaseURL></BaseURL>';
+  }
+
+  // With ABR disabled, explicitly pin to the highest-bandwidth variant so the
+  // stream stays at the requested quality (B站 only returns variants <= the
+  // requested qn, so "highest" == the chosen quality ceiling).
+  function selectBestVariant(player) {
+    try {
+      const variants = player.getVariantTracks();
+      if (!variants || !variants.length) return;
+      const best = variants.reduce((a, b) => (b.bandwidth > a.bandwidth ? b : a));
+      const active = variants.find(v => v.active);
+      // load() already picks the first (highest) variant with ABR off — only
+      // switch if it isn't already best, and DON'T clear the buffer (avoids a
+      // wasteful full re-download that made loading slow).
+      if (active && active.id === best.id) return;
+      player.selectVariantTrack(best, /* clearBuffer */ false);
+    } catch (e) { /* ignore */ }
+  }
+
   // Time update
   useEffect(() => {
     timeUpdateRef.current = setInterval(() => {
       if (videoRef.current) {
-        setCurrentTime(videoRef.current.currentTime);
-        setDuration(videoRef.current.duration || 0);
+        const nextCurrentTime = videoRef.current.currentTime;
+        const nextDuration = videoRef.current.duration || 0;
+        setCurrentTime(nextCurrentTime);
+        setDuration(nextDuration);
+        castReportProgress({
+          duration: Math.floor(nextDuration),
+          position: Math.floor(nextCurrentTime),
+        }).catch(() => {});
       }
     }, 500);
     return () => clearInterval(timeUpdateRef.current);
+  }, []);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+
+    const handlePlay = () => {
+      setPlaying(true);
+      castReportState({ playState: 'playing' }).catch(() => {});
+    };
+    const handleLoadedMetadata = () => flushPendingSeek();
+    const handleCanPlay = () => flushPendingSeek();
+
+    const handlePause = () => {
+      if (!ended) castReportState({ playState: 'paused' }).catch(() => {});
+      setPlaying(false);
+    };
+
+    el.addEventListener('play', handlePlay);
+    el.addEventListener('pause', handlePause);
+    el.addEventListener('loadedmetadata', handleLoadedMetadata);
+    el.addEventListener('canplay', handleCanPlay);
+    return () => {
+      el.removeEventListener('play', handlePlay);
+      el.removeEventListener('pause', handlePause);
+      el.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      el.removeEventListener('canplay', handleCanPlay);
+    };
+  }, [ended, flushPendingSeek]);
+
+  useEffect(() => {
+    return () => {
+      castReportState({ playState: 'stop' }).catch(() => {});
+    };
   }, []);
 
   // Heartbeat
@@ -174,6 +390,47 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     }, 15000);
     return () => clearInterval(hb);
   }, [video?.bvid]);
+
+  // Stall watchdog: if playback freezes mid-video (segment error, network
+  // hiccup) and Shaka doesn't recover on its own, retry streaming; if it's
+  // still stuck, nudge currentTime to force a re-buffer.
+  // Fixes "plays halfway, freezes, and never resumes".
+  useEffect(() => {
+    let lastTime = -1;
+    let stalledSec = 0;
+    const iv = setInterval(() => {
+      const v = videoRef.current;
+      if (!v || v.paused || v.ended || v.seeking || v.readyState < 2) {
+        stalledSec = 0;
+        lastTime = v ? v.currentTime : -1;
+        return;
+      }
+      if (Math.abs(v.currentTime - lastTime) < 0.05) {
+        stalledSec += 1;
+        if (stalledSec === 3) {
+          console.warn('[watchdog] playback stalled 3s, retrying streaming');
+          try { shakaRef.current?.retryStreaming(); } catch {}
+        } else if (stalledSec >= 8) {
+          console.warn('[watchdog] still stalled, nudging currentTime');
+          try { v.currentTime = v.currentTime + 0.5; v.play(); } catch {}
+          stalledSec = 0;
+        }
+      } else {
+        stalledSec = 0;
+      }
+      lastTime = v.currentTime;
+    }, 1000);
+    return () => clearInterval(iv);
+  }, []);
+
+  // When focus returns to the tab row, scroll it back into view — the grid may
+  // have scrolled the panel down, leaving the tabs (and focus) off-screen.
+  useEffect(() => {
+    if (focusArea === 'tabs') {
+      const el = document.querySelector('.panel-tab-row');
+      if (el) el.scrollIntoView({ block: 'nearest' });
+    }
+  }, [focusArea]);
 
   // Auto-hide controls
   const hideControlsLater = useCallback(() => {
@@ -224,14 +481,52 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     relatedSeenRef.current = new Set(relatedVideos.map(v => v.bvid).filter(Boolean));
   }, [relatedVideos.length === 0]);
 
+  // Load this uploader's videos (newest first) for the "UP主投稿" tab.
+  // reset=true starts fresh; otherwise appends the next page.
+  const loadUpVideos = useCallback(async (reset) => {
+    if (upLoadingRef.current) return;
+    let mid = upMidRef.current;
+    // The list item may not have carried owner.mid — resolve it lazily.
+    if (!mid && video?.bvid) {
+      try {
+        const info = await getVideoInfo(video.bvid);
+        mid = info?.data?.owner?.mid || null;
+        upMidRef.current = mid;
+        if (info?.data?.owner?.name) setUpName(info.data.owner.name);
+      } catch {}
+    }
+    if (!mid) return;
+    upLoadingRef.current = true;
+    try {
+      if (reset) { upPnRef.current = 1; upSeenRef.current = new Set(); }
+      const res = await getUpVideos(mid, upPnRef.current, 30);
+      const vlist = (res?.data?.list?.vlist) || [];
+      const mapped = vlist.filter(v => v.bvid && !upSeenRef.current.has(v.bvid)).map(v => {
+        upSeenRef.current.add(v.bvid);
+        return {
+          bvid: v.bvid,
+          title: v.title,
+          pic: v.pic,
+          owner: { name: v.author, mid: v.mid },
+          pubdate: v.created,
+        };
+      });
+      setUpVideos(prev => reset ? mapped : [...prev, ...mapped]);
+      upPnRef.current += 1;
+    } catch (e) {
+      console.warn('[loadUpVideos] failed:', e?.message || e);
+    }
+    upLoadingRef.current = false;
+  }, [video]);
+
   // Change quality
   const changeQuality = useCallback(async (qn) => {
-    if (!video?.bvid || !shakaRef.current) return;
+    if ((!video?.bvid && !video?.aid) || !shakaRef.current) return;
     setCurrentQuality(qn);
     storage.setSettings({ ...storage.getSettings(), quality: qn });
     try {
       let cid = video.cid || cidRef.current;
-      const res = await getPlayUrl(video.bvid, cid, qn);
+      const res = await getPlayUrl(video, cid, qn);
       const dash = res?.data?.dash;
       if (dash) {
         const pos = videoRef.current.currentTime;
@@ -240,6 +535,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         const mpdUrl = URL.createObjectURL(blob);
         await shakaRef.current.load(mpdUrl);
         URL.revokeObjectURL(mpdUrl);
+        selectBestVariant(shakaRef.current);
         videoRef.current.currentTime = pos;
         videoRef.current.play();
         setCurrentQuality(res?.data?.quality || qn);
@@ -248,6 +544,49 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       console.error('Quality change error:', e);
     }
   }, [video]);
+
+  useEffect(() => {
+    storage.setSettings({ ...storage.getSettings(), danmaku: danmakuEnabled });
+  }, [danmakuEnabled]);
+
+  useEffect(() => {
+    const handleCastCommand = (event) => {
+      const command = event.detail;
+      if (!command || !videoRef.current) return;
+
+      if (command.type === 'pause') {
+        videoRef.current.pause();
+        setPlaying(false);
+        castReportState({ playState: 'paused' }).catch(() => {});
+        return;
+      }
+      if (command.type === 'resume') {
+        videoRef.current.play();
+        setPlaying(true);
+        castReportState({ playState: 'playing' }).catch(() => {});
+        return;
+      }
+      if (command.type === 'seek') {
+        queueOrApplySeek(command.positionSec);
+        castReportProgress({
+          duration: Math.floor(videoRef.current.duration || 0),
+          position: Math.floor(videoRef.current.currentTime || 0),
+        }).catch(() => {});
+        return;
+      }
+      if (command.type === 'switchDanmaku') {
+        setDanmakuEnabled(!!command.open);
+        return;
+      }
+      if (command.type === 'stop') {
+        videoRef.current.pause();
+        onBack?.();
+      }
+    };
+
+    window.addEventListener('bili-cast-command', handleCastCommand);
+    return () => window.removeEventListener('bili-cast-command', handleCastCommand);
+  }, [onBack, queueOrApplySeek]);
 
   // ========== Keyboard handler ==========
   useEffect(() => {
@@ -316,10 +655,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }
         if (e.key === 'ArrowDown') {
           e.preventDefault();
-          if (relatedVideos.length > 0) {
+          if (relatedVideos.length > 0 || upMidRef.current) {
             setShowRelated(true);
-            setFocusArea('related');
-            setFocusIdx(0);
+            setFocusArea('tabs');
             if (controlsTimer.current) clearTimeout(controlsTimer.current);
           }
           return true;
@@ -338,8 +676,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           e.preventDefault();
           const btn = CONTROLS[focusIdx];
           if (btn === 'play') {
-            if (videoRef.current.paused) { videoRef.current.play(); setPlaying(true); }
-            else { videoRef.current.pause(); setPlaying(false); }
+            if (videoRef.current.paused) {
+              videoRef.current.play(); setPlaying(true);
+              castReportState({ playState: 'playing' }).catch(() => {});
+            } else {
+              videoRef.current.pause(); setPlaying(false);
+              castReportState({ playState: 'paused' }).catch(() => {});
+            }
           } else if (btn === 'danmaku') {
             setDanmakuEnabled(prev => !prev);
           } else if (btn === 'quality') {
@@ -384,9 +727,28 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }, 30);
       }
 
-      // === Related videos panel (4-column grid) ===
+      // === Tab row (相关推荐 / UP主投稿) ===
+      if (focusArea === 'tabs') {
+        e.preventDefault();
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+          const next = panelTab === 'related' ? 'up' : 'related';
+          setPanelTab(next);
+          setFocusIdx(0);
+          if (next === 'up' && upVideos.length === 0) loadUpVideos(true);
+        } else if (e.key === 'ArrowUp') {
+          setFocusArea('controls');
+          setFocusIdx(0);
+        } else if (e.key === 'ArrowDown' || e.key === 'Enter') {
+          setFocusArea('related'); // enter the grid (shows the active tab's list)
+          setFocusIdx(0);
+        }
+        return true;
+      }
+
+      // === Video grid for the active tab (4-column) ===
       if (focusArea === 'related') {
         const RCOLS = 4;
+        const gridList = panelTab === 'up' ? upVideos : relatedVideos;
         if (e.key === 'ArrowLeft') {
           e.preventDefault();
           if (focusIdx % RCOLS > 0) {
@@ -397,7 +759,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }
         if (e.key === 'ArrowRight') {
           e.preventDefault();
-          if (focusIdx % RCOLS < RCOLS - 1 && focusIdx < relatedVideos.length - 1) {
+          if (focusIdx % RCOLS < RCOLS - 1 && focusIdx < gridList.length - 1) {
             setFocusIdx(prev => prev + 1);
             scrollRelatedIntoView(focusIdx + 1);
           }
@@ -410,42 +772,49 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             setFocusIdx(newIdx);
             scrollRelatedIntoView(newIdx);
           } else {
-            setFocusArea('controls');
-            setFocusIdx(0);
+            setFocusArea('tabs'); // top row → back up to the tab bar
           }
           return true;
         }
         if (e.key === 'ArrowDown') {
           e.preventDefault();
           const nextIdx = focusIdx + RCOLS;
-          if (nextIdx < relatedVideos.length) {
+          if (nextIdx < gridList.length) {
             setFocusIdx(nextIdx);
             scrollRelatedIntoView(nextIdx);
           } else {
-            loadMoreRelated();
+            if (panelTab === 'up') loadUpVideos(false);
+            else loadMoreRelated();
           }
           return true;
         }
         if (e.key === 'Enter') {
           e.preventDefault();
-          const rv = relatedVideos[focusIdx];
+          const rv = gridList[focusIdx];
           if (rv && onPlayNext) onPlayNext(rv);
           return true;
         }
         return false;
       }
 
-      // === End screen ===
+      // === End screen (4-column grid) ===
       if (focusArea === 'endscreen') {
-        if (e.key === 'ArrowLeft') { e.preventDefault(); setFocusIdx(prev => Math.max(0, prev - 1)); return true; }
-        if (e.key === 'ArrowRight') { e.preventDefault(); setFocusIdx(prev => Math.min(relatedVideos.length - 1, prev + 1)); return true; }
-        if (e.key === 'Enter') {
-          e.preventDefault();
+        e.preventDefault();
+        const ECOLS = 4;
+        const n = Math.min(END_SCREEN_MAX, relatedVideos.length);
+        if (e.key === 'ArrowLeft') {
+          if (focusIdx % ECOLS > 0) setFocusIdx(focusIdx - 1);
+        } else if (e.key === 'ArrowRight') {
+          if (focusIdx % ECOLS < ECOLS - 1 && focusIdx < n - 1) setFocusIdx(focusIdx + 1);
+        } else if (e.key === 'ArrowUp') {
+          if (focusIdx >= ECOLS) setFocusIdx(focusIdx - ECOLS);
+        } else if (e.key === 'ArrowDown') {
+          if (focusIdx + ECOLS < n) setFocusIdx(focusIdx + ECOLS);
+        } else if (e.key === 'Enter') {
           const rv = relatedVideos[focusIdx];
           if (rv && onPlayNext) onPlayNext(rv);
-          return true;
         }
-        return false;
+        return true;
       }
 
       return false;
@@ -453,7 +822,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
     setCustomKeyHandler(handler);
     return () => setCustomKeyHandler(null);
-  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, ended, relatedVideos, onBack, onPlayNext, openControls, hideControlsLater, changeQuality]);
+  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, ended, relatedVideos, panelTab, upVideos, loadUpVideos, onBack, onPlayNext, openControls, hideControlsLater, changeQuality]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -468,6 +837,15 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: 'rgba(0,0,0,0.8)', zIndex: 50 }}>
           <div className="loading"><div className="loading-spinner" />加载中...</div>
+        </div>
+      )}
+
+      {loadError && !loading && (
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          gap: 16, background: 'rgba(0,0,0,0.85)', zIndex: 50 }}>
+          <div style={{ fontSize: 26, color: '#fff' }}>视频加载失败</div>
+          <div style={{ fontSize: 18, color: '#aaa' }}>该视频源节点异常,请按返回键重试或换一个视频</div>
         </div>
       )}
 
@@ -494,28 +872,55 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           <span className="player-time">{formatDuration(currentTime)} / {formatDuration(duration)}</span>
         </div>
 
-        {/* Related videos panel (4-column grid below controls) */}
-        {showRelated && relatedVideos.length > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginTop: 16, paddingBottom: 10 }}>
-            {relatedVideos.map((rv, i) => {
-              const thumb = (rv.pic || '').startsWith('//') ? 'https:' + rv.pic : rv.pic;
+        {/* Tabbed panel below controls: 相关推荐 / UP主投稿 */}
+        {showRelated && (
+          <div style={{ marginTop: 16, paddingBottom: 10 }}>
+            <div className="panel-tab-row" style={{ display: 'flex', gap: 14, marginBottom: 12 }}>
+              {[['related', '相关推荐'], ['up', upName ? `UP主投稿 · ${upName}` : 'UP主投稿']].map(([key, label]) => (
+                <div key={key} style={{
+                  padding: '6px 18px', fontSize: 18, borderRadius: 6,
+                  color: panelTab === key ? '#fff' : '#aaa',
+                  background: panelTab === key ? '#00a1d6' : 'rgba(255,255,255,0.08)',
+                  outline: focusArea === 'tabs' && panelTab === key ? '3px solid #fff' : 'none',
+                }}>{label}</div>
+              ))}
+            </div>
+
+            {(() => {
+              const list = panelTab === 'up' ? upVideos : relatedVideos;
+              if (list.length === 0) {
+                return <div style={{ color: '#888', fontSize: 18, padding: '20px 4px' }}>
+                  {panelTab === 'up' ? (upMidRef.current ? '加载中…' : '暂无 UP 主信息') : '暂无相关推荐'}
+                </div>;
+              }
               return (
-                <div key={rv.bvid || i} className="related-card" onClick={() => onPlayNext?.(rv)}
-                  style={{
-                    cursor: 'pointer',
-                    outline: focusArea === 'related' && focusIdx === i ? '4px solid #00a1d6' : 'none',
-                    borderRadius: 6, overflow: 'hidden',
-                  }}>
-                  <div style={{ width: '100%', aspectRatio: '16/9', background: '#1a1a2e', borderRadius: 6, overflow: 'hidden' }}>
-                    {thumb && <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
-                  </div>
-                  <div style={{ padding: '6px 4px', fontSize: 18, color: '#ccc', lineHeight: 1.3,
-                    overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
-                    {rv.title}
-                  </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+                  {list.map((rv, i) => {
+                    const thumb = proxyImg(rv.pic);
+                    return (
+                      <div key={rv.bvid || i} className="related-card" onClick={() => onPlayNext?.(rv)}
+                        style={{
+                          cursor: 'pointer',
+                          outline: focusArea === 'related' && focusIdx === i ? '4px solid #00a1d6' : 'none',
+                          borderRadius: 6, overflow: 'hidden',
+                        }}>
+                        <div style={{ width: '100%', aspectRatio: '16/9', background: '#1a1a2e', borderRadius: 6, overflow: 'hidden' }}>
+                          {thumb && <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                        </div>
+                        <div style={{ padding: '6px 4px 0', fontSize: 18, color: '#ccc', lineHeight: 1.3,
+                          overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
+                          {rv.title}
+                        </div>
+                        <div style={{ padding: '2px 4px 6px', fontSize: 14, color: '#888',
+                          overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                          {[rv.owner?.name, formatTime(rv.pubdate)].filter(Boolean).join(' · ')}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               );
-            })}
+            })()}
           </div>
         )}
       </div>
@@ -538,28 +943,41 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           background: 'rgba(0,0,0,0.85)', zIndex: 60,
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         }}>
-          <div style={{ fontSize: 28, color: '#fff', marginBottom: 30 }}>播放结束</div>
-          <div style={{ fontSize: 20, color: '#aaa', marginBottom: 20 }}>接下来播放</div>
-          <div style={{ display: 'flex', gap: 20 }}>
-            {relatedVideos.map((rv, i) => {
-              const thumb = (rv.pic || '').startsWith('//') ? 'https:' + rv.pic : rv.pic;
+          <div style={{ fontSize: 30, color: '#fff', marginBottom: 6 }}>播放结束</div>
+          <div style={{ fontSize: 20, color: '#999', marginBottom: 28 }}>接下来播放</div>
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(4, 300px)', gap: '24px 24px',
+            justifyContent: 'center',
+          }}>
+            {relatedVideos.slice(0, END_SCREEN_MAX).map((rv, i) => {
+              const thumb = proxyImg(rv.pic);
+              const focused = focusArea === 'endscreen' && focusIdx === i;
               return (
                 <div key={rv.bvid || i} onClick={() => onPlayNext?.(rv)}
                   style={{
-                    width: 280, cursor: 'pointer',
-                    outline: focusArea === 'endscreen' && focusIdx === i ? '4px solid #00a1d6' : 'none',
+                    width: 300, cursor: 'pointer',
+                    background: focused ? '#1f2440' : 'transparent',
+                    outline: focused ? '4px solid #00a1d6' : 'none',
                     borderRadius: 8, overflow: 'hidden',
+                    transition: 'background 0.15s',
                   }}>
-                  <div style={{ width: '100%', aspectRatio: '16/9', background: '#1a1a2e', borderRadius: 8, overflow: 'hidden' }}>
+                  <div style={{ width: '100%', aspectRatio: '16/9', background: '#1a1a2e', overflow: 'hidden' }}>
                     {thumb && <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                   </div>
-                  <div style={{ padding: '8px 4px', fontSize: 14, color: '#ccc', lineHeight: 1.3,
-                    overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                  <div style={{ padding: '8px 8px 2px', fontSize: 15, color: '#eee', lineHeight: 1.35,
+                    overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', height: 42 }}>
                     {rv.title}
+                  </div>
+                  <div style={{ padding: '0 8px 10px', fontSize: 13, color: '#888',
+                    overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                    {[rv.owner?.name, formatTime(rv.pubdate)].filter(Boolean).join(' · ')}
                   </div>
                 </div>
               );
             })}
+          </div>
+          <div style={{ marginTop: 24, fontSize: 16, color: '#666' }}>
+            ← → ↑ ↓ 选择 · OK 播放 · 返回键 退出
           </div>
         </div>
       )}

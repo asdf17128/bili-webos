@@ -23,7 +23,7 @@ function proxyImg(url) {
   }
 }
 
-export default React.memo(function VideoCard({ video, focusId, row, col, group, onSelect }) {
+export default React.memo(function VideoCard({ video, focusId, row, col, group, onSelect, followed = false }) {
   const handleSelect = useCallback(() => {
     onSelect?.(video);
   }, [video, onSelect]);
@@ -59,6 +59,7 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
         <div className="video-card-title">{video.title}</div>
         <div className="video-card-meta">
           {video.owner?.name && <span>{video.owner.name}</span>}
+          {followed && <span style={{ color: '#00a1d6', fontWeight: 600 }}>已关注</span>}
           {video.stat?.view != null && <span>{formatCount(video.stat.view)}播放</span>}
           {video.play != null && <span>{formatCount(video.play)}播放</span>}
           {video.pubdate && <span>{formatTime(video.pubdate)}</span>}

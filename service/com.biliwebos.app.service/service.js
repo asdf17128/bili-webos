@@ -9,9 +9,18 @@ var http = require('http');
 var zlib = require('zlib');
 var fs = require('fs');
 var path = require('path');
-var url = require('url');
+var os = require('os');
+var childProcess = require('child_process');
+
+var deviceProfile = require('./cast/deviceProfile');
+var CastController = require('./cast/castController').CastController;
+var CastLanServer = require('./cast/ssdpServer').CastLanServer;
 
 var service = new Service('com.biliwebos.app.service');
+
+// Reuse TLS connections to CDN hosts. The TV's CPU makes a fresh TLS handshake
+// per segment expensive; keep-alive cuts initial-load and seek latency a lot.
+var keepAliveAgent = new https.Agent({ keepAlive: true, maxSockets: 8, keepAliveMsecs: 15000 });
 
 // Cookie storage
 var COOKIE_FILE = path.join('/media/internal', 'bili_cookies.json');
@@ -24,6 +33,22 @@ try {
 
 function saveCookies() {
   try { fs.writeFileSync(COOKIE_FILE, JSON.stringify(storedCookies)); } catch (e) { }
+}
+
+var CAST_CONFIG_FILE = path.join('/media/internal', 'bili_cast_config.json');
+var castConfig = {};
+try {
+  if (fs.existsSync(CAST_CONFIG_FILE)) {
+    castConfig = JSON.parse(fs.readFileSync(CAST_CONFIG_FILE, 'utf-8'));
+  }
+} catch (e) { }
+
+if (castConfig.friendlyName === 'B站 webOS') {
+  castConfig.friendlyName = '我的小电视';
+}
+
+function saveCastConfig() {
+  try { fs.writeFileSync(CAST_CONFIG_FILE, JSON.stringify(castConfig)); } catch (e) { }
 }
 
 function serializeCookies(cookies) {
@@ -44,7 +69,11 @@ function isAllowedHost(host) {
 }
 
 // Make HTTPS request helper
-function makeRequest(parsedUrl, method, body, contentType, range, callback) {
+// forceIdentity: never request gzip/deflate. Required for the binary proxy
+// path (segments/images) which pipes bytes raw without forwarding
+// Content-Encoding — compressed bytes there corrupt the Range/Content-Length
+// and trigger Shaka's "Payload length does not match range requested bytes".
+function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity, callback) {
   var hostname = parsedUrl.hostname;
   var port = parsedUrl.port ? parseInt(parsedUrl.port) : 443;
   var isCDN = hostname.indexOf('bilivideo') >= 0 || hostname.indexOf('akamaized') >= 0;
@@ -54,7 +83,7 @@ function makeRequest(parsedUrl, method, body, contentType, range, callback) {
     'Referer': 'https://www.bilibili.com/',
     'Accept': isCDN ? '*/*' : 'application/json, text/plain, */*',
     'Accept-Language': 'zh-CN,zh;q=0.9',
-    'Accept-Encoding': isCDN ? 'identity' : 'gzip, deflate',
+    'Accept-Encoding': (isCDN || forceIdentity) ? 'identity' : 'gzip, deflate',
     'Cookie': serializeCookies(storedCookies)
   };
   if (!isCDN) headers['Origin'] = 'https://www.bilibili.com';
@@ -66,10 +95,14 @@ function makeRequest(parsedUrl, method, body, contentType, range, callback) {
     path: parsedUrl.pathname + (parsedUrl.search || ''),
     method: method || 'GET',
     headers: headers,
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
+    agent: keepAliveAgent
   };
 
+  var done = false;
   var req = https.request(options, function (res) {
+    if (done) return;
+    done = true;
     var setCookieHeaders = res.headers['set-cookie'];
     if (setCookieHeaders) {
       setCookieHeaders.forEach(function (sc) {
@@ -84,7 +117,11 @@ function makeRequest(parsedUrl, method, body, contentType, range, callback) {
     callback(null, res);
   });
 
-  req.on('error', function (err) { callback(err); });
+  // Without a timeout a stuck CDN socket hangs forever and the segment never
+  // returns, freezing playback permanently. Bail out so the caller can fail
+  // the request and Shaka can retry.
+  req.setTimeout(10000, function () { req.destroy(new Error('Upstream timeout')); });
+  req.on('error', function (err) { if (done) return; done = true; callback(err); });
   if (body) req.write(body);
   req.end();
 }
@@ -109,6 +146,95 @@ function decompressResponse(res, callback) {
   });
 }
 
+function getLanIp() {
+  var nets = os.networkInterfaces();
+  var names = Object.keys(nets);
+  for (var i = 0; i < names.length; i++) {
+    var rows = nets[names[i]] || [];
+    for (var j = 0; j < rows.length; j++) {
+      var row = rows[j];
+      if (row && row.family === 'IPv4' && !row.internal) return row.address;
+    }
+  }
+  return '127.0.0.1';
+}
+
+function getCastFriendlyName() {
+  return castConfig.friendlyName || '我的小电视';
+}
+
+var castController = new CastController();
+var castSubscribers = [];
+var pendingCastEvent = null;
+var castProfile = deviceProfile.createDeviceProfile({
+  uuid: castConfig.uuid,
+  friendlyName: getCastFriendlyName(),
+  ip: getLanIp(),
+  httpPort: 9958,
+});
+
+castConfig.uuid = castProfile.uuid;
+saveCastConfig();
+
+function notifyCastSubscribers(event) {
+  pendingCastEvent = event;
+  castSubscribers = castSubscribers.filter(function (message) {
+    try {
+      message.respond({
+        returnValue: true,
+        subscribed: true,
+        event: event,
+        status: castController.getStatus(),
+      });
+      pendingCastEvent = null;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  });
+}
+
+function launchAppForCast() {
+  childProcess.execFile('luna-send-pub', [
+    '-n', '1', '-f',
+    'luna://com.webos.service.applicationmanager/launch',
+    '{"id":"com.biliwebos.app"}'
+  ], function (err, stdout, stderr) {
+    if (err) {
+      console.error('[Cast] launch app failed:', err.message);
+      return;
+    }
+    if (stderr) console.log('[Cast] launch stderr:', stderr.trim());
+    if (stdout) console.log('[Cast] launch:', stdout.trim());
+  });
+}
+
+castController.onIntent(function (intent) {
+  launchAppForCast();
+  notifyCastSubscribers({ kind: 'command', command: intent });
+});
+
+var castLanServer = new CastLanServer({
+  profile: castProfile,
+  controller: castController,
+  onFrame: function (session, frame) {
+    if (frame.action === 'GetVolume') {
+      session.sendReply({ volume: 30 });
+      return;
+    }
+    if (frame.type !== 'command') return;
+
+    var intent = castController.handleCommand(session.id, frame.action, frame.body);
+    if (frame.action === 'PlayUrl' && !intent) {
+      session.sendReply({ accepted: false, reason: 'unsupported-playurl' });
+      return;
+    }
+    session.sendEmpty();
+  },
+});
+
+castController.setNetworkInfo(castProfile.ip, castProfile.httpPort);
+
 // ==================== Luna Bus Methods ====================
 
 service.register('fetch', function (message) {
@@ -124,7 +250,7 @@ service.register('fetch', function (message) {
   }
 
   makeRequest(parsed, message.payload.method, message.payload.body,
-    message.payload.contentType, message.payload.range, function (err, res) {
+    message.payload.contentType, message.payload.range, false, function (err, res) {
       if (err) { message.respond({ returnValue: false, error: err.message }); return; }
 
       decompressResponse(res, function (data) {
@@ -167,8 +293,57 @@ service.register('ping', function (message) {
     returnValue: true, status: 'ok',
     cookieKeys: Object.keys(storedCookies),
     nodeVersion: process.version,
-    localProxyPort: LOCAL_PROXY_PORT
+    localProxyPort: LOCAL_PROXY_PORT,
+    castHttpPort: castProfile.httpPort,
+    castFriendlyName: getCastFriendlyName(),
   });
+});
+
+service.register('castSubscribe', function (message) {
+  if (message.isSubscription || message.payload.subscribe) {
+    castSubscribers.push(message);
+    message.respond({
+      returnValue: true,
+      subscribed: true,
+      event: pendingCastEvent || { kind: 'ready' },
+      status: castController.getStatus(),
+    });
+    if (pendingCastEvent && pendingCastEvent.kind === 'command') pendingCastEvent = null;
+    return;
+  }
+  message.respond({
+    returnValue: true,
+    subscribed: false,
+    status: castController.getStatus(),
+  });
+});
+
+service.register('castAck', function (message) {
+  castController.ack(message.payload || {});
+  message.respond({ returnValue: true, status: castController.getStatus() });
+});
+
+service.register('castReportState', function (message) {
+  castController.reportState(message.payload || {});
+  notifyCastSubscribers({ kind: 'state', payload: message.payload || {} });
+  message.respond({ returnValue: true });
+});
+
+service.register('castReportProgress', function (message) {
+  castController.reportProgress(message.payload || {});
+  message.respond({ returnValue: true });
+});
+
+service.register('castGetStatus', function (message) {
+  message.respond({ returnValue: true, status: castController.getStatus() });
+});
+
+service.register('castSetConfig', function (message) {
+  if (message.payload && message.payload.friendlyName) {
+    castConfig.friendlyName = String(message.payload.friendlyName).slice(0, 64);
+    saveCastConfig();
+  }
+  message.respond({ returnValue: true, config: castConfig });
 });
 
 // ==================== Local HTTP Proxy ====================
@@ -208,10 +383,9 @@ var localServer = http.createServer(function (req, res) {
     return;
   }
 
-  makeRequest(parsed, req.method, null, null, req.headers['range'], function (err, proxyRes) {
+  makeRequest(parsed, req.method, null, null, req.headers['range'], true, function (err, proxyRes) {
     if (err) {
-      res.writeHead(502);
-      res.end(err.message);
+      if (!res.headersSent) { res.writeHead(502); res.end(err.message); }
       return;
     }
 
@@ -225,6 +399,12 @@ var localServer = http.createServer(function (req, res) {
 
     res.writeHead(proxyRes.statusCode, responseHeaders);
     proxyRes.pipe(res);
+
+    // If the upstream errors/truncates mid-stream, tear down the client
+    // response (a half-delivered segment is what Shaka chokes on); if the
+    // client disconnects, free the upstream socket.
+    proxyRes.on('error', function () { res.destroy(); });
+    res.on('close', function () { proxyRes.destroy(); });
   });
 });
 
@@ -239,6 +419,12 @@ localServer.on('error', function (err) {
 
 localServer.listen(LOCAL_PROXY_PORT, '127.0.0.1', function () {
   console.log('[BiliService] Local proxy on port ' + LOCAL_PROXY_PORT);
+});
+
+castLanServer.start(function () {
+  castProfile.ip = getLanIp();
+  castController.setNetworkInfo(castProfile.ip, castProfile.httpPort);
+  console.log('[BiliService] Cast server on ' + castProfile.ip + ':' + castProfile.httpPort);
 });
 
 // Keep service alive

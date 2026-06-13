@@ -15,6 +15,7 @@ var childProcess = require('child_process');
 var deviceProfile = require('./cast/deviceProfile');
 var CastController = require('./cast/castController').CastController;
 var CastLanServer = require('./cast/ssdpServer').CastLanServer;
+var danmakuRelay = require('./danmaku');
 
 var service = new Service('com.biliwebos.app.service');
 
@@ -285,6 +286,44 @@ service.register('setCookies', function (message) {
 service.register('clearCookies', function (message) {
   storedCookies = {};
   saveCookies();
+  message.respond({ returnValue: true });
+});
+
+// ==================== Live danmaku relay ====================
+var danmakuSubscribers = [];
+var danmakuStop = null;
+var danmakuRoom = null;
+
+function broadcastDanmaku(text) {
+  danmakuSubscribers = danmakuSubscribers.filter(function (m) {
+    try { m.respond({ returnValue: true, subscribed: true, danmaku: text }); return true; }
+    catch (e) { return false; }
+  });
+  if (danmakuSubscribers.length === 0 && danmakuStop) {
+    danmakuStop(); danmakuStop = null; danmakuRoom = null;
+  }
+}
+
+service.register('danmakuSubscribe', function (message) {
+  var p = message.payload || {};
+  danmakuSubscribers.push(message);
+  // Reconnect if the room changed.
+  if (danmakuStop && danmakuRoom !== p.roomid) { danmakuStop(); danmakuStop = null; danmakuRoom = null; }
+  if (!danmakuStop && p.roomid && p.token) {
+    danmakuRoom = p.roomid;
+    var dedeUid = parseInt(storedCookies['DedeUserID'] || '0', 10) || 0;
+    danmakuStop = danmakuRelay.connectDanmaku({
+      host: p.host, port: p.port, roomid: p.roomid, token: p.token,
+      buvid: p.buvid, uid: dedeUid, cookie: serializeCookies(storedCookies),
+    }, broadcastDanmaku);
+  }
+  message.respond({ returnValue: true, subscribed: true });
+});
+
+service.register('danmakuStop', function (message) {
+  if (danmakuStop) { danmakuStop(); danmakuStop = null; }
+  danmakuRoom = null;
+  danmakuSubscribers = [];
   message.respond({ returnValue: true });
 });
 

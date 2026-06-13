@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getLiveStreamUrl, castReportState } from '../api/client';
+import { getLiveStreamUrl, getRoomInit, getDanmuInfo, getBuvid3, danmakuSubscribe, danmakuStop, castReportState } from '../api/client';
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
+import LiveDanmakuLayer from './LiveDanmakuLayer';
 
 export default function LivePlayerPage({ room, onBack }) {
   const videoRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [showInfo, setShowInfo] = useState(true);
+  const [danmakuEnabled, setDanmakuEnabled] = useState(storage.getSettings().danmaku !== false);
   const infoTimer = useRef(null);
+  const dmLayerRef = useRef(null);
 
   useEffect(() => {
     async function load() {
@@ -43,6 +46,37 @@ export default function LivePlayerPage({ room, onBack }) {
     };
   }, [room.roomid]);
 
+  // Live danmaku via the service relay (the browser can't connect to B站's chat
+  // WS — file:// origin gets reset; the Node service connects with a proper
+  // Origin/Cookie instead). The app fetches the token here and hands it over.
+  useEffect(() => {
+    let active = true;
+    let cancel = null;
+    async function startDm() {
+      try {
+        let realId = room.roomid;
+        try {
+          const ri = await getRoomInit(room.roomid);
+          if (ri?.data?.room_id) realId = ri.data.room_id;
+        } catch {}
+        const info = await getDanmuInfo(realId);
+        const token = info?.data?.token;
+        if (!token || !active) return;
+        const list = info?.data?.host_list || [];
+        const h443 = list.find(h => h.wss_port === 443);
+        const host = (h443 && h443.host) || 'broadcastlv.chat.bilibili.com';
+        cancel = danmakuSubscribe(
+          { host, port: 443, roomid: realId, token, buvid: getBuvid3(), uid: 0 },
+          (text) => dmLayerRef.current?.push(text)
+        );
+      } catch (e) {
+        console.warn('[live danmaku] failed:', e?.message || e);
+      }
+    }
+    startDm();
+    return () => { active = false; if (cancel) cancel(); danmakuStop().catch(() => {}); };
+  }, [room.roomid]);
+
   useEffect(() => {
     const handleCastCommand = (event) => {
       const command = event.detail;
@@ -76,7 +110,20 @@ export default function LivePlayerPage({ room, onBack }) {
         onBack();
         return true;
       }
-      if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Enter') {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        setDanmakuEnabled(prev => {
+          const next = !prev;
+          storage.setSettings({ ...storage.getSettings(), danmaku: next });
+          if (!next) dmLayerRef.current?.clear();
+          return next;
+        });
+        setShowInfo(true);
+        if (infoTimer.current) clearTimeout(infoTimer.current);
+        infoTimer.current = setTimeout(() => setShowInfo(false), 3000);
+        return true;
+      }
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
         e.preventDefault();
         setShowInfo(true);
         if (infoTimer.current) clearTimeout(infoTimer.current);
@@ -92,6 +139,8 @@ export default function LivePlayerPage({ room, onBack }) {
   return (
     <div className="player-page">
       <video ref={videoRef} className="player-video" autoPlay />
+
+      <LiveDanmakuLayer ref={dmLayerRef} enabled={danmakuEnabled} />
 
       {loading && (
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
@@ -111,6 +160,9 @@ export default function LivePlayerPage({ room, onBack }) {
           <div style={{ fontSize: 28, color: '#fff', fontWeight: 600 }}>{room.title}</div>
           <div style={{ fontSize: 20, color: '#aaa', marginTop: 8 }}>
             {room.owner?.name || ''} · 直播中
+          </div>
+          <div style={{ fontSize: 16, color: '#888', marginTop: 6 }}>
+            OK 键：弹幕 {danmakuEnabled ? '开' : '关'}
           </div>
         </div>
       )}

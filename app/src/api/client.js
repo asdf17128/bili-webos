@@ -102,11 +102,12 @@ export async function apiFetch(path, params, options) {
   return smartFetch(host, fullPath, options);
 }
 
-// API fetch with WBI signature
-export async function wbiFetch(path, params) {
+// API fetch with WBI signature. options.host targets a non-default host (the
+// WBI signature is host-agnostic, so it works for api.live.bilibili.com too).
+export async function wbiFetch(path, params, options) {
   var keys = await getWbiKeys(apiFetch);
   var signedQuery = signWbi(params || {}, keys.imgKey, keys.subKey);
-  return smartFetch(API_HOST, path + '?' + signedQuery);
+  return smartFetch((options && options.host) || API_HOST, path + '?' + signedQuery);
 }
 
 // Raw fetch for special cases (returns Response or Luna result)
@@ -178,9 +179,52 @@ export async function castGetStatus() {
   return lunaRequest('castGetStatus', {}, false, { allowMissing: true });
 }
 
+// Persist extra cookies into the TV service (e.g. buvid3 for risk control).
+function setServiceCookies(cookies) {
+  return lunaRequest('setCookies', { cookies: cookies || {} }, false, { allowMissing: true });
+}
+
+// Ensure a buvid3/buvid4 fingerprint cookie exists — many endpoints (live
+// getDanmuInfo, etc.) return -352 without it. Fetched once per session.
+let buvidEnsured = false;
+let _buvid3 = '';
+export function getBuvid3() { return _buvid3; }
+export async function ensureBuvid() {
+  if (buvidEnsured) return;
+  try {
+    const r = await apiFetch('/x/frontend/finger/spi');
+    const b3 = r?.data?.b_3;
+    const b4 = r?.data?.b_4;
+    if (b3) {
+      _buvid3 = b3;
+      await setServiceCookies({ buvid3: b3, buvid4: b4 || '' });
+      buvidEnsured = true;
+    }
+  } catch (e) { /* best effort */ }
+}
+
 // Rename the cast receiver as shown in the phone's 投屏 list (applies live).
 export async function castSetConfig(payload) {
   return lunaRequest('castSetConfig', payload || {}, false, { allowMissing: true });
+}
+
+// Subscribe to live danmaku relayed by the service. onDanmaku(text) per message.
+// Returns an unsubscribe function. Pair with danmakuStop() to close the relay.
+export function danmakuSubscribe(params, onDanmaku) {
+  if (!hasLunaService()) return function () {};
+  let cancelled = false;
+  window.webOS.service.request(SERVICE_URI, {
+    method: 'danmakuSubscribe',
+    subscribe: true,
+    parameters: params || {},
+    onSuccess: function (res) { if (!cancelled && res && res.danmaku && onDanmaku) onDanmaku(res.danmaku); },
+    onFailure: function () {},
+  });
+  return function () { cancelled = true; };
+}
+
+export async function danmakuStop() {
+  return lunaRequest('danmakuStop', {}, false, { allowMissing: true });
 }
 
 // ============ Login ============
@@ -279,6 +323,18 @@ export async function getLiveList(page, pageSize) {
     '/xlive/web-interface/v1/webMain/getMoreRecList?platform=web&page=' + (page || 1) + '&page_size=' + (pageSize || 12));
   var items = rec && rec.data && (rec.data.list || rec.data.recommend_room_list);
   return { data: { list: items || [] } };
+}
+
+// Resolve a (possibly short) room id to the real room_id.
+export async function getRoomInit(roomId) {
+  return apiFetch('/room/v1/Room/room_init', { id: roomId }, { host: 'api.live.bilibili.com' });
+}
+
+// Live danmaku server token + host list (for the WebSocket connection).
+// Needs WBI signing (returns -352 otherwise).
+export async function getDanmuInfo(realRoomId) {
+  await ensureBuvid();
+  return wbiFetch('/xlive/web-room/v1/index/getDanmuInfo', { id: realRoomId, type: 0, web_location: 444.8 }, { host: 'api.live.bilibili.com' });
 }
 
 export async function getLiveStreamUrl(roomId) {

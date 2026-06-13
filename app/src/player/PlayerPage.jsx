@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getPlayUrl, getDanmaku, getVideoInfo, reportHeartbeat, getRelated, getUpVideos } from '../api/client';
+import { getPlayUrl, getDanmaku, getVideoInfo, reportHeartbeat, getRelated, getUpVideos, castReportProgress, castReportState } from '../api/client';
 import { formatDuration, formatTime, QUALITY_MAP } from '../utils/format';
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
@@ -54,6 +54,29 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const upLoadingRef = useRef(false);
   const upPnRef = useRef(1);
   const upSeenRef = useRef(new Set());
+
+  const pendingSeekRef = useRef(null);
+
+  const queueOrApplySeek = useCallback((seekSec) => {
+    const target = Math.max(0, Number(seekSec) || 0);
+    if (!videoRef.current) return;
+    const canSeekNow = Number.isFinite(videoRef.current.duration) && videoRef.current.duration > 0;
+    if (canSeekNow) {
+      const max = Math.max(0, (videoRef.current.duration || 0) - 0.2);
+      videoRef.current.currentTime = Math.min(target, max || target);
+      pendingSeekRef.current = null;
+      return;
+    }
+    pendingSeekRef.current = target;
+  }, []);
+
+  const flushPendingSeek = useCallback(() => {
+    if (pendingSeekRef.current == null || !videoRef.current) return;
+    if (!(Number.isFinite(videoRef.current.duration) && videoRef.current.duration > 0)) return;
+    const max = Math.max(0, (videoRef.current.duration || 0) - 0.2);
+    videoRef.current.currentTime = Math.min(pendingSeekRef.current, max || pendingSeekRef.current);
+    pendingSeekRef.current = null;
+  }, []);
 
   const CONTROLS = ['play', 'danmaku', 'quality'];
   const END_SCREEN_MAX = 8; // up to 2 rows of 4 on the end screen
@@ -116,21 +139,25 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   }, []);
 
   const loadVideo = useCallback(async (player) => {
-    if (!video?.bvid) return;
+    if (!video?.bvid && !video?.aid) return;
     setLoading(true);
     setLoadError(false);
+    castReportState({ playState: 'loading' }).catch(() => {});
     try {
       let cid = video.cid;
       let ownerMid = video.owner?.mid || null;
       let ownerName = video.owner?.name || '';
       if (!cid) {
-        const info = await getVideoInfo(video.bvid);
+        const info = await getVideoInfo(video);
         cid = info?.data?.cid;
         if (info?.data?.title) setVideoTitle(info.data.title);
         if (info?.data?.owner) {
           ownerMid = ownerMid || info.data.owner.mid;
           ownerName = ownerName || info.data.owner.name;
         }
+        // Cast can hand us an aid-only video (no bvid). Backfill bvid from the
+        // view response so heartbeat/related (which key on bvid) keep working.
+        if (!video.bvid && info?.data?.bvid) video.bvid = info.data.bvid;
       }
       if (!cid) throw new Error('No cid for video');
       cidRef.current = cid;
@@ -148,9 +175,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       // Re-fetch playurl + retry: a fresh playurl hands back different CDN
       // nodes, and buildMPD now carries backup URLs, so a bad node fails over
       // instead of leaving a black "loading forever" screen.
+      // Pass the whole `video` (not just bvid) so a cast-initiated, aid-only
+      // payload still resolves to a playurl via getPlayUrl's object overload.
       for (let attempt = 0; attempt < 3 && !loaded; attempt++) {
         try {
-          const res = await getPlayUrl(video.bvid, cid, settings.quality || 80);
+          const res = await getPlayUrl(video, cid, settings.quality || 80);
           const dash = res?.data?.dash;
           if (!dash) throw new Error('No DASH stream in playurl (DRM/bangumi?)');
 
@@ -179,16 +208,25 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       }
       if (!loaded) throw lastErr || new Error('Playback load failed');
 
+      // load(mpdUrl, resumeAt) already started playback at the saved offset.
+      // For a cast-initiated resume, also queue the seek through
+      // queueOrApplySeek so it still lands if duration isn't ready yet.
+      if (video.progress && video.progress > 0) {
+        queueOrApplySeek(video.progress);
+      }
+
       selectBestVariant(player);
       videoRef.current.play();
       setPlaying(true);
       setLoading(false);
+      castReportState({ playState: 'playing' }).catch(() => {});
 
       videoRef.current.addEventListener('ended', () => {
         setEnded(true);
         setShowControls(true);
         setFocusArea('endscreen');
         setFocusIdx(0);
+        castReportState({ playState: 'end' }).catch(() => {});
       });
 
       try { setDanmakus(await getDanmaku(cid)); } catch {}
@@ -200,8 +238,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       console.error('Load video error:', err?.message || err);
       setLoading(false);
       setLoadError(true);
+      castReportState({ playState: 'error', error: err?.message || 'load-failed' }).catch(() => {});
     }
-  }, [video]);
+  }, [video, queueOrApplySeek]);
 
   function buildMPD(dash) {
     const duration = dash.duration || 0;
@@ -295,11 +334,51 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   useEffect(() => {
     timeUpdateRef.current = setInterval(() => {
       if (videoRef.current) {
-        setCurrentTime(videoRef.current.currentTime);
-        setDuration(videoRef.current.duration || 0);
+        const nextCurrentTime = videoRef.current.currentTime;
+        const nextDuration = videoRef.current.duration || 0;
+        setCurrentTime(nextCurrentTime);
+        setDuration(nextDuration);
+        castReportProgress({
+          duration: Math.floor(nextDuration),
+          position: Math.floor(nextCurrentTime),
+        }).catch(() => {});
       }
     }, 500);
     return () => clearInterval(timeUpdateRef.current);
+  }, []);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+
+    const handlePlay = () => {
+      setPlaying(true);
+      castReportState({ playState: 'playing' }).catch(() => {});
+    };
+    const handleLoadedMetadata = () => flushPendingSeek();
+    const handleCanPlay = () => flushPendingSeek();
+
+    const handlePause = () => {
+      if (!ended) castReportState({ playState: 'paused' }).catch(() => {});
+      setPlaying(false);
+    };
+
+    el.addEventListener('play', handlePlay);
+    el.addEventListener('pause', handlePause);
+    el.addEventListener('loadedmetadata', handleLoadedMetadata);
+    el.addEventListener('canplay', handleCanPlay);
+    return () => {
+      el.removeEventListener('play', handlePlay);
+      el.removeEventListener('pause', handlePause);
+      el.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      el.removeEventListener('canplay', handleCanPlay);
+    };
+  }, [ended, flushPendingSeek]);
+
+  useEffect(() => {
+    return () => {
+      castReportState({ playState: 'stop' }).catch(() => {});
+    };
   }, []);
 
   // Heartbeat
@@ -442,12 +521,12 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
   // Change quality
   const changeQuality = useCallback(async (qn) => {
-    if (!video?.bvid || !shakaRef.current) return;
+    if ((!video?.bvid && !video?.aid) || !shakaRef.current) return;
     setCurrentQuality(qn);
     storage.setSettings({ ...storage.getSettings(), quality: qn });
     try {
       let cid = video.cid || cidRef.current;
-      const res = await getPlayUrl(video.bvid, cid, qn);
+      const res = await getPlayUrl(video, cid, qn);
       const dash = res?.data?.dash;
       if (dash) {
         const pos = videoRef.current.currentTime;
@@ -465,6 +544,49 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       console.error('Quality change error:', e);
     }
   }, [video]);
+
+  useEffect(() => {
+    storage.setSettings({ ...storage.getSettings(), danmaku: danmakuEnabled });
+  }, [danmakuEnabled]);
+
+  useEffect(() => {
+    const handleCastCommand = (event) => {
+      const command = event.detail;
+      if (!command || !videoRef.current) return;
+
+      if (command.type === 'pause') {
+        videoRef.current.pause();
+        setPlaying(false);
+        castReportState({ playState: 'paused' }).catch(() => {});
+        return;
+      }
+      if (command.type === 'resume') {
+        videoRef.current.play();
+        setPlaying(true);
+        castReportState({ playState: 'playing' }).catch(() => {});
+        return;
+      }
+      if (command.type === 'seek') {
+        queueOrApplySeek(command.positionSec);
+        castReportProgress({
+          duration: Math.floor(videoRef.current.duration || 0),
+          position: Math.floor(videoRef.current.currentTime || 0),
+        }).catch(() => {});
+        return;
+      }
+      if (command.type === 'switchDanmaku') {
+        setDanmakuEnabled(!!command.open);
+        return;
+      }
+      if (command.type === 'stop') {
+        videoRef.current.pause();
+        onBack?.();
+      }
+    };
+
+    window.addEventListener('bili-cast-command', handleCastCommand);
+    return () => window.removeEventListener('bili-cast-command', handleCastCommand);
+  }, [onBack, queueOrApplySeek]);
 
   // ========== Keyboard handler ==========
   useEffect(() => {
@@ -554,8 +676,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           e.preventDefault();
           const btn = CONTROLS[focusIdx];
           if (btn === 'play') {
-            if (videoRef.current.paused) { videoRef.current.play(); setPlaying(true); }
-            else { videoRef.current.pause(); setPlaying(false); }
+            if (videoRef.current.paused) {
+              videoRef.current.play(); setPlaying(true);
+              castReportState({ playState: 'playing' }).catch(() => {});
+            } else {
+              videoRef.current.pause(); setPlaying(false);
+              castReportState({ playState: 'paused' }).catch(() => {});
+            }
           } else if (btn === 'danmaku') {
             setDanmakuEnabled(prev => !prev);
           } else if (btn === 'quality') {

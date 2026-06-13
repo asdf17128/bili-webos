@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getLiveStreamUrl } from '../api/client';
+import { getLiveStreamUrl, castReportState } from '../api/client';
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
 
@@ -12,6 +12,7 @@ export default function LivePlayerPage({ room, onBack }) {
   useEffect(() => {
     async function load() {
       try {
+        castReportState({ playState: 'loading' }).catch(() => {});
         const hlsUrl = await getLiveStreamUrl(room.roomid);
         if (!hlsUrl || !videoRef.current) return;
 
@@ -25,17 +26,46 @@ export default function LivePlayerPage({ room, onBack }) {
         videoRef.current.src = proxied;
         videoRef.current.play();
         setLoading(false);
+        castReportState({ playState: 'playing' }).catch(() => {});
 
         // Hide info after 3s
         infoTimer.current = setTimeout(() => setShowInfo(false), 3000);
       } catch (err) {
         console.error('Live stream error:', err);
         setLoading(false);
+        castReportState({ playState: 'error', error: err?.message || 'live-load-failed' }).catch(() => {});
       }
     }
     load();
-    return () => { if (infoTimer.current) clearTimeout(infoTimer.current); };
+    return () => {
+      if (infoTimer.current) clearTimeout(infoTimer.current);
+      castReportState({ playState: 'stop' }).catch(() => {});
+    };
   }, [room.roomid]);
+
+  useEffect(() => {
+    const handleCastCommand = (event) => {
+      const command = event.detail;
+      if (!command) return;
+      if (command.type === 'stop') {
+        onBack?.();
+        return;
+      }
+      if (!videoRef.current) return;
+      if (command.type === 'pause') {
+        videoRef.current.pause();
+        castReportState({ playState: 'paused' }).catch(() => {});
+        return;
+      }
+      if (command.type === 'resume') {
+        videoRef.current.play();
+        castReportState({ playState: 'playing' }).catch(() => {});
+      }
+    };
+
+    window.addEventListener('bili-cast-command', handleCastCommand);
+    return () => window.removeEventListener('bili-cast-command', handleCastCommand);
+  }, [onBack]);
 
   // Key handler
   useEffect(() => {

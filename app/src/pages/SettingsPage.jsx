@@ -10,12 +10,14 @@ const CONTACT_EMAIL = 'asdf17128@gmail.com';
 export default function SettingsPage({ onLogout, user, onPlayVideo }) {
   const [proxyUrl] = useState(storage.getProxyUrl());
   const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [updateMsg, setUpdateMsg] = useState('');
   const settings = storage.getSettings();
 
   React.useEffect(() => {
     if (!user) return;
     async function load() {
+      setHistoryLoading(true);
       try {
         const res = await getHistory(0, 0, 12);
         if (res?.data?.list) {
@@ -26,6 +28,7 @@ export default function SettingsPage({ onLogout, user, onPlayVideo }) {
           })));
         }
       } catch {}
+      setHistoryLoading(false);
     }
     load();
   }, [user]);
@@ -92,10 +95,16 @@ export default function SettingsPage({ onLogout, user, onPlayVideo }) {
         代理: {proxyUrl}
       </div>
 
-      {user && history.length > 0 && (
+      {user && (
         <>
           <div style={{ fontSize: 20, color: '#aaa', marginBottom: 14 }}>最近观看</div>
-          <VideoGrid videos={history} group="content" startRow={1} cols={2} onSelect={onPlayVideo} />
+          {history.length > 0 ? (
+            <VideoGrid videos={history} group="content" startRow={1} cols={2} onSelect={onPlayVideo} />
+          ) : (
+            <div style={{ color: '#666', fontSize: 16 }}>
+              {historyLoading ? '加载中…' : '暂无观看记录'}
+            </div>
+          )}
         </>
       )}
     </div>

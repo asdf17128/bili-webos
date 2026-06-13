@@ -42,12 +42,19 @@ export default function ConfigPage({ onLogout, user }) {
   // Updates are installed by the webosbrew Homebrew Channel (it pulls the new
   // ipk from the GitHub release). When an update exists, open it for the user.
   function openHomebrewChannel() {
+    const fallback = () => setUpdateMsg('请在 Homebrew Channel 中更新');
     try {
-      window.webOS?.service?.request('luna://com.webos.service.applicationmanager/launch', {
-        parameters: { id: 'org.webosbrew.hbchannel' },
-        onSuccess: () => {}, onFailure: () => { setUpdateMsg('请手动打开 Homebrew Channel 更新'); },
+      if (!window.webOS?.service?.request) { fallback(); return; }
+      // Launch via the public applicationManager bus. webOS.service.request
+      // builds the URI as base + method, so the method goes in its own field
+      // (matching how the app's own service calls are made).
+      window.webOS.service.request('luna://com.webos.applicationManager/', {
+        method: 'launch',
+        parameters: { id: 'org.webosbrew.hbchannel', params: {} },
+        onSuccess: () => {},
+        onFailure: fallback,
       });
-    } catch { setUpdateMsg('请手动打开 Homebrew Channel 更新'); }
+    } catch { fallback(); }
   }
 
   const { props: danmakuProps } = useFocusable({

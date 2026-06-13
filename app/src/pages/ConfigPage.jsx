@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { storage } from '../utils/storage';
 import { useFocusable } from '../hooks/useFocus';
 import { getLatestVersion } from '../api/client';
@@ -10,7 +10,34 @@ export default function ConfigPage({ onLogout, user }) {
   const [proxyUrl] = useState(storage.getProxyUrl());
   const [updateMsg, setUpdateMsg] = useState('');
   const [hasUpdate, setHasUpdate] = useState(false);
+  const checking = useRef(false);
   const settings = storage.getSettings();
+
+  // Query GitHub for the latest release and compare with the running version.
+  // Shared by the auto-check on mount and the manual OK press.
+  async function checkForUpdate() {
+    if (checking.current) return;
+    checking.current = true;
+    setUpdateMsg('检查中…');
+    try {
+      const latest = await getLatestVersion();
+      if (!latest) { setUpdateMsg('检查失败,请稍后再试'); return; }
+      if (compareVersions(latest, APP_VERSION) > 0) {
+        setHasUpdate(true);
+        setUpdateMsg(`发现新版 v${latest} — 按 OK 打开应用商店更新`);
+      } else {
+        setUpdateMsg(`已是最新 (v${APP_VERSION})`);
+      }
+    } catch {
+      setUpdateMsg('检查更新失败,请检查网络后重试');
+    } finally {
+      checking.current = false;
+    }
+  }
+
+  // Auto-check once when the 设置 page opens, so the row shows the status
+  // without the user having to trigger it.
+  useEffect(() => { checkForUpdate(); }, []);
 
   // Updates are installed by the webosbrew Homebrew Channel (it pulls the new
   // ipk from the GitHub release). When an update exists, open it for the user.
@@ -38,22 +65,11 @@ export default function ConfigPage({ onLogout, user }) {
 
   const { props: checkUpdateProps } = useFocusable({
     id: 'content-1-0', row: 1, col: 0, group: 'content',
-    onSelect: async () => {
-      // Once an update is known, OK opens the Homebrew Channel to install it.
+    onSelect: () => {
+      // Once an update is known, OK opens the Homebrew Channel to install it;
+      // otherwise re-run the check manually.
       if (hasUpdate) { openHomebrewChannel(); return; }
-      setUpdateMsg('检查中…');
-      try {
-        const latest = await getLatestVersion();
-        if (!latest) { setUpdateMsg('检查失败,请稍后再试'); return; }
-        if (compareVersions(latest, APP_VERSION) > 0) {
-          setHasUpdate(true);
-          setUpdateMsg(`发现新版 v${latest} — 按 OK 打开应用商店更新`);
-        } else {
-          setUpdateMsg(`已是最新 (v${APP_VERSION})`);
-        }
-      } catch {
-        setUpdateMsg('检查更新失败,请检查网络后重试');
-      }
+      checkForUpdate();
     },
   });
 

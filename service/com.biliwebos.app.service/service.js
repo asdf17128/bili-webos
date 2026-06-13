@@ -13,6 +13,10 @@ var url = require('url');
 
 var service = new Service('com.biliwebos.app.service');
 
+// Reuse TLS connections to CDN hosts. The TV's CPU makes a fresh TLS handshake
+// per segment expensive; keep-alive cuts initial-load and seek latency a lot.
+var keepAliveAgent = new https.Agent({ keepAlive: true, maxSockets: 8, keepAliveMsecs: 15000 });
+
 // Cookie storage
 var COOKIE_FILE = path.join('/media/internal', 'bili_cookies.json');
 var storedCookies = {};
@@ -44,7 +48,11 @@ function isAllowedHost(host) {
 }
 
 // Make HTTPS request helper
-function makeRequest(parsedUrl, method, body, contentType, range, callback) {
+// forceIdentity: never request gzip/deflate. Required for the binary proxy
+// path (segments/images) which pipes bytes raw without forwarding
+// Content-Encoding — compressed bytes there corrupt the Range/Content-Length
+// and trigger Shaka's "Payload length does not match range requested bytes".
+function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity, callback) {
   var hostname = parsedUrl.hostname;
   var port = parsedUrl.port ? parseInt(parsedUrl.port) : 443;
   var isCDN = hostname.indexOf('bilivideo') >= 0 || hostname.indexOf('akamaized') >= 0;
@@ -54,7 +62,7 @@ function makeRequest(parsedUrl, method, body, contentType, range, callback) {
     'Referer': 'https://www.bilibili.com/',
     'Accept': isCDN ? '*/*' : 'application/json, text/plain, */*',
     'Accept-Language': 'zh-CN,zh;q=0.9',
-    'Accept-Encoding': isCDN ? 'identity' : 'gzip, deflate',
+    'Accept-Encoding': (isCDN || forceIdentity) ? 'identity' : 'gzip, deflate',
     'Cookie': serializeCookies(storedCookies)
   };
   if (!isCDN) headers['Origin'] = 'https://www.bilibili.com';
@@ -66,10 +74,14 @@ function makeRequest(parsedUrl, method, body, contentType, range, callback) {
     path: parsedUrl.pathname + (parsedUrl.search || ''),
     method: method || 'GET',
     headers: headers,
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
+    agent: keepAliveAgent
   };
 
+  var done = false;
   var req = https.request(options, function (res) {
+    if (done) return;
+    done = true;
     var setCookieHeaders = res.headers['set-cookie'];
     if (setCookieHeaders) {
       setCookieHeaders.forEach(function (sc) {
@@ -84,7 +96,11 @@ function makeRequest(parsedUrl, method, body, contentType, range, callback) {
     callback(null, res);
   });
 
-  req.on('error', function (err) { callback(err); });
+  // Without a timeout a stuck CDN socket hangs forever and the segment never
+  // returns, freezing playback permanently. Bail out so the caller can fail
+  // the request and Shaka can retry.
+  req.setTimeout(10000, function () { req.destroy(new Error('Upstream timeout')); });
+  req.on('error', function (err) { if (done) return; done = true; callback(err); });
   if (body) req.write(body);
   req.end();
 }
@@ -124,7 +140,7 @@ service.register('fetch', function (message) {
   }
 
   makeRequest(parsed, message.payload.method, message.payload.body,
-    message.payload.contentType, message.payload.range, function (err, res) {
+    message.payload.contentType, message.payload.range, false, function (err, res) {
       if (err) { message.respond({ returnValue: false, error: err.message }); return; }
 
       decompressResponse(res, function (data) {
@@ -208,10 +224,9 @@ var localServer = http.createServer(function (req, res) {
     return;
   }
 
-  makeRequest(parsed, req.method, null, null, req.headers['range'], function (err, proxyRes) {
+  makeRequest(parsed, req.method, null, null, req.headers['range'], true, function (err, proxyRes) {
     if (err) {
-      res.writeHead(502);
-      res.end(err.message);
+      if (!res.headersSent) { res.writeHead(502); res.end(err.message); }
       return;
     }
 
@@ -225,6 +240,12 @@ var localServer = http.createServer(function (req, res) {
 
     res.writeHead(proxyRes.statusCode, responseHeaders);
     proxyRes.pipe(res);
+
+    // If the upstream errors/truncates mid-stream, tear down the client
+    // response (a half-delivered segment is what Shaka chokes on); if the
+    // client disconnects, free the upstream socket.
+    proxyRes.on('error', function () { res.destroy(); });
+    res.on('close', function () { proxyRes.destroy(); });
   });
 });
 

@@ -165,9 +165,17 @@ export async function getRegionDynamic(rid, pn, ps) {
   return wbiFetch('/x/web-interface/dynamic/region', { rid: rid || 0, pn: pn || 1, ps: ps || 6 });
 }
 
-// Follow feed
-export async function getFollowFeed(page, ps) {
-  return smartFetch(API_HOST, '/x/polymer/web-dynamic/v1/feed/all?timezone_offset=-480&type=video&page=' + (page || 1));
+// Follow feed — paginates by the `offset` cursor returned in data.offset,
+// NOT by page number (page alone re-returns the first page).
+export async function getFollowFeed(page, offset) {
+  var url = '/x/polymer/web-dynamic/v1/feed/all?timezone_offset=-480&type=video&page=' + (page || 1);
+  if (offset) url += '&offset=' + encodeURIComponent(offset);
+  return smartFetch(API_HOST, url);
+}
+
+// Logged-in user's followings (Cookie auth). Used to badge "已关注" on cards.
+export async function getFollowings(vmid, pn, ps) {
+  return apiFetch('/x/relation/followings', { vmid: vmid, pn: pn || 1, ps: ps || 50, order: 'desc' });
 }
 
 // ============ Live ============
@@ -294,4 +302,14 @@ function parseDanmakuXml(xml) {
 
 export async function getRelated(bvid) {
   return wbiFetch('/x/web-interface/archive/related', { bvid: bvid });
+}
+
+// ============ UP uploader ============
+
+// This uploader's submitted videos, newest first (space arc search, WBI signed)
+export async function getUpVideos(mid, pn, ps) {
+  return wbiFetch('/x/space/wbi/arc/search', {
+    mid: mid, pn: pn || 1, ps: ps || 30, order: 'pubdate', tid: 0, keyword: '',
+    platform: 'web', web_location: 1550101,
+  });
 }

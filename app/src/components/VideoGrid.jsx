@@ -3,7 +3,7 @@ import VideoCard from './VideoCard';
 
 // Use transform:translateY for scrolling instead of overflow:scroll
 // This pushes scroll to GPU compositor, avoiding layout recalculation
-export default React.memo(function VideoGrid({ videos, group = 'content', startRow = 0, cols = 2, onSelect, focusRow = 0 }) {
+export default React.memo(function VideoGrid({ videos, group = 'content', startRow = 0, cols = 2, onSelect, focusRow = 0, followedMids = null }) {
   if (!videos || videos.length === 0) {
     return <div className="empty-state">暂无内容</div>;
   }
@@ -41,6 +41,7 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
               col={col}
               group={group}
               onSelect={onSelect}
+              followed={!!(followedMids && video.owner?.mid && followedMids.has(video.owner.mid))}
             />
           );
         })}

@@ -19,6 +19,9 @@ node tools/screenshot.mjs
 
 # Run API tests (proxy must be running)
 node tools/test-e2e.mjs
+
+# Run on-device UI smoke test (app must be running on the TV)
+node tools/test-ui.mjs
 ```
 
 ## Project Structure
@@ -51,7 +54,8 @@ bili_webos/
 │   ├── deploy.mjs                # SSH deploy via ssh2
 │   ├── debug.mjs                 # CDP remote debugger
 │   ├── screenshot.mjs            # Remote screenshot
-│   ├── test-e2e.mjs              # API integration tests
+│   ├── test-e2e.mjs              # API integration tests (via proxy)
+│   ├── test-ui.mjs               # On-device UI smoke test (CDP drive + assert)
 │   └── verify.sh                 # Full verification pipeline
 │
 ├── build.sh                      # One-command build + deploy

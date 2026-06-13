@@ -135,12 +135,8 @@ function getSsdpNotifyPackets(profile) {
 function getSsdpSearchResponse(profile, st) {
   // Honor the ST the control point actually searched for so the response
   // matches its M-SEARCH (a hardcoded rootdevice ST made some controllers
-  // ignore the reply). BUT `ssdp:all` is a wildcard, not a concrete target —
-  // echoing it as the ST/USN is invalid and gets ignored (this is what broke
-  // discovery from the Bilibili app, which searches with ssdp:all). Answer
-  // wildcard/empty searches as the root device.
-  var requested = (st && String(st).trim()) || '';
-  var searchTarget = (!requested || requested === 'ssdp:all') ? 'upnp:rootdevice' : requested;
+  // ignore the reply). Fall back to rootdevice when no ST was supplied.
+  var searchTarget = (st && String(st).trim()) || 'upnp:rootdevice';
   // A uuid:<UDN>-style ST advertises the device itself; its USN is just the
   // UDN. For a rootdevice/service ST the USN is "<UDN>::<ST>".
   var usnSuffix = /^uuid:/i.test(searchTarget) ? '' : ('::' + searchTarget);

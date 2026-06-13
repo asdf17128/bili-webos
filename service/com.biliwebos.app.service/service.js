@@ -159,8 +159,22 @@ function getLanIp() {
   return '127.0.0.1';
 }
 
+// Derive a friendly default name from the LG model string, e.g.
+// "OLED65C4PCA.ACNQLJD" -> "LG 65C4" (matches the name LG's own DLNA uses).
+function friendlyModel(modelName) {
+  if (!modelName) return '';
+  var head = String(modelName).split('.')[0];
+  var m = head.match(/([0-9]{2,3}[A-Z][0-9]+)/); // 65C4 / 77G4 / 55B4 ...
+  return 'LG ' + (m ? m[1] : head);
+}
+
+// Default cast name = "哔哩哔哩 on <model>", resolved at runtime from this TV's
+// model (not hardcoded), so it's correct on any LG set. A name the user set
+// explicitly (castConfig.userSet) always wins.
+var computedDefaultName = null;
 function getCastFriendlyName() {
-  return castConfig.friendlyName || '我的小电视';
+  if (castConfig.userSet && castConfig.friendlyName) return castConfig.friendlyName;
+  return computedDefaultName || '我的小电视';
 }
 
 var castController = new CastController();
@@ -234,6 +248,20 @@ var castLanServer = new CastLanServer({
 });
 
 castController.setNetworkInfo(castProfile.ip, castProfile.httpPort);
+
+// Resolve the TV model and build the dynamic default name. Updating the shared
+// profile + re-advertising makes it live without a restart. Skipped if the user
+// set a custom name.
+service.call('luna://com.webos.service.tv.systemproperty/getSystemInfo',
+  { keys: ['modelName'] }, function (m) {
+    var modelName = m && m.payload && m.payload.modelName;
+    if (!modelName) return;
+    computedDefaultName = '哔哩哔哩 on ' + friendlyModel(modelName);
+    if (!(castConfig.userSet && castConfig.friendlyName)) {
+      castProfile.friendlyName = computedDefaultName;
+      try { castLanServer.broadcastAlive(); } catch (e) { }
+    }
+  });
 
 // ==================== Luna Bus Methods ====================
 
@@ -339,10 +367,19 @@ service.register('castGetStatus', function (message) {
 });
 
 service.register('castSetConfig', function (message) {
-  if (message.payload && message.payload.friendlyName) {
-    var name = String(message.payload.friendlyName).slice(0, 64).trim();
+  var payload = message.payload || {};
+  // reset:true (or an empty friendlyName) reverts to the dynamic model-based default.
+  if (payload.reset || payload.friendlyName === '') {
+    castConfig.userSet = false;
+    delete castConfig.friendlyName;
+    castProfile.friendlyName = computedDefaultName || '我的小电视';
+    saveCastConfig();
+    try { castLanServer.broadcastAlive(); } catch (e) { }
+  } else if (payload.friendlyName) {
+    var name = String(payload.friendlyName).slice(0, 64).trim();
     if (name) {
       castConfig.friendlyName = name;
+      castConfig.userSet = true;
       saveCastConfig();
       // Apply live: the LAN server reads profile.friendlyName at request time,
       // so updating the shared profile + re-advertising makes the new name show
@@ -351,7 +388,7 @@ service.register('castSetConfig', function (message) {
       try { castLanServer.broadcastAlive(); } catch (e) { }
     }
   }
-  message.respond({ returnValue: true, config: castConfig });
+  message.respond({ returnValue: true, config: castConfig, defaultName: computedDefaultName });
 });
 
 // ==================== Local HTTP Proxy ====================

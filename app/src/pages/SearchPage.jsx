@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { searchVideo } from '../api/client';
-import VideoRow from '../components/VideoRow';
+import VideoCard from '../components/VideoCard';
 import OSKey from '../components/OSKey';
 
 const KEYBOARD_ROWS = [
@@ -9,6 +9,9 @@ const KEYBOARD_ROWS = [
   ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
   ['Z', 'X', 'C', 'V', 'B', 'N', 'M', '删除', '搜索'],
 ];
+
+const RESULT_COLS = 4;
+const RESULT_START_ROW = 4; // keyboard uses content rows 0-3
 
 export default function SearchPage({ onPlayVideo }) {
   const [keyword, setKeyword] = useState('');
@@ -39,8 +42,9 @@ export default function SearchPage({ onPlayVideo }) {
   }, [keyword]);
 
   return (
-    <div className="search-container">
+    <div className="search-container" style={{ overflowY: 'auto' }}>
       <div className="page-title" style={{ padding: 0 }}>搜索</div>
+
       <div className="search-bar">
         <div className="search-input" style={{ display: 'flex', alignItems: 'center' }}>
           {keyword || <span style={{ color: '#555' }}>输入关键词...</span>}
@@ -55,7 +59,7 @@ export default function SearchPage({ onPlayVideo }) {
               return (
                 <OSKey
                   key={`${rowIdx}-${colIdx}`}
-                  id={`osk-${rowIdx}-${colIdx}`}
+                  id={`content-${rowIdx}-${colIdx}`}
                   row={rowIdx}
                   col={colIdx}
                   group="content"
@@ -74,15 +78,36 @@ export default function SearchPage({ onPlayVideo }) {
       </div>
 
       {loading ? (
-        <div className="loading"><div className="loading-spinner" />搜索中...</div>
+        <div className="loading" style={{ marginTop: 30 }}><div className="loading-spinner" />搜索中...</div>
       ) : searched && results.length === 0 ? (
         <div className="empty-state">未找到相关视频</div>
       ) : results.length > 0 ? (
-        <div style={{ marginTop: 8 }}>
-          <VideoRow title="搜索结果" videos={results.slice(0, 10)} rowIndex={10} group="content" onSelect={onPlayVideo} />
-          {results.length > 10 && <VideoRow title="" videos={results.slice(10)} rowIndex={11} group="content" onSelect={onPlayVideo} />}
+        <div style={{ marginTop: 18 }}>
+          <div style={{ fontSize: 18, color: '#aaa', margin: '0 4px 14px' }}>搜索结果</div>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${RESULT_COLS}, 1fr)`,
+            gap: '18px 16px',
+            paddingBottom: 40,
+          }}>
+            {results.map((v, i) => (
+              <VideoCard
+                key={v.bvid || i}
+                video={v}
+                focusId={`content-${RESULT_START_ROW + Math.floor(i / RESULT_COLS)}-${i % RESULT_COLS}`}
+                row={RESULT_START_ROW + Math.floor(i / RESULT_COLS)}
+                col={i % RESULT_COLS}
+                group="content"
+                onSelect={onPlayVideo}
+              />
+            ))}
+          </div>
         </div>
-      ) : null}
+      ) : (
+        <div style={{ color: '#666', fontSize: 16, marginTop: 24, textAlign: 'center' }}>
+          输入关键词后选「搜索」
+        </div>
+      )}
     </div>
   );
 }

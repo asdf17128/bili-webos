@@ -31,6 +31,15 @@ export function formatTime(ts) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+// Normalize fancy/stylized Unicode letters (math-alphanumeric, fullwidth, etc.)
+// back to plain ASCII so they render on the TV's limited system font. NFKC only
+// touches compatibility variants — emoji, CJK and normal text are left intact.
+// e.g. "𝙿𝙻𝘼𝙮𝙇𝙄𝚂𝚃" -> "PLAYLIST".
+export function cleanTitle(s) {
+  if (!s) return s;
+  try { return String(s).normalize('NFKC'); } catch { return s; }
+}
+
 // Quality code to label
 export const QUALITY_MAP = {
   127: '8K',

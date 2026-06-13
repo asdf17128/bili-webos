@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { useFocusable } from '../hooks/useFocus';
-import { formatCount, formatDuration, formatTime } from '../utils/format';
+import { formatCount, formatDuration, formatTime, cleanTitle } from '../utils/format';
 import { storage } from '../utils/storage';
 
 function getProxyBase() {
@@ -56,9 +56,9 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
         )}
       </div>
       <div className="video-card-info">
-        <div className="video-card-title">{video.title}</div>
+        <div className="video-card-title">{cleanTitle(video.title)}</div>
         <div className="video-card-meta">
-          {video.owner?.name && <span>{video.owner.name}</span>}
+          {video.owner?.name && <span>{cleanTitle(video.owner.name)}</span>}
           {followed && <span style={{ color: '#00a1d6', fontWeight: 600 }}>已关注</span>}
           {video.stat?.view != null && <span>{formatCount(video.stat.view)}播放</span>}
           {video.play != null && <span>{formatCount(video.play)}播放</span>}

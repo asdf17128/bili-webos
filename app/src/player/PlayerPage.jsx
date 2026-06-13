@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getPlayUrl, getDanmaku, getVideoInfo, reportHeartbeat, getRelated, getUpVideos, castReportProgress, castReportState } from '../api/client';
-import { formatDuration, formatTime, QUALITY_MAP } from '../utils/format';
+import { formatDuration, formatTime, QUALITY_MAP, cleanTitle } from '../utils/format';
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
 import DanmakuLayer from './DanmakuLayer';
@@ -851,7 +851,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
       {/* Controls bar */}
       <div className={`player-controls ${showControls ? '' : 'hidden'}`}>
-        <div className="player-title">{videoTitle}</div>
+        <div className="player-title">{cleanTitle(videoTitle)}</div>
         {video?.owner?.name && (
           <div style={{ fontSize: 18, color: '#999', marginBottom: 4 }}>
             {video.owner.name}
@@ -909,11 +909,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                         </div>
                         <div style={{ padding: '6px 4px 0', fontSize: 18, color: '#ccc', lineHeight: 1.3,
                           overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
-                          {rv.title}
+                          {cleanTitle(rv.title)}
                         </div>
                         <div style={{ padding: '2px 4px 6px', fontSize: 14, color: '#888',
                           overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                          {[rv.owner?.name, formatTime(rv.pubdate)].filter(Boolean).join(' · ')}
+                          {[cleanTitle(rv.owner?.name), formatTime(rv.pubdate)].filter(Boolean).join(' · ')}
                         </div>
                       </div>
                     );
@@ -966,11 +966,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                   </div>
                   <div style={{ padding: '8px 8px 2px', fontSize: 15, color: '#eee', lineHeight: 1.35,
                     overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', height: 42 }}>
-                    {rv.title}
+                    {cleanTitle(rv.title)}
                   </div>
                   <div style={{ padding: '0 8px 10px', fontSize: 13, color: '#888',
                     overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                    {[rv.owner?.name, formatTime(rv.pubdate)].filter(Boolean).join(' · ')}
+                    {[cleanTitle(rv.owner?.name), formatTime(rv.pubdate)].filter(Boolean).join(' · ')}
                   </div>
                 </div>
               );

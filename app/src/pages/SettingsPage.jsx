@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { storage } from '../utils/storage';
 import { useFocusable } from '../hooks/useFocus';
-import { getHistory } from '../api/client';
+import { getHistory, getLatestVersion } from '../api/client';
+import { APP_VERSION, compareVersions } from '../version';
 import VideoGrid from '../components/VideoGrid';
+
+const CONTACT_EMAIL = 'asdf17128@gmail.com';
 
 export default function SettingsPage({ onLogout, user, onPlayVideo }) {
   const [proxyUrl] = useState(storage.getProxyUrl());
   const [history, setHistory] = useState([]);
+  const [updateMsg, setUpdateMsg] = useState('');
   const settings = storage.getSettings();
 
   React.useEffect(() => {
@@ -39,6 +43,24 @@ export default function SettingsPage({ onLogout, user, onPlayVideo }) {
     onSelect: () => { storage.clearAuth(); onLogout(); },
   });
 
+  const { props: checkUpdateProps } = useFocusable({
+    id: 'content-0-2', row: 0, col: 2, group: 'content',
+    onSelect: async () => {
+      setUpdateMsg('检查中…');
+      try {
+        const latest = await getLatestVersion();
+        if (!latest) { setUpdateMsg('检查失败,请稍后再试'); return; }
+        if (compareVersions(latest, APP_VERSION) > 0) {
+          setUpdateMsg(`发现新版本 v${latest} — 请通过 Homebrew 频道更新`);
+        } else {
+          setUpdateMsg(`已是最新版本 (v${APP_VERSION})`);
+        }
+      } catch {
+        setUpdateMsg('检查更新失败,请检查网络后重试');
+      }
+    },
+  });
+
   return (
     <div style={{ padding: '20px 28px', height: '100%', overflow: 'auto' }}>
       <div style={{ fontSize: 26, fontWeight: 600, color: '#fff', marginBottom: 20 }}>
@@ -52,9 +74,21 @@ export default function SettingsPage({ onLogout, user, onPlayVideo }) {
         <div {...logoutProps} className="detail-btn secondary" style={{ fontSize: 16, background: '#4a2020' }}>
           退出登录
         </div>
+        <div {...checkUpdateProps} className="detail-btn" style={{ fontSize: 16 }}>
+          检查更新
+        </div>
       </div>
 
-      <div style={{ fontSize: 14, color: '#555', marginBottom: 20 }}>
+      {/* 关于 */}
+      <div style={{ marginBottom: 24, color: '#888', fontSize: 15, lineHeight: 1.9 }}>
+        <div style={{ fontSize: 18, color: '#aaa', marginBottom: 8 }}>关于</div>
+        <div>哔哩哔哩 webOS · 版本 v{APP_VERSION}</div>
+        <div>联系 / 反馈：{CONTACT_EMAIL}</div>
+        <div>项目主页：github.com/asdf17128/bili-webos</div>
+        {updateMsg && <div style={{ marginTop: 8, color: '#00a1d6' }}>{updateMsg}</div>}
+      </div>
+
+      <div style={{ fontSize: 13, color: '#555', marginBottom: 20 }}>
         代理: {proxyUrl}
       </div>
 

@@ -253,6 +253,17 @@ export async function getFollowings(vmid, pn, ps) {
   return apiFetch('/x/relation/followings', { vmid: vmid, pn: pn || 1, ps: ps || 50, order: 'desc' });
 }
 
+// Latest released version from GitHub (direct fetch — github API sends CORS *,
+// so it doesn't need the B站 proxy, and no B站 cookies leak to github).
+export async function getLatestVersion() {
+  const res = await fetch('https://api.github.com/repos/asdf17128/bili-webos/releases/latest', {
+    headers: { 'Accept': 'application/vnd.github+json' },
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  return (data.tag_name || '').replace(/^v/i, '');
+}
+
 // ============ Live ============
 
 export async function getLiveList(page, pageSize) {

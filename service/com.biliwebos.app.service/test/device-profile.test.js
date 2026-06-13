@@ -56,3 +56,13 @@ test('ssdp search response falls back to rootdevice when ST is empty', () => {
   assert.match(response, /ST: upnp:rootdevice/);
   assert.match(response, /USN: uuid:atvbilibili&[A-F0-9]+::upnp:rootdevice/);
 });
+
+test('ssdp:all search answers as rootdevice, never echoes the wildcard', () => {
+  const profile = createDeviceProfile({ ip: '192.168.1.2', httpPort: 9958 });
+  const response = getSsdpSearchResponse(profile, 'ssdp:all');
+
+  // Echoing "ssdp:all" as the ST/USN is invalid and made the Bilibili app
+  // ignore the device — it must answer with a concrete target.
+  assert.match(response, /ST: upnp:rootdevice/);
+  assert.doesNotMatch(response, /ssdp:all/);
+});

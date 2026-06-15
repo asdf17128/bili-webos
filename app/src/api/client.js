@@ -279,6 +279,28 @@ export async function getPlayUrl(videoOrBvid, cid, qn) {
   return wbiFetch('/x/player/playurl', payload);
 }
 
+// ============ Bangumi / 番剧 (PGC) ============
+// PGC uses a different endpoint family than UGC videos, and wraps its payload
+// in `result` (not `data`). An episode is identified by ep_id; cid pins the
+// exact part. fnval=4048 requests DASH + HDR + 4K + Dolby + AV1.
+export async function getBangumiPlayUrl(opts, qn) {
+  var o = opts || {};
+  var payload = { qn: qn || 80, fnval: 4048, fnver: 0, fourk: 1 };
+  if (o.epid) payload.ep_id = o.epid;
+  if (o.cid) payload.cid = o.cid;
+  return wbiFetch('/pgc/player/web/playurl', payload);
+}
+
+// Season metadata (episode list with per-episode cid/cover/title). Accepts
+// either an episode id or a season id.
+export async function getBangumiInfo(opts) {
+  var o = opts || {};
+  var params = {};
+  if (o.epid) params.ep_id = o.epid;
+  else if (o.seasonId) params.season_id = o.seasonId;
+  return wbiFetch('/pgc/view/web/season', params);
+}
+
 // Partition/region
 export async function getRegionDynamic(rid, pn, ps) {
   return wbiFetch('/x/web-interface/dynamic/region', { rid: rid || 0, pn: pn || 1, ps: ps || 6 });

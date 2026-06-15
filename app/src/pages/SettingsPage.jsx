@@ -32,11 +32,18 @@ export default function SettingsPage({ user, onPlayVideo }) {
       try {
         const res = await getHistory(0, 0, 12);
         if (res?.data?.list) {
-          setHistory(res.data.list.map(item => ({
-            bvid: item.history?.bvid, cid: item.history?.cid,
-            title: item.title, pic: item.cover, duration: item.duration,
-            progress: item.progress, owner: { name: item.author_name },
-          })));
+          setHistory(res.data.list.map(item => {
+            const h = item.history || {};
+            const isBangumi = h.business === 'pgc' || item.badge === '番剧';
+            return {
+              bvid: h.bvid, cid: h.cid,
+              title: item.title, pic: item.cover, duration: item.duration,
+              progress: item.progress, owner: { name: item.author_name },
+              // Bangumi history rows carry an epid/season (oid) instead of a
+              // usable bvid; pass them through so the player uses the PGC path.
+              ...(isBangumi ? { isBangumi: true, epid: h.epid, seasonId: h.oid, badge: '番剧' } : {}),
+            };
+          }));
         }
       } catch {}
       setHistoryLoading(false);

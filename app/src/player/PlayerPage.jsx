@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getPlayUrl, getDanmaku, getVideoInfo, reportHeartbeat, getRelated, getUpVideos, castReportProgress, castReportState } from '../api/client';
+import { getPlayUrl, getDanmaku, getVideoInfo, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState } from '../api/client';
 import { formatDuration, formatTime, QUALITY_MAP, cleanTitle } from '../utils/format';
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
@@ -139,15 +139,35 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   }, []);
 
   const loadVideo = useCallback(async (player) => {
-    if (!video?.bvid && !video?.aid) return;
+    const isBangumi = !!(video?.isBangumi || video?.epid || video?.seasonId);
+    if (!video?.bvid && !video?.aid && !isBangumi) return;
     setLoading(true);
     setLoadError(false);
     castReportState({ playState: 'loading' }).catch(() => {});
     try {
       let cid = video.cid;
+      let epid = video.epid;
+      let seasonId = video.seasonId;
       let ownerMid = video.owner?.mid || null;
       let ownerName = video.owner?.name || '';
-      if (!cid) {
+
+      if (isBangumi) {
+        // Bangumi (PGC): resolve the episode's cid (and a concrete epid) from
+        // the season listing when the history/feed item didn't carry them.
+        if (!cid || !epid) {
+          try {
+            const info = await getBangumiInfo({ epid, seasonId });
+            const result = info?.result || info?.data || {};
+            const eps = result.episodes || [];
+            let ep = epid ? eps.find(e => String(e.id) === String(epid)) : null;
+            if (!ep) ep = eps[0];
+            if (ep) { epid = ep.id || epid; cid = cid || ep.cid; }
+            if (!video.title && result.season_title) setVideoTitle(result.season_title);
+            seasonId = seasonId || result.season_id;
+          } catch (e) { console.warn('[bangumi] season info failed:', e?.message || e); }
+        }
+        if (!epid && !cid) throw new Error('No bangumi epid/cid');
+      } else if (!cid) {
         const info = await getVideoInfo(video);
         cid = info?.data?.cid;
         if (info?.data?.title) setVideoTitle(info.data.title);
@@ -159,14 +179,14 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         // view response so heartbeat/related (which key on bvid) keep working.
         if (!video.bvid && info?.data?.bvid) video.bvid = info.data.bvid;
       }
-      if (!cid) throw new Error('No cid for video');
+      if (!isBangumi && !cid) throw new Error('No cid for video');
       cidRef.current = cid;
-      // Reset the "UP主投稿" tab for this uploader
-      upMidRef.current = ownerMid;
+      // Reset the "UP主投稿" tab (regular videos only).
+      upMidRef.current = isBangumi ? null : ownerMid;
       upPnRef.current = 1;
       upSeenRef.current = new Set();
       setUpVideos([]);
-      setUpName(ownerName || '');
+      setUpName(isBangumi ? '' : (ownerName || ''));
       setPanelTab('related');
 
       const settings = storage.getSettings();
@@ -175,18 +195,31 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       // Re-fetch playurl + retry: a fresh playurl hands back different CDN
       // nodes, and buildMPD now carries backup URLs, so a bad node fails over
       // instead of leaving a black "loading forever" screen.
-      // Pass the whole `video` (not just bvid) so a cast-initiated, aid-only
-      // payload still resolves to a playurl via getPlayUrl's object overload.
       for (let attempt = 0; attempt < 3 && !loaded; attempt++) {
         try {
-          const res = await getPlayUrl(video, cid, settings.quality || 80);
-          const dash = res?.data?.dash;
-          if (!dash) throw new Error('No DASH stream in playurl (DRM/bangumi?)');
+          let dash, meta, wantQn;
+          if (isBangumi) {
+            // Request the full ladder so HDR/4K reps are present, then default
+            // to the top rep (HDR when the title is mastered for it).
+            const res = await getBangumiPlayUrl({ epid, cid }, 127);
+            meta = res?.result || res?.data;
+            dash = meta?.dash;
+            if (!dash) throw new Error('No DASH stream (bangumi — region/VIP locked?)');
+            wantQn = Math.max.apply(null, (dash.video || []).map(v => v.id || 0)) || undefined;
+          } else {
+            // Pass the whole `video` so a cast-initiated, aid-only payload still
+            // resolves via getPlayUrl's object overload.
+            const res = await getPlayUrl(video, cid, settings.quality || 80);
+            meta = res?.data;
+            dash = meta?.dash;
+            if (!dash) throw new Error('No DASH stream in playurl (DRM/bangumi?)');
+            wantQn = undefined; // legacy: highest bitrate
+          }
 
-          setQualities((res?.data?.accept_quality || []).map(q => ({ qn: q, label: QUALITY_MAP[q] || `${q}` })));
-          setCurrentQuality(res?.data?.quality || 80);
+          setQualities((meta?.accept_quality || []).map(q => ({ qn: q, label: QUALITY_MAP[q] || `${q}` })));
+          setCurrentQuality(wantQn || meta?.quality || 80);
 
-          const mpd = buildMPD(dash);
+          const mpd = buildMPD(dash, wantQn);
           const blob = new Blob([mpd], { type: 'application/dash+xml' });
           const mpdUrl = URL.createObjectURL(blob);
           // Resume directly at the saved position via load()'s startTime — don't
@@ -230,10 +263,24 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       });
 
       try { setDanmakus(await getDanmaku(cid)); } catch {}
-      try {
-        const rel = await getRelated(video.bvid);
-        setRelatedVideos((rel?.data || []).slice(0, 12));
-      } catch {}
+      if (isBangumi) {
+        // "相关推荐" → the season's episode list; each plays via the PGC path.
+        try {
+          const info = await getBangumiInfo({ epid, seasonId });
+          const result = info?.result || info?.data || {};
+          const eps = (result.episodes || []).map(e => ({
+            isBangumi: true, epid: e.id, cid: e.cid,
+            title: e.long_title ? `第${e.title}话 ${e.long_title}` : (e.share_copy || `第${e.title}话`),
+            pic: e.cover, owner: { name: result.season_title || '' },
+          }));
+          setRelatedVideos(eps.slice(0, 60));
+        } catch {}
+      } else {
+        try {
+          const rel = await getRelated(video.bvid);
+          setRelatedVideos((rel?.data || []).slice(0, 12));
+        } catch {}
+      }
     } catch (err) {
       console.error('Load video error:', err?.message || err);
       setLoading(false);
@@ -242,7 +289,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     }
   }, [video, queueOrApplySeek]);
 
-  function buildMPD(dash) {
+  function buildMPD(dash, wantQn) {
     const duration = dash.duration || 0;
     const minBuffer = dash.minBufferTime || 1.5;
     // ABR is off and manual quality re-fetches playurl, so the MPD only needs
@@ -251,7 +298,22 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     // on the TV's weak CPU take several seconds before the first byte loads.
     const pickBest = (arr) => (arr && arr.length)
       ? [arr.reduce((a, b) => ((b.bandwidth || 0) > (a.bandwidth || 0) ? b : a))] : [];
-    const videoList = pickBest(dash.video);
+    // When a specific quality is wanted (manual pick, or bangumi defaulting to
+    // its top rep), select by B站's quality id — HDR=125 / Dolby Vision=126 are
+    // keyed by id, and the HDR rep is usually NOT the highest bitrate (an SDR
+    // AVC rep often is), so picking by bitrate alone never lights up HDR.
+    const pickRep = (arr) => {
+      if (!arr || !arr.length) return [];
+      if (!wantQn) return pickBest(arr);
+      let pool = arr.filter(v => v.id === wantQn);
+      if (!pool.length) {
+        const ids = Array.from(new Set(arr.map(v => v.id))).sort((a, b) => b - a);
+        const t = ids.find(id => id <= wantQn);
+        pool = arr.filter(v => v.id === (t != null ? t : ids[0]));
+      }
+      return [pool.reduce((a, b) => ((b.bandwidth || 0) > (a.bandwidth || 0) ? b : a))];
+    };
+    const videoList = pickRep(dash.video);
     const audioList = pickBest(dash.audio);
     let videoAdaptations = '';
     if (videoList.length > 0) {
@@ -521,16 +583,25 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
   // Change quality
   const changeQuality = useCallback(async (qn) => {
-    if ((!video?.bvid && !video?.aid) || !shakaRef.current) return;
+    const isBangumi = !!(video?.isBangumi || video?.epid || video?.seasonId);
+    if ((!video?.bvid && !video?.aid && !isBangumi) || !shakaRef.current) return;
     setCurrentQuality(qn);
     storage.setSettings({ ...storage.getSettings(), quality: qn });
     try {
       let cid = video.cid || cidRef.current;
-      const res = await getPlayUrl(video, cid, qn);
-      const dash = res?.data?.dash;
+      let dash;
+      if (isBangumi) {
+        const res = await getBangumiPlayUrl({ epid: video.epid, cid }, qn);
+        dash = (res?.result || res?.data)?.dash;
+      } else {
+        const res = await getPlayUrl(video, cid, qn);
+        dash = res?.data?.dash;
+      }
       if (dash) {
         const pos = videoRef.current.currentTime;
-        const mpd = buildMPD(dash);
+        // Honor the picked quality id (this is how HDR=125 / Dolby=126 get
+        // selected — they aren't the highest-bitrate rep).
+        const mpd = buildMPD(dash, qn);
         const blob = new Blob([mpd], { type: 'application/dash+xml' });
         const mpdUrl = URL.createObjectURL(blob);
         await shakaRef.current.load(mpdUrl);
@@ -538,7 +609,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         selectBestVariant(shakaRef.current);
         videoRef.current.currentTime = pos;
         videoRef.current.play();
-        setCurrentQuality(res?.data?.quality || qn);
+        setCurrentQuality(qn);
       }
     } catch (e) {
       console.error('Quality change error:', e);

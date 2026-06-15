@@ -62,6 +62,14 @@ async function main(call) {
   };
   const probe = () => evalJSON(PROBE);
 
+  // Fetch a B站 API URL through the app's own JS service (injects login
+  // cookies) and return the parsed JSON. Used by the bangumi API checks.
+  const serviceFetch = async (url) => {
+    const expr = `new Promise(function(r){window.webOS.service.request('luna://com.biliwebos.app.service/',{method:'fetch',parameters:{url:${JSON.stringify(url)},method:'GET'},onSuccess:function(res){try{var b=typeof res.body==='string'?JSON.parse(res.body):(res.body||res.data||res);r(JSON.stringify(b));}catch(e){r('{}');}},onFailure:function(){r('{}');}});})`;
+    const r = await call('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true });
+    try { return JSON.parse(r?.result?.value); } catch { return {}; }
+  };
+
   const key = async (k) => {
     const m = KEYMAP[k];
     await call('Input.dispatchKeyEvent', { type: 'keyDown', key: m.key, windowsVirtualKeyCode: m.vk, nativeVirtualKeyCode: m.vk });
@@ -220,8 +228,25 @@ async function main(call) {
     check('分区 loads content', s.cards > 0 || s.imgs > 3, `${s.cards} cards / ${s.imgs} imgs`);
   }
 
+  async function testBangumiPlayback() {
+    console.log('\n[番剧 / Bangumi (PGC) + HDR]');
+    const EPID = 433947; // JOJO 石之海 ep1 — issue #7 repro
+    const season = await serviceFetch('https://api.bilibili.com/pgc/view/web/season?ep_id=' + EPID);
+    const eps = season?.result?.episodes || season?.data?.episodes || [];
+    check('Season info loads (episode list)', season?.code === 0 && eps.length > 0, `${eps.length} eps`);
+    const ep = eps.find(e => String(e.id) === String(EPID)) || eps[0] || {};
+    const play = await serviceFetch(`https://api.bilibili.com/pgc/player/web/playurl?ep_id=${EPID}&cid=${ep.cid || ''}&qn=127&fnval=4048&fnver=0&fourk=1`);
+    const dash = (play?.result || play?.data || {}).dash;
+    const vcount = dash?.video?.length || 0;
+    check('PGC playurl returns DASH (bangumi playable)', play?.code === 0 && vcount > 0, `${vcount} video reps`);
+    const accept = (play?.result || play?.data || {}).accept_quality || [];
+    const hdrRep = (dash?.video || []).some(v => v.id === 125 || v.id === 126);
+    if (accept.includes(125) || accept.includes(126) || hdrRep) ok('HDR/Dolby rep present + selectable by id', `accept=${JSON.stringify(accept)}`);
+    else warn('HDR/Dolby rep present', `none for this title (needs VIP?) accept=${JSON.stringify(accept)}`);
+  }
+
   const tests = [
-    testNavAndHome, testVideoPlayback, testLiveAndDanmaku, testSearch,
+    testNavAndHome, testVideoPlayback, testBangumiPlayback, testLiveAndDanmaku, testSearch,
     testFollowPagination, testSettingsAutoCheck, testHotAndPartition,
   ];
   for (const t of tests) {

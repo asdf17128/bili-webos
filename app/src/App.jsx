@@ -23,6 +23,22 @@ const NAV_ITEMS = [
   { key: 'config', label: '设置', icon: '⚙️' },
 ];
 
+// Detect a bangumi (PGC) item across the shapes it arrives in: watch history
+// (business:'pgc', badge:'番剧'), the recommend feed (goto:'bangumi', a /ep|/ss
+// uri), or an already-normalized item. Returns {epid, seasonId, cid} or null.
+function detectBangumi(v) {
+  if (!v) return null;
+  if (v.isBangumi) return { epid: v.epid, seasonId: v.seasonId, cid: v.cid };
+  const uri = v.uri || v.url || v.redirect_url || '';
+  const epFromUri = (uri.match(/ep(\d+)/) || [])[1];
+  const ssFromUri = (uri.match(/ss(\d+)/) || [])[1];
+  const epid = v.epid || v.ep_id || epFromUri;
+  const seasonId = v.seasonId || v.season_id || ssFromUri || (v.business === 'pgc' ? v.oid : null);
+  const isPgc = v.business === 'pgc' || v.badge === '番剧' || v.goto === 'bangumi' || !!epid || !!ssFromUri;
+  if (isPgc && (epid || seasonId)) return { epid: epid || null, seasonId: seasonId || null, cid: v.cid || null };
+  return null;
+}
+
 function Sidebar({ activePage, onPreview, onSelect, user }) {
   // Arrowing onto a sidebar item previews that page (no refresh).
   useEffect(() => {
@@ -207,6 +223,15 @@ export default function App() {
       setLiveRoom(video);
       return;
     }
+    const bg = detectBangumi(video);
+    if (bg) {
+      setLiveRoom(null);
+      setPlayerVideo({
+        ...video, isBangumi: true,
+        epid: bg.epid, seasonId: bg.seasonId, cid: video.cid || bg.cid,
+      });
+      return;
+    }
     if (!video?.bvid) { showToastMsg('无法播放此视频'); return; }
     setPlayerVideo(video);
   }, []);
@@ -249,7 +274,7 @@ export default function App() {
         {toast && <div className="toast">{toast}</div>}
       </div>
 
-      {playerVideo && <PlayerPage key={playerVideo.bvid || playerVideo.aid || playerVideo.cid} video={playerVideo} onBack={() => setPlayerVideo(null)} onPlayNext={(v) => setPlayerVideo(v)} />}
+      {playerVideo && <PlayerPage key={playerVideo.bvid || playerVideo.epid || playerVideo.aid || playerVideo.cid} video={playerVideo} onBack={() => setPlayerVideo(null)} onPlayNext={(v) => setPlayerVideo(v)} />}
       {liveRoom && <LivePlayerPage key={liveRoom.roomid} room={liveRoom} onBack={() => setLiveRoom(null)} />}
 
       {showLogin && (

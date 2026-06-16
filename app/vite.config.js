@@ -6,7 +6,12 @@ export default defineConfig({
   base: './',
   build: {
     outDir: 'dist',
-    target: 'chrome108',
+    // Target older Chromium so 2020+ webOS TVs (webOS 5 = Chromium 68,
+    // webOS 6 = Chromium 79) can parse the bundle. The app's own code uses
+    // modern syntax (optional chaining ×180) that Chromium <80 can't parse,
+    // which showed as a blank/black screen on older TVs (issue #10). esbuild
+    // lowers the syntax; the code uses no modern runtime APIs needing polyfills.
+    target: 'chrome68',
     assetsInlineLimit: 4096,
     rollupOptions: {
       output: {

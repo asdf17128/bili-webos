@@ -37,6 +37,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const [videoTitle, setVideoTitle] = useState(video?.title || '');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const [ended, setEnded] = useState(false);
   const [relatedVideos, setRelatedVideos] = useState([]);
   // Bottom panel: 'related' (相关推荐) | 'up' (UP主投稿)
@@ -87,7 +88,14 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     async function init() {
       const shaka = await import('shaka-player');
       shaka.polyfill.installAll();
-      if (!shaka.Player.isBrowserSupported()) return;
+      if (!shaka.Player.isBrowserSupported()) {
+        // Older webOS engines may lack MSE/EME — surface it instead of a
+        // silent black screen / endless spinner.
+        setLoading(false);
+        setErrorMsg('当前设备不支持视频播放(浏览器内核过旧)');
+        setLoadError(true);
+        return;
+      }
       const player = new shaka.Player();
       await player.attach(videoRef.current);
       shakaRef.current = player;
@@ -192,51 +200,60 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       const settings = storage.getSettings();
       let loaded = false;
       let lastErr = null;
-      // Re-fetch playurl + retry: a fresh playurl hands back different CDN
-      // nodes, and buildMPD now carries backup URLs, so a bad node fails over
-      // instead of leaving a black "loading forever" screen.
-      for (let attempt = 0; attempt < 3 && !loaded; attempt++) {
-        try {
-          let dash, meta, wantQn;
-          if (isBangumi) {
-            // Request the full ladder so HDR/4K reps are present, then default
-            // to the top rep (HDR when the title is mastered for it).
-            const res = await getBangumiPlayUrl({ epid, cid }, 127);
-            meta = res?.result || res?.data;
-            dash = meta?.dash;
-            if (!dash) throw new Error('No DASH stream (bangumi — region/VIP locked?)');
-            wantQn = Math.max.apply(null, (dash.video || []).map(v => v.id || 0)) || undefined;
-          } else {
-            // Pass the whole `video` so a cast-initiated, aid-only payload still
-            // resolves via getPlayUrl's object overload.
-            const res = await getPlayUrl(video, cid, settings.quality || 80);
-            meta = res?.data;
-            dash = meta?.dash;
-            if (!dash) throw new Error('No DASH stream in playurl (DRM/bangumi?)');
-            wantQn = undefined; // legacy: highest bitrate
-          }
-
-          setQualities((meta?.accept_quality || []).map(q => ({ qn: q, label: QUALITY_MAP[q] || `${q}` })));
-          setCurrentQuality(wantQn || meta?.quality || 80);
-
-          const mpd = buildMPD(dash, wantQn);
-          const blob = new Blob([mpd], { type: 'application/dash+xml' });
-          const mpdUrl = URL.createObjectURL(blob);
-          // Resume directly at the saved position via load()'s startTime — don't
-          // load at 0 then seek, which buffers the intro and immediately throws
-          // it away (the main cause of the long resume-load wait).
-          const resumeAt = (video.progress && video.progress > 0 && video.progress < (dash.duration || 9999) - 10)
-            ? video.progress : 0;
+      // Quality-fallback ladder: try the best first, then drop to safer
+      // qualities so a TV that can't decode the top rep (e.g. an older panel
+      // facing 4K/HDR HEVC) still plays at 1080p/360p instead of black-
+      // screening. `null` = the default pick (bangumi → top/HDR rep, UGC →
+      // highest bitrate). Inner loop re-fetches playurl for fresh CDN nodes.
+      const qualityLadder = isBangumi ? [null, 80, 16] : [null, 16];
+      for (let rung = 0; rung < qualityLadder.length && !loaded; rung++) {
+        const fallbackQn = qualityLadder[rung];
+        for (let attempt = 0; attempt < 2 && !loaded; attempt++) {
           try {
-            await player.load(mpdUrl, resumeAt || undefined);
-          } finally {
-            URL.revokeObjectURL(mpdUrl);
+            let dash, meta, wantQn;
+            if (isBangumi) {
+              // Request the full ladder so HDR/4K reps are present; pick the
+              // top rep by default, or the forced fallback quality.
+              const res = await getBangumiPlayUrl({ epid, cid }, 127);
+              meta = res?.result || res?.data;
+              dash = meta?.dash;
+              if (!dash) throw new Error('No DASH stream (bangumi — region/VIP locked?)');
+              wantQn = fallbackQn != null ? fallbackQn
+                : (Math.max.apply(null, (dash.video || []).map(v => v.id || 0)) || undefined);
+            } else {
+              // Pass the whole `video` so a cast-initiated, aid-only payload
+              // still resolves via getPlayUrl's object overload.
+              const res = await getPlayUrl(video, cid, fallbackQn || settings.quality || 80);
+              meta = res?.data;
+              dash = meta?.dash;
+              if (!dash) throw new Error('No DASH stream in playurl (DRM/bangumi?)');
+              wantQn = fallbackQn != null ? fallbackQn : undefined; // default: highest bitrate
+            }
+
+            setQualities((meta?.accept_quality || []).map(q => ({ qn: q, label: QUALITY_MAP[q] || `${q}` })));
+            setCurrentQuality(wantQn || meta?.quality || 80);
+
+            const mpd = buildMPD(dash, wantQn);
+            const blob = new Blob([mpd], { type: 'application/dash+xml' });
+            const mpdUrl = URL.createObjectURL(blob);
+            // Resume directly at the saved position via load()'s startTime — don't
+            // load at 0 then seek, which buffers the intro and immediately throws
+            // it away (the main cause of the long resume-load wait).
+            const resumeAt = (video.progress && video.progress > 0 && video.progress < (dash.duration || 9999) - 10)
+              ? video.progress : 0;
+            try {
+              await player.load(mpdUrl, resumeAt || undefined);
+            } finally {
+              URL.revokeObjectURL(mpdUrl);
+            }
+            if (rung > 0) console.warn('[loadVideo] fell back to qn=' + fallbackQn + ' (top rep failed to load/decode)');
+            loaded = true;
+          } catch (e) {
+            lastErr = e;
+            console.warn('[loadVideo] rung ' + rung + ' attempt ' + (attempt + 1) + ' failed:', e?.message || e);
+            const isLast = rung === qualityLadder.length - 1 && attempt === 1;
+            if (!isLast) await new Promise(r => setTimeout(r, 600));
           }
-          loaded = true;
-        } catch (e) {
-          lastErr = e;
-          console.warn('[loadVideo] attempt ' + (attempt + 1) + ' failed:', e?.message || e);
-          if (attempt < 2) await new Promise(r => setTimeout(r, 800));
         }
       }
       if (!loaded) throw lastErr || new Error('Playback load failed');
@@ -915,8 +932,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           gap: 16, background: 'rgba(0,0,0,0.85)', zIndex: 50 }}>
-          <div style={{ fontSize: 26, color: '#fff' }}>视频加载失败</div>
-          <div style={{ fontSize: 18, color: '#aaa' }}>该视频源节点异常,请按返回键重试或换一个视频</div>
+          <div style={{ fontSize: 26, color: '#fff' }}>{errorMsg || '视频加载失败'}</div>
+          <div style={{ fontSize: 18, color: '#aaa' }}>
+            {errorMsg ? '请按返回键退出' : '该视频源节点异常,请按返回键重试或换一个视频'}
+          </div>
         </div>
       )}
 

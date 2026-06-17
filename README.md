@@ -1,140 +1,127 @@
+<div align="center">
+
+<img src="docs/screenshots/icon.png" width="96" alt="BiliTV icon" />
+
 # BiliTV for webOS
 
-LG webOS 智能电视的第三方哔哩哔哩客户端。
+**Watch Bilibili (哔哩哔哩) natively on your LG webOS TV — DASH playback, danmaku, bangumi & live, all driven by the remote.**
+
+LG webOS 智能电视的第三方哔哩哔哩客户端 · 弹幕 / 番剧 / 直播 / 搜索，全程遥控器操作。
 
 ![Platform](https://img.shields.io/badge/platform-LG%20webOS%20TV-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
+![Release](https://img.shields.io/github/v/release/asdf17128/bili-webos)
 
-## 功能
+</div>
 
-- **视频浏览** — 推荐、热门、分区、关注动态
-- **视频播放** — DASH 自适应流，360P-8K 画质切换
-- **弹幕** — 实时弹幕渲染
-- **直播** — 关注的主播直播列表，HLS 流播放
-- **搜索** — 虚拟键盘 + 视频搜索
-- **历史记录** — 播放进度上报，续播支持
-- **扫码登录** — 手机 B 站扫码
+---
 
-## 架构
+## English
+
+A free, open-source Bilibili client for LG webOS TVs. It runs entirely on the TV — a React app talking to a built-in JS service that proxies Bilibili's API and media (no external server or PC required). Everything is operated with the TV remote (D-pad focus navigation built from scratch).
+
+> ⚠️ **Region notice:** Bilibili's APIs and especially its **video CDN are geo-restricted to mainland China**. Outside mainland China the content feed may be empty and playback will likely fail — you need a network route into mainland China. The app talks to Bilibili directly and has **no built-in proxy/VPN** for this.
+
+**Features:** recommendation / hot / category / following feeds · DASH adaptive playback (up to 4K/8K, HDR & Dolby Vision) · real-time danmaku · bangumi (番剧) with episode list · live streams with danmaku · on-screen-keyboard search · QR-code login · watch history with resume.
+
+## 中文
+
+免费、开源的 LG webOS 电视哔哩哔哩客户端。**完全在电视上运行**——React 前端 + 内置 JS 服务代理 B站 接口与媒体，不需要额外的代理服务器或电脑常开。全程遥控器操作（从零实现的 D-pad 焦点导航）。
+
+> ⚠️ **地区限制：** B站 接口、尤其是**视频 CDN 仅对中国大陆开放**。在大陆以外内容可能为空、播放大概率失败，需要走大陆网络。本 app 直连 B站，**不内置代理/VPN**。
+
+**功能：** 推荐/热门/分区/关注动态 · DASH 自适应播放（最高 4K/8K，支持 HDR/杜比视界）· 实时弹幕 · 番剧（含整季剧集列表）· 直播（带弹幕）· 软键盘搜索 · 扫码登录 · 观看历史与续播。
+
+## Screenshots / 截图
+
+| Home / 首页 | Player + Danmaku / 播放+弹幕 |
+|---|---|
+| ![home](docs/screenshots/home.png) | ![player](docs/screenshots/player.png) |
+| Search / 搜索 | Following / 关注 |
+| ![search](docs/screenshots/search.png) | ![following](docs/screenshots/following.png) |
+
+## Install / 安装
+
+### Option A — Homebrew Channel (recommended / 推荐)
+
+Requires the [webOS Homebrew Channel](https://www.webosbrew.org/) on your TV (see [rootmy.tv](https://rootmy.tv/)). Then:
+
+1. Open **Homebrew Channel** on the TV.
+2. Search for **BiliTV** and install.
+
+需要电视已装 [webOS Homebrew Channel](https://www.webosbrew.org/)；打开后搜索 **BiliTV** 安装即可。
+（新版本上架后，商店索引刷新有几小时延迟。）
+
+### Option B — Build from source (developers / 开发者)
+
+**Prerequisites / 前置：** LG webOS TV (2020+)；TV [Developer Mode](https://webostv.developer.lge.com/develop/getting-started/developer-mode-app) on；Node.js 18+.
+
+```bash
+# 1. clone
+git clone https://github.com/asdf17128/bili-webos.git
+cd bili-webos
+
+# 2. install deps
+npm install
+cd app && npm install && cd ..
+
+# 3. webOS CLI (if needed)
+npm install -g @webosose/ares-cli
+
+# 4. set your TV's IP/passphrase in tools/deploy.mjs
+
+# 5. build + deploy
+bash build.sh
+```
+
+Dev mode (browser preview):
+
+```bash
+cd proxy && node server.js &   # Mac proxy for browser dev
+cd app && npm run dev          # http://localhost:5173
+```
+
+## Architecture / 架构
 
 ```
 ┌──────────────────────────────────────────┐
 │               LG webOS TV                 │
-│                                           │
 │   Web App (React)  ◀──Luna──▶  JS Service │
-│   Chromium 108         bus     Node.js v16 │
-│        │                          │        │
+│        │                Bus     Node.js    │
 │        └──── HTTP :7654 ──────────┘        │
 └───────────────────────┬───────────────────┘
-                        │ HTTPS
-                        ▼
-                 Bilibili API / CDN
+                         │ HTTPS
+                         ▼          Bilibili API / CDN
 ```
 
-- **Web App**：React 前端，Shaka Player 视频播放
-- **JS Service**：TV 后台 Node.js 服务，处理 API 请求（绕过 CORS）、Cookie 管理、视频/图片代理
-- **零外部依赖**：不需要额外的代理服务器，一个 ipk 包含所有
+- **Web App** — React + Shaka Player (DASH). Build target Chromium 68 for older-webOS compatibility.
+- **JS Service** — on-TV Node.js service: API requests (bypasses CORS), cookie management, video/image proxy.
+- **Self-contained** — one ipk, no external proxy server.
 
-## 安装
+## Remote controls / 遥控器操作
 
-### 前置条件
+| Key / 按键 | Home / 首页 | Player / 播放器 |
+|---|---|---|
+| D-pad / 方向键 | move focus / 移动焦点 | ←→ seek 10s / 快进退 · ↑↓ controls / 控制栏 |
+| Enter / 确认 | open / select / 选择 | play-pause / 暂停播放 |
+| Back / 返回 | sidebar → home / 回侧栏→首页 | exit / close panel / 退出·关面板 |
 
-- LG webOS TV（2020 及以上，推荐 2024 webOS 24）
-- 电视开启 [Developer Mode](https://webostv.developer.lge.com/develop/getting-started/developer-mode-app)
-- 电脑安装 Node.js 18+, npm
-
-### 步骤
-
-```bash
-# 1. 克隆仓库
-git clone https://github.com/asdf17128/bili-webos.git
-cd bili-webos
-
-# 2. 安装依赖
-npm install
-cd app && npm install && cd ..
-
-# 3. 安装 webOS CLI（如果没有）
-npm install -g @webos-tools/cli
-
-# 4. 配置电视连接（修改 tools/deploy.mjs 中的 IP）
-
-# 5. 一键构建部署
-bash build.sh
-```
-
-### 开发模式
-
-```bash
-# 启动 Mac 代理（浏览器预览用）
-cd proxy && node server.js &
-
-# 启动开发服务器
-cd app && npm run dev
-# 浏览器打开 http://localhost:5173
-```
-
-## 项目结构
+## Project structure / 项目结构
 
 ```
 bili-webos/
-├── app/                          # 前端 React 应用
-│   ├── src/
-│   │   ├── api/                  # B站 API 封装 + WBI 签名
-│   │   ├── hooks/useFocus.js     # 电视遥控器焦点导航
-│   │   ├── components/           # 视频卡片、侧边栏、键盘
-│   │   ├── pages/                # 各页面
-│   │   ├── player/               # 视频/直播播放器 + 弹幕
-│   │   └── utils/                # 工具函数
-│   ├── public/webOSTVjs-1.2.13/  # webOS Luna bus 通信库
-│   └── webos-meta/               # appinfo.json + 图标
-│
-├── service/                      # TV 后台服务
-│   └── com.biliwebos.app.service/
-│       └── service.js            # API 代理 + 本地 HTTP 服务
-│
-├── proxy/                        # 开发用备用代理
-├── tools/                        # 部署/调试/测试工具
-├── build.sh                      # 一键构建部署
-├── CLAUDE.md                     # 开发指南
-└── DESIGN.md                     # 设计文档
+├── app/        # React frontend + webos-meta (appinfo, icons)
+├── service/    # on-TV JS service (API + local HTTP proxy)
+├── proxy/      # dev-only Mac proxy
+├── tools/      # deploy / debug / screenshot / test
+├── build.sh    # one-command build + deploy
+└── CLAUDE.md   # developer guide
 ```
 
-## 遥控器操作
+## Tech stack / 技术栈
 
-### 首页
-| 按键 | 功能 |
-|------|------|
-| 方向键 | 移动焦点 |
-| Enter / 点击 | 选择视频 / 切换导航 |
-| Back | 返回上级 / 退出 |
-
-### 播放器
-| 按键 | 无控制栏 | 有控制栏 |
-|------|---------|---------|
-| 左/右 | 快退/快进 10s | 切换按钮 |
-| 上 | 呼出控制栏 | 关闭控制栏 |
-| 下 | 呼出控制栏 | 显示推荐 |
-| Enter | 暂停/播放 | 执行按钮 |
-| Back | 退出播放 | 关闭控制栏 |
-
-## 技术栈
-
-- **前端**: React 18 + Vite 6
-- **视频**: Shaka Player (DASH)
-- **直播**: 原生 HLS
-- **TV Service**: Node.js v16 (webOS 内置)
-- **部署**: ssh2 (绕过 ares-cli 兼容问题)
-- **调试**: Chrome DevTools Protocol via SSH
-
-## 开发工具
-
-```bash
-node tools/debug.mjs       # 远程调试（console、DOM、性能指标）
-node tools/screenshot.mjs   # 远程截图
-bash tools/verify.sh        # 构建→部署→验证完整流程
-```
+React 18 · Vite 6 · Shaka Player (DASH) · native HLS (live) · webOS JS Service (Node.js v16) · CDP-over-SSH tooling.
 
 ## License
 
-MIT
+MIT. Unofficial, fan-made client for personal use; not affiliated with or endorsed by Bilibili.

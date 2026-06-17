@@ -12,6 +12,7 @@ import {
 const API_HOST = 'api.bilibili.com';
 const PASSPORT_HOST = 'passport.bilibili.com';
 const SERVICE_URI = 'luna://com.biliwebos.app.service/';
+const CAST_SUBSCRIBE_RETRY_MS = 1000;
 
 type FetchOptions = {
   method?: string;
@@ -244,20 +245,40 @@ export function castSubscribe(
   if (!hasLunaService()) return function () {};
 
   let cancelled = false;
-  window.webOS.service.request(SERVICE_URI, {
-    method: 'castSubscribe',
-    subscribe: true,
-    parameters: { subscribe: true },
-    onSuccess: function (res) {
-      if (!cancelled && res?.event && onEvent) onEvent(res.event, res.status);
-    },
-    onFailure: function (err) {
-      if (!cancelled && onFailure) onFailure(err);
-    },
-  });
+  let retryTimer: ReturnType<typeof setTimeout> | null = null;
+  let requestHandle: { cancel?: () => void } | void;
+
+  function cancelRequest() {
+    if (requestHandle && typeof requestHandle.cancel === 'function') {
+      requestHandle.cancel();
+    }
+  }
+
+  function subscribe() {
+    if (cancelled || !hasLunaService()) return;
+
+    requestHandle = window.webOS.service.request(SERVICE_URI, {
+      method: 'castSubscribe',
+      subscribe: true,
+      parameters: { subscribe: true },
+      onSuccess: function (res) {
+        if (!cancelled && res?.event && onEvent) onEvent(res.event, res.status);
+      },
+      onFailure: function (err) {
+        if (cancelled) return;
+        if (onFailure) onFailure(err);
+        cancelRequest();
+        retryTimer = setTimeout(subscribe, CAST_SUBSCRIBE_RETRY_MS);
+      },
+    });
+  }
+
+  subscribe();
 
   return function () {
     cancelled = true;
+    if (retryTimer) clearTimeout(retryTimer);
+    cancelRequest();
   };
 }
 

@@ -15,8 +15,15 @@ interface WebOSServiceRequestOptions {
   onFailure?: (error: any) => void;
 }
 
+interface WebOSServiceRequestHandle {
+  cancel?: () => void;
+}
+
 interface WebOSServiceApi {
-  request: (uri: string, options: WebOSServiceRequestOptions) => void;
+  request: (
+    uri: string,
+    options: WebOSServiceRequestOptions,
+  ) => WebOSServiceRequestHandle | void;
 }
 
 interface WebOSApi {

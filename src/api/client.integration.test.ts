@@ -36,6 +36,8 @@ const originalWindow = globalThis.window;
 const originalFetch = globalThis.fetch;
 const originalDOMParser = globalThis.DOMParser;
 const originalLocalStorage = globalThis.localStorage;
+const originalSetTimeout = globalThis.setTimeout;
+const originalClearTimeout = globalThis.clearTimeout;
 
 function makeStorage() {
   const mem = new Map();
@@ -59,6 +61,8 @@ describe('api client integration paths', () => {
     globalThis.fetch = originalFetch;
     globalThis.DOMParser = originalDOMParser;
     globalThis.localStorage = originalLocalStorage;
+    globalThis.setTimeout = originalSetTimeout;
+    globalThis.clearTimeout = originalClearTimeout;
     mock.restore();
   });
 
@@ -92,6 +96,7 @@ describe('api client integration paths', () => {
   it('uses luna service when available and supports cast subscribe/ack', async () => {
     const events = [];
     const requests = [];
+    const cancel = mock(() => {});
     globalThis.window = {
       PalmServiceBridge: function () {},
       webOS: {
@@ -100,7 +105,7 @@ describe('api client integration paths', () => {
             requests.push(options.method);
             if (options.method === 'castSubscribe') {
               options.onSuccess({ event: 'state', status: { mode: 'play' } });
-              return;
+              return { cancel };
             }
             options.onSuccess({
               returnValue: true,
@@ -122,6 +127,44 @@ describe('api client integration paths', () => {
     expect(events).toEqual([['state', 'play']]);
     expect(requests).toContain('castAck');
     expect(raw.returnValue).toBe(true);
+    expect(cancel).toHaveBeenCalled();
+  });
+
+  it('re-subscribes when the cast subscription fails', () => {
+    const failures = [];
+    const subscribeRequests = [];
+    const timers = [];
+    globalThis.setTimeout = (fn, delay) => {
+      const timer = { fn, delay };
+      timers.push(timer);
+      return timer;
+    };
+    globalThis.clearTimeout = mock(() => {});
+    globalThis.window = {
+      PalmServiceBridge: function () {},
+      webOS: {
+        service: {
+          request: (_uri, options) => {
+            if (options.method !== 'castSubscribe') return {};
+            subscribeRequests.push(options);
+            return { cancel: mock(() => {}) };
+          },
+        },
+      },
+      location: { hostname: 'tv' },
+    };
+
+    const unsubscribe = castSubscribe(undefined, (err) => failures.push(err));
+    subscribeRequests[0].onFailure({ errorText: 'subscription dropped' });
+
+    expect(failures).toEqual([{ errorText: 'subscription dropped' }]);
+    expect(timers).toHaveLength(1);
+    expect(timers[0].delay).toBeGreaterThan(0);
+
+    timers[0].fn();
+    expect(subscribeRequests).toHaveLength(2);
+
+    unsubscribe();
   });
 
   it('prefers luna on TV even when Palm bridge globals are missing', async () => {

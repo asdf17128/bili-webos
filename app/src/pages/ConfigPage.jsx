@@ -12,6 +12,7 @@ export default function ConfigPage({ onLogout, user }) {
   const [hasUpdate, setHasUpdate] = useState(false);
   const checking = useRef(false);
   const settings = storage.getSettings();
+  const [gridCols, setGridCols] = useState(() => Math.min(4, Math.max(2, settings.gridCols || 3)));
 
   // Query GitHub for the latest release and compare with the running version.
   // Shared by the auto-check on mount and the manual OK press.
@@ -65,19 +66,31 @@ export default function ConfigPage({ onLogout, user }) {
     },
   });
 
-  const { props: logoutProps } = useFocusable({
-    id: 'content-2-0', row: 2, col: 0, group: 'content',
-    onSelect: () => { if (user) { storage.clearAuth(); onLogout(); } },
+  // 每行视频数 — cycles 2 → 3 → 4 → 2 on OK.
+  const { props: gridProps } = useFocusable({
+    id: 'content-1-0', row: 1, col: 0, group: 'content',
+    onSelect: () => {
+      setGridCols(prev => {
+        const next = prev >= 4 ? 2 : prev + 1;
+        storage.setSettings({ ...storage.getSettings(), gridCols: next });
+        return next;
+      });
+    },
   });
 
   const { props: checkUpdateProps } = useFocusable({
-    id: 'content-1-0', row: 1, col: 0, group: 'content',
+    id: 'content-2-0', row: 2, col: 0, group: 'content',
     onSelect: () => {
       // Once an update is known, OK opens the Homebrew Channel to install it;
       // otherwise re-run the check manually.
       if (hasUpdate) { openHomebrewChannel(); return; }
       checkForUpdate();
     },
+  });
+
+  const { props: logoutProps } = useFocusable({
+    id: 'content-3-0', row: 3, col: 0, group: 'content',
+    onSelect: () => { if (user) { storage.clearAuth(); onLogout(); } },
   });
 
   return (
@@ -87,6 +100,11 @@ export default function ConfigPage({ onLogout, user }) {
       <div className="settings-row" {...danmakuProps}>
         <span>弹幕</span>
         <span className="settings-row-value">{settings.danmaku ? '开' : '关'}</span>
+      </div>
+
+      <div className="settings-row" {...gridProps}>
+        <span>每行视频</span>
+        <span className="settings-row-value">{gridCols} 个</span>
       </div>
 
       <div className="settings-row" {...checkUpdateProps}>

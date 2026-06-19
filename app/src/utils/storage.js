@@ -46,6 +46,7 @@ export const storage = {
     return this.get('settings') || {
       danmaku: true,
       quality: 80,
+      gridCols: 3,
     };
   },
 

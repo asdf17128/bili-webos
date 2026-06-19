@@ -5,7 +5,6 @@ import { getCurrentFocusId, setFocus, onFocusChange } from '../hooks/useFocus';
 import { storage } from '../utils/storage';
 import { loadFollowedMids } from '../utils/follow';
 
-const COLS = 2;
 const FETCH_SIZE = 20;
 
 // Returns { items, offset } — offset is the follow-feed cursor (undefined for
@@ -60,6 +59,9 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
   const offsetRef = useRef('');
   const seenRef = useRef(new Set());
   const fetchingRef = useRef(false);
+  // Per-row video count (设置 → 每行视频). Read once per mount; navigating back
+  // from 设置 remounts this page, so a change applies on return.
+  const cols = Math.min(4, Math.max(2, storage.getSettings().gridCols || 3));
 
   // Load
   useEffect(() => {
@@ -115,7 +117,7 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
       setFocusRow(row);
 
       // Load more when near bottom
-      const totalRows = Math.ceil(videos.length / COLS);
+      const totalRows = Math.ceil(videos.length / cols);
       if (row >= totalRows - 2 && !fetchingRef.current) {
         fetchingRef.current = true;
         fetchByMode(mode, pageRef.current, offsetRef.current).then(({ items, offset }) => {
@@ -138,7 +140,7 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
       videos={videos}
       group="content"
       startRow={0}
-      cols={COLS}
+      cols={cols}
       onSelect={onPlayVideo}
       focusRow={focusRow}
       followedMids={followedMids}

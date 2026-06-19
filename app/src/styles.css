@@ -183,6 +183,15 @@ html, body, #root {
 }
 .video-card-meta span { margin-right: 14px; }
 
+/* Denser grids (3/4 columns) → smaller cards, so scale text + padding down. */
+.video-grid.cols-3 .video-card-title { font-size: 22px; }
+.video-grid.cols-3 .video-card-meta { font-size: 17px; }
+.video-grid.cols-3 .video-card-info { padding: 12px 9px 9px; }
+.video-grid.cols-4 .video-card-title { font-size: 18px; line-height: 1.3; }
+.video-grid.cols-4 .video-card-meta { font-size: 14px; }
+.video-grid.cols-4 .video-card-info { padding: 10px 8px 8px; }
+.video-grid.cols-4 .video-card-meta span { margin-right: 10px; }
+
 /* ===== Loading ===== */
 .loading {
   display: flex;

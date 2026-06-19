@@ -74,7 +74,7 @@ export default function SettingsPage({ user, onPlayVideo }) {
 
       <div style={{ fontSize: 20, color: '#aaa', marginBottom: 14 }}>最近观看</div>
       {recentItems.length > 0 ? (
-        <VideoGrid videos={recentItems} group="content" startRow={0} cols={2} onSelect={onPlayVideo} />
+        <VideoGrid videos={recentItems} group="content" startRow={0} cols={Math.min(4, Math.max(2, storage.getSettings().gridCols || 3))} onSelect={onPlayVideo} />
       ) : (
         <div style={{ color: '#666', fontSize: 16 }}>
           {historyLoading ? '加载中…' : (user ? '暂无观看记录' : '登录后可查看视频历史')}

@@ -8,9 +8,10 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
     return <div className="empty-state">暂无内容</div>;
   }
 
-  // Calculate scroll offset based on which row is focused
-  // Each row: card ~480px (16:9 at ~540px wide = 304px thumb + 90px info + 24px gap) ≈ 420px
-  const ROW_HEIGHT = 420;
+  // Calculate scroll offset based on which row is focused. Row height scales
+  // with column count: at 2 cols a row is ~420px; with more (smaller) cards the
+  // 16:9 thumbnail shrinks ∝ 1/cols, so a row gets shorter. (620/2+110 = 420.)
+  const ROW_HEIGHT = Math.round(620 / cols) + 110;
   const scrollY = Math.max(0, (focusRow - 0) * ROW_HEIGHT);
 
   return (
@@ -19,7 +20,7 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
       overflow: 'hidden',
       position: 'relative',
     }}>
-      <div style={{
+      <div className={`video-grid cols-${cols}`} style={{
         display: 'grid',
         gridTemplateColumns: `repeat(${cols}, 1fr)`,
         gap: '24px',

@@ -449,7 +449,7 @@ describe('PlayerPage', () => {
     expect(api.getPlayUrl).toHaveBeenCalledWith(expect.any(Object), 7, 80);
     expect(shakaLoads[0]).toBe('blob:test');
     expect(video.playCalls).toBeGreaterThan(0);
-    expect(shakaPlayers[0].config.streaming.bufferBehind).toBe(20);
+    expect(shakaPlayers[0].config.streaming.bufferBehind).toBe(30);
 
     const proxiedRequest = { uris: ['https://cdn.test/path/seg.m4s?token=1'] };
     shakaPlayers[0].requestFilter(null, proxiedRequest);
@@ -1642,6 +1642,86 @@ describe('LivePlayerPage', () => {
     });
     await act(async () => {
       shakaUnsupportedRenderer.unmount();
+    });
+  });
+
+  test('fires stall detection interval while playing without changing currentTime', async () => {
+    const { default: PlayerPage } = await importFresh('./PlayerPage.tsx');
+    const video = createVideoMock();
+    const renderer = await renderWithNodeMock(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-STALL', cid: 33, title: '卡顿检测' },
+      }),
+      (element) => (element.type === 'video' ? video : null),
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+      await flush();
+    });
+
+    video.duration = 120;
+    video.paused = false;
+    await interact(() => video.dispatch('loadeddata'));
+    await interact(() => video.dispatch('play'));
+
+    const stallInterval = intervals.find((i) => i.delay === 1000 && !i.cleared);
+    expect(stallInterval).toBeTruthy();
+    stallInterval.fn();
+
+    await act(async () => {
+      renderer.unmount();
+    });
+  });
+
+  test('configures generous buffer targets for stable playback', async () => {
+    const { default: PlayerPage } = await importFresh('./PlayerPage.tsx');
+    const video = createVideoMock();
+    await renderWithNodeMock(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-BUFFERCFG', cid: 31, title: '缓冲配置' },
+      }),
+      (element) => (element.type === 'video' ? video : null),
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+      await flush();
+    });
+    expect(shakaPlayers[0].config.streaming.bufferingGoal).toBe(15);
+    expect(shakaPlayers[0].config.streaming.rebufferingGoal).toBe(5);
+    expect(shakaPlayers[0].config.streaming.bufferBehind).toBe(30);
+  });
+
+  test('shows buffering overlay during waiting and hides it on playing', async () => {
+    const { default: PlayerPage } = await importFresh('./PlayerPage.tsx');
+    const video = createVideoMock();
+    const renderer = await renderWithNodeMock(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-BUFFERUI', cid: 32, title: '缓冲UI' },
+      }),
+      (element) => (element.type === 'video' ? video : null),
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+      await flush();
+    });
+
+    video.duration = 120;
+    await interact(() => video.dispatch('loadeddata'));
+    await interact(() => video.dispatch('play'));
+
+    expect(JSON.stringify(renderer.toJSON())).not.toContain('buffering');
+
+    await interact(() => video.dispatch('waiting'));
+    expect(JSON.stringify(renderer.toJSON())).toContain('buffering');
+
+    await interact(() => video.dispatch('playing'));
+    expect(JSON.stringify(renderer.toJSON())).not.toContain('buffering');
+
+    await act(async () => {
+      renderer.unmount();
     });
   });
 

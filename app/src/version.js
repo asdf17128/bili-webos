@@ -1,6 +1,6 @@
 // Single source of truth for the app version shown in Settings → 关于.
 // Keep in sync with app/webos-meta/appinfo.json on each release.
-export const APP_VERSION = '1.1.7';
+export const APP_VERSION = '1.1.8';
 
 // Compare two "x.y.z" strings. Returns >0 if a is newer than b.
 export function compareVersions(a, b) {

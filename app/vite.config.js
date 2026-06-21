@@ -1,8 +1,23 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+// webOS apps load over file://, which has a null origin. Vite tags the module
+// script + modulepreload with `crossorigin`, and older webOS WebViews (webOS 6
+// / Chromium 79) then run a CORS check on the file:// module that fails — the
+// script silently never executes → blank screen with zero console output
+// (issue #10, LG C1/NanoCell on webOS 6.5). Stripping `crossorigin` from the
+// generated tags makes the modules load on those engines.
+function stripCrossorigin() {
+  return {
+    name: 'strip-crossorigin',
+    transformIndexHtml(html) {
+      return html.replace(/\s+crossorigin/g, '');
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), stripCrossorigin()],
   base: './',
   build: {
     outDir: 'dist',

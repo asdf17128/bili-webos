@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { initKeyboardNav, setFocus, onFocusChange, getCurrentFocusId, focusFirstContent, focusSidebar } from './hooks/useFocus';
 import { castAck, castSubscribe, getNavInfo } from './api/client';
 import { storage } from './utils/storage';
@@ -9,8 +9,13 @@ import HomePage from './pages/HomePage';
 import SearchPage from './pages/SearchPage';
 import SettingsPage from './pages/SettingsPage';
 import ConfigPage from './pages/ConfigPage';
-import PlayerPage from './player/PlayerPage';
-import LivePlayerPage from './player/LivePlayerPage';
+// Lazy-loaded so the video engine (Shaka Player) is NOT pulled into the startup
+// bundle. On older webOS (6.x / Chromium 79) Shaka's module init throws at load
+// and blanked the entire app — even the home screen (issue #10). Deferring it
+// lets the browse UI render on those TVs; the player chunk loads only when a
+// video or live stream is actually opened.
+const PlayerPage = lazy(() => import('./player/PlayerPage'));
+const LivePlayerPage = lazy(() => import('./player/LivePlayerPage'));
 
 const NAV_ITEMS = [
   { key: 'recommend', label: '推荐', icon: '🏠' },
@@ -274,8 +279,12 @@ export default function App() {
         {toast && <div className="toast">{toast}</div>}
       </div>
 
-      {playerVideo && <PlayerPage key={playerVideo.bvid || playerVideo.epid || playerVideo.aid || playerVideo.cid} video={playerVideo} onBack={() => setPlayerVideo(null)} onPlayNext={(v) => setPlayerVideo(v)} />}
-      {liveRoom && <LivePlayerPage key={liveRoom.roomid} room={liveRoom} onBack={() => setLiveRoom(null)} />}
+      {(playerVideo || liveRoom) && (
+        <Suspense fallback={<div style={{ position: 'fixed', inset: 0, zIndex: 150, background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20 }}>加载播放器…</div>}>
+          {playerVideo && <PlayerPage key={playerVideo.bvid || playerVideo.epid || playerVideo.aid || playerVideo.cid} video={playerVideo} onBack={() => setPlayerVideo(null)} onPlayNext={(v) => setPlayerVideo(v)} />}
+          {liveRoom && <LivePlayerPage key={liveRoom.roomid} room={liveRoom} onBack={() => setLiveRoom(null)} />}
+        </Suspense>
+      )}
 
       {showLogin && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: 1920, height: 1080, zIndex: 200, background: '#0d0d1a' }}>

@@ -30,8 +30,13 @@ export default defineConfig({
     assetsInlineLimit: 4096,
     rollupOptions: {
       output: {
+        // NOTE: do not force shaka-player into a manualChunk. Doing so made
+        // Rollup hoist a shared helper into the shaka chunk that the entry
+        // statically imported, pulling the whole 769 KB player engine into the
+        // startup graph — which crashed app boot on webOS 6 / Chromium 79
+        // (issue #10). Letting the dynamic import('shaka-player') in PlayerPage
+        // split naturally keeps it a lazy, on-demand chunk.
         manualChunks: {
-          'shaka': ['shaka-player'],
           'react-vendor': ['react', 'react-dom'],
         }
       }

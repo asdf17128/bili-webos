@@ -1,6 +1,6 @@
 {
   "id": "com.biliwebos.app",
-  "version": "1.1.9",
+  "version": "1.1.10",
   "vendor": "BiliWebOS",
   "type": "web",
   "main": "index.html",

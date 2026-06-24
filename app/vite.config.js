@@ -1,23 +1,30 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// webOS apps load over file://, which has a null origin. Vite tags the module
-// script + modulepreload with `crossorigin`, and older webOS WebViews (webOS 6
-// / Chromium 79) then run a CORS check on the file:// module that fails — the
-// script silently never executes → blank screen with zero console output
-// (issue #10, LG C1/NanoCell on webOS 6.5). Stripping `crossorigin` from the
-// generated tags makes the modules load on those engines.
-function stripCrossorigin() {
+// Compatibility shims for older webOS WebViews, applied to the built index.html
+// (issue #10). Two fixes:
+//  1. Strip `crossorigin`: webOS apps load over file:// (null origin). Vite tags
+//     the module script + modulepreload with `crossorigin`, and webOS 6 /
+//     Chromium 79 then runs a CORS check on the file:// module that fails — the
+//     script silently never executes → blank screen, zero console output.
+//  2. Polyfill `globalThis`: webOS 5.5 is Chromium 68, but `globalThis` only
+//     landed in Chromium 71. react-dom references it at startup, throwing a
+//     ReferenceError before React can mount → blank screen (no crash). An inline
+//     classic <script> runs before the deferred module bundle and defines it.
+function webosCompat() {
+  const polyfill = `<script>if(typeof globalThis==='undefined'&&typeof window!=='undefined'){window.globalThis=window;}</script>`;
   return {
-    name: 'strip-crossorigin',
+    name: 'webos-compat',
     transformIndexHtml(html) {
-      return html.replace(/\s+crossorigin/g, '');
+      html = html.replace(/\s+crossorigin/g, '');
+      html = html.replace(/<head>/i, `<head>\n    ${polyfill}`);
+      return html;
     },
   };
 }
 
 export default defineConfig({
-  plugins: [react(), stripCrossorigin()],
+  plugins: [react(), webosCompat()],
   base: './',
   build: {
     outDir: 'dist',

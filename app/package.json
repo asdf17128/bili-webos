@@ -11,13 +11,15 @@
     "package": "vite build && cp -r webos-meta/* dist/ && cd dist && ares-package ."
   },
   "dependencies": {
+    "qrcode": "^1.5.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "shaka-player": "^4.12.0",
-    "qrcode": "^1.5.4"
+    "shaka-player": "^4.12.0"
   },
   "devDependencies": {
+    "@vitejs/plugin-legacy": "^6.1.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "terser": "^5.48.0",
     "vite": "^6.0.0"
   }
 }

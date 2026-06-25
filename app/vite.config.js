@@ -1,30 +1,62 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import legacy from '@vitejs/plugin-legacy';
 
-// Compatibility shims for older webOS WebViews, applied to the built index.html
-// (issue #10). Two fixes:
-//  1. Strip `crossorigin`: webOS apps load over file:// (null origin). Vite tags
-//     the module script + modulepreload with `crossorigin`, and webOS 6 /
-//     Chromium 79 then runs a CORS check on the file:// module that fails — the
-//     script silently never executes → blank screen, zero console output.
-//  2. Polyfill `globalThis`: webOS 5.5 is Chromium 68, but `globalThis` only
-//     landed in Chromium 71. react-dom references it at startup, throwing a
-//     ReferenceError before React can mount → blank screen (no crash). An inline
-//     classic <script> runs before the deferred module bundle and defines it.
+// THE root cause of the blank screen on older webOS (issue #10): the app loads
+// over file:// (no HTTP server), so every asset's MIME type is "". Chromium 79
+// (webOS 6) and Chromium 68 (webOS 5) enforce *strict MIME checking* on
+// `<script type="module">` and reject any module whose MIME isn't a JS type —
+// so the entry module never executes and nothing renders, with this console
+// error: "Failed to load module script: The server responded with a
+// non-JavaScript MIME type of ''". Newer Chromium (webOS 24) maps the .js
+// extension to a JS MIME even over file://, which is why the C4 always worked
+// and masked the bug.
+//
+// Fix: @vitejs/plugin-legacy with renderModernChunks:false emits a *classic*
+// SystemJS bundle (plain <script>, no type="module") for ALL browsers — classic
+// scripts aren't subject to the module MIME check, so they run over file://.
+// As a bonus, plugin-legacy's core-js polyfills cover the missing runtime APIs
+// on Chromium 68 (globalThis, etc.), folding in the old webOS-5 fix too.
+// SystemJS still handles the dynamic import() so Shaka stays lazy-loaded.
+
+// Belt-and-suspenders shims applied to the built index.html. Strip `crossorigin`
+// (file:// is a null origin; a stray crossorigin attr can fail an internal CORS
+// check) and inline a globalThis polyfill before the bundle, in case anything
+// runs ahead of the core-js polyfill chunk.
 function webosCompat() {
   const polyfill = `<script>if(typeof globalThis==='undefined'&&typeof window!=='undefined'){window.globalThis=window;}</script>`;
   return {
     name: 'webos-compat',
-    transformIndexHtml(html) {
-      html = html.replace(/\s+crossorigin/g, '');
-      html = html.replace(/<head>/i, `<head>\n    ${polyfill}`);
-      return html;
+    // order:'post' so this runs AFTER plugin-legacy injects its SystemJS script
+    // tags — otherwise the crossorigin it stamps on them survives.
+    transformIndexHtml: {
+      order: 'post',
+      handler(html) {
+        html = html.replace(/\s+crossorigin/g, '');
+        // Drop modulepreload hints: useless for the classic SystemJS bundle and
+        // they trigger a "request mode does not match" warning over file://.
+        html = html.replace(/\s*<link rel="modulepreload"[^>]*>/g, '');
+        html = html.replace(/<head>/i, `<head>\n    ${polyfill}`);
+        return html;
+      },
     },
   };
 }
 
 export default defineConfig({
-  plugins: [react(), webosCompat()],
+  plugins: [
+    react(),
+    // Emit a classic SystemJS bundle for EVERY browser (renderModernChunks:false
+    // removes the ES-module output entirely) so it runs over file:// on older
+    // webOS. targets covers webOS 5 (Chromium 68) and up; core-js polyfills are
+    // injected based on usage.
+    legacy({
+      targets: ['chrome >= 68'],
+      modernPolyfills: false,
+      renderModernChunks: false,
+    }),
+    webosCompat(),
+  ],
   base: './',
   build: {
     outDir: 'dist',

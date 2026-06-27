@@ -5,18 +5,15 @@ import { storage } from '../utils/storage';
 import { useFocusable, getCurrentFocusId, setFocus, onFocusChange } from '../hooks/useFocus';
 
 // A single folder chip in the top selector row (focus group 'content', row 0).
+// Styling lives in styles.css so the global `.focused` class gives the chip a
+// clear cursor highlight (the old inline background hid it) (#11).
 function FolderChip({ folder, idx, active, onSelect }) {
   const { props } = useFocusable({
     id: `content-0-${idx}`, row: 0, col: idx, group: 'content', onSelect,
   });
   return (
-    <div {...props} className={`fav-chip${active ? ' fav-chip-active' : ''}`} style={{
-      display: 'inline-block', padding: '8px 18px', marginRight: 12, borderRadius: 20,
-      fontSize: 16, whiteSpace: 'nowrap',
-      background: active ? '#00a1d6' : 'rgba(255,255,255,0.08)',
-      color: active ? '#fff' : '#bbb',
-    }}>
-      {folder.title}<span style={{ opacity: 0.7, marginLeft: 6 }}>{folder.media_count}</span>
+    <div {...props} className={`fav-chip${active ? ' fav-chip-active' : ''}`}>
+      {folder.title}<span className="fav-chip-count">{folder.media_count}</span>
     </div>
   );
 }
@@ -63,21 +60,27 @@ export default function FavoritesPage({ userMid, onPlayVideo }) {
       setVideos(medias);
       setLoading(false);
       pageRef.current = 2;
-      setTimeout(() => {
-        const cur = getCurrentFocusId();
-        if (!cur || !cur.startsWith('sidebar-')) setFocus(medias.length ? 'content-1-0' : 'content-0-0');
-      }, 50);
+      // Don't steal focus on folder switch — the chip stays focused so the user
+      // can keep arrowing across folders (选中即切换). Initial focus is handled by
+      // App's focusFirstContent landing on the first chip (content-0-0).
     }).catch(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [folders, activeFolder]);
 
   // Track focused row → scroll the grid + load more near the bottom.
+  // Row 0 is the folder chips: focusing a chip switches to that folder (选中即切换).
   useEffect(() => {
     return onFocusChange((fid) => {
-      const m = fid && fid.match(/^content-(\d+)-/);
+      const m = fid && fid.match(/^content-(\d+)-(\d+)/);
       if (!m) return;
       const row = parseInt(m[1]);
-      // Videos start at content row 1; row 0 is the folder chips (no scroll).
+      const col = parseInt(m[2]);
+      if (row === 0) {
+        setFocusRow(0);
+        if (col !== activeFolder && col < folders.length) setActiveFolder(col);
+        return;
+      }
+      // Videos start at content row 1.
       setFocusRow(Math.max(0, row - 1));
 
       const totalRows = Math.ceil(videos.length / cols);
@@ -107,7 +110,8 @@ export default function FavoritesPage({ userMid, onPlayVideo }) {
           ? <span style={{ color: '#888', fontSize: 16 }}>{loading ? '加载收藏夹…' : '暂无收藏夹'}</span>
           : folders.map((f, i) => (
             <FolderChip key={f.id} folder={f} idx={i} active={i === activeFolder}
-              onSelect={() => { if (i !== activeFolder) setActiveFolder(i); }} />
+              // Focus already switched the folder; OK just drops into the grid.
+              onSelect={() => setFocus('content-1-0')} />
           ))}
       </div>
 

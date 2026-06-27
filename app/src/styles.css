@@ -387,6 +387,31 @@ html, body, #root {
 .tab.focused { background: #00a1d6; color: #fff; transform: scale(1.05); }
 .tab.active { color: #00a1d6; }
 
+/* ===== Favorites folder chips ===== */
+.fav-chip {
+  display: inline-block;
+  padding: 8px 18px;
+  margin: 0 12px 10px 0;
+  border-radius: 20px;
+  font-size: 16px;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.08);
+  color: #bbb;
+  border: 2px solid transparent;
+  transition: transform 0.12s ease;
+}
+.fav-chip-count { opacity: 0.7; margin-left: 6px; }
+/* Currently-loaded folder: subtle blue tint so you can tell which is shown. */
+.fav-chip-active { background: rgba(0, 161, 214, 0.25); color: #fff; }
+/* Cursor/D-pad focus: bright, scaled, glowing — clearly distinct from active. */
+.fav-chip.focused {
+  background: #00a1d6;
+  color: #fff;
+  border-color: #8fe3ff;
+  transform: scale(1.09);
+  box-shadow: 0 0 14px rgba(0, 161, 214, 0.75);
+}
+
 /* ===== Empty State ===== */
 .empty-state {
   display: flex;

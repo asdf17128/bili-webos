@@ -352,6 +352,13 @@ export async function getRoomInit(roomId) {
   return apiFetch('/room/v1/Room/room_init', { id: roomId }, { host: 'api.live.bilibili.com' });
 }
 
+// Current room info in one shot: live_status (0 未开播 / 1 直播 / 2 轮播),
+// title and a fresh cover — used to label/refresh "最近观看" live entries.
+export async function getLiveRoomInfo(roomId) {
+  return smartFetch('api.live.bilibili.com',
+    '/xlive/web-room/v1/index/getInfoByRoom?room_id=' + roomId);
+}
+
 // Live danmaku server token + host list (for the WebSocket connection).
 // Needs WBI signing (returns -352 otherwise).
 export async function getDanmuInfo(realRoomId) {

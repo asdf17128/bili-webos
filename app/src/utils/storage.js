@@ -77,6 +77,7 @@ export const storage = {
       title: room.title || '',
       cover: room.cover || room.pic || '',
       uname: room.uname || (room.owner && room.owner.name) || '',
+      ts: Math.floor(Date.now() / 1000), // for time-ordering against video history
     });
     if (list.length > 8) list = list.slice(0, 8);
     this.set('recentLive', list);

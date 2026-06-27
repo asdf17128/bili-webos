@@ -36,6 +36,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // Respect the user's persisted danmaku toggle (设置 → 弹幕) instead of always
   // starting on (thanks @ponymuch, PR #2).
   const [danmakuEnabled, setDanmakuEnabled] = useState(() => storage.getSettings().danmaku !== false);
+  // Danmaku font scale (设置 → 弹幕字号). Read once per mount.
+  const [danmakuScale] = useState(() => storage.getSettings().danmakuScale || 1);
   const [videoTitle, setVideoTitle] = useState(video?.title || '');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -207,7 +209,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       // facing 4K/HDR HEVC) still plays at 1080p/360p instead of black-
       // screening. `null` = the default pick (bangumi → top/HDR rep, UGC →
       // highest bitrate). Inner loop re-fetches playurl for fresh CDN nodes.
-      const qualityLadder = isBangumi ? [null, 80, 16] : [null, 16];
+      // Step DOWN one quality tier at a time on decode failure. The old UGC
+      // ladder [null,16] jumped an undecodable 8K/4K rep straight to 360p
+      // (#11: an 8K video played at 360p). 120=4K, 80=1080p give the panel a
+      // chance before bottoming out at 16=360p.
+      const qualityLadder = isBangumi ? [null, 80, 16] : [null, 120, 80, 16];
       for (let rung = 0; rung < qualityLadder.length && !loaded; rung++) {
         const fallbackQn = qualityLadder[rung];
         for (let attempt = 0; attempt < 2 && !loaded; attempt++) {
@@ -229,7 +235,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               meta = res?.data;
               dash = meta?.dash;
               if (!dash) throw new Error('No DASH stream in playurl (DRM/bangumi?)');
-              wantQn = fallbackQn != null ? fallbackQn : undefined; // default: highest bitrate
+              // Default to the quality id B站 actually served (meta.quality), NOT
+              // the highest bitrate. HDR=125 / Dolby Vision=126 reps are usually
+              // lower bitrate than an SDR 4K rep, so picking by bitrate selected
+              // SDR and left HDR unlit until the user manually switched (#11).
+              wantQn = fallbackQn != null ? fallbackQn : (meta?.quality || undefined);
             }
 
             setQualities((meta?.accept_quality || []).map(q => ({ qn: q, label: QUALITY_MAP[q] || `${q}` })));
@@ -312,6 +322,14 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       }
     } catch (err) {
       console.error('Load video error:', err?.message || err);
+      // Order-play: a 失效 (taken-down) video in a favorites folder throws here —
+      // don't dead-end on the error screen, just skip to the next item (#11).
+      const pl = video?.playlist;
+      const idx = video?.playlistIndex;
+      if (pl && Array.isArray(pl) && typeof idx === 'number' && idx + 1 < pl.length && onPlayNext) {
+        onPlayNext({ ...pl[idx + 1], playlist: pl, playlistIndex: idx + 1 });
+        return;
+      }
       setLoading(false);
       setLoadError(true);
       castReportState({ playState: 'error', error: err?.message || 'load-failed' }).catch(() => {});
@@ -930,7 +948,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     <div className="player-page">
       <video ref={videoRef} className="player-video" />
 
-      <DanmakuLayer danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} />
+      <DanmakuLayer danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale} />
 
       {loading && (
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',

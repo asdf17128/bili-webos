@@ -14,6 +14,7 @@ export default function ConfigPage({ onLogout, user }) {
   const settings = storage.getSettings();
   const [gridCols, setGridCols] = useState(() => Math.min(4, Math.max(2, settings.gridCols || 3)));
   const [pointerFocus, setPointerFocus] = useState(() => !!settings.pointerFocus);
+  const [danmakuScale, setDanmakuScale] = useState(() => settings.danmakuScale || 1);
 
   // Query GitHub for the latest release and compare with the running version.
   // Shared by the auto-check on mount and the manual OK press.
@@ -93,8 +94,24 @@ export default function ConfigPage({ onLogout, user }) {
     },
   });
 
-  const { props: checkUpdateProps } = useFocusable({
+  // 弹幕字号 — cycle 标准 → 大 → 特大 → 小 on OK.
+  const DM_SCALES = [
+    { v: 1, label: '标准' }, { v: 1.3, label: '大' }, { v: 1.6, label: '特大' }, { v: 0.8, label: '小' },
+  ];
+  const { props: danmakuScaleProps } = useFocusable({
     id: 'content-3-0', row: 3, col: 0, group: 'content',
+    onSelect: () => {
+      setDanmakuScale(prev => {
+        const i = DM_SCALES.findIndex(s => s.v === prev);
+        const next = DM_SCALES[(i + 1) % DM_SCALES.length].v;
+        storage.setSettings({ ...storage.getSettings(), danmakuScale: next });
+        return next;
+      });
+    },
+  });
+
+  const { props: checkUpdateProps } = useFocusable({
+    id: 'content-4-0', row: 4, col: 0, group: 'content',
     onSelect: () => {
       // Once an update is known, OK opens the Homebrew Channel to install it;
       // otherwise re-run the check manually.
@@ -104,9 +121,11 @@ export default function ConfigPage({ onLogout, user }) {
   });
 
   const { props: logoutProps } = useFocusable({
-    id: 'content-4-0', row: 4, col: 0, group: 'content',
+    id: 'content-5-0', row: 5, col: 0, group: 'content',
     onSelect: () => { if (user) { storage.clearAuth(); onLogout(); } },
   });
+
+  const dmScaleLabel = (DM_SCALES.find(s => s.v === danmakuScale) || DM_SCALES[0]).label;
 
   return (
     <div style={{ padding: '28px 40px', height: '100%', overflowY: 'auto', maxWidth: 720 }}>
@@ -125,6 +144,11 @@ export default function ConfigPage({ onLogout, user }) {
       <div className="settings-row" {...pointerProps}>
         <span>指针悬停选中</span>
         <span className="settings-row-value">{pointerFocus ? '开' : '关'}</span>
+      </div>
+
+      <div className="settings-row" {...danmakuScaleProps}>
+        <span>弹幕字号</span>
+        <span className="settings-row-value">{dmScaleLabel}</span>
       </div>
 
       <div className="settings-row" {...checkUpdateProps}>

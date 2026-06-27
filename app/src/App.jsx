@@ -240,7 +240,18 @@ export default function App() {
       });
       return;
     }
-    if (!video?.bvid) { showToastMsg('无法播放此视频'); return; }
+    if (!video?.bvid) {
+      // Order-play: a 失效 favorites item has no bvid — skip forward to the next
+      // playable item in the playlist instead of just toasting (#11).
+      const pl = video?.playlist;
+      const idx = video?.playlistIndex;
+      if (pl && Array.isArray(pl) && typeof idx === 'number') {
+        for (let j = idx + 1; j < pl.length; j++) {
+          if (pl[j]?.bvid) { setPlayerVideo({ ...pl[j], playlist: pl, playlistIndex: j }); return; }
+        }
+      }
+      showToastMsg('无法播放此视频'); return;
+    }
     setPlayerVideo(video);
   }, []);
 

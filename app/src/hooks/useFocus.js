@@ -178,6 +178,21 @@ export function initKeyboardNav() {
     if (next) setFocus(next);
   };
   window.addEventListener('keydown', keyHandler);
+
+  // Magic Remote scroll wheel → move focus up/down a row (the content scroll is
+  // focus-driven, so this makes the wheel scroll the page) (#11). Skipped while
+  // the player owns input (customKeyHandler set). Throttled so a fast flick
+  // doesn't skip rows.
+  let lastWheel = 0;
+  window.addEventListener('wheel', (e) => {
+    if (customKeyHandler) return;
+    const now = Date.now();
+    if (now - lastWheel < 110) return;
+    lastWheel = now;
+    if (!currentFocusId) return;
+    const next = navigateGrid(currentFocusId, e.deltaY > 0 ? 'down' : 'up');
+    if (next) setFocus(next);
+  }, { passive: true });
 }
 
 // Hook: registers element, NO re-renders on focus change

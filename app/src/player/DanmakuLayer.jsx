@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 
 // Danmaku rendering layer over video
-export default function DanmakuLayer({ danmakus, currentTime, enabled }) {
+export default function DanmakuLayer({ danmakus, currentTime, enabled, fontScale = 1 }) {
   const containerRef = useRef(null);
   const renderedRef = useRef(new Set()); // Track which danmakus have been shown
   const trackRef = useRef(new Array(15).fill(0)); // 15 tracks, value = time when track becomes free
@@ -48,9 +48,10 @@ export default function DanmakuLayer({ danmakus, currentTime, enabled }) {
       const el = document.createElement('div');
       el.className = 'danmaku-item';
       el.textContent = dm.text;
-      el.style.top = `${track * 48 + 20}px`;
+      // Scale the track pitch with the font so larger danmaku don't overlap.
+      el.style.top = `${track * Math.round(48 * fontScale) + 20}px`;
       el.style.color = dm.color || '#fff';
-      el.style.fontSize = `${dm.size || 28}px`;
+      el.style.fontSize = `${Math.round((dm.size || 28) * fontScale)}px`;
       el.style.animationDuration = '8s';
 
       container.appendChild(el);

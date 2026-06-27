@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
-import { initKeyboardNav, setFocus, onFocusChange, getCurrentFocusId, focusFirstContent, focusSidebar } from './hooks/useFocus';
+import { initKeyboardNav, setFocus, onFocusChange, getCurrentFocusId, focusFirstContent, focusSidebar, setHoverFocus } from './hooks/useFocus';
 import { castAck, castSubscribe, getNavInfo } from './api/client';
 import { storage } from './utils/storage';
 import SidebarItem from './components/SidebarItem';
@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import SearchPage from './pages/SearchPage';
 import SettingsPage from './pages/SettingsPage';
+import FavoritesPage from './pages/FavoritesPage';
 import ConfigPage from './pages/ConfigPage';
 // Lazy-loaded so the video engine (Shaka Player) is NOT pulled into the startup
 // bundle. On older webOS (6.x / Chromium 79) Shaka's module init throws at load
@@ -23,6 +24,7 @@ const NAV_ITEMS = [
   { key: 'live', label: '直播', icon: '📡' },
   { key: 'partition', label: '分区', icon: '📁' },
   { key: 'follow', label: '关注', icon: '👤' },
+  { key: 'favorites', label: '收藏', icon: '⭐' },
   { key: 'search', label: '搜索', icon: '🔍', dividerBefore: true },
   { key: 'settings', label: '我的', icon: '🕘' },
   { key: 'config', label: '设置', icon: '⚙️' },
@@ -106,6 +108,7 @@ export default function App() {
 
   useEffect(() => {
     initKeyboardNav();
+    setHoverFocus(storage.getSettings().pointerFocus);
     const auth = storage.getAuth();
     if (auth?.SESSDATA) {
       setLoggedIn(true);
@@ -244,14 +247,14 @@ export default function App() {
   // Arrowing onto a sidebar item just previews its page — no refresh, no
   // jumping into the content.
   const previewPage = useCallback((key) => {
-    if (key === 'follow' && !loggedIn) { setShowLogin(true); return; }
+    if ((key === 'follow' || key === 'favorites') && !loggedIn) { setShowLogin(true); return; }
     if (key !== page) setPage(key);
   }, [loggedIn, page]);
 
   // OK/click on a sidebar item commits: switch (or refresh if already active)
   // and move focus into the content so the user doesn't need a second key.
   const selectPage = useCallback((key) => {
-    if (key === 'follow' && !loggedIn) { setShowLogin(true); return; }
+    if ((key === 'follow' || key === 'favorites') && !loggedIn) { setShowLogin(true); return; }
     if (key === page) setRefreshKey(n => n + 1);
     else setPage(key);
     focusFirstContent();
@@ -273,6 +276,7 @@ export default function App() {
           {page === 'partition' && <HomePage onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="partition" />}
           {page === 'follow' && <HomePage onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="follow" />}
           {page === 'search' && <SearchPage onPlayVideo={handlePlayVideo} />}
+          {page === 'favorites' && <FavoritesPage userMid={user?.mid} onPlayVideo={handlePlayVideo} />}
           {page === 'settings' && <SettingsPage user={user} onPlayVideo={handlePlayVideo} />}
           {page === 'config' && <ConfigPage onLogout={handleLogout} user={user} />}
         </div>

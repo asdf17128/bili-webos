@@ -33,7 +33,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const [showQuality, setShowQuality] = useState(false);
   const [showRelated, setShowRelated] = useState(false);
   const [danmakus, setDanmakus] = useState([]);
-  const [danmakuEnabled, setDanmakuEnabled] = useState(true);
+  // Respect the user's persisted danmaku toggle (设置 → 弹幕) instead of always
+  // starting on (thanks @ponymuch, PR #2).
+  const [danmakuEnabled, setDanmakuEnabled] = useState(() => storage.getSettings().danmaku !== false);
   const [videoTitle, setVideoTitle] = useState(video?.title || '');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -272,11 +274,21 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       castReportState({ playState: 'playing' }).catch(() => {});
 
       videoRef.current.addEventListener('ended', () => {
+        castReportState({ playState: 'end' }).catch(() => {});
+        // Order-play (收藏夹顺序播放, #11): if this video came in as part of a
+        // playlist, auto-advance to the next item instead of stopping on the
+        // endscreen. The playlist + index ride along on the video object.
+        const pl = video?.playlist;
+        const idx = video?.playlistIndex;
+        if (pl && Array.isArray(pl) && typeof idx === 'number' && idx + 1 < pl.length && onPlayNext) {
+          const next = pl[idx + 1];
+          onPlayNext({ ...next, playlist: pl, playlistIndex: idx + 1 });
+          return;
+        }
         setEnded(true);
         setShowControls(true);
         setFocusArea('endscreen');
         setFocusIdx(0);
-        castReportState({ playState: 'end' }).catch(() => {});
       });
 
       try { setDanmakus(await getDanmaku(cid)); } catch {}

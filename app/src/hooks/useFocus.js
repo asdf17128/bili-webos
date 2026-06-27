@@ -9,6 +9,12 @@ import { useEffect, useCallback, useRef } from 'react';
 const focusRegistry = new Map(); // id -> { ref, row, col, group, onSelect }
 let currentFocusId = null;
 
+// Whether pointer hover (Magic Remote) moves focus. Off by default: with the
+// gyro pointer, hover-to-focus made the cursor drifting over the sidebar/cards
+// switch pages and rapidly paginate (#11). Pointer *click* always works.
+let hoverFocusEnabled = false;
+export function setHoverFocus(on) { hoverFocusEnabled = !!on; }
+
 // Track last sidebar focus position
 let lastSidebarFocus = 'sidebar-0-0';
 
@@ -194,7 +200,7 @@ export function useFocusable({ id, row = 0, col = 0, group = 'content', onSelect
   }, [id]);
 
   const handleMouseEnter = useCallback(() => {
-    setFocus(id);
+    if (hoverFocusEnabled) setFocus(id);
   }, [id]);
 
   return {

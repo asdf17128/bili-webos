@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { storage } from '../utils/storage';
-import { useFocusable } from '../hooks/useFocus';
+import { useFocusable, setHoverFocus } from '../hooks/useFocus';
 import { getLatestVersion } from '../api/client';
 import { APP_VERSION, compareVersions } from '../version';
 
@@ -13,6 +13,7 @@ export default function ConfigPage({ onLogout, user }) {
   const checking = useRef(false);
   const settings = storage.getSettings();
   const [gridCols, setGridCols] = useState(() => Math.min(4, Math.max(2, settings.gridCols || 3)));
+  const [pointerFocus, setPointerFocus] = useState(() => !!settings.pointerFocus);
 
   // Query GitHub for the latest release and compare with the running version.
   // Shared by the auto-check on mount and the manual OK press.
@@ -78,8 +79,22 @@ export default function ConfigPage({ onLogout, user }) {
     },
   });
 
-  const { props: checkUpdateProps } = useFocusable({
+  // 指针悬停选中 — when on, the Magic Remote pointer moving over an item focuses
+  // it; off (default) avoids the cursor drifting and switching pages (#11).
+  const { props: pointerProps } = useFocusable({
     id: 'content-2-0', row: 2, col: 0, group: 'content',
+    onSelect: () => {
+      setPointerFocus(prev => {
+        const next = !prev;
+        storage.setSettings({ ...storage.getSettings(), pointerFocus: next });
+        setHoverFocus(next);
+        return next;
+      });
+    },
+  });
+
+  const { props: checkUpdateProps } = useFocusable({
+    id: 'content-3-0', row: 3, col: 0, group: 'content',
     onSelect: () => {
       // Once an update is known, OK opens the Homebrew Channel to install it;
       // otherwise re-run the check manually.
@@ -89,7 +104,7 @@ export default function ConfigPage({ onLogout, user }) {
   });
 
   const { props: logoutProps } = useFocusable({
-    id: 'content-3-0', row: 3, col: 0, group: 'content',
+    id: 'content-4-0', row: 4, col: 0, group: 'content',
     onSelect: () => { if (user) { storage.clearAuth(); onLogout(); } },
   });
 
@@ -105,6 +120,11 @@ export default function ConfigPage({ onLogout, user }) {
       <div className="settings-row" {...gridProps}>
         <span>每行视频</span>
         <span className="settings-row-value">{gridCols} 个</span>
+      </div>
+
+      <div className="settings-row" {...pointerProps}>
+        <span>指针悬停选中</span>
+        <span className="settings-row-value">{pointerFocus ? '开' : '关'}</span>
       </div>
 
       <div className="settings-row" {...checkUpdateProps}>

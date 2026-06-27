@@ -27,24 +27,35 @@ export default function SettingsPage({ user, onPlayVideo }) {
 
   React.useEffect(() => {
     if (!user) return;
+    const mapItem = (item) => {
+      const h = item.history || {};
+      const isBangumi = h.business === 'pgc' || item.badge === '番剧';
+      return {
+        bvid: h.bvid, cid: h.cid,
+        title: item.title, pic: item.cover, duration: item.duration,
+        progress: item.progress, owner: { name: item.author_name },
+        // Bangumi history rows carry an epid/season (oid) instead of a
+        // usable bvid; pass them through so the player uses the PGC path.
+        ...(isBangumi ? { isBangumi: true, epid: h.epid, seasonId: h.oid, badge: '番剧' } : {}),
+      };
+    };
     async function load() {
       setHistoryLoading(true);
       try {
-        const res = await getHistory(0, 0, 12);
-        if (res?.data?.list) {
-          setHistory(res.data.list.map(item => {
-            const h = item.history || {};
-            const isBangumi = h.business === 'pgc' || item.badge === '番剧';
-            return {
-              bvid: h.bvid, cid: h.cid,
-              title: item.title, pic: item.cover, duration: item.duration,
-              progress: item.progress, owner: { name: item.author_name },
-              // Bangumi history rows carry an epid/season (oid) instead of a
-              // usable bvid; pass them through so the player uses the PGC path.
-              ...(isBangumi ? { isBangumi: true, epid: h.epid, seasonId: h.oid, badge: '番剧' } : {}),
-            };
-          }));
+        // The history cursor API caps each page at ~30; walk a few pages so 最近观看
+        // shows more than a dozen rows (#11). Each page's cursor seeds the next.
+        const all = [];
+        let max = 0, viewAt = 0;
+        for (let page = 0; page < 3; page++) {
+          const res = await getHistory(max, viewAt, 30);
+          const list = res?.data?.list;
+          if (!list?.length) break;
+          all.push(...list.map(mapItem));
+          const cur = res.data.cursor || {};
+          if (!cur.max && !cur.view_at) break;
+          max = cur.max; viewAt = cur.view_at;
         }
+        if (all.length) setHistory(all);
       } catch {}
       setHistoryLoading(false);
     }

@@ -43,11 +43,18 @@ export const storage = {
   },
 
   getSettings() {
-    return this.get('settings') || {
+    // Merge stored settings over the defaults so newly-added keys always have a
+    // value even for users who saved settings before the key existed.
+    const defaults = {
       danmaku: true,
       quality: 80,
       gridCols: 3,
+      // Pointer (Magic Remote) hover moving the focus caused the cursor drifting
+      // over the sidebar/cards to switch pages and rapidly paginate (#11). Off by
+      // default; D-pad and pointer *click* still select.
+      pointerFocus: false,
     };
+    return { ...defaults, ...(this.get('settings') || {}) };
   },
 
   setSettings(settings) {

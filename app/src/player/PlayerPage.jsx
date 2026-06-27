@@ -48,6 +48,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // playing one auto-advances to the next part on end (#11).
   const [isMultiP, setIsMultiP] = useState(false);
   const [partsLabel, setPartsLabel] = useState('选集');
+  const [partsList, setPartsList] = useState([]); // 选集/合集 items (separate from 相关推荐)
   const partsRef = useRef([]);
   // Bottom panel: 'related' (相关推荐) | 'up' (UP主投稿)
   const [panelTab, setPanelTab] = useState('related');
@@ -357,34 +358,32 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           }));
           setRelatedVideos(eps.slice(0, 60));
         } catch {}
-      } else if (ugcPages.length > 1) {
-        // Multi-part (分P) → 选集 list. Each part keeps the same bvid/aid but a
-        // different cid; selecting one (or finishing the current) plays it.
-        const parts = ugcPages.map(p => ({
-          bvid: video.bvid, aid: videoAidRef.current, cid: p.cid, page: p.page,
-          title: `P${p.page} ${p.part || ''}`.trim(), duration: p.duration,
-          pic: video.pic, owner: { name: ownerName || '' },
-        }));
-        partsRef.current = parts;
-        setIsMultiP(true);
-        setPartsLabel(`选集 · ${parts.length}P`);
-        setRelatedVideos(parts);
-      } else if (ugcSeason && (ugcSeason.sections || []).some(s => (s.episodes || []).length > 1)) {
-        // UGC 合集 (multi-video series) → 选集 list. Episodes are separate videos
-        // (different bvid); selecting/finishing one plays the next.
-        const eps = [];
-        (ugcSeason.sections || []).forEach(sec => (sec.episodes || []).forEach(e => eps.push({
-          bvid: e.bvid, aid: e.aid, cid: e.cid,
-          title: e.title, duration: e.arc?.duration, pic: e.arc?.pic || e.cover,
-          owner: { name: ownerName || '' },
-        })));
-        partsRef.current = eps;
-        setIsMultiP(true);
-        setPartsLabel(`合集 · ${eps.length}`);
-        setRelatedVideos(eps);
       } else {
-        partsRef.current = [];
-        setIsMultiP(false);
+        // UGC. Build the 选集 (分P or 合集) if present, kept SEPARATE from 相关推荐
+        // so both get their own tab (#11).
+        let parts = [];
+        if (ugcPages.length > 1) {
+          // 分P: same bvid/aid, different cid per part.
+          parts = ugcPages.map(p => ({
+            bvid: video.bvid, aid: videoAidRef.current, cid: p.cid, page: p.page,
+            title: `P${p.page} ${p.part || ''}`.trim(), duration: p.duration,
+            pic: video.pic, owner: { name: ownerName || '' },
+          }));
+          setPartsLabel(`选集 · ${parts.length}P`);
+        } else if (ugcSeason && (ugcSeason.sections || []).some(s => (s.episodes || []).length > 1)) {
+          // 合集: separate videos (own bvid) grouped into a series.
+          (ugcSeason.sections || []).forEach(sec => (sec.episodes || []).forEach(e => parts.push({
+            bvid: e.bvid, aid: e.aid, cid: e.cid,
+            title: e.title, duration: e.arc?.duration, pic: e.arc?.pic || e.cover,
+            owner: { name: ownerName || '' },
+          })));
+          setPartsLabel(`合集 · ${parts.length}`);
+        }
+        partsRef.current = parts;
+        setPartsList(parts);
+        setIsMultiP(parts.length > 0);
+        if (parts.length > 0) setPanelTab('parts');
+        // Always fetch 相关推荐 too (its own tab).
         try {
           const rel = await getRelated(video.bvid);
           setRelatedVideos((rel?.data || []).slice(0, 12));
@@ -843,7 +842,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }
         if (e.key === 'ArrowDown') {
           e.preventDefault();
-          if (relatedVideos.length > 0 || upMidRef.current) {
+          if (partsList.length > 0 || relatedVideos.length > 0 || upMidRef.current) {
             setShowRelated(true);
             setFocusArea('tabs');
             if (controlsTimer.current) clearTimeout(controlsTimer.current);
@@ -919,7 +918,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       if (focusArea === 'tabs') {
         e.preventDefault();
         if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-          const next = panelTab === 'related' ? 'up' : 'related';
+          const keys = isMultiP ? ['parts', 'related', 'up'] : ['related', 'up'];
+          let i = keys.indexOf(panelTab); if (i < 0) i = 0;
+          i = e.key === 'ArrowRight' ? (i + 1) % keys.length : (i - 1 + keys.length) % keys.length;
+          const next = keys[i];
           setPanelTab(next);
           setFocusIdx(0);
           if (next === 'up' && upVideos.length === 0) loadUpVideos(true);
@@ -936,7 +938,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       // === Video grid for the active tab (4-column) ===
       if (focusArea === 'related') {
         const RCOLS = 4;
-        const gridList = panelTab === 'up' ? upVideos : relatedVideos;
+        const gridList = panelTab === 'parts' ? partsList : panelTab === 'up' ? upVideos : relatedVideos;
         if (e.key === 'ArrowLeft') {
           e.preventDefault();
           if (focusIdx % RCOLS > 0) {
@@ -1010,7 +1012,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
     setCustomKeyHandler(handler);
     return () => setCustomKeyHandler(null);
-  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, ended, relatedVideos, panelTab, upVideos, loadUpVideos, onBack, onPlayNext, openControls, hideControlsLater, changeQuality]);
+  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, ended, relatedVideos, partsList, isMultiP, panelTab, upVideos, loadUpVideos, onBack, onPlayNext, openControls, hideControlsLater, changeQuality]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -1066,7 +1068,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         {showRelated && (
           <div style={{ marginTop: 16, paddingBottom: 10 }}>
             <div className="panel-tab-row" style={{ display: 'flex', gap: 14, marginBottom: 12 }}>
-              {[['related', isMultiP ? partsLabel : '相关推荐'], ['up', upName ? `UP主投稿 · ${upName}` : 'UP主投稿']].map(([key, label]) => (
+              {(isMultiP
+                ? [['parts', partsLabel], ['related', '相关推荐'], ['up', upName ? `UP主投稿 · ${upName}` : 'UP主投稿']]
+                : [['related', '相关推荐'], ['up', upName ? `UP主投稿 · ${upName}` : 'UP主投稿']]
+              ).map(([key, label]) => (
                 <div key={key} style={{
                   padding: '6px 18px', fontSize: 18, borderRadius: 6,
                   color: panelTab === key ? '#fff' : '#aaa',
@@ -1077,17 +1082,17 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             </div>
 
             {(() => {
-              const list = panelTab === 'up' ? upVideos : relatedVideos;
+              const list = panelTab === 'parts' ? partsList : panelTab === 'up' ? upVideos : relatedVideos;
               if (list.length === 0) {
                 return <div style={{ color: '#888', fontSize: 18, padding: '20px 4px' }}>
-                  {panelTab === 'up' ? (upMidRef.current ? '加载中…' : '暂无 UP 主信息') : '暂无相关推荐'}
+                  {panelTab === 'up' ? (upMidRef.current ? '加载中…' : '暂无 UP 主信息') : panelTab === 'parts' ? '暂无选集' : '暂无相关推荐'}
                 </div>;
               }
               return (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
                   {list.map((rv, i) => {
                     const thumb = proxyImg(rv.pic);
-                    const nowPlaying = isMultiP && rv.cid === cidRef.current;
+                    const nowPlaying = panelTab === 'parts' && rv.cid === cidRef.current;
                     return (
                       <div key={rv.cid || rv.bvid || i} className="related-card" onClick={() => onPlayNext?.(rv)}
                         style={{

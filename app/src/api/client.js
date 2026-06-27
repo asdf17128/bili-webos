@@ -269,6 +269,12 @@ export async function getVideoInfo(video) {
   throw new Error('Missing video identifier');
 }
 
+// Player meta incl. resume position: last_play_cid (which part) + last_play_time
+// (ms into it). Used to 续播 a multi-part video where the user left off.
+export async function getPlayerV2(aid, cid) {
+  return wbiFetch('/x/player/wbi/v2', { aid, cid });
+}
+
 export async function getPlayUrl(videoOrBvid, cid, qn) {
   var payload = {
     cid: cid, qn: qn || 80, fnval: 4048, fnver: 0, fourk: 1, platform: 'pc',

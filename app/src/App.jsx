@@ -296,7 +296,7 @@ export default function App() {
 
       {(playerVideo || liveRoom) && (
         <Suspense fallback={<div style={{ position: 'fixed', inset: 0, zIndex: 150, background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20 }}>加载播放器…</div>}>
-          {playerVideo && <PlayerPage key={playerVideo.bvid || playerVideo.epid || playerVideo.aid || playerVideo.cid} video={playerVideo} onBack={() => setPlayerVideo(null)} onPlayNext={(v) => setPlayerVideo(v)} />}
+          {playerVideo && <PlayerPage key={`${playerVideo.bvid || playerVideo.epid || playerVideo.aid || ''}-${playerVideo.cid || playerVideo.epid || ''}`} video={playerVideo} onBack={() => setPlayerVideo(null)} onPlayNext={(v) => setPlayerVideo(v)} />}
           {liveRoom && <LivePlayerPage key={liveRoom.roomid} room={liveRoom} onBack={() => setLiveRoom(null)} />}
         </Suspense>
       )}

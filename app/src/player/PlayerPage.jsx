@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getPlayUrl, getDanmaku, getVideoInfo, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState } from '../api/client';
+import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState } from '../api/client';
 import { formatDuration, formatTime, QUALITY_MAP, cleanTitle } from '../utils/format';
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
@@ -44,6 +44,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [ended, setEnded] = useState(false);
   const [relatedVideos, setRelatedVideos] = useState([]);
+  // Multi-part (分P) videos: the parts replace 相关推荐 with a 选集 list, and
+  // playing one auto-advances to the next part on end (#11).
+  const [isMultiP, setIsMultiP] = useState(false);
+  const partsRef = useRef([]);
   // Bottom panel: 'related' (相关推荐) | 'up' (UP主投稿)
   const [panelTab, setPanelTab] = useState('related');
   const [upVideos, setUpVideos] = useState([]);
@@ -54,6 +58,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const controlsTimer = useRef(null);
   const timeUpdateRef = useRef(null);
   const cidRef = useRef(null);
+  const videoAidRef = useRef(null);
   const startTimeRef = useRef(Date.now());
   const upMidRef = useRef(null);
   const upLoadingRef = useRef(false);
@@ -158,6 +163,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     castReportState({ playState: 'loading' }).catch(() => {});
     try {
       let cid = video.cid;
+      let resumeProgress = video.progress || 0; // seconds; may be set from 续播
       let epid = video.epid;
       let seasonId = video.seasonId;
       let ownerMid = video.owner?.mid || null;
@@ -179,17 +185,37 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           } catch (e) { console.warn('[bangumi] season info failed:', e?.message || e); }
         }
         if (!epid && !cid) throw new Error('No bangumi epid/cid');
-      } else if (!cid) {
+      }
+      // UGC: always fetch the view so we have the 分P page list + aid (needed
+      // for 选集 and 续播), the title and the owner.
+      let ugcPages = [];
+      if (!isBangumi) {
         const info = await getVideoInfo(video);
-        cid = info?.data?.cid;
-        if (info?.data?.title) setVideoTitle(info.data.title);
-        if (info?.data?.owner) {
-          ownerMid = ownerMid || info.data.owner.mid;
-          ownerName = ownerName || info.data.owner.name;
+        const d = info?.data || {};
+        ugcPages = d.pages || [];
+        videoAidRef.current = d.aid || null;
+        if (d.title) setVideoTitle(d.title);
+        if (d.owner) {
+          ownerMid = ownerMid || d.owner.mid;
+          ownerName = ownerName || d.owner.name;
         }
         // Cast can hand us an aid-only video (no bvid). Backfill bvid from the
         // view response so heartbeat/related (which key on bvid) keep working.
-        if (!video.bvid && info?.data?.bvid) video.bvid = info.data.bvid;
+        if (!video.bvid && d.bvid) video.bvid = d.bvid;
+        if (!cid) cid = d.cid;
+        // 续播: when opened fresh (no explicit part/progress), resume at the part
+        // and offset where the user last left off (player v2 last_play_*).
+        if (!video.cid && !(video.progress > 0) && d.aid && cid) {
+          try {
+            const pv = await getPlayerV2(d.aid, cid);
+            const lc = pv?.data?.last_play_cid;
+            const lt = pv?.data?.last_play_time; // ms
+            if (lc && ugcPages.some(p => p.cid === lc)) {
+              cid = lc;
+              if (lt > 0) resumeProgress = lt / 1000;
+            }
+          } catch {}
+        }
       }
       if (!isBangumi && !cid) throw new Error('No cid for video');
       cidRef.current = cid;
@@ -252,8 +278,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             // Resume directly at the saved position via load()'s startTime — don't
             // load at 0 then seek, which buffers the intro and immediately throws
             // it away (the main cause of the long resume-load wait).
-            const resumeAt = (video.progress && video.progress > 0 && video.progress < (dash.duration || 9999) - 10)
-              ? video.progress : 0;
+            const resumeAt = (resumeProgress > 0 && resumeProgress < (dash.duration || 9999) - 10)
+              ? resumeProgress : 0;
             try {
               await player.load(mpdUrl, resumeAt || undefined);
             } finally {
@@ -274,8 +300,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       // load(mpdUrl, resumeAt) already started playback at the saved offset.
       // For a cast-initiated resume, also queue the seek through
       // queueOrApplySeek so it still lands if duration isn't ready yet.
-      if (video.progress && video.progress > 0) {
-        queueOrApplySeek(video.progress);
+      if (resumeProgress > 0) {
+        queueOrApplySeek(resumeProgress);
       }
 
       selectBestVariant(player);
@@ -286,6 +312,17 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
       videoRef.current.addEventListener('ended', () => {
         castReportState({ playState: 'end' }).catch(() => {});
+        // Multi-part (分P) auto-advance: play the next part of THIS video before
+        // anything else, so a 66-讲 series plays straight through (#11).
+        const parts = partsRef.current;
+        if (parts.length > 1 && onPlayNext) {
+          const pi = parts.findIndex(p => p.cid === cidRef.current);
+          if (pi >= 0 && pi + 1 < parts.length) {
+            const np = parts[pi + 1];
+            onPlayNext({ ...video, cid: np.cid, page: np.page, title: np.title, progress: 0 });
+            return;
+          }
+        }
         // Order-play (收藏夹顺序播放, #11): if this video came in as part of a
         // playlist, auto-advance to the next item instead of stopping on the
         // endscreen. The playlist + index ride along on the video object.
@@ -315,7 +352,20 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           }));
           setRelatedVideos(eps.slice(0, 60));
         } catch {}
+      } else if (ugcPages.length > 1) {
+        // Multi-part video → 选集 list. Each part keeps the same bvid/aid but a
+        // different cid; selecting one (or finishing the current) plays it.
+        const parts = ugcPages.map(p => ({
+          bvid: video.bvid, aid: videoAidRef.current, cid: p.cid, page: p.page,
+          title: `P${p.page} ${p.part || ''}`.trim(), duration: p.duration,
+          pic: video.pic, owner: { name: ownerName || '' },
+        }));
+        partsRef.current = parts;
+        setIsMultiP(true);
+        setRelatedVideos(parts);
       } else {
+        partsRef.current = [];
+        setIsMultiP(false);
         try {
           const rel = await getRelated(video.bvid);
           setRelatedVideos((rel?.data || []).slice(0, 12));
@@ -997,7 +1047,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         {showRelated && (
           <div style={{ marginTop: 16, paddingBottom: 10 }}>
             <div className="panel-tab-row" style={{ display: 'flex', gap: 14, marginBottom: 12 }}>
-              {[['related', '相关推荐'], ['up', upName ? `UP主投稿 · ${upName}` : 'UP主投稿']].map(([key, label]) => (
+              {[['related', isMultiP ? `选集 · ${partsRef.current.length}P` : '相关推荐'], ['up', upName ? `UP主投稿 · ${upName}` : 'UP主投稿']].map(([key, label]) => (
                 <div key={key} style={{
                   padding: '6px 18px', fontSize: 18, borderRadius: 6,
                   color: panelTab === key ? '#fff' : '#aaa',
@@ -1018,17 +1068,23 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
                   {list.map((rv, i) => {
                     const thumb = proxyImg(rv.pic);
+                    const nowPlaying = isMultiP && rv.cid === cidRef.current;
                     return (
-                      <div key={rv.bvid || i} className="related-card" onClick={() => onPlayNext?.(rv)}
+                      <div key={rv.cid || rv.bvid || i} className="related-card" onClick={() => onPlayNext?.(rv)}
                         style={{
                           cursor: 'pointer',
-                          outline: focusArea === 'related' && focusIdx === i ? '4px solid #00a1d6' : 'none',
+                          outline: focusArea === 'related' && focusIdx === i ? '4px solid #00a1d6'
+                            : (nowPlaying ? '3px solid #00a1d6' : 'none'),
                           borderRadius: 6, overflow: 'hidden',
                         }}>
-                        <div style={{ width: '100%', aspectRatio: '16/9', background: '#1a1a2e', borderRadius: 6, overflow: 'hidden' }}>
+                        <div style={{ width: '100%', aspectRatio: '16/9', background: '#1a1a2e', borderRadius: 6, overflow: 'hidden', position: 'relative' }}>
                           {thumb && <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                          {nowPlaying && <div style={{ position: 'absolute', top: 6, left: 6, background: '#00a1d6', color: '#fff', fontSize: 13, padding: '2px 8px', borderRadius: 4 }}>▶ 播放中</div>}
+                          {rv.duration != null && <div style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: 13, padding: '1px 6px', borderRadius: 3 }}>
+                            {typeof rv.duration === 'number' ? formatDuration(rv.duration) : rv.duration}
+                          </div>}
                         </div>
-                        <div style={{ padding: '6px 4px 0', fontSize: 18, color: '#ccc', lineHeight: 1.3,
+                        <div style={{ padding: '6px 4px 0', fontSize: 18, color: nowPlaying ? '#00a1d6' : '#ccc', lineHeight: 1.3,
                           overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
                           {cleanTitle(rv.title)}
                         </div>

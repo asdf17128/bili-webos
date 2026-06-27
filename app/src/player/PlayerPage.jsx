@@ -211,9 +211,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       // highest bitrate). Inner loop re-fetches playurl for fresh CDN nodes.
       // Step DOWN one quality tier at a time on decode failure. The old UGC
       // ladder [null,16] jumped an undecodable 8K/4K rep straight to 360p
-      // (#11: an 8K video played at 360p). 120=4K, 80=1080p give the panel a
-      // chance before bottoming out at 16=360p.
-      const qualityLadder = isBangumi ? [null, 80, 16] : [null, 120, 80, 16];
+      // (#11: an 8K video played at 360p). Prefer Dolby Vision (126) / HDR (125)
+      // 4K over SDR 4K (120) on the way down, per the reporter's request, before
+      // bottoming out at 1080p (80) / 360p (16).
+      const qualityLadder = isBangumi ? [null, 80, 16] : [null, 126, 125, 120, 80, 16];
       for (let rung = 0; rung < qualityLadder.length && !loaded; rung++) {
         const fallbackQn = qualityLadder[rung];
         for (let attempt = 0; attempt < 2 && !loaded; attempt++) {

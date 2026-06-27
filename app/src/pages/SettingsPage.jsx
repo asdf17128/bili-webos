@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { storage } from '../utils/storage';
 import { getHistory } from '../api/client';
-import VideoGrid from '../components/VideoGrid';
+import VideoCard from '../components/VideoCard';
 
 // Proxy + resize avatar (B站 image CDN needs a Referer; the proxy adds it).
 function proxyImg(url) {
@@ -12,18 +12,42 @@ function proxyImg(url) {
   try { const p = new URL(u); return `${base}/proxy/${p.host}${p.pathname}${p.search}`; } catch { return u; }
 }
 
+// A labeled grid of cards. Focus rows are continuous across sections (the
+// caller passes startRow) so D-pad up/down crosses from one section to the next.
+function Section({ title, items, startRow, cols, onPlayVideo }) {
+  if (!items.length) return null;
+  return (
+    <>
+      <div style={{ fontSize: 20, color: '#aaa', margin: '22px 0 12px' }}>{title}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 20 }}>
+        {items.map((v, i) => (
+          <VideoCard
+            key={v.bvid || `${title}-${i}`}
+            video={v}
+            focusId={`content-${startRow + Math.floor(i / cols)}-${i % cols}`}
+            row={startRow + Math.floor(i / cols)}
+            col={i % cols}
+            group="content"
+            onSelect={onPlayVideo}
+          />
+        ))}
+      </div>
+    </>
+  );
+}
+
 export default function SettingsPage({ user, onPlayVideo }) {
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [recentLive] = useState(() => storage.getRecentLive());
+  const cols = Math.min(4, Math.max(2, storage.getSettings().gridCols || 3));
 
-  // Locally-tracked live rooms shown alongside B站 video history. duration='直播'
-  // renders as a badge; isLive+roomid lets App re-open the live stream.
+  // Locally-tracked live rooms (B站's history API doesn't record live viewing
+  // without its obfuscated heartbeat, so we keep our own).
   const liveItems = recentLive.map(r => ({
     isLive: true, roomid: r.roomid, bvid: 'live-' + r.roomid,
     title: r.title, pic: r.cover, owner: { name: r.uname }, duration: '直播',
   }));
-  const recentItems = [...liveItems, ...history];
 
   React.useEffect(() => {
     if (!user) return;
@@ -34,16 +58,14 @@ export default function SettingsPage({ user, onPlayVideo }) {
         bvid: h.bvid, cid: h.cid,
         title: item.title, pic: item.cover, duration: item.duration,
         progress: item.progress, owner: { name: item.author_name },
-        // Bangumi history rows carry an epid/season (oid) instead of a
-        // usable bvid; pass them through so the player uses the PGC path.
         ...(isBangumi ? { isBangumi: true, epid: h.epid, seasonId: h.oid, badge: '番剧' } : {}),
       };
     };
     async function load() {
       setHistoryLoading(true);
       try {
-        // The history cursor API caps each page at ~30; walk a few pages so 最近观看
-        // shows more than a dozen rows (#11). Each page's cursor seeds the next.
+        // The history cursor API caps each page at ~30; walk a few pages so the
+        // video history shows more than a dozen rows (#11).
         const all = [];
         let max = 0, viewAt = 0;
         for (let page = 0; page < 3; page++) {
@@ -63,10 +85,12 @@ export default function SettingsPage({ user, onPlayVideo }) {
   }, [user]);
 
   const avatar = proxyImg(user?.face);
+  // 直播 occupies the first ceil(live/cols) focus rows; 历史记录 starts after it.
+  const liveRows = Math.ceil(liveItems.length / cols);
 
   return (
     <div style={{ padding: '28px 40px', height: '100%', overflowY: 'auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 26 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 12 }}>
         <div style={{
           width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
           background: 'linear-gradient(135deg, #00a1d6, #2a2a4a)',
@@ -83,11 +107,11 @@ export default function SettingsPage({ user, onPlayVideo }) {
         </div>
       </div>
 
-      <div style={{ fontSize: 20, color: '#aaa', marginBottom: 14 }}>最近观看</div>
-      {recentItems.length > 0 ? (
-        <VideoGrid videos={recentItems} group="content" startRow={0} cols={Math.min(4, Math.max(2, storage.getSettings().gridCols || 3))} onSelect={onPlayVideo} />
-      ) : (
-        <div style={{ color: '#666', fontSize: 16 }}>
+      <Section title="直播" items={liveItems} startRow={0} cols={cols} onPlayVideo={onPlayVideo} />
+      <Section title="历史记录" items={history} startRow={liveRows} cols={cols} onPlayVideo={onPlayVideo} />
+
+      {liveItems.length === 0 && history.length === 0 && (
+        <div style={{ color: '#666', fontSize: 16, marginTop: 22 }}>
           {historyLoading ? '加载中…' : (user ? '暂无观看记录' : '登录后可查看视频历史')}
         </div>
       )}

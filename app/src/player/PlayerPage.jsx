@@ -47,6 +47,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // Multi-part (分P) videos: the parts replace 相关推荐 with a 选集 list, and
   // playing one auto-advances to the next part on end (#11).
   const [isMultiP, setIsMultiP] = useState(false);
+  const [partsLabel, setPartsLabel] = useState('选集');
   const partsRef = useRef([]);
   // Bottom panel: 'related' (相关推荐) | 'up' (UP主投稿)
   const [panelTab, setPanelTab] = useState('related');
@@ -189,10 +190,12 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       // UGC: always fetch the view so we have the 分P page list + aid (needed
       // for 选集 and 续播), the title and the owner.
       let ugcPages = [];
+      let ugcSeason = null;
       if (!isBangumi) {
         const info = await getVideoInfo(video);
         const d = info?.data || {};
         ugcPages = d.pages || [];
+        ugcSeason = d.ugc_season || null; // UGC 合集 (multi-video series)
         videoAidRef.current = d.aid || null;
         if (d.title) setVideoTitle(d.title);
         if (d.owner) {
@@ -318,8 +321,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         if (parts.length > 1 && onPlayNext) {
           const pi = parts.findIndex(p => p.cid === cidRef.current);
           if (pi >= 0 && pi + 1 < parts.length) {
-            const np = parts[pi + 1];
-            onPlayNext({ ...video, cid: np.cid, page: np.page, title: np.title, progress: 0 });
+            // Carry the favorites playlist forward so 合集/分P finishing falls
+            // through to the next favorite. np already has the right bvid/cid
+            // (合集 episodes have their own bvid).
+            onPlayNext({ ...parts[pi + 1], playlist: video.playlist, playlistIndex: video.playlistIndex, progress: 0 });
             return;
           }
         }
@@ -353,7 +358,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           setRelatedVideos(eps.slice(0, 60));
         } catch {}
       } else if (ugcPages.length > 1) {
-        // Multi-part video → 选集 list. Each part keeps the same bvid/aid but a
+        // Multi-part (分P) → 选集 list. Each part keeps the same bvid/aid but a
         // different cid; selecting one (or finishing the current) plays it.
         const parts = ugcPages.map(p => ({
           bvid: video.bvid, aid: videoAidRef.current, cid: p.cid, page: p.page,
@@ -362,7 +367,21 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }));
         partsRef.current = parts;
         setIsMultiP(true);
+        setPartsLabel(`选集 · ${parts.length}P`);
         setRelatedVideos(parts);
+      } else if (ugcSeason && (ugcSeason.sections || []).some(s => (s.episodes || []).length > 1)) {
+        // UGC 合集 (multi-video series) → 选集 list. Episodes are separate videos
+        // (different bvid); selecting/finishing one plays the next.
+        const eps = [];
+        (ugcSeason.sections || []).forEach(sec => (sec.episodes || []).forEach(e => eps.push({
+          bvid: e.bvid, aid: e.aid, cid: e.cid,
+          title: e.title, duration: e.arc?.duration, pic: e.arc?.pic || e.cover,
+          owner: { name: ownerName || '' },
+        })));
+        partsRef.current = eps;
+        setIsMultiP(true);
+        setPartsLabel(`合集 · ${eps.length}`);
+        setRelatedVideos(eps);
       } else {
         partsRef.current = [];
         setIsMultiP(false);
@@ -1047,7 +1066,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         {showRelated && (
           <div style={{ marginTop: 16, paddingBottom: 10 }}>
             <div className="panel-tab-row" style={{ display: 'flex', gap: 14, marginBottom: 12 }}>
-              {[['related', isMultiP ? `选集 · ${partsRef.current.length}P` : '相关推荐'], ['up', upName ? `UP主投稿 · ${upName}` : 'UP主投稿']].map(([key, label]) => (
+              {[['related', isMultiP ? partsLabel : '相关推荐'], ['up', upName ? `UP主投稿 · ${upName}` : 'UP主投稿']].map(([key, label]) => (
                 <div key={key} style={{
                   padding: '6px 18px', fontSize: 18, borderRadius: 6,
                   color: panelTab === key ? '#fff' : '#aaa',

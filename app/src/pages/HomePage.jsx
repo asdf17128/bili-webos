@@ -17,13 +17,15 @@ async function fetchByMode(mode, pn, offset) {
     const res = await getLiveList(pn, FETCH_SIZE);
     const items = res?.data?.list || res?.data?.recommend_room_list || [];
     return { items: items.map(item => ({
-      bvid: `live-${item.roomid}`,
+      bvid: `live-${item.roomid || item.room_id}`,
       title: item.title,
-      pic: item.cover || item.system_cover,
+      // Followed-rooms (GetWebList) carry cover_from_user / keyframe, NOT
+      // cover/system_cover — the old mapping left them blank (#11).
+      pic: item.cover_from_user || item.cover || item.keyframe || item.system_cover || item.face,
       owner: { name: item.uname },
       stat: { view: item.online || item.watched_show?.num },
       isLive: true,
-      roomid: item.roomid,
+      roomid: item.roomid || item.room_id,
     })) };
   } else if (mode === 'partition') {
     const rids = [1, 3, 4, 5, 17, 36, 160, 188, 211];

@@ -30,6 +30,7 @@ import {
   getRanking,
   getRelated,
   reportHeartbeat,
+  getStoryboard,
 } from './client.ts';
 
 const originalWindow = globalThis.window;
@@ -564,8 +565,100 @@ describe('api client integration paths', () => {
     const danmaku = await getDanmaku(1234);
     expect(Array.isArray(danmaku)).toBe(true);
     expect(danmaku.length).toBe(0);
+
+    const sb = await getStoryboard('BV1xx', 123);
+    expect(sb).toBeNull();
+
     const auth = JSON.parse(localStorage.getItem('bili_auth'));
     expect(auth.SESSDATA).toBe('abc');
     expect(requests.some((r) => r.method === 'castReportState')).toBe(true);
+  });
+
+  it('getStoryboard returns StoryboardTile with proxied URLs when API returns valid storyboard data', async () => {
+    globalThis.fetch = mock((url) => {
+      if (String(url).includes('/x/web-interface/nav')) {
+        return Promise.resolve({
+          ok: true,
+          headers: { get: () => 'application/json' },
+          json: async () => ({
+            data: {
+              wbi_img: {
+                img_url: 'https://i/a12345678901234567890123456789012.png',
+                sub_url: 'https://i/b12345678901234567890123456789012.png',
+              },
+            },
+          }),
+        });
+      }
+      if (String(url).includes('.bin')) {
+        const buf = new ArrayBuffer(6);
+        const view = new DataView(buf);
+        view.setUint16(0, 0, false);
+        view.setUint16(2, 5, false);
+        view.setUint16(4, 10, false);
+        return Promise.resolve({
+          ok: true,
+          headers: { get: () => 'application/octet-stream' },
+          arrayBuffer: async () => buf,
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({
+          code: 0,
+          data: {
+            img_x_len: 10,
+            img_y_len: 10,
+            img_x_size: 160,
+            img_y_size: 90,
+            image: [
+              '//i0.hdslb.com/bfs/videoshot/xxx_1.jpg',
+              '//i0.hdslb.com/bfs/videoshot/xxx_2.jpg',
+            ],
+            pvdata: '//i0.hdslb.com/bfs/videoshot/xxx.bin',
+          },
+        }),
+      });
+    });
+
+    const result = await getStoryboard('BV1xx', 456);
+    expect(result).not.toBeNull();
+    expect(result!.cols).toBe(10);
+    expect(result!.rows).toBe(10);
+    expect(result!.tileW).toBe(160);
+    expect(result!.tileH).toBe(90);
+    expect(result!.interval).toBe(5);
+    expect(result!.imageUrls).toHaveLength(2);
+    expect(result!.imageUrls[0]).toContain('/proxy/');
+    expect(result!.frameTimes).toEqual([0, 5, 10]);
+  });
+
+  it('getStoryboard returns null for malformed storyboard data', async () => {
+    globalThis.fetch = mock((url) => {
+      if (String(url).includes('/x/web-interface/nav')) {
+        return Promise.resolve({
+          headers: { get: () => 'application/json' },
+          json: async () => ({
+            data: {
+              wbi_img: {
+                img_url: 'https://i/a12345678901234567890123456789012.png',
+                sub_url: 'https://i/b12345678901234567890123456789012.png',
+              },
+            },
+          }),
+        });
+      }
+      return Promise.resolve({
+        headers: { get: () => 'application/json' },
+        json: async () => ({
+          code: 0,
+          data: { img_x_len: 0, img_y_len: 0, img_x_size: 0, img_y_size: 0, image: [] },
+        }),
+      });
+    });
+
+    const result = await getStoryboard('BV1xx', 789);
+    expect(result).toBeNull();
   });
 });

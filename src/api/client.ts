@@ -680,3 +680,122 @@ function parseDanmakuXml(xml) {
 export async function getRelated(bvid) {
   return wbiFetch('/x/web-interface/archive/related', { bvid: bvid });
 }
+
+// ============ Storyboard ============
+
+export type StoryboardTile = {
+  imageUrls: string[];
+  cols: number;
+  rows: number;
+  tileW: number;
+  tileH: number;
+  interval: number;
+  frameTimes?: number[];
+};
+
+type VideoShotData = {
+  pvdata?: string;
+  img_x_len: number;
+  img_y_len: number;
+  img_x_size: number;
+  img_y_size: number;
+  image: string[];
+};
+
+function parsePvdata(buf: ArrayBuffer): number[] {
+  const view = new DataView(buf);
+  const frames: number[] = [];
+  for (let i = 0; i + 1 < buf.byteLength; i += 2) {
+    frames.push(view.getUint16(i, false));
+  }
+  return frames;
+}
+
+async function fetchPvdata(pvdataUrl: string): Promise<number[] | null> {
+  try {
+    const url = buildProxyUrl(
+      pvdataUrl.startsWith('//') ? 'https:' + pvdataUrl : pvdataUrl,
+    );
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const buf = await res.arrayBuffer();
+    return parsePvdata(buf);
+  } catch {
+    return null;
+  }
+}
+
+function normalizeShotData(shot: VideoShotData): {
+  tileW: number;
+  tileH: number;
+  cols: number;
+  rows: number;
+  imageUrls: string[];
+  frameTimes: number[] | null;
+} | null {
+  const isPosInt = (v: unknown): v is number =>
+    typeof v === 'number' && Number.isInteger(v) && v > 0;
+  if (
+    !Array.isArray(shot.image) ||
+    shot.image.length === 0 ||
+    !shot.image.every((u: any) => typeof u === 'string' && u.length > 0) ||
+    !isPosInt(shot.img_x_len) ||
+    !isPosInt(shot.img_y_len) ||
+    !isPosInt(shot.img_x_size) ||
+    !isPosInt(shot.img_y_size)
+  ) {
+    return null;
+  }
+  return {
+    tileW: shot.img_x_size,
+    tileH: shot.img_y_size,
+    cols: shot.img_x_len,
+    rows: shot.img_y_len,
+    imageUrls: shot.image.map((url: string) =>
+      url.startsWith('//') ? buildProxyUrl('https:' + url) : buildProxyUrl(url),
+    ),
+    frameTimes: null,
+  };
+}
+
+export async function getStoryboard(
+  bvid: string,
+  cid: number | string,
+): Promise<StoryboardTile | null> {
+  const res = await wbiFetch('/x/player/videoshot', { bvid, cid });
+  if (res?.code !== 0) return null;
+  const data = res?.data;
+  if (!data) return null;
+
+  const shots = data.video_shots as Record<string, VideoShotData> | undefined;
+  const shot: VideoShotData | undefined =
+    shots && Object.keys(shots).length > 0 ? shots[String(cid)] : data;
+  if (!shot) return null;
+
+  const normalized = normalizeShotData(shot);
+  if (!normalized) return null;
+
+  let frameTimes: number[] | null = null;
+  if (shot.pvdata) {
+    frameTimes = await fetchPvdata(shot.pvdata);
+  }
+  normalized.frameTimes = frameTimes;
+
+  const framesAvailable =
+    normalized.cols * normalized.rows * normalized.imageUrls.length;
+  const interval =
+    frameTimes && frameTimes.length > 1
+      ? (frameTimes[frameTimes.length - 1] - frameTimes[0]) /
+        Math.max(frameTimes.length - 1, 1)
+      : 5;
+
+  return {
+    imageUrls: normalized.imageUrls,
+    cols: normalized.cols,
+    rows: normalized.rows,
+    tileW: normalized.tileW,
+    tileH: normalized.tileH,
+    interval: interval || 5,
+    frameTimes: frameTimes ?? undefined,
+  };
+}

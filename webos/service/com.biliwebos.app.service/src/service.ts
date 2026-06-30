@@ -116,7 +116,10 @@ function makeRequest(parsedUrl, method, body, contentType, range, callback) {
   const hostname = parsedUrl.hostname;
   const port = parsedUrl.port ? Number.parseInt(parsedUrl.port, 10) : 443;
   const isCDN =
-    hostname.indexOf('bilivideo') >= 0 || hostname.indexOf('akamaized') >= 0;
+    hostname.indexOf('bilivideo') >= 0 ||
+    hostname.indexOf('akamaized') >= 0 ||
+    hostname.indexOf('hdslb') >= 0 ||
+    hostname.indexOf('biliimg') >= 0;
 
   const headers: Record<string, string> = {
     'User-Agent':

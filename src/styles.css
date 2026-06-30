@@ -366,7 +366,6 @@ body,
   left: 0;
   right: 0;
   max-height: 50%;
-  overflow-y: auto;
   background: linear-gradient(
     transparent 0%,
     rgba(0, 0, 0, 0.85) 15%,
@@ -376,11 +375,16 @@ body,
   display: flex;
   flex-direction: column;
   gap: 16px;
-  transition: opacity 0.3s ease;
+}
+.player-controls-scroll {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 .player-controls.hidden {
   opacity: 0;
   pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 .player-title {
   font-size: 28px;
@@ -403,6 +407,20 @@ body,
 .player-progress-bar.focused {
   height: 10px;
   box-shadow: 0 0 8px rgba(0, 161, 214, 0.5);
+}
+.player-scrub-thumb {
+  position: absolute;
+  bottom: 100%;
+  margin-bottom: 8px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  display: none;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  background-repeat: no-repeat;
+  background-color: #000;
+  box-sizing: content-box;
+  z-index: 2;
 }
 .player-btns {
   display: flex;

@@ -9,3 +9,4 @@ proxy/cookies.json
 .env
 
 coverage/
+.serena

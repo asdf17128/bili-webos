@@ -160,6 +160,7 @@ beforeEach(() => {
       type: 'flv',
       url: 'https://live.test/stream.flv',
     })),
+    getStoryboard: mock(async () => null),
   };
   storageState = {
     settings: { danmaku: true, quality: 80 },
@@ -240,6 +241,7 @@ beforeEach(() => {
     castReportProgress: (...args) => api.castReportProgress(...args),
     castReportState: (...args) => api.castReportState(...args),
     getLiveStreamSource: (...args) => api.getLiveStreamSource(...args),
+    getStoryboard: (...args) => api.getStoryboard(...args),
   }));
   mock.module(storagePath, () => ({
     ...realStorage,
@@ -475,10 +477,9 @@ describe('PlayerPage', () => {
     expect(JSON.stringify(renderer.toJSON())).toContain('player-progress-bar focused');
     expect(video.currentTime).toBe(30);
     await interact(() =>
-      timers.find((item) => item.delay === 250 && !item.cleared)?.fn(),
+      timers.find((item) => item.delay === 500 && !item.cleared)?.fn(),
     );
     expect(video.currentTime).toBe(35);
-    await interact(() => customKeyHandler(event('ArrowUp')));
     expect(JSON.stringify(renderer.toJSON())).toContain('player-controls hidden');
 
     video.paused = true;
@@ -488,14 +489,14 @@ describe('PlayerPage', () => {
     await interact(() => customKeyHandler(event('MediaRewind', 412)));
     expect(video.currentTime).toBe(35);
     await interact(() =>
-      timers.find((item) => item.delay === 250 && !item.cleared)?.fn(),
+      timers.find((item) => item.delay === 500 && !item.cleared)?.fn(),
     );
     expect(video.currentTime).toBe(30);
     video.duration = 35;
     await interact(() => customKeyHandler(event('MediaFastForward', 417)));
     expect(video.currentTime).toBe(30);
     await interact(() =>
-      timers.find((item) => item.delay === 250 && !item.cleared)?.fn(),
+      timers.find((item) => item.delay === 500 && !item.cleared)?.fn(),
     );
     expect(video.currentTime).toBe(34);
     await interact(() => customKeyHandler(event('MediaPause', 19)));
@@ -504,6 +505,7 @@ describe('PlayerPage', () => {
     await interact(() => customKeyHandler(event('MediaPlayPause')));
     expect(video.pauseCalls).toBeGreaterThan(1);
 
+    await interact(() => customKeyHandler(event('ArrowDown')));
     await interact(() => customKeyHandler(event('ArrowDown')));
     expect(JSON.stringify(renderer.toJSON())).toContain('▶ 播放');
     await interact(() => customKeyHandler(event('Enter')));
@@ -1131,6 +1133,45 @@ describe('PlayerPage', () => {
     expect(video.currentTime).toBeCloseTo(47.5, 3);
   });
 
+  test('hides player controls when preview seek debounce commits', async () => {
+    const { default: PlayerPage } = await importFresh('./PlayerPage.tsx');
+    const video = createVideoMock();
+    const renderer = await renderWithNodeMock(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-SCRUB-CLOSE', cid: 35, title: '关闭预览' },
+      }),
+      (element) => (element.type === 'video' ? video : null),
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+      await flush();
+    });
+
+    video.duration = 120;
+    video.readyState = 2;
+    await interact(() => video.dispatch('loadeddata'));
+    await interact(() => video.dispatch('play'));
+
+    await interact(() => customKeyHandler(event('ArrowRight')));
+    expect(JSON.stringify(renderer.toJSON())).not.toContain(
+      'player-controls hidden',
+    );
+
+    const commitTimer = timers.find(
+      (item) => item.delay === 500 && !item.cleared,
+    );
+    expect(commitTimer).toBeTruthy();
+
+    await interact(() => commitTimer.fn());
+    expect(JSON.stringify(renderer.toJSON())).toContain(
+      'player-controls hidden',
+    );
+    expect(timers.some((item) => item.delay === 5000 && !item.cleared)).toBe(
+      false,
+    );
+  });
+
   test('caps accelerated scrubbing, ignores flood events, and suppresses redundant clamp writes', async () => {
     const { default: PlayerPage } = await importFresh('./PlayerPage.tsx');
     const video = createVideoMock();
@@ -1175,7 +1216,7 @@ describe('PlayerPage', () => {
     expect(timeText.textContent).toContain('7:42 / 16:40');
     expect(currentTimeWrites).toBe(0);
 
-    timers.find((item) => item.delay === 250 && !item.cleared)?.fn();
+    timers.find((item) => item.delay === 500 && !item.cleared)?.fn();
     expect(video.currentTime).toBeCloseTo(462.5, 3);
     expect(currentTimeWrites).toBe(1);
 
@@ -1191,7 +1232,7 @@ describe('PlayerPage', () => {
     expect(currentTimeWrites).toBe(0);
     expect(timeText.textContent).toContain('0:00 / 2:00');
     expect(
-      timers.filter((item) => item.delay === 250 && !item.cleared),
+      timers.filter((item) => item.delay === 500 && !item.cleared),
     ).toHaveLength(0);
 
     currentNow += 15;
@@ -1267,7 +1308,7 @@ describe('PlayerPage', () => {
     currentNow += 50;
     await interact(() => customKeyHandler(event('ArrowRight')));
     await interact(() =>
-      timers.find((item) => item.delay === 250 && !item.cleared)?.fn(),
+      timers.find((item) => item.delay === 500 && !item.cleared)?.fn(),
     );
     expect(video.currentTime).toBeCloseTo(112.5, 3);
 
@@ -1405,6 +1446,320 @@ describe('PlayerPage', () => {
 
     expect(shakaPlayers.at(-1).retryCalls).toBe(1);
     expect(api.castReportState).toHaveBeenCalledWith({ playState: 'loading' });
+  });
+});
+
+describe('scrub preview thumbnail', () => {
+  test('hides thumbnail when storyboard data is null', async () => {
+    const { default: PlayerPage } = await importFresh('./PlayerPage.tsx');
+    const video = createVideoMock();
+    let currentTimeValue = 0;
+    Object.defineProperty(video, 'currentTime', {
+      configurable: true,
+      get: () => currentTimeValue,
+      set: (v) => { currentTimeValue = v; },
+    });
+
+    const renderer = await renderWithNodeMock(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-NOSB', cid: 99, title: '无分镜视频' },
+      }),
+      (element) => (element.type === 'video' ? video : null),
+    );
+    await act(async () => {
+      await flush(); await flush(); await flush();
+    });
+
+    video.duration = 300;
+    video.readyState = 2;
+    video.currentTime = 40;
+    await interact(() => video.dispatch('loadeddata'));
+    await interact(() => video.dispatch('play'));
+
+    const previewThumb = renderer.container.querySelector('.player-scrub-thumb');
+    expect(previewThumb).toBeTruthy();
+    expect(previewThumb.style.display).toBe('none');
+
+    await interact(() => customKeyHandler(event('ArrowUp')));
+    await interact(() => customKeyHandler(event('ArrowRight')));
+
+    expect(previewThumb.style.display).toBe('none');
+
+    await act(async () => { renderer.unmount(); });
+  });
+
+  test('shows thumbnail with correct background properties when storyboard is available', async () => {
+    const storyboardData = {
+      imageUrls: ['https://test/sprite1.jpg'],
+      cols: 10,
+      rows: 10,
+      tileW: 160,
+      tileH: 90,
+      interval: 60,
+    };
+    api.getStoryboard.mockResolvedValueOnce(storyboardData);
+
+    const testImages = [];
+    const OrigImage = globalThis.Image;
+    globalThis.Image = class {
+      constructor() {
+        this.complete = true;
+        this.naturalWidth = 1600;
+        this.naturalHeight = 900;
+        this._onload = null;
+        testImages.push(this);
+      }
+      set onload(h) { this._onload = h; }
+      get onload() { return this._onload; }
+      set src(_url) { this._src = _url; }
+      get src() { return this._src; }
+    };
+
+    const { default: PlayerPage } = await importFresh('./PlayerPage.tsx');
+    const video = createVideoMock();
+    let currentTimeValue = 0;
+    Object.defineProperty(video, 'currentTime', {
+      configurable: true,
+      get: () => currentTimeValue,
+      set: (v) => { currentTimeValue = v; },
+    });
+
+    const renderer = await renderWithNodeMock(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-SB', cid: 100, title: '分镜视频' },
+      }),
+      (element) => (element.type === 'video' ? video : null),
+    );
+    await act(async () => {
+      await flush(); await flush(); await flush();
+    });
+
+    video.duration = 300;
+    video.readyState = 2;
+    video.currentTime = 0;
+    await interact(() => video.dispatch('loadeddata'));
+    await interact(() => video.dispatch('play'));
+
+    const thumb = renderer.container.querySelector('.player-scrub-thumb');
+    expect(thumb).toBeTruthy();
+    expect(thumb.style.display).toBe('none');
+
+    const progressBar = renderer.container.querySelector('.player-progress-bar');
+    Object.defineProperty(progressBar, 'clientWidth', {
+      value: 800,
+      configurable: true,
+    });
+
+    await interact(() => customKeyHandler(event('ArrowUp')));
+    currentNow += 50;
+    await interact(() => customKeyHandler(event('ArrowRight')));
+
+    for (const img of testImages) {
+      if (img._onload) img._onload();
+    }
+    await act(async () => { await flush(); });
+
+    expect(thumb.style.display).toBe('block');
+    expect(thumb.style.backgroundImage).toContain('sprite1.jpg');
+
+    globalThis.Image = OrigImage;
+    await act(async () => { renderer.unmount(); });
+  });
+
+  test('edge clamp keeps thumbnail inside progress bar at 0% scrub position', async () => {
+    const storyboardData = {
+      imageUrls: ['https://test/sprite-clamp.jpg'],
+      cols: 10,
+      rows: 10,
+      tileW: 160,
+      tileH: 90,
+      interval: 60,
+    };
+    api.getStoryboard.mockResolvedValueOnce(storyboardData);
+
+    const testImages = [];
+    const OrigImage = globalThis.Image;
+    globalThis.Image = class {
+      constructor() { this.complete = true; this.naturalWidth = 1600; this.naturalHeight = 900; this._onload = null; testImages.push(this); }
+      set onload(h) { this._onload = h; }
+      get onload() { return this._onload; }
+      set src(_url) { this._src = _url; }
+      get src() { return this._src; }
+    };
+
+    const { default: PlayerPage } = await importFresh('./PlayerPage.tsx');
+    const video = createVideoMock();
+    let currentTimeValue = 0;
+    Object.defineProperty(video, 'currentTime', {
+      configurable: true, get: () => currentTimeValue, set: (v) => { currentTimeValue = v; },
+    });
+
+    const renderer = await renderWithNodeMock(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-CLAMP0', cid: 101, title: 'Clamp 0' },
+      }),
+      (element) => (element.type === 'video' ? video : null),
+    );
+    await act(async () => { await flush(); await flush(); await flush(); });
+
+    video.duration = 300;
+    video.readyState = 2;
+    video.currentTime = 0;
+    await interact(() => video.dispatch('loadeddata'));
+    await interact(() => video.dispatch('play'));
+
+    const thumb = renderer.container.querySelector('.player-scrub-thumb');
+    const progressBar = renderer.container.querySelector('.player-progress-bar');
+    Object.defineProperty(progressBar, 'clientWidth', { value: 800, configurable: true });
+
+    await interact(() => customKeyHandler(event('ArrowUp')));
+    currentNow += 50;
+    await interact(() => customKeyHandler(event('ArrowLeft')));
+
+    for (const img of testImages) {
+      if (img._onload) img._onload();
+    }
+    await act(async () => { await flush(); });
+
+    expect(thumb.style.display).toBe('block');
+    expect(thumb.style.left).not.toBe('0%');
+    expect(Number(thumb.style.left.replace('%', ''))).toBeGreaterThan(0);
+
+    globalThis.Image = OrigImage;
+    await act(async () => { renderer.unmount(); });
+  });
+
+  test('edge clamp keeps thumbnail inside progress bar at 100% scrub position', async () => {
+    const storyboardData = {
+      imageUrls: ['https://test/sprite-clamp100.jpg'],
+      cols: 10,
+      rows: 10,
+      tileW: 160,
+      tileH: 90,
+      interval: 60,
+    };
+    api.getStoryboard.mockResolvedValueOnce(storyboardData);
+
+    const testImages = [];
+    const OrigImage = globalThis.Image;
+    globalThis.Image = class {
+      constructor() { this.complete = true; this.naturalWidth = 1600; this.naturalHeight = 900; this._onload = null; testImages.push(this); }
+      set onload(h) { this._onload = h; }
+      get onload() { return this._onload; }
+      set src(_url) { this._src = _url; }
+      get src() { return this._src; }
+    };
+
+    const { default: PlayerPage } = await importFresh('./PlayerPage.tsx');
+    const video = createVideoMock();
+    let currentTimeValue = 0;
+    Object.defineProperty(video, 'currentTime', {
+      configurable: true, get: () => currentTimeValue, set: (v) => { currentTimeValue = v; },
+    });
+
+    const renderer = await renderWithNodeMock(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-CLAMP100', cid: 102, title: 'Clamp 100' },
+      }),
+      (element) => (element.type === 'video' ? video : null),
+    );
+    await act(async () => { await flush(); await flush(); await flush(); });
+
+    video.duration = 300;
+    video.readyState = 2;
+    video.currentTime = 300;
+    await interact(() => video.dispatch('loadeddata'));
+    await interact(() => video.dispatch('play'));
+
+    const thumb = renderer.container.querySelector('.player-scrub-thumb');
+    const progressBar = renderer.container.querySelector('.player-progress-bar');
+    Object.defineProperty(progressBar, 'clientWidth', { value: 800, configurable: true });
+
+    await interact(() => customKeyHandler(event('ArrowUp')));
+    currentNow += 50;
+    await interact(() => customKeyHandler(event('ArrowRight')));
+
+    for (const img of testImages) {
+      if (img._onload) img._onload();
+    }
+    await act(async () => { await flush(); });
+
+    expect(thumb.style.display).toBe('block');
+    expect(thumb.style.left).not.toBe('100%');
+    expect(Number(thumb.style.left.replace('%', ''))).toBeLessThan(100);
+
+    globalThis.Image = OrigImage;
+    await act(async () => { renderer.unmount(); });
+  });
+
+  test('sprite load pending shows hidden thumbnail, onload reveals it', async () => {
+    const storyboardData = {
+      imageUrls: ['https://test/sprite-pending.jpg'],
+      cols: 10,
+      rows: 10,
+      tileW: 160,
+      tileH: 90,
+      interval: 60,
+    };
+    api.getStoryboard.mockResolvedValueOnce(storyboardData);
+
+    let spriteLoaded = false;
+    let spriteNaturalWidth = 0;
+    let spriteNaturalHeight = 0;
+    let spriteOnload = null;
+    const OrigImage = globalThis.Image;
+    globalThis.Image = class {
+      get complete() { return spriteLoaded; }
+      get naturalWidth() { return spriteNaturalWidth; }
+      get naturalHeight() { return spriteNaturalHeight; }
+      set onload(h) { spriteOnload = h; }
+      get onload() { return spriteOnload; }
+      set src(_url) { this._src = _url; }
+      get src() { return this._src; }
+    };
+
+    const { default: PlayerPage } = await importFresh('./PlayerPage.tsx');
+    const video = createVideoMock();
+    let currentTimeValue = 0;
+    Object.defineProperty(video, 'currentTime', {
+      configurable: true, get: () => currentTimeValue, set: (v) => { currentTimeValue = v; },
+    });
+
+    const renderer = await renderWithNodeMock(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-PEND', cid: 103, title: 'Pending' },
+      }),
+      (element) => (element.type === 'video' ? video : null),
+    );
+    await act(async () => { await flush(); await flush(); await flush(); });
+
+    video.duration = 300;
+    video.readyState = 2;
+    video.currentTime = 150;
+    await interact(() => video.dispatch('loadeddata'));
+    await interact(() => video.dispatch('play'));
+
+    const thumb = renderer.container.querySelector('.player-scrub-thumb');
+    const progressBar = renderer.container.querySelector('.player-progress-bar');
+    Object.defineProperty(progressBar, 'clientWidth', { value: 800, configurable: true });
+
+    await interact(() => customKeyHandler(event('ArrowUp')));
+    currentNow += 50;
+    await interact(() => customKeyHandler(event('ArrowRight')));
+
+    expect(thumb.style.display).toBe('none');
+
+    spriteLoaded = true;
+    spriteNaturalWidth = 1600;
+    spriteNaturalHeight = 900;
+    if (spriteOnload) spriteOnload();
+    await act(async () => { await flush(); });
+
+    expect(thumb.style.display).toBe('block');
+    expect(thumb.style.backgroundImage).toContain('sprite-pending.jpg');
+
+    globalThis.Image = OrigImage;
+    await act(async () => { renderer.unmount(); });
   });
 });
 
@@ -1715,6 +2070,48 @@ describe('LivePlayerPage', () => {
     expect(JSON.stringify(renderer.toJSON())).not.toContain('buffering');
 
     await interact(() => video.dispatch('waiting'));
+    expect(JSON.stringify(renderer.toJSON())).toContain('buffering');
+
+    await interact(() => video.dispatch('playing'));
+    expect(JSON.stringify(renderer.toJSON())).not.toContain('buffering');
+
+    await act(async () => {
+      renderer.unmount();
+    });
+  });
+
+  test('suppresses buffering overlay during active seeking and recovers after commit', async () => {
+    const { default: PlayerPage } = await importFresh('./PlayerPage.tsx');
+    const video = createVideoMock();
+    const renderer = await renderWithNodeMock(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-SEEK-BUFFER', cid: 34, title: '搜索缓冲' },
+      }),
+      (element) => (element.type === 'video' ? video : null),
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+      await flush();
+    });
+
+    video.duration = 120;
+    video.readyState = 2;
+    await interact(() => video.dispatch('loadeddata'));
+    await interact(() => video.dispatch('play'));
+
+    await interact(() => customKeyHandler(event('ArrowUp')));
+    currentNow += 50;
+    await interact(() => customKeyHandler(event('ArrowRight')));
+
+    await interact(() => video.dispatch('waiting'));
+    expect(JSON.stringify(renderer.toJSON())).not.toContain('buffering');
+
+    const commitTimer = timers.find(
+      (item) => item.delay === 500 && !item.cleared,
+    );
+    expect(commitTimer).toBeTruthy();
+    await interact(() => commitTimer.fn());
     expect(JSON.stringify(renderer.toJSON())).toContain('buffering');
 
     await interact(() => video.dispatch('playing'));

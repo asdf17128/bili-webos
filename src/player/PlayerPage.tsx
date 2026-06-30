@@ -5,9 +5,12 @@ import {
   getVideoInfo,
   reportHeartbeat,
   getRelated,
+  getStoryboard,
   castReportProgress,
   castReportState,
+  type StoryboardTile,
 } from '../api/client';
+import { getStoryboardFrame, type StoryboardFrame } from './storyboard';
 import { formatDuration, QUALITY_MAP } from '../utils/format';
 import { getProxyBase } from '../utils/proxy';
 import { setCustomKeyHandler } from '../hooks/useFocus';
@@ -15,7 +18,7 @@ import { storage } from '../utils/storage';
 import DanmakuLayer from './DanmakuLayer';
 
 const SEEK_BASE_STEP_SEC = 5;
-const SEEK_IDLE_RESET_MS = 250;
+const SEEK_IDLE_RESET_MS = 500;
 const SEEK_MIN_EVENT_GAP_MS = 10;
 const SEEK_MULTIPLIER_INCREMENT = 0.5;
 const SEEK_MAX_MULTIPLIER = 6;
@@ -118,6 +121,11 @@ export default function PlayerPage({
   const lastStallRecoveryAtRef = useRef(0);
   const bufferingRef = useRef(false);
   const suppressedBufferingRef = useRef(false);
+  const storyboardRef = useRef(null);
+  const spriteCacheRef = useRef(new Map());
+  const previewThumbRef = useRef(null);
+  const progressBarRef = useRef(null);
+  const storyboardVideoKeyRef = useRef(null);
 
   const pendingSeekRef = useRef(null);
   const endedRef = useRef(false);
@@ -267,14 +275,41 @@ export default function PlayerPage({
   const renderTimelinePreview = useCallback((timeSec, durationSec) => {
     const safeDuration =
       Number.isFinite(durationSec) && durationSec > 0 ? durationSec : 0;
-    const safeTime = Math.max(0, Number(timeSec) || 0);
+    const rawTime = Math.max(0, Number(timeSec) || 0);
+    const safeTime =
+      safeDuration > 0 ? Math.min(rawTime, safeDuration) : rawTime;
     displayTimeRef.current = safeTime;
+
     if (progressFillRef.current) {
       const progress = safeDuration > 0 ? (safeTime / safeDuration) * 100 : 0;
       progressFillRef.current.style.width = `${progress}%`;
     }
+
     if (timeTextRef.current) {
       timeTextRef.current.textContent = `${formatDuration(safeTime)} / ${formatDuration(safeDuration)}`;
+    }
+
+    if (!storyboardRef.current || safeDuration <= 0) {
+      hideScrubThumbnail();
+      return;
+    }
+
+    const frame = getStoryboardFrame(
+      storyboardRef.current,
+      safeTime,
+      safeDuration,
+    );
+    if (!frame) {
+      hideScrubThumbnail();
+      return;
+    }
+
+    const loaded = ensureSpriteLoaded(frame.spriteUrl);
+    if (loaded) {
+      const percent = (safeTime / safeDuration) * 100;
+      updateScrubThumbnail(frame, percent);
+    } else {
+      hideScrubThumbnail();
     }
   }, []);
 
@@ -285,46 +320,126 @@ export default function PlayerPage({
     renderTimelinePreview(nextTime, nextDuration);
   }, [duration, getStablePlaybackTime, renderTimelinePreview]);
 
-  const commitPreviewSeek = useCallback(() => {
-    const bounds = getSeekBounds();
-    clearSeekCommitTimer();
-    if (!scrubActiveRef.current) return;
-
-    if (bounds && videoRef.current) {
-      const target = Math.min(
-        bounds.max,
-        Math.max(0, Number(displayTimeRef.current) || 0),
+  function ensureSpriteLoaded(url, minW = 16, minH = 9) {
+    const cached = spriteCacheRef.current.get(url);
+    if (cached) {
+      return (
+        cached.complete &&
+        cached.naturalWidth >= minW &&
+        cached.naturalHeight >= minH
       );
-      if (
-        Math.abs((Number(videoRef.current.currentTime) || 0) - target) >
-        SEEK_EPSILON
-      ) {
-        videoRef.current.currentTime = target;
-      }
-      committedSeekTargetRef.current = {
-        target,
-        protectedUntil: Date.now() + SEEK_COMMIT_ANCHOR_MS,
-      };
-      setCurrentTime(target);
-      setDuration(bounds.duration);
-      renderTimelinePreview(target, bounds.duration);
     }
 
-    scrubActiveRef.current = false;
-    lastSeekEventAtRef.current = 0;
-    lastSeekDirectionRef.current = 0;
-    seekMultiplierRef.current = 1;
-    blockedSeekDirectionRef.current = 0;
-    if (suppressedBufferingRef.current) {
-      suppressedBufferingRef.current = false;
-      setBuffering(true);
+    const currentVideoKey = storyboardVideoKeyRef.current;
+    const img = new Image();
+    img.onload = () => {
+      if (storyboardVideoKeyRef.current !== currentVideoKey) return;
+      spriteCacheRef.current.set(url, img);
+      if (scrubActiveRef.current && displayTimeRef.current != null) {
+        const dur = videoRef.current?.duration || 0;
+        if (dur > 0) {
+          renderTimelinePreview(displayTimeRef.current, dur);
+        }
+      }
+    };
+    img.onerror = () => {
+      spriteCacheRef.current.delete(url);
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('[Player] Sprite load failed:', url);
+      }
+    };
+    img.src = url;
+    spriteCacheRef.current.set(url, img);
+    return false;
+  }
+
+  function hideScrubThumbnail() {
+    if (previewThumbRef.current) {
+      previewThumbRef.current.style.display = 'none';
     }
-  }, [clearSeekCommitTimer, getSeekBounds, renderTimelinePreview]);
+  }
+
+  function updateScrubThumbnail(frame, percent) {
+    const thumb = previewThumbRef.current;
+    if (!thumb) return;
+
+    const progressBarWidth = progressBarRef.current?.clientWidth ?? 0;
+    if (!progressBarWidth) return;
+
+    thumb.style.display = 'block';
+    thumb.style.backgroundImage = `url("${frame.spriteUrl}")`;
+    thumb.style.backgroundPosition = `${frame.bgX}px ${frame.bgY}px`;
+    thumb.style.backgroundSize = `${frame.spriteW}px ${frame.spriteH}px`;
+    thumb.style.width = `${frame.tileW}px`;
+    thumb.style.height = `${frame.tileH}px`;
+
+    if (progressBarWidth <= frame.tileW) {
+      thumb.style.left = '50%';
+    } else {
+      const clampMargin = Math.min(
+        50,
+        (frame.tileW / 2 / progressBarWidth) * 100,
+      );
+      thumb.style.left = `${Math.max(clampMargin, Math.min(percent, 100 - clampMargin))}%`;
+    }
+  }
+
+  const commitPreviewSeek = useCallback(
+    (hideControlsAfterCommit = false) => {
+      const bounds = getSeekBounds();
+      clearSeekCommitTimer();
+      if (!scrubActiveRef.current) return;
+
+      if (bounds && videoRef.current) {
+        const target = Math.min(
+          bounds.max,
+          Math.max(0, Number(displayTimeRef.current) || 0),
+        );
+        if (
+          Math.abs((Number(videoRef.current.currentTime) || 0) - target) >
+          SEEK_EPSILON
+        ) {
+          videoRef.current.currentTime = target;
+        }
+        committedSeekTargetRef.current = {
+          target,
+          protectedUntil: Date.now() + SEEK_COMMIT_ANCHOR_MS,
+        };
+        setCurrentTime(target);
+        setDuration(bounds.duration);
+        renderTimelinePreview(target, bounds.duration);
+      }
+
+      scrubActiveRef.current = false;
+      lastSeekEventAtRef.current = 0;
+      lastSeekDirectionRef.current = 0;
+      seekMultiplierRef.current = 1;
+      blockedSeekDirectionRef.current = 0;
+      if (suppressedBufferingRef.current) {
+        suppressedBufferingRef.current = false;
+        setBuffering(true);
+      }
+      hideScrubThumbnail();
+
+      if (hideControlsAfterCommit) {
+        if (controlsTimer.current) {
+          clearTimeout(controlsTimer.current);
+          controlsTimer.current = null;
+        }
+        setShowControls(false);
+        setShowRelated(false);
+        setShowQuality(false);
+        setShowSpeed(false);
+        setFocusArea('none');
+      }
+    },
+    [clearSeekCommitTimer, getSeekBounds, renderTimelinePreview],
+  );
 
   const scheduleSeekCommit = useCallback(() => {
     clearSeekCommitTimer();
     seekCommitTimerRef.current = setTimeout(() => {
-      commitPreviewSeek();
+      commitPreviewSeek(true);
     }, SEEK_IDLE_RESET_MS);
   }, [clearSeekCommitTimer, commitPreviewSeek]);
 
@@ -469,6 +584,12 @@ export default function PlayerPage({
         if (!cid) return;
         cidRef.current = cid;
 
+        const videoKey = `${video.bvid}:${cid}`;
+        storyboardRef.current = null;
+        spriteCacheRef.current.clear();
+        hideScrubThumbnail();
+        storyboardVideoKeyRef.current = videoKey;
+
         const settings = storage.getSettings();
         const res = await getPlayUrl(video, cid, settings.quality || 80);
         const dash = res?.data?.dash;
@@ -499,6 +620,21 @@ export default function PlayerPage({
         const relatedPromise = getRelated(video.bvid).catch(() => ({
           data: [],
         }));
+        const storyboardPromise = getStoryboard(video.bvid, cid).catch(
+          () => null,
+        );
+
+        const [danmakuData, relatedRes, storyboardData] = await Promise.all([
+          danmakuPromise,
+          relatedPromise,
+          storyboardPromise,
+        ]);
+
+        if (storyboardVideoKeyRef.current !== videoKey) return;
+        storyboardRef.current = storyboardData;
+        if (!storyboardData && typeof console !== 'undefined') {
+          console.warn('[Player] No storyboard data for', video.bvid, cid);
+        }
 
         await player.load(mpdUrl);
         URL.revokeObjectURL(mpdUrl);
@@ -528,12 +664,8 @@ export default function PlayerPage({
           castReportState({ playState: 'end' }).catch(() => {});
         });
 
-        const [danmakuData, rel] = await Promise.all([
-          danmakuPromise,
-          relatedPromise,
-        ]);
         setDanmakus(danmakuData);
-        setRelatedVideos((rel?.data || []).slice(0, 12));
+        setRelatedVideos((relatedRes?.data || []).slice(0, 12));
       } catch (err) {
         console.error('Load video error:', err);
         setLoading(false);
@@ -729,7 +861,13 @@ export default function PlayerPage({
   useEffect(() => {
     const timer = setInterval(() => {
       const videoEl = videoRef.current;
-      if (!videoEl || videoEl.paused || endedRef.current) return;
+      if (
+        !videoEl ||
+        videoEl.paused ||
+        endedRef.current ||
+        scrubActiveRef.current
+      )
+        return;
 
       const now = Date.now();
       const current = Number(videoEl.currentTime) || 0;
@@ -781,6 +919,9 @@ export default function PlayerPage({
       if (video?.bvid && !endedRef.current) {
         persistResumeFromPlayerRef.current();
       }
+      hideScrubThumbnail();
+      storyboardRef.current = null;
+      spriteCacheRef.current.clear();
       castReportState({ playState: 'stop' }).catch(() => {});
     };
   }, [resetSeekController, video?.bvid]);
@@ -813,6 +954,7 @@ export default function PlayerPage({
     controlsTimer.current = setTimeout(() => {
       if (!endedRef.current) {
         commitPreviewSeek();
+        hideScrubThumbnail();
         setShowControls(false);
         setShowRelated(false);
         setShowQuality(false);
@@ -1136,6 +1278,8 @@ export default function PlayerPage({
         }
         if (key === 'Enter') {
           e.preventDefault();
+          commitPreviewSeek();
+          hideScrubThumbnail();
           hideControlsLater();
           return true;
         }
@@ -1458,15 +1602,8 @@ export default function PlayerPage({
 
       {/* Controls bar */}
       <div className={`player-controls ${showControls ? '' : 'hidden'}`}>
-        <div className="player-title">{videoTitle}</div>
-        {video?.owner?.name && (
-          <div style={{ fontSize: 18, color: '#999', marginBottom: 4 }}>
-            {video.owner.name}
-            {video.pubdate &&
-              ` · ${new Date(video.pubdate * 1000).toLocaleDateString('zh-CN')}`}
-          </div>
-        )}
         <div
+          ref={progressBarRef}
           className={`player-progress-bar ${focusArea === 'timeline' ? 'focused' : ''}`}
         >
           <div
@@ -1474,103 +1611,114 @@ export default function PlayerPage({
             className="player-progress-fill"
             style={{ width: `${progress}%` }}
           />
+          <div ref={previewThumbRef} className="player-scrub-thumb" />
         </div>
-        <div className="player-btns">
-          {CONTROLS.map((btn, i) => (
-            <button
-              key={btn}
-              className={`player-btn ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''}`}
-            >
-              {btn === 'play'
-                ? playing
-                  ? '⏸ 暂停'
-                  : '▶ 播放'
-                : btn === 'danmaku'
-                  ? danmakuEnabled
-                    ? '弹幕 开'
-                    : '弹幕 关'
-                  : btn === 'quality'
-                    ? QUALITY_MAP[currentQuality] || `${currentQuality}`
-                    : playbackSpeedSupported
-                      ? `${playbackRate}x`
-                      : '倍速'}
-            </button>
-          ))}
-          <span ref={timeTextRef} className="player-time">
-            {formatDuration(currentTime)} / {formatDuration(duration)}
-          </span>
-        </div>
+        <div className="player-controls-scroll">
+          <div className="player-title">{videoTitle}</div>
+          {video?.owner?.name && (
+            <div style={{ fontSize: 18, color: '#999', marginBottom: 4 }}>
+              {video.owner.name}
+              {video.pubdate &&
+                ` · ${new Date(video.pubdate * 1000).toLocaleDateString('zh-CN')}`}
+            </div>
+          )}
+          <div className="player-btns">
+            {CONTROLS.map((btn, i) => (
+              <button
+                key={btn}
+                className={`player-btn ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''}`}
+              >
+                {btn === 'play'
+                  ? playing
+                    ? '⏸ 暂停'
+                    : '▶ 播放'
+                  : btn === 'danmaku'
+                    ? danmakuEnabled
+                      ? '弹幕 开'
+                      : '弹幕 关'
+                    : btn === 'quality'
+                      ? QUALITY_MAP[currentQuality] || `${currentQuality}`
+                      : playbackSpeedSupported
+                        ? `${playbackRate}x`
+                        : '倍速'}
+              </button>
+            ))}
+            <span ref={timeTextRef} className="player-time">
+              {formatDuration(currentTime)} / {formatDuration(duration)}
+            </span>
+          </div>
 
-        {/* Related videos panel (4-column grid below controls) */}
-        {showRelated && relatedVideos.length > 0 && (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: 14,
-              marginTop: 16,
-              paddingBottom: 10,
-            }}
-          >
-            {relatedVideos.map((rv, i) => {
-              const thumb = (rv.pic || '').startsWith('//')
-                ? 'https:' + rv.pic
-                : rv.pic;
-              return (
-                <div
-                  key={rv.bvid || i}
-                  className="related-card"
-                  onClick={() => onPlayNext?.(rv)}
-                  style={{
-                    cursor: 'pointer',
-                    outline:
-                      focusArea === 'related' && focusIdx === i
-                        ? '4px solid #00a1d6'
-                        : 'none',
-                    borderRadius: 6,
-                    overflow: 'hidden',
-                  }}
-                >
+          {/* Related videos panel (4-column grid below controls) */}
+          {showRelated && relatedVideos.length > 0 && (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: 14,
+                marginTop: 16,
+                paddingBottom: 10,
+              }}
+            >
+              {relatedVideos.map((rv, i) => {
+                const thumb = (rv.pic || '').startsWith('//')
+                  ? 'https:' + rv.pic
+                  : rv.pic;
+                return (
                   <div
+                    key={rv.bvid || i}
+                    className="related-card"
+                    onClick={() => onPlayNext?.(rv)}
                     style={{
-                      width: '100%',
-                      aspectRatio: '16/9',
-                      background: '#1a1a2e',
+                      cursor: 'pointer',
+                      outline:
+                        focusArea === 'related' && focusIdx === i
+                          ? '4px solid #00a1d6'
+                          : 'none',
                       borderRadius: 6,
                       overflow: 'hidden',
                     }}
                   >
-                    {thumb && (
-                      <img
-                        src={thumb}
-                        alt=""
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                        }}
-                      />
-                    )}
+                    <div
+                      style={{
+                        width: '100%',
+                        aspectRatio: '16/9',
+                        background: '#1a1a2e',
+                        borderRadius: 6,
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {thumb && (
+                        <img
+                          src={thumb}
+                          alt=""
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                          }}
+                        />
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        padding: '6px 4px',
+                        fontSize: 18,
+                        color: '#ccc',
+                        lineHeight: 1.3,
+                        overflow: 'hidden',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 1,
+                        WebkitBoxOrient: 'vertical',
+                      }}
+                    >
+                      {rv.title}
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      padding: '6px 4px',
-                      fontSize: 18,
-                      color: '#ccc',
-                      lineHeight: 1.3,
-                      overflow: 'hidden',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 1,
-                      WebkitBoxOrient: 'vertical',
-                    }}
-                  >
-                    {rv.title}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Quality panel */}

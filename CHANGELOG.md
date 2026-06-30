@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.0](https://github.com/dotennin/bili-webos/compare/bili-webos-tv-v1.11.2...bili-webos-tv-v1.12.0) (2026-06-30)
+
+
+### Features
+
+* add scrub preview thumbnails + fix playback stutter buffering ([#115](https://github.com/dotennin/bili-webos/issues/115)) ([f8c3d88](https://github.com/dotennin/bili-webos/commit/f8c3d88efcba14cb2397d4127f0854f4d6219794))
+
 ## [1.11.2](https://github.com/dotennin/bili-webos/compare/bili-webos-tv-v1.11.1...bili-webos-tv-v1.11.2) (2026-06-19)
 
 

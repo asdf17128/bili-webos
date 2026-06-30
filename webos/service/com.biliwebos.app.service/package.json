@@ -2,5 +2,5 @@
   "name": "com.biliwebos.app.service",
   "type": "module",
   "main": "bootstrap.cjs",
-  "version": "1.11.2"
+  "version": "1.12.0"
 }

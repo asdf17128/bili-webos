@@ -185,9 +185,27 @@ export function initKeyboardNav() {
     if (next) setFocus(next);
   };
   window.addEventListener('keydown', keyHandler);
-  // (No wheel→focus-row handler: it moved focus in a fixed column independent of
-  // the pointer, so the highlight and the click target desynced. With hover
-  // focus following the pointer, moving the pointer is the scroll gesture. #11)
+
+  // Magic Remote scroll wheel: scroll the page by moving focus one row up/down
+  // FROM THE CARD UNDER THE POINTER (not from some fixed column — that desynced
+  // highlight and click target, #11). The content scroll is focus-driven, so
+  // this scrolls the feed; after the row shifts under the stationary pointer,
+  // the focused card is again the one at the pointer, keeping them in sync.
+  let pointerX = 960, pointerY = 540;
+  window.addEventListener('mousemove', (e) => { pointerX = e.clientX; pointerY = e.clientY; }, { passive: true });
+  let lastWheel = 0;
+  window.addEventListener('wheel', (e) => {
+    if (customKeyHandler) return; // player owns input
+    const now = Date.now();
+    if (now - lastWheel < 120) return;
+    lastWheel = now;
+    const el = document.elementFromPoint(pointerX, pointerY);
+    const card = el && el.closest ? el.closest('[data-focus-id]') : null;
+    const fromId = (card && card.getAttribute('data-focus-id')) || currentFocusId;
+    if (!fromId || !focusRegistry.has(fromId)) return;
+    const next = navigateGrid(fromId, e.deltaY > 0 ? 'down' : 'up');
+    if (next) { lastFocusFromPointer = true; setFocus(next); }
+  }, { passive: true });
 }
 
 // Hook: registers element, NO re-renders on focus change

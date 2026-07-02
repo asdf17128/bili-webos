@@ -191,7 +191,12 @@ export default function App() {
         // to escape the search keyboard or any content grid.
         focusSidebar();
       } else if (page !== 'recommend') {
-        // On the sidebar already → go home (focusing item 0 previews 推荐).
+        // Go home DIRECTLY. This used to only setFocus('sidebar-0-0') and rely
+        // on the focus-change preview to switch the page — but when the pointer
+        // had already hover-focused that item (pointer focus doesn't preview),
+        // setFocus was a same-id no-op and the page never switched, wedging Back
+        // entirely (#11). Switch the page explicitly.
+        setPage('recommend');
         setFocus('sidebar-0-0');
       } else {
         try { window.webOS?.platformBack?.(); } catch { window.close(); }
@@ -291,7 +296,7 @@ export default function App() {
           {page === 'follow' && <HomePage onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="follow" />}
           {page === 'search' && <SearchPage onPlayVideo={handlePlayVideo} />}
           {page === 'favorites' && <FavoritesPage userMid={user?.mid} onPlayVideo={handlePlayVideo} />}
-          {page === 'settings' && <SettingsPage user={user} onPlayVideo={handlePlayVideo} />}
+          {page === 'settings' && <SettingsPage user={user} onPlayVideo={handlePlayVideo} onRequestLogin={() => setShowLogin(true)} />}
           {page === 'config' && <ConfigPage onLogout={handleLogout} user={user} />}
         </div>
         {toast && <div className="toast">{toast}</div>}

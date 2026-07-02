@@ -335,7 +335,11 @@ html, body, #root {
 .danmaku-container {
   position: absolute;
   top: 0; left: 0;
-  width: 1920px; height: 810px;
+  /* Full height minus a margin for the progress bar. This was 810px (75%),
+     which silently clipped every danmaku placed below it — the REAL cause of
+     "danmaku only fills the top 3/4" (#11); the old fixed 15 tracks merely
+     happened to fit inside it. Must cover the dynamic track count. */
+  width: 1920px; height: 1020px;
   overflow: hidden;
   pointer-events: none;
 }

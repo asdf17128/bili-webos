@@ -21,12 +21,24 @@ export default function DanmakuLayer({ danmakus, currentTime, enabled, fontScale
     }
   }, [danmakus, TRACK_COUNT]);
 
+  // Detect a backward seek: "already shown" marks would otherwise suppress that
+  // stretch forever, so rewinding left the screen permanently empty (#11).
+  // Reset the shown-set and tracks so the rewound stretch replays.
+  const lastTimeRef = useRef(0);
+
   // Render danmakus that should appear at currentTime
   useEffect(() => {
     if (!enabled || !danmakus || !containerRef.current) return;
 
     const now = currentTime;
     const container = containerRef.current;
+
+    if (now < lastTimeRef.current - 1.5) {
+      renderedRef.current = new Set();
+      trackRef.current = new Array(TRACK_COUNT).fill(0);
+      container.innerHTML = '';
+    }
+    lastTimeRef.current = now;
 
     // Find danmakus within a 0.5s window
     for (let i = 0; i < danmakus.length; i++) {

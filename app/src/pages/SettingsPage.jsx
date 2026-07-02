@@ -2,6 +2,21 @@ import React, { useState } from 'react';
 import { storage } from '../utils/storage';
 import { getHistory, getLiveRoomInfo } from '../api/client';
 import VideoCard from '../components/VideoCard';
+import { useFocusable } from '../hooks/useFocus';
+
+// 扫码登录 button shown when logged out — the 我的 page previously had no way to
+// summon the login QR (only 关注/收藏 triggered it) (#11).
+function LoginButton({ onRequestLogin }) {
+  const { props } = useFocusable({
+    id: 'content-0-0', row: 0, col: 0, group: 'content', onSelect: onRequestLogin,
+  });
+  return (
+    <div {...props} className="settings-row" style={{ maxWidth: 420, marginTop: 18 }}>
+      <span>扫码登录</span>
+      <span className="settings-row-value">按 OK 显示二维码</span>
+    </div>
+  );
+}
 
 // Proxy + resize avatar (B站 image CDN needs a Referer; the proxy adds it).
 function proxyImg(url) {
@@ -12,7 +27,7 @@ function proxyImg(url) {
   try { const p = new URL(u); return `${base}/proxy/${p.host}${p.pathname}${p.search}`; } catch { return u; }
 }
 
-export default function SettingsPage({ user, onPlayVideo }) {
+export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const cols = Math.min(4, Math.max(2, storage.getSettings().gridCols || 3));
@@ -120,20 +135,26 @@ export default function SettingsPage({ user, onPlayVideo }) {
         </div>
       </div>
 
-      <div style={{ fontSize: 20, color: '#aaa', marginBottom: 14 }}>最近观看</div>
+      {!user && <LoginButton onRequestLogin={onRequestLogin} />}
+
+      <div style={{ fontSize: 20, color: '#aaa', margin: '18px 0 14px' }}>最近观看</div>
       {items.length > 0 ? (
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 20 }}>
-          {items.map((v, i) => (
-            <VideoCard
-              key={v.bvid || `i-${i}`}
-              video={v}
-              focusId={`content-${Math.floor(i / cols)}-${i % cols}`}
-              row={Math.floor(i / cols)}
-              col={i % cols}
-              group="content"
-              onSelect={onPlayVideo}
-            />
-          ))}
+          {items.map((v, i) => {
+            // Logged out, row 0 is the 扫码登录 button — cards start at row 1.
+            const row = Math.floor(i / cols) + (user ? 0 : 1);
+            return (
+              <VideoCard
+                key={v.bvid || `i-${i}`}
+                video={v}
+                focusId={`content-${row}-${i % cols}`}
+                row={row}
+                col={i % cols}
+                group="content"
+                onSelect={onPlayVideo}
+              />
+            );
+          })}
         </div>
       ) : (
         <div style={{ color: '#666', fontSize: 16 }}>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
-import { initKeyboardNav, setFocus, onFocusChange, getCurrentFocusId, focusFirstContent, focusSidebar, setHoverFocus } from './hooks/useFocus';
+import { initKeyboardNav, setFocus, onFocusChange, getCurrentFocusId, focusFirstContent, focusSidebar, isPointerFocus } from './hooks/useFocus';
 import { castAck, castSubscribe, getNavInfo } from './api/client';
 import { storage } from './utils/storage';
 import SidebarItem from './components/SidebarItem';
@@ -47,10 +47,14 @@ function detectBangumi(v) {
 }
 
 function Sidebar({ activePage, onPreview, onSelect, user }) {
-  // Arrowing onto a sidebar item previews that page (no refresh).
+  // Arrowing onto a sidebar item previews that page (no refresh). Pointer hover
+  // only highlights — it does NOT switch pages — so the Magic Remote cursor
+  // drifting over the menu no longer rapid-switches pages (#11). Click still
+  // selects via onSelect.
   useEffect(() => {
     return onFocusChange((fid) => {
       if (!fid?.startsWith('sidebar-')) return;
+      if (isPointerFocus()) return;
       const match = fid.match(/^sidebar-(\d+)-/);
       if (!match) return;
       const idx = parseInt(match[1]);
@@ -108,7 +112,6 @@ export default function App() {
 
   useEffect(() => {
     initKeyboardNav();
-    setHoverFocus(storage.getSettings().pointerFocus);
     const auth = storage.getAuth();
     if (auth?.SESSDATA) {
       setLoggedIn(true);

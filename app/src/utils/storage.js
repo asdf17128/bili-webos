@@ -51,10 +51,6 @@ export const storage = {
       gridCols: 3,
       // Danmaku font scale (#11: the danmaku text was a bit small on 42").
       danmakuScale: 1,
-      // Pointer (Magic Remote) hover moving the focus caused the cursor drifting
-      // over the sidebar/cards to switch pages and rapidly paginate (#11). Off by
-      // default; D-pad and pointer *click* still select.
-      pointerFocus: false,
     };
     return { ...defaults, ...(this.get('settings') || {}) };
   },

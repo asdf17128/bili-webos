@@ -4,16 +4,22 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 export default function DanmakuLayer({ danmakus, currentTime, enabled, fontScale = 1 }) {
   const containerRef = useRef(null);
   const renderedRef = useRef(new Set()); // Track which danmakus have been shown
-  const trackRef = useRef(new Array(15).fill(0)); // 15 tracks, value = time when track becomes free
+  // Track pitch scales with the font. Fill (nearly) the full 1080p height —
+  // 20px top margin, ~60px bottom kept clear for the progress bar — instead of a
+  // fixed 15 tracks, which only covered the top ~3/4 and cut danmaku off in the
+  // bottom quarter (#11).
+  const TRACK_H = Math.round(48 * fontScale);
+  const TRACK_COUNT = Math.max(6, Math.floor((1080 - 20 - 60) / TRACK_H));
+  const trackRef = useRef(new Array(TRACK_COUNT).fill(0)); // value = time when track frees
 
   // Reset when danmaku list changes
   useEffect(() => {
     renderedRef.current = new Set();
-    trackRef.current = new Array(15).fill(0);
+    trackRef.current = new Array(TRACK_COUNT).fill(0);
     if (containerRef.current) {
       containerRef.current.innerHTML = '';
     }
-  }, [danmakus]);
+  }, [danmakus, TRACK_COUNT]);
 
   // Render danmakus that should appear at currentTime
   useEffect(() => {
@@ -49,7 +55,7 @@ export default function DanmakuLayer({ danmakus, currentTime, enabled, fontScale
       el.className = 'danmaku-item';
       el.textContent = dm.text;
       // Scale the track pitch with the font so larger danmaku don't overlap.
-      el.style.top = `${track * Math.round(48 * fontScale) + 20}px`;
+      el.style.top = `${track * TRACK_H + 20}px`;
       el.style.color = dm.color || '#fff';
       el.style.fontSize = `${Math.round((dm.size || 28) * fontScale)}px`;
       el.style.animationDuration = '8s';

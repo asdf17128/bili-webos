@@ -3,6 +3,6 @@
   "main": "service.js",
   "version": "1.0.0",
   "dependencies": {
-    "ws": "^8.21.0"
+    "ws": "^7.5.11"
   }
 }

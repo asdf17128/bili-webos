@@ -15,7 +15,18 @@ var childProcess = require('child_process');
 var deviceProfile = require('./cast/deviceProfile');
 var CastController = require('./cast/castController').CastController;
 var CastLanServer = require('./cast/ssdpServer').CastLanServer;
-var danmakuRelay = require('./danmaku');
+// Load the live-danmaku relay defensively: it's the only module that pulls in
+// `ws`, and on older webOS service runtimes (webOS 5 = Node 8) a too-new `ws`
+// would throw at require() and take down the ENTIRE service — killing all
+// API/proxy calls, which showed as "everything stuck on 加载中 / blank QR" on
+// webOS 5 (issue #10). Isolated so the core API + HTTP proxy always start even
+// if danmaku can't. (`ws` is also pinned to v7 for Node 8 compatibility.)
+var danmakuRelay = null;
+try {
+  danmakuRelay = require('./danmaku');
+} catch (e) {
+  console.error('[service] danmaku relay unavailable (live danmaku disabled):', e && e.message);
+}
 
 var service = new Service('com.biliwebos.app.service');
 
@@ -309,7 +320,7 @@ service.register('danmakuSubscribe', function (message) {
   danmakuSubscribers.push(message);
   // Reconnect if the room changed.
   if (danmakuStop && danmakuRoom !== p.roomid) { danmakuStop(); danmakuStop = null; danmakuRoom = null; }
-  if (!danmakuStop && p.roomid && p.token) {
+  if (danmakuRelay && !danmakuStop && p.roomid && p.token) {
     danmakuRoom = p.roomid;
     var dedeUid = parseInt(storedCookies['DedeUserID'] || '0', 10) || 0;
     danmakuStop = danmakuRelay.connectDanmaku({

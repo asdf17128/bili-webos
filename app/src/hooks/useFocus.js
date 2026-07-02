@@ -9,11 +9,17 @@ import { useEffect, useCallback, useRef } from 'react';
 const focusRegistry = new Map(); // id -> { ref, row, col, group, onSelect }
 let currentFocusId = null;
 
-// Whether pointer hover (Magic Remote) moves focus. Off by default: with the
-// gyro pointer, hover-to-focus made the cursor drifting over the sidebar/cards
-// switch pages and rapidly paginate (#11). Pointer *click* always works.
-let hoverFocusEnabled = false;
-export function setHoverFocus(on) { hoverFocusEnabled = !!on; }
+// Pointer hover (Magic Remote) always moves the focus, so the highlighted item
+// follows the pointer and highlight == pointer == click target (fixes the #11
+// desync where the wheel moved focus in a fixed column while a click hit
+// whatever was under the pointer). The sidebar treats pointer-driven focus as
+// highlight-only (no page switch) — see isPointerFocus — so the cursor drifting
+// over the menu no longer rapidly switches pages.
+//
+// True when the current focus was moved by the pointer (hover), false when by
+// the D-pad. Lets the sidebar preview on D-pad only, not on hover.
+let lastFocusFromPointer = false;
+export function isPointerFocus() { return lastFocusFromPointer; }
 
 // Track last sidebar focus position
 let lastSidebarFocus = 'sidebar-0-0';
@@ -145,6 +151,7 @@ export function initKeyboardNav() {
 
     if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'].includes(key)) return;
     e.preventDefault();
+    lastFocusFromPointer = false; // this focus move is from the D-pad
 
     if (key === 'Enter') {
       if (currentFocusId) focusRegistry.get(currentFocusId)?.onSelect?.();
@@ -178,21 +185,9 @@ export function initKeyboardNav() {
     if (next) setFocus(next);
   };
   window.addEventListener('keydown', keyHandler);
-
-  // Magic Remote scroll wheel → move focus up/down a row (the content scroll is
-  // focus-driven, so this makes the wheel scroll the page) (#11). Skipped while
-  // the player owns input (customKeyHandler set). Throttled so a fast flick
-  // doesn't skip rows.
-  let lastWheel = 0;
-  window.addEventListener('wheel', (e) => {
-    if (customKeyHandler) return;
-    const now = Date.now();
-    if (now - lastWheel < 110) return;
-    lastWheel = now;
-    if (!currentFocusId) return;
-    const next = navigateGrid(currentFocusId, e.deltaY > 0 ? 'down' : 'up');
-    if (next) setFocus(next);
-  }, { passive: true });
+  // (No wheel→focus-row handler: it moved focus in a fixed column independent of
+  // the pointer, so the highlight and the click target desynced. With hover
+  // focus following the pointer, moving the pointer is the scroll gesture. #11)
 }
 
 // Hook: registers element, NO re-renders on focus change
@@ -215,7 +210,8 @@ export function useFocusable({ id, row = 0, col = 0, group = 'content', onSelect
   }, [id]);
 
   const handleMouseEnter = useCallback(() => {
-    if (hoverFocusEnabled) setFocus(id);
+    lastFocusFromPointer = true; // pointer moved the focus → sidebar won't switch pages
+    setFocus(id);
   }, [id]);
 
   return {

@@ -102,6 +102,7 @@ export default function ConfigPage({ onLogout, user }) {
   const CDN_OPTS = [
     { v: 'auto', label: '自动' }, { v: 'ali', label: '阿里云' },
     { v: 'cos', label: '腾讯云' }, { v: 'ks3', label: '金山云' },
+    { v: 'akam', label: '海外 Akamai' },
   ];
   const { props: cdnProps } = useFocusable({
     id: 'content-3-0', row: 3, col: 0, group: 'content',

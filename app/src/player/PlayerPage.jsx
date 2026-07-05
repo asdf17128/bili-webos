@@ -481,6 +481,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     ali: 'upos-sz-mirrorali.bilivideo.com',
     cos: 'upos-sz-mirrorcos.bilivideo.com',
     ks3: 'upos-sz-mirrorks3.bilivideo.com',
+    // Overseas Akamai mirror — the mainland CDNs are often unreachable/slow
+    // outside China; this is the route for overseas users (#10, randef1ned).
+    akam: 'upos-hz-mirrorakam.akamaized.net',
   };
 
   function buildBaseUrls(rep) {

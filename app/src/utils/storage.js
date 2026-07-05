@@ -51,6 +51,9 @@ export const storage = {
       gridCols: 3,
       // Danmaku font scale (#11: the danmaku text was a bit small on 42").
       danmakuScale: 1,
+      // Video CDN route (#10): 'auto' keeps B站's own ordering (origin-first,
+      // PCDN last); a named route forces that mirror host for stability.
+      cdnRoute: 'auto',
     };
     return { ...defaults, ...(this.get('settings') || {}) };
   },

@@ -14,6 +14,7 @@ export default function ConfigPage({ onLogout, user }) {
   const settings = storage.getSettings();
   const [gridCols, setGridCols] = useState(() => Math.min(4, Math.max(2, settings.gridCols || 3)));
   const [danmakuScale, setDanmakuScale] = useState(() => settings.danmakuScale || 1);
+  const [cdnRoute, setCdnRoute] = useState(() => settings.cdnRoute || 'auto');
 
   // Query GitHub for the latest release and compare with the running version.
   // Shared by the auto-check on mount and the manual OK press.
@@ -95,8 +96,27 @@ export default function ConfigPage({ onLogout, user }) {
     },
   });
 
-  const { props: checkUpdateProps } = useFocusable({
+  // CDN线路 — cycle 自动 → 阿里云 → 腾讯云 → 金山云. Forces the video CDN onto
+  // that mirror when the auto-assigned node is slow (#10). Takes effect on the
+  // next video load.
+  const CDN_OPTS = [
+    { v: 'auto', label: '自动' }, { v: 'ali', label: '阿里云' },
+    { v: 'cos', label: '腾讯云' }, { v: 'ks3', label: '金山云' },
+  ];
+  const { props: cdnProps } = useFocusable({
     id: 'content-3-0', row: 3, col: 0, group: 'content',
+    onSelect: () => {
+      setCdnRoute(prev => {
+        const i = CDN_OPTS.findIndex(o => o.v === prev);
+        const next = CDN_OPTS[(i + 1) % CDN_OPTS.length].v;
+        storage.setSettings({ ...storage.getSettings(), cdnRoute: next });
+        return next;
+      });
+    },
+  });
+
+  const { props: checkUpdateProps } = useFocusable({
+    id: 'content-4-0', row: 4, col: 0, group: 'content',
     onSelect: () => {
       // Once an update is known, OK opens the Homebrew Channel to install it;
       // otherwise re-run the check manually.
@@ -106,11 +126,12 @@ export default function ConfigPage({ onLogout, user }) {
   });
 
   const { props: logoutProps } = useFocusable({
-    id: 'content-4-0', row: 4, col: 0, group: 'content',
+    id: 'content-5-0', row: 5, col: 0, group: 'content',
     onSelect: () => { if (user) { storage.clearAuth(); onLogout(); } },
   });
 
   const dmScaleLabel = (DM_SCALES.find(s => s.v === danmakuScale) || DM_SCALES[0]).label;
+  const cdnLabel = (CDN_OPTS.find(o => o.v === cdnRoute) || CDN_OPTS[0]).label;
 
   return (
     <div style={{ padding: '28px 40px', height: '100%', overflowY: 'auto', maxWidth: 720 }}>
@@ -129,6 +150,11 @@ export default function ConfigPage({ onLogout, user }) {
       <div className="settings-row" {...danmakuScaleProps}>
         <span>弹幕字号</span>
         <span className="settings-row-value">{dmScaleLabel}</span>
+      </div>
+
+      <div className="settings-row" {...cdnProps}>
+        <span>CDN 线路</span>
+        <span className="settings-row-value">{cdnLabel}</span>
       </div>
 
       <div className="settings-row" {...checkUpdateProps}>

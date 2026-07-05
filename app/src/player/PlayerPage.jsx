@@ -474,6 +474,15 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // on a non-standard port), while a stable origin CDN (upos / *.bilivideo.com
   // on :443) sits in backupUrl. Order origin FIRST so Shaka prefers it and only
   // falls back to PCDN if the origin is unreachable.
+  // Forceable CDN mirror hosts (#10, requested by randef1ned): all are B站's own
+  // upos mirrors; swapping the host among them is a stability lever when the
+  // auto-assigned node is slow. The signed query params stay valid across them.
+  const CDN_ROUTES = {
+    ali: 'upos-sz-mirrorali.bilivideo.com',
+    cos: 'upos-sz-mirrorcos.bilivideo.com',
+    ks3: 'upos-sz-mirrorks3.bilivideo.com',
+  };
+
   function buildBaseUrls(rep) {
     let urls = [];
     const primary = rep.baseUrl || rep.base_url;
@@ -486,6 +495,22 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     urls = urls.filter(u => (seen[u] ? false : (seen[u] = true)));
     const isPcdn = (u) => /mcdn\.|szbdyd|\bxy[\dx]+xy\b|:\d{4,5}\//i.test(u);
     urls.sort((a, b) => (isPcdn(a) ? 1 : 0) - (isPcdn(b) ? 1 : 0));
+    // 设置 → CDN线路: put ONE URL rewritten to the chosen mirror host in front
+    // (after the pcdn sort — Chromium 68's sort isn't stable), keeping all the
+    // originals behind it as Shaka failover targets.
+    const routeHost = CDN_ROUTES[storage.getSettings().cdnRoute];
+    if (routeHost) {
+      for (let i = 0; i < urls.length; i++) {
+        if (/upos-|\.bilivideo\.(com|cn)/i.test(urls[i])) {
+          try {
+            const u = new URL(urls[i]);
+            u.host = routeHost;
+            if (urls.indexOf(u.toString()) === -1) urls.unshift(u.toString());
+            break;
+          } catch { /* keep originals */ }
+        }
+      }
+    }
     return urls
       .map(u => `<BaseURL>${escapeXml(u)}</BaseURL>`)
       .join('\n          ') || '<BaseURL></BaseURL>';

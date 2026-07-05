@@ -193,17 +193,31 @@ export function initKeyboardNav() {
   // the focused card is again the one at the pointer, keeping them in sync.
   let pointerX = 960, pointerY = 540;
   window.addEventListener('mousemove', (e) => { pointerX = e.clientX; pointerY = e.clientY; }, { passive: true });
-  let lastWheel = 0;
+  // Step one row per ~140px of ACCUMULATED wheel delta, not per event. webOS
+  // auto-fires a continuous stream of small wheel events while the Magic-Remote
+  // pointer sits in the top/bottom edge zones; per-event stepping made the page
+  // scroll wildly there (#11). Accumulation turns that stream into a gentle
+  // scroll while a real wheel flick (large delta) still steps immediately.
+  const WHEEL_STEP = 140;
+  let wheelAcc = 0;
+  let lastWheelTs = 0;
+  let lastStepTs = 0;
   window.addEventListener('wheel', (e) => {
     if (customKeyHandler) return; // player owns input
     const now = Date.now();
-    if (now - lastWheel < 120) return;
-    lastWheel = now;
+    if (now - lastWheelTs > 600) wheelAcc = 0; // stale/direction-idle reset
+    lastWheelTs = now;
+    wheelAcc += e.deltaY;
+    if (Math.abs(wheelAcc) < WHEEL_STEP) return;
+    if (now - lastStepTs < 220) return; // hard cap: ≤ ~4 rows/s even in edge zones
+    const dir = wheelAcc > 0 ? 'down' : 'up';
+    wheelAcc = 0;
+    lastStepTs = now;
     const el = document.elementFromPoint(pointerX, pointerY);
     const card = el && el.closest ? el.closest('[data-focus-id]') : null;
     const fromId = (card && card.getAttribute('data-focus-id')) || currentFocusId;
     if (!fromId || !focusRegistry.has(fromId)) return;
-    const next = navigateGrid(fromId, e.deltaY > 0 ? 'down' : 'up');
+    const next = navigateGrid(fromId, dir);
     if (next) { lastFocusFromPointer = true; setFocus(next); }
   }, { passive: true });
 }

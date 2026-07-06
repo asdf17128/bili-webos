@@ -67,6 +67,46 @@ function serializeCookies(cookies) {
   return Object.keys(cookies).map(function (k) { return k + '=' + cookies[k]; }).join('; ');
 }
 
+// Bootstrap the buvid3/buvid4 browser-fingerprint cookies for ANONYMOUS use.
+// B站's risk control rejects fingerprint-less API calls with -352 (and serves
+// an HTML block page on some feed endpoints) — mainly hitting overseas IPs,
+// where it made the whole app look like "nothing loads" (#10). Fetch them once
+// from finger/spi and persist alongside the login cookies. Verified via an
+// overseas (HK) exit: /x/web-interface/popular flips -352 → 0 with these set.
+function ensureBuvid(attempt) {
+  if (storedCookies['buvid3']) return;
+  var req = https.request({
+    hostname: 'api.bilibili.com', port: 443, path: '/x/frontend/finger/spi', method: 'GET',
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Referer': 'https://www.bilibili.com/'
+    },
+    rejectUnauthorized: false
+  }, function (res) {
+    var chunks = [];
+    res.on('data', function (c) { chunks.push(c); });
+    res.on('end', function () {
+      try {
+        var j = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
+        if (j.code === 0 && j.data && j.data.b_3) {
+          storedCookies['buvid3'] = j.data.b_3;
+          if (j.data.b_4) storedCookies['buvid4'] = j.data.b_4;
+          if (!storedCookies['b_nut']) storedCookies['b_nut'] = String(Math.floor(Date.now() / 1000));
+          saveCookies();
+          console.log('[service] buvid bootstrapped');
+        }
+      } catch (e) { console.error('[service] buvid parse failed:', e.message); }
+    });
+  });
+  req.on('error', function (e) {
+    console.error('[service] buvid fetch failed:', e.message);
+    // Retry a few times with backoff — the TV's network may come up after us.
+    if ((attempt || 0) < 5) setTimeout(function () { ensureBuvid((attempt || 0) + 1); }, 15000);
+  });
+  req.end();
+}
+ensureBuvid(0);
+
 function isAllowedHost(host) {
   var allowed = [
     'api.bilibili.com', 'passport.bilibili.com', 'api.live.bilibili.com',

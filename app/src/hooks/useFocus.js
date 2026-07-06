@@ -21,6 +21,32 @@ let currentFocusId = null;
 let lastFocusFromPointer = false;
 export function isPointerFocus() { return lastFocusFromPointer; }
 
+// The REAL cause of the "pointer near the top/bottom edge auto-scrolls like
+// crazy" (#11): hover-focus a card near the edge → the grid scrolls (focus-row
+// translateY) → a NEW card slides under the stationary pointer → the browser
+// fires mouseenter on it → hover-focus again → scroll again → feedback loop.
+// (It happened even in v1.1.20, which had no wheel handler at all — so it was
+// never wheel events.) Break the loop by only honoring hover when the pointer
+// has ACTUALLY moved recently; Chromium's scroll-induced synthetic mousemove
+// keeps the same coordinates, so it doesn't count as movement.
+let lastRealMoveTs = 0;
+let lastMoveX = -1, lastMoveY = -1;
+export function noteRealPointerMove(x, y) {
+  if (x !== lastMoveX || y !== lastMoveY) {
+    lastMoveX = x; lastMoveY = y;
+    lastRealMoveTs = Date.now();
+  }
+}
+// A hover is legit if this event's own coordinates differ from the last known
+// pointer position (the pointer really relocated — mouseenter fires BEFORE the
+// trailing mousemove, so timestamp alone would miss a fresh jump) or the
+// pointer moved within the last few hundred ms. A scroll-induced synthetic
+// enter reuses the exact same coordinates and an old timestamp → rejected.
+export function hoverAllowed(x, y) {
+  if (x !== lastMoveX || y !== lastMoveY) { noteRealPointerMove(x, y); return true; }
+  return Date.now() - lastRealMoveTs < 350;
+}
+
 // Track last sidebar focus position
 let lastSidebarFocus = 'sidebar-0-0';
 
@@ -192,7 +218,10 @@ export function initKeyboardNav() {
   // this scrolls the feed; after the row shifts under the stationary pointer,
   // the focused card is again the one at the pointer, keeping them in sync.
   let pointerX = 960, pointerY = 540;
-  window.addEventListener('mousemove', (e) => { pointerX = e.clientX; pointerY = e.clientY; }, { passive: true });
+  window.addEventListener('mousemove', (e) => {
+    pointerX = e.clientX; pointerY = e.clientY;
+    noteRealPointerMove(e.clientX, e.clientY);
+  }, { passive: true });
   // Step one row per ~140px of ACCUMULATED wheel delta, not per event. webOS
   // auto-fires a continuous stream of small wheel events while the Magic-Remote
   // pointer sits in the top/bottom edge zones; per-event stepping made the page
@@ -241,7 +270,10 @@ export function useFocusable({ id, row = 0, col = 0, group = 'content', onSelect
     onSelectRef.current?.();
   }, [id]);
 
-  const handleMouseEnter = useCallback(() => {
+  const handleMouseEnter = useCallback((e) => {
+    // Ignore mouseenter caused by content scrolling under a STATIONARY pointer
+    // (edge-zone feedback loop, #11); only honor real pointer motion.
+    if (!hoverAllowed(e.clientX, e.clientY)) return;
     lastFocusFromPointer = true; // pointer moved the focus → sidebar won't switch pages
     setFocus(id);
   }, [id]);

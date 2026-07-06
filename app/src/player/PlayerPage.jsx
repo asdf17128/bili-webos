@@ -318,26 +318,27 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         castReportState({ playState: 'end' }).catch(() => {});
         // Multi-part (分P) auto-advance: play the next part of THIS video before
         // anything else, so a 66-讲 series plays straight through (#11).
-        const parts = partsRef.current;
-        if (parts.length > 1 && onPlayNext) {
-          const pi = parts.findIndex(p => p.cid === cidRef.current);
-          if (pi >= 0 && pi + 1 < parts.length) {
-            // Carry the favorites playlist forward so 合集/分P finishing falls
-            // through to the next favorite. np already has the right bvid/cid
-            // (合集 episodes have their own bvid).
-            onPlayNext({ ...parts[pi + 1], playlist: video.playlist, playlistIndex: video.playlistIndex, progress: 0 });
-            return;
-          }
-        }
-        // Order-play (收藏夹顺序播放, #11): if this video came in as part of a
-        // playlist, auto-advance to the next item instead of stopping on the
-        // endscreen. The playlist + index ride along on the video object.
+        // Order-play (收藏夹顺序播放, #11): a favorites playlist takes PRIORITY
+        // over 分P/合集 auto-advance — when the user is playing their favorites
+        // folder in order and one item happens to be a single part of a multi-P
+        // video, finishing it should move to the next FAVORITE, not binge the
+        // other 65 parts (per @ZMonsterror's request).
         const pl = video?.playlist;
         const idx = video?.playlistIndex;
         if (pl && Array.isArray(pl) && typeof idx === 'number' && idx + 1 < pl.length && onPlayNext) {
           const next = pl[idx + 1];
           onPlayNext({ ...next, playlist: pl, playlistIndex: idx + 1 });
           return;
+        }
+        // Multi-part (分P/合集) auto-advance: play the next part of THIS video
+        // (only when not inside a favorites playlist).
+        const parts = partsRef.current;
+        if (parts.length > 1 && onPlayNext) {
+          const pi = parts.findIndex(p => p.cid === cidRef.current);
+          if (pi >= 0 && pi + 1 < parts.length) {
+            onPlayNext({ ...parts[pi + 1], progress: 0 });
+            return;
+          }
         }
         setEnded(true);
         setShowControls(true);

@@ -22,7 +22,12 @@ node tools/test-e2e.mjs
 
 # Run on-device UI smoke test (app must be running on the TV)
 node tools/test-ui.mjs
+
+# FULL verification pipeline (run before every release; --no-tv / --full)
+bash tools/verify.sh
 ```
+
+Testing methodology lives in the `tv-test` skill (.claude/skills/tv-test/SKILL.md).
 
 ## Project Structure
 

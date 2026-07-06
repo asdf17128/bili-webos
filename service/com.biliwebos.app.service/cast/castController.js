@@ -1,4 +1,6 @@
 var EventEmitter = require('events');
+// Node 8 (webOS 5) has no URL global; require('url').URL exists since 6.13.
+var URL = require('url').URL;
 
 var PLAY_STATE_MAP = {
   idle: 0,

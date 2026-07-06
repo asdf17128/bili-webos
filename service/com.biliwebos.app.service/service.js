@@ -11,6 +11,21 @@ var fs = require('fs');
 var path = require('path');
 var os = require('os');
 var childProcess = require('child_process');
+// The WHATWG URL GLOBAL only exists on Node 10+. webOS 5 runs Node 8, where
+// every `new URL(...)` threw ReferenceError — caught by the surrounding
+// try/catch and turned into "Invalid URL"/400 for EVERY api/proxy call. That
+// was the real face of "UI renders but nothing loads / blank login QR" on
+// webOS 5 (#10/#13). require('url').URL exists since Node 6.13.
+var URL = require('url').URL;
+
+// Ring buffer of recent failures, surfaced via getDiagnostics so the app's
+// 网络诊断 page (and its scan-to-report QR) can show WHY things fail — the
+// service's console.error is invisible on a user's TV.
+var recentErrors = [];
+function logSvcErr(tag, detail) {
+  recentErrors.push({ t: Date.now(), tag: tag, d: String(detail).slice(0, 200) });
+  if (recentErrors.length > 30) recentErrors.shift();
+}
 
 var deviceProfile = require('./cast/deviceProfile');
 var CastController = require('./cast/castController').CastController;
@@ -26,6 +41,7 @@ try {
   danmakuRelay = require('./danmaku');
 } catch (e) {
   console.error('[service] danmaku relay unavailable (live danmaku disabled):', e && e.message);
+  logSvcErr('danmaku-require', e && e.message);
 }
 
 var service = new Service('com.biliwebos.app.service');
@@ -100,6 +116,7 @@ function ensureBuvid(attempt) {
   });
   req.on('error', function (e) {
     console.error('[service] buvid fetch failed:', e.message);
+    logSvcErr('buvid', e.message);
     // Retry a few times with backoff — the TV's network may come up after us.
     if ((attempt || 0) < 5) setTimeout(function () { ensureBuvid((attempt || 0) + 1); }, 15000);
   });
@@ -173,7 +190,11 @@ function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity,
   // returns, freezing playback permanently. Bail out so the caller can fail
   // the request and Shaka can retry.
   req.setTimeout(10000, function () { req.destroy(new Error('Upstream timeout')); });
-  req.on('error', function (err) { if (done) return; done = true; callback(err); });
+  req.on('error', function (err) {
+    if (done) return; done = true;
+    logSvcErr('req:' + hostname, err.message);
+    callback(err);
+  });
   if (body) req.write(body);
   req.end();
 }
@@ -295,7 +316,8 @@ service.register('fetch', function (message) {
 
   var parsed;
   try { parsed = new URL(targetUrl); } catch (e) {
-    message.respond({ returnValue: false, error: 'Invalid URL' }); return;
+    logSvcErr('fetch-url', (e && e.message) + ' :: ' + String(targetUrl).slice(0, 80));
+    message.respond({ returnValue: false, error: 'Invalid URL: ' + (e && e.message) }); return;
   }
   if (!isAllowedHost(parsed.hostname)) {
     message.respond({ returnValue: false, error: 'Host not allowed' }); return;
@@ -389,6 +411,23 @@ service.register('ping', function (message) {
   });
 });
 
+// One call = everything the 网络诊断 page needs to describe this service's
+// health, including the recent failure ring (invisible any other way on a
+// user's TV).
+service.register('getDiagnostics', function (message) {
+  message.respond({
+    returnValue: true,
+    nodeVersion: process.version,
+    uptimeSec: Math.floor(process.uptime()),
+    buvid: !!storedCookies['buvid3'],
+    loggedIn: !!storedCookies['SESSDATA'],
+    cookieKeys: Object.keys(storedCookies),
+    danmakuModule: !!danmakuRelay,
+    localProxyPort: LOCAL_PROXY_PORT,
+    recentErrors: recentErrors,
+  });
+});
+
 service.register('castSubscribe', function (message) {
   if (message.isSubscription || message.payload.subscribe) {
     castSubscribers.push(message);
@@ -475,6 +514,7 @@ var localServer = http.createServer(function (req, res) {
 
   makeRequest(parsed, req.method, null, null, req.headers['range'], true, function (err, proxyRes) {
     if (err) {
+      logSvcErr('proxy:' + hostname, err.message);
       if (!res.headersSent) { res.writeHead(502); res.end(err.message); }
       return;
     }

@@ -3,6 +3,7 @@
 // Fallback: uses HTTP proxy on Mac
 import { storage } from '../utils/storage';
 import { getWbiKeys, signWbi } from './wbi';
+import { logErr } from '../utils/errlog';
 
 const API_HOST = 'api.bilibili.com';
 const PASSPORT_HOST = 'passport.bilibili.com';
@@ -37,6 +38,7 @@ function lunaFetch(url, options) {
         resolve(res);
       },
       onFailure: function(err) {
+        logErr('luna', (err.errorText || err.error || 'Luna fetch failed').slice(0, 120));
         reject(new Error(err.errorText || err.error || 'Luna fetch failed'));
       }
     });
@@ -75,7 +77,10 @@ async function smartFetch(host, path, options) {
 
   if (hasLunaService()) {
     var res = await lunaFetch(url, opts);
-    if (!res.returnValue) throw new Error(res.error);
+    if (!res.returnValue) {
+      logErr('svc', host + path.split('?')[0] + ' :: ' + res.error);
+      throw new Error(res.error);
+    }
     // Parse JSON body if applicable
     if (res.body) {
       try { return JSON.parse(res.body); } catch(e) { return res; }
@@ -206,6 +211,21 @@ export async function ensureBuvid() {
 // Rename the cast receiver as shown in the phone's 投屏 list (applies live).
 export async function castSetConfig(payload) {
   return lunaRequest('castSetConfig', payload || {}, false, { allowMissing: true });
+}
+
+// Service health snapshot for the 网络诊断 page. Falls back to 'ping' when the
+// installed service predates getDiagnostics.
+export async function getServiceDiagnostics() {
+  try {
+    return await lunaRequest('getDiagnostics', {}, false, {});
+  } catch (e) {
+    try {
+      var p = await lunaRequest('ping', {}, false, {});
+      return { returnValue: true, nodeVersion: p.nodeVersion, legacyPing: true, cookieKeys: p.cookieKeys };
+    } catch (e2) {
+      throw e; // report the original getDiagnostics error
+    }
+  }
 }
 
 // Subscribe to live danmaku relayed by the service. onDanmaku(text) per message.

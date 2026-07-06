@@ -3,6 +3,7 @@ import { storage } from '../utils/storage';
 import { useFocusable } from '../hooks/useFocus';
 import { getLatestVersion } from '../api/client';
 import { APP_VERSION, compareVersions } from '../version';
+import DiagPanel from '../components/DiagPanel';
 
 const CONTACT_EMAIL = 'asdf17128@gmail.com';
 
@@ -126,8 +127,16 @@ export default function ConfigPage({ onLogout, user }) {
     },
   });
 
-  const { props: logoutProps } = useFocusable({
+  // 网络诊断 (#10/#13) — OK toggles the inline panel; remounting it re-runs
+  // the whole test suite.
+  const [showDiag, setShowDiag] = useState(false);
+  const { props: diagProps } = useFocusable({
     id: 'content-5-0', row: 5, col: 0, group: 'content',
+    onSelect: () => setShowDiag(v => !v),
+  });
+
+  const { props: logoutProps } = useFocusable({
+    id: 'content-6-0', row: 6, col: 0, group: 'content',
     onSelect: () => { if (user) { storage.clearAuth(); onLogout(); } },
   });
 
@@ -162,6 +171,13 @@ export default function ConfigPage({ onLogout, user }) {
         <span>检查更新</span>
         <span className="settings-row-value">{updateMsg || `v${APP_VERSION}`}</span>
       </div>
+
+      <div className="settings-row" {...diagProps}>
+        <span>网络诊断</span>
+        <span className="settings-row-value">{showDiag ? '按 OK 收起' : '检测网络与服务状态'}</span>
+      </div>
+
+      {showDiag && <DiagPanel />}
 
       {user && (
         <div className="settings-row settings-row-danger" {...logoutProps}>

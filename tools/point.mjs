@@ -33,13 +33,14 @@ conn.on('ready', () => {
       if (err) { s.end(); return; } s.pipe(rs).pipe(s);
     });
   });
-  server.listen(19993, '127.0.0.1', () => {
-    http.get('http://127.0.0.1:19993/json', res => {
+  server.listen(0, '127.0.0.1', () => {
+    const _port = server.address().port;
+    http.get('http://127.0.0.1:'+_port+'/json', res => {
       let d = ''; res.on('data', c => d += c);
       res.on('end', async () => {
         const app = JSON.parse(d).find(p => p.title?.includes('哔哩') || p.url?.includes('biliwebos'));
         if (!app) { console.log('App not running'); process.exit(1); }
-        const ws = new WebSocket(app.webSocketDebuggerUrl.replace(/127\.0\.0\.1:\d+/, '127.0.0.1:19993'));
+        const ws = new WebSocket(app.webSocketDebuggerUrl.replace(/127\.0\.0\.1:\d+/, '127.0.0.1:'+_port));
         let id = 1;
         const call = (method, params) => new Promise(resolve => {
           const myId = id++;

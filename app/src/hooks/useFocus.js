@@ -47,6 +47,17 @@ export function hoverAllowed(x, y) {
   return Date.now() - lastRealMoveTs < 350;
 }
 
+// The ACTUAL edge auto-scroll cause (#11, per @ZMonsterror): hover-focusing a
+// card that's only half on-screen at the edge triggers a scroll to reveal it
+// (scrollIntoView + the pages' focus-row translateY), which slides the next
+// half-card under the stationary pointer → hover → scroll → loop. Fix: pointer
+// hover only HIGHLIGHTS, never scrolls. Scrolling stays with the D-pad and the
+// wheel. hoverDriven is true only during a hover-initiated setFocus, and both
+// scroll paths (applyFocus's scrollIntoView here, and HomePage/FavoritesPage's
+// focusRow) consult it.
+let hoverDriven = false;
+export function isHoverDriven() { return hoverDriven; }
+
 // Track last sidebar focus position
 let lastSidebarFocus = 'sidebar-0-0';
 
@@ -69,7 +80,8 @@ function applyFocus(newId) {
     const newEl = document.querySelector(`[data-focus-id="${newId}"]`);
     if (newEl) {
       newEl.classList.add('focused');
-      newEl.scrollIntoView({ block: 'nearest' });
+      // Don't scroll for a pointer-hover focus — that's the edge-scroll loop (#11).
+      if (!hoverDriven) newEl.scrollIntoView({ block: 'nearest' });
     }
   }
 
@@ -275,7 +287,9 @@ export function useFocusable({ id, row = 0, col = 0, group = 'content', onSelect
     // (edge-zone feedback loop, #11); only honor real pointer motion.
     if (!hoverAllowed(e.clientX, e.clientY)) return;
     lastFocusFromPointer = true; // pointer moved the focus → sidebar won't switch pages
+    hoverDriven = true;          // highlight only, no scroll (breaks the edge loop)
     setFocus(id);
+    hoverDriven = false;
   }, [id]);
 
   return {

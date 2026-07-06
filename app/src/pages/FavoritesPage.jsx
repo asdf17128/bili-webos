@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { getFavFolders, getFavList } from '../api/client';
 import VideoGrid from '../components/VideoGrid';
 import { storage } from '../utils/storage';
-import { useFocusable, getCurrentFocusId, setFocus, onFocusChange } from '../hooks/useFocus';
+import { useFocusable, getCurrentFocusId, setFocus, onFocusChange, isHoverDriven } from '../hooks/useFocus';
 
 // A single folder chip in the top selector row (focus group 'content', row 0).
 // Styling lives in styles.css so the global `.focused` class gives the chip a
@@ -80,6 +80,8 @@ export default function FavoritesPage({ userMid, onPlayVideo }) {
         if (col !== activeFolder && col < folders.length) setActiveFolder(col);
         return;
       }
+      // Pointer hover only highlights — don't scroll the grid (edge loop, #11).
+      if (isHoverDriven()) return;
       // Videos start at content row 1.
       setFocusRow(Math.max(0, row - 1));
 

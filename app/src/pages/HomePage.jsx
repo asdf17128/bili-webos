@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getPopular, getRecommend, getRegionDynamic, getFollowFeed, getLiveList } from '../api/client';
 import VideoGrid from '../components/VideoGrid';
-import { getCurrentFocusId, setFocus, onFocusChange } from '../hooks/useFocus';
+import { getCurrentFocusId, setFocus, onFocusChange, isHoverDriven } from '../hooks/useFocus';
 import { storage } from '../utils/storage';
 import { loadFollowedMids } from '../utils/follow';
 
@@ -115,6 +115,8 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
       if (!fid) return;
       const m = fid.match(/^content-(\d+)-/);
       if (!m) return;
+      // Pointer hover only highlights — don't scroll the grid (edge loop, #11).
+      if (isHoverDriven()) return;
       const row = parseInt(m[1]);
       setFocusRow(row);
 

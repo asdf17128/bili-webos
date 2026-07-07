@@ -52,6 +52,7 @@ bash tools/verify.sh --full   # 额外跑真机 UI smoke(test-ui.mjs,~3分钟)
 
 - **QR 码功能**:报告体必须纯 ASCII(CJK percent-encode 后 1 字变 9 字,QR 密到扫不出);用 jsQR 从**真机截图**解码验证,再开解码出的 URL 确认 GitHub 表单预填(body 在第 3 个 textarea,前两个是 GitHub 反馈组件)。
 - **诊断页**:真机 happy path 全绿 + dev 掐断 API 全红,两头都要。
+- **悬浮 UI(气泡/弹层)**:`getBoundingClientRect` 只给布局位置,**测不出 overflow 裁剪** —— 必须截图看像素。`.player-controls` 是 `overflow-y:auto`,往上探出的元素会被静默裁掉(v1.2.4 预览气泡被裁就是这么漏掉的);悬浮层挂到根节点。
 - **播放器改动**:`ended` 决策逻辑(收藏连播 vs 分P)可用真实数据在本地 node 里跑决策函数做确定性验证,比 flaky 的真机播放可靠。
 
 ## 丰富本 skill

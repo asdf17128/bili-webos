@@ -237,7 +237,12 @@ export function initKeyboardNav() {
     const card = el && el.closest ? el.closest('[data-focus-id]') : null;
     const fromId = (card && card.getAttribute('data-focus-id')) || currentFocusId;
     if (!fromId || !focusRegistry.has(fromId)) return;
-    const next = navigateGrid(fromId, dir);
+    let next = navigateGrid(fromId, dir);
+    // During the scroll animation the highlight can run one row AHEAD of the
+    // card under the stationary pointer; navigating from the pointer card then
+    // lands on the CURRENT focus and setFocus no-ops — the wheel wedges (#11).
+    // In that case step from the focus itself so scrolling always advances.
+    if (next === currentFocusId) next = navigateGrid(currentFocusId, dir);
     if (next) { lastFocusFromPointer = true; setFocus(next); }
   }, { passive: true });
 }

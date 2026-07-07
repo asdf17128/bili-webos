@@ -1169,6 +1169,75 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         </div>
       )}
 
+
+      {/* Scrub bubble (thumb + chapter + time) — rendered at the ROOT on purpose:
+          .player-controls is overflow-y:auto, which clipped the bubble (#11). */}
+      {scrubTarget != null && duration > 0 && (() => {
+        const pct = Math.min(100, Math.max(0, (scrubTarget / duration) * 100));
+        const bubblePct = Math.min(88, Math.max(12, pct));
+        const delta = Math.round(scrubTarget - currentTime);
+        let thumb = null;
+        if (videoshot) {
+          const per = videoshot.xLen * videoshot.yLen;
+          const total = videoshot.images.length * per;
+          let f;
+          if (videoshot.index && videoshot.index.length > 1) {
+            f = 0;
+            while (f < videoshot.index.length - 1 && videoshot.index[f + 1] <= scrubTarget) f++;
+          } else {
+            f = Math.floor((scrubTarget / duration) * total);
+          }
+          f = Math.max(0, Math.min(total - 1, f));
+          const sheet = Math.floor(f / per), local = f % per;
+          const col = local % videoshot.xLen, row = Math.floor(local / videoshot.xLen);
+          const SC = 320 / videoshot.w; // frame size varies per video (160/480 wide)
+          thumb = {
+            url: proxyImg(videoshot.images[sheet]),
+            w: Math.round(videoshot.w * SC), h: Math.round(videoshot.h * SC),
+            size: `${Math.round(videoshot.xLen * videoshot.w * SC)}px ${Math.round(videoshot.yLen * videoshot.h * SC)}px`,
+            pos: `-${Math.round(col * videoshot.w * SC)}px -${Math.round(row * videoshot.h * SC)}px`,
+          };
+        }
+        const ch = chapters.find(c => scrubTarget >= c.from && scrubTarget < c.to);
+        return (
+          <div style={{
+            position: 'absolute',
+            left: `calc(60px + ${bubblePct} * (100% - 120px) / 100)`,
+            bottom: 250, transform: 'translateX(-50%)',
+            textAlign: 'center', pointerEvents: 'none', zIndex: 80,
+          }}>
+            {thumb && (
+              <div style={{
+                width: thumb.w, height: thumb.h,
+                backgroundImage: `url(${thumb.url})`,
+                backgroundSize: thumb.size, backgroundPosition: thumb.pos,
+                borderRadius: 8, border: '3px solid rgba(255,255,255,0.9)',
+                margin: '0 auto 8px', boxShadow: '0 4px 18px rgba(0,0,0,0.6)',
+              }} />
+            )}
+            {ch && (
+              <div style={{
+                fontSize: 18, color: '#fff', marginBottom: 6,
+                background: 'rgba(0,0,0,0.75)', padding: '3px 12px', borderRadius: 6,
+                display: 'inline-block', maxWidth: 360,
+                overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
+              }}>{ch.content}</div>
+            )}
+            <div>
+              <span style={{
+                fontSize: 22, color: '#fff', fontWeight: 600,
+                background: 'rgba(0,0,0,0.75)', padding: '4px 14px', borderRadius: 6,
+              }}>
+                {formatDuration(scrubTarget)}
+                <span style={{ color: '#7ecbff', marginLeft: 8, fontSize: 18 }}>
+                  {delta >= 0 ? `+${delta}s` : `${delta}s`}
+                </span>
+              </span>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Controls bar */}
       <div className={`player-controls ${showControls ? '' : 'hidden'}`}>
         <div className="player-title">{cleanTitle(videoTitle)}</div>
@@ -1187,81 +1256,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               width: 3, height: '100%', background: 'rgba(0,0,0,0.85)',
             }} />
           ))}
-          {scrubTarget != null && duration > 0 && (() => {
-            const pct = Math.min(100, Math.max(0, (scrubTarget / duration) * 100));
-            const bubblePct = Math.min(88, Math.max(12, pct)); // keep the 320px preview fully on screen
-            const delta = Math.round(scrubTarget - currentTime);
-            // Sprite-sheet frame for the preview (videoshot is 160x90 frames in
-            // an xLen*yLen grid per image; shown at 2x for TV legibility).
-            let thumb = null;
-            if (videoshot) {
-              const per = videoshot.xLen * videoshot.yLen;
-              const total = videoshot.images.length * per;
-              let f;
-              if (videoshot.index && videoshot.index.length > 1) {
-                f = 0;
-                while (f < videoshot.index.length - 1 && videoshot.index[f + 1] <= scrubTarget) f++;
-              } else {
-                f = Math.floor((scrubTarget / duration) * total);
-              }
-              f = Math.max(0, Math.min(total - 1, f));
-              const sheet = Math.floor(f / per), local = f % per;
-              const col = local % videoshot.xLen, row = Math.floor(local / videoshot.xLen);
-              // Frame size varies per video (160x90 or 480x270 sprites) — scale
-              // to a fixed 320px-wide preview instead of a fixed multiplier.
-              const SC = 320 / videoshot.w;
-              thumb = {
-                url: proxyImg(videoshot.images[sheet]),
-                w: videoshot.w * SC, h: videoshot.h * SC,
-                size: `${videoshot.xLen * videoshot.w * SC}px ${videoshot.yLen * videoshot.h * SC}px`,
-                pos: `-${col * videoshot.w * SC}px -${row * videoshot.h * SC}px`,
-              };
-            }
-            return (
-              <>
-                <div style={{
-                  position: 'absolute', left: `${pct}%`, top: -7, width: 4, height: 20,
-                  background: '#fff', transform: 'translateX(-50%)', borderRadius: 2,
-                  boxShadow: '0 0 6px rgba(0,0,0,0.8)',
-                }} />
-                <div style={{
-                  position: 'absolute', left: `${bubblePct}%`, bottom: 22,
-                  transform: 'translateX(-50%)', textAlign: 'center', pointerEvents: 'none',
-                }}>
-                  {thumb && (
-                    <div style={{
-                      width: thumb.w, height: thumb.h,
-                      backgroundImage: `url(${thumb.url})`,
-                      backgroundSize: thumb.size, backgroundPosition: thumb.pos,
-                      borderRadius: 8, border: '3px solid rgba(255,255,255,0.9)',
-                      margin: '0 auto 8px', boxShadow: '0 4px 18px rgba(0,0,0,0.6)',
-                    }} />
-                  )}
-                  {(() => {
-                    const ch = chapters.find(c => scrubTarget >= c.from && scrubTarget < c.to);
-                    return ch ? (
-                      <div style={{
-                        fontSize: 18, color: '#fff', marginBottom: 6,
-                        background: 'rgba(0,0,0,0.75)', padding: '3px 12px', borderRadius: 6,
-                        display: 'inline-block', maxWidth: 360,
-                        overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
-                      }}>{ch.content}</div>
-                    ) : null;
-                  })()}
-                  <br />
-                  <span style={{
-                    fontSize: 22, color: '#fff', fontWeight: 600,
-                    background: 'rgba(0,0,0,0.75)', padding: '4px 14px', borderRadius: 6,
-                  }}>
-                    {formatDuration(scrubTarget)}
-                    <span style={{ color: '#7ecbff', marginLeft: 8, fontSize: 18 }}>
-                      {delta >= 0 ? `+${delta}s` : `${delta}s`}
-                    </span>
-                  </span>
-                </div>
-              </>
-            );
-          })()}
+          {scrubTarget != null && duration > 0 && (
+            <div style={{
+              position: 'absolute', left: `${Math.min(100, Math.max(0, (scrubTarget / duration) * 100))}%`,
+              top: -7, width: 4, height: 20, background: '#fff',
+              transform: 'translateX(-50%)', borderRadius: 2, boxShadow: '0 0 6px rgba(0,0,0,0.8)',
+            }} />
+          )}
         </div>
         <div className="player-btns">
           {CONTROLS.map((btn, i) => (

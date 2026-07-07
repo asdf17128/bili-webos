@@ -60,6 +60,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const scrubStreakRef = useRef({ n: 0, last: 0 });
   const scrubTimerRef = useRef(null);
   const [videoshot, setVideoshot] = useState(null); // {images,xLen,yLen,w,h,index}
+  // YouTube-style chapters (B站 view_points): [{from,to,content}] — segment
+  // ticks on the progress bar + chapter title in the scrub bubble/time row.
+  const [chapters, setChapters] = useState([]);
   // Bottom panel: 'related' (相关推荐) | 'up' (UP主投稿)
   const [panelTab, setPanelTab] = useState('related');
   const [upVideos, setUpVideos] = useState([]);
@@ -233,6 +236,22 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       }
       if (!isBangumi && !cid) throw new Error('No cid for video');
       cidRef.current = cid;
+      // Chapters (view_points) for the FINAL cid — best effort. (The resume
+      // lookup above may fetch player/v2 for the pre-jump cid, whose chapter
+      // list would be the wrong part's.)
+      setChapters([]);
+      if (!isBangumi && videoAidRef.current) {
+        getPlayerV2(videoAidRef.current, cid).then(pv => {
+          const vp = pv?.data?.view_points;
+          if (Array.isArray(vp)) {
+            const ch = vp
+              .filter(p => p && p.content && p.to > p.from)
+              .map(p => ({ from: p.from, to: p.to, content: String(p.content).slice(0, 40) }))
+              .sort((a, b) => a.from - b.from);
+            if (ch.length > 0) setChapters(ch);
+          }
+        }).catch(() => {});
+      }
       // Seek-preview sprites (YouTube-style scrub thumbnails) — best effort.
       setVideoshot(null);
       if (!isBangumi && (video.bvid || video.aid)) {
@@ -1161,6 +1180,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         )}
         <div className="player-progress-bar">
           <div className="player-progress-fill" style={{ width: `${progress}%` }} />
+          {/* Chapter boundaries (YouTube-style segment gaps) */}
+          {chapters.length > 1 && duration > 0 && chapters.slice(1).map((c, i) => (
+            <div key={i} style={{
+              position: 'absolute', left: `${(c.from / duration) * 100}%`, top: 0,
+              width: 3, height: '100%', background: 'rgba(0,0,0,0.85)',
+            }} />
+          ))}
           {scrubTarget != null && duration > 0 && (() => {
             const pct = Math.min(100, Math.max(0, (scrubTarget / duration) * 100));
             const bubblePct = Math.min(88, Math.max(12, pct)); // keep the 320px preview fully on screen
@@ -1181,7 +1207,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               f = Math.max(0, Math.min(total - 1, f));
               const sheet = Math.floor(f / per), local = f % per;
               const col = local % videoshot.xLen, row = Math.floor(local / videoshot.xLen);
-              const SC = 2;
+              // Frame size varies per video (160x90 or 480x270 sprites) — scale
+              // to a fixed 320px-wide preview instead of a fixed multiplier.
+              const SC = 320 / videoshot.w;
               thumb = {
                 url: proxyImg(videoshot.images[sheet]),
                 w: videoshot.w * SC, h: videoshot.h * SC,
@@ -1209,6 +1237,18 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                       margin: '0 auto 8px', boxShadow: '0 4px 18px rgba(0,0,0,0.6)',
                     }} />
                   )}
+                  {(() => {
+                    const ch = chapters.find(c => scrubTarget >= c.from && scrubTarget < c.to);
+                    return ch ? (
+                      <div style={{
+                        fontSize: 18, color: '#fff', marginBottom: 6,
+                        background: 'rgba(0,0,0,0.75)', padding: '3px 12px', borderRadius: 6,
+                        display: 'inline-block', maxWidth: 360,
+                        overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
+                      }}>{ch.content}</div>
+                    ) : null;
+                  })()}
+                  <br />
                   <span style={{
                     fontSize: 22, color: '#fff', fontWeight: 600,
                     background: 'rgba(0,0,0,0.75)', padding: '4px 14px', borderRadius: 6,
@@ -1231,7 +1271,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                   QUALITY_MAP[currentQuality] || `${currentQuality}`}
             </button>
           ))}
-          <span className="player-time">{formatDuration(currentTime)} / {formatDuration(duration)}</span>
+          <span className="player-time">
+            {formatDuration(currentTime)} / {formatDuration(duration)}
+            {(() => {
+              const ch = chapters.find(c => currentTime >= c.from && currentTime < c.to);
+              return ch ? <span style={{ color: '#7ecbff', marginLeft: 10 }}>· {ch.content}</span> : null;
+            })()}
+          </span>
         </div>
 
         {/* Tabbed panel below controls: 相关推荐 / UP主投稿 */}

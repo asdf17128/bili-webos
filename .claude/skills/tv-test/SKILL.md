@@ -57,3 +57,5 @@ bash tools/verify.sh --full   # 额外跑真机 UI smoke(test-ui.mjs,~3分钟)
 ## 丰富本 skill
 
 每次踩到新坑/建立新方法,追加到对应小节。宁可啰嗦,不可失传。
+
+**通用方法论的正式版**在独立仓库 `~/code1/webos-tv-skill`(github.com/asdf17128/webos-tv-app-skill,`reference/testing.md`)—— 本文件放 bili_webos 项目专属细节(IP/密钥/工具名),提炼出的通用经验要**同步一份**过去。

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState } from '../api/client';
+import { playPart, playAdvance } from './playIntent';
 import { formatDuration, formatTime, QUALITY_MAP, cleanTitle } from '../utils/format';
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
@@ -207,9 +208,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         // view response so heartbeat/related (which key on bvid) keep working.
         if (!video.bvid && d.bvid) video.bvid = d.bvid;
         if (!cid) cid = d.cid;
-        // 续播: when opened fresh (no explicit part/progress), resume at the part
-        // and offset where the user last left off (player v2 last_play_*).
-        if (!video.cid && !(video.progress > 0) && d.aid && cid) {
+        // 续播: casual opens (resumeMode 'auto', see playIntent.js) resume at the
+        // part and offset where the user last left off (player v2 last_play_*).
+        // 'at' (history/cast) already carries progress; 'none' (选集/连播) starts at 0.
+        if (video.resumeMode === 'auto' && d.aid && cid) {
           try {
             const pv = await getPlayerV2(d.aid, cid);
             const lc = pv?.data?.last_play_cid;
@@ -327,7 +329,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         const idx = video?.playlistIndex;
         if (pl && Array.isArray(pl) && typeof idx === 'number' && idx + 1 < pl.length && onPlayNext) {
           const next = pl[idx + 1];
-          onPlayNext({ ...next, playlist: pl, playlistIndex: idx + 1 });
+          onPlayNext(playAdvance({ ...next, playlist: pl, playlistIndex: idx + 1 }));
           return;
         }
         // Multi-part (分P/合集) auto-advance: play the next part of THIS video
@@ -336,7 +338,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         if (parts.length > 1 && onPlayNext) {
           const pi = parts.findIndex(p => p.cid === cidRef.current);
           if (pi >= 0 && pi + 1 < parts.length) {
-            onPlayNext({ ...parts[pi + 1], progress: 0 });
+            onPlayNext(playAdvance({ ...parts[pi + 1] }));
             return;
           }
         }
@@ -397,7 +399,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       const pl = video?.playlist;
       const idx = video?.playlistIndex;
       if (pl && Array.isArray(pl) && typeof idx === 'number' && idx + 1 < pl.length && onPlayNext) {
-        onPlayNext({ ...pl[idx + 1], playlist: pl, playlistIndex: idx + 1 });
+        onPlayNext(playAdvance({ ...pl[idx + 1], playlist: pl, playlistIndex: idx + 1 }));
         return;
       }
       setLoading(false);
@@ -585,6 +587,12 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   useEffect(() => {
     return () => {
       castReportState({ playState: 'stop' }).catch(() => {});
+      // Report the FINAL position on exit — the 15s interval alone leaves the
+      // resume point up to 15s stale, which reads as "没续播上".
+      const v = videoRef.current;
+      if (v && video?.bvid && cidRef.current && v.currentTime > 0) {
+        reportHeartbeat(video.bvid, cidRef.current, v.currentTime, (Date.now() - startTimeRef.current) / 1000);
+      }
     };
   }, []);
 
@@ -1010,7 +1018,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         if (e.key === 'Enter') {
           e.preventDefault();
           const rv = gridList[focusIdx];
-          if (rv && onPlayNext) onPlayNext(rv);
+          if (rv && onPlayNext) onPlayNext(panelTab === 'parts' ? playPart(rv) : rv);
           return true;
         }
         return false;
@@ -1123,7 +1131,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                     const thumb = proxyImg(rv.pic);
                     const nowPlaying = panelTab === 'parts' && rv.cid === cidRef.current;
                     return (
-                      <div key={rv.cid || rv.bvid || i} className="related-card" onClick={() => onPlayNext?.(rv)}
+                      <div key={rv.cid || rv.bvid || i} className="related-card" onClick={() => onPlayNext?.(panelTab === 'parts' ? playPart(rv) : rv)}
                         style={{
                           cursor: 'pointer',
                           outline: focusArea === 'related' && focusIdx === i ? '4px solid #00a1d6'

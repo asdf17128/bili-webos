@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { initKeyboardNav, setFocus, onFocusChange, getCurrentFocusId, focusFirstContent, focusSidebar, isPointerFocus } from './hooks/useFocus';
 import { castAck, castSubscribe, getNavInfo } from './api/client';
+import { normalizePlay, playAt } from './player/playIntent';
 import { storage } from './utils/storage';
 import SidebarItem from './components/SidebarItem';
 
@@ -136,7 +137,7 @@ export default function App() {
           });
         } else {
           setLiveRoom(null);
-          setPlayerVideo({
+          setPlayerVideo(playAt({
             aid: command.aid,
             bvid: command.bvid,
             cid: command.cid,
@@ -144,8 +145,7 @@ export default function App() {
             title: command.title || '投屏视频',
             owner: { name: '' },
             fromCast: true,
-            progress: Math.max(0, Number(command.seekTs || 0)),
-          });
+          }, Number(command.seekTs || 0)));
         }
         return;
       }
@@ -235,6 +235,7 @@ export default function App() {
   }, []);
 
   const handlePlayVideo = useCallback((video) => {
+    video = normalizePlay(video); // 续播 policy lives in playIntent.js
     if (video?.isLive && video?.roomid) {
       setLiveRoom(video);
       return;
@@ -304,7 +305,7 @@ export default function App() {
 
       {(playerVideo || liveRoom) && (
         <Suspense fallback={<div style={{ position: 'fixed', inset: 0, zIndex: 150, background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20 }}>加载播放器…</div>}>
-          {playerVideo && <PlayerPage key={`${playerVideo.bvid || playerVideo.epid || playerVideo.aid || ''}-${playerVideo.cid || playerVideo.epid || ''}`} video={playerVideo} onBack={() => setPlayerVideo(null)} onPlayNext={(v) => setPlayerVideo(v)} />}
+          {playerVideo && <PlayerPage key={`${playerVideo.bvid || playerVideo.epid || playerVideo.aid || ''}-${playerVideo.cid || playerVideo.epid || ''}`} video={playerVideo} onBack={() => setPlayerVideo(null)} onPlayNext={(v) => setPlayerVideo(normalizePlay(v))} />}
           {liveRoom && <LivePlayerPage key={liveRoom.roomid} room={liveRoom} onBack={() => setLiveRoom(null)} />}
         </Suspense>
       )}

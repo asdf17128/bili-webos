@@ -336,7 +336,9 @@ export async function getBangumiInfo(opts) {
 
 // Partition/region
 export async function getRegionDynamic(rid, pn, ps) {
-  return wbiFetch('/x/web-interface/dynamic/region', { rid: rid || 0, pn: pn || 1, ps: ps || 6 });
+  // dynamic/region was sunset by B站 (-404 as of 2026-07); newlist returns the
+  // same archives shape for the main region ids.
+  return apiFetch('/x/web-interface/newlist', { rid: rid || 1, pn: pn || 1, ps: ps || 6, type: 0 });
 }
 
 // Follow feed — paginates by the `offset` cursor returned in data.offset,

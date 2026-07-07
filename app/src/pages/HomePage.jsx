@@ -28,7 +28,7 @@ async function fetchByMode(mode, pn, offset) {
       roomid: item.roomid || item.room_id,
     })) };
   } else if (mode === 'partition') {
-    const rids = [1, 3, 4, 5, 17, 36, 160, 188, 211];
+    const rids = [1, 3, 4, 5, 36, 160, 188, 211, 129, 119];
     const rid = rids[Math.floor(Math.random() * rids.length)];
     const res = await getRegionDynamic(rid, pn, FETCH_SIZE);
     return { items: res?.data?.archives || [] };

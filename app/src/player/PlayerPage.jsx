@@ -1190,7 +1190,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           f = Math.max(0, Math.min(total - 1, f));
           const sheet = Math.floor(f / per), local = f % per;
           const col = local % videoshot.xLen, row = Math.floor(local / videoshot.xLen);
-          const SC = 320 / videoshot.w; // frame size varies per video (160/480 wide)
+          // Frame size varies per video (160/480 wide). Cap upscaling at 1.5x —
+          // a 160px frame stretched to 320px is visibly mushy (#11); large
+          // 480px frames still downscale to a sharp 320px.
+          const SC = Math.min(320 / videoshot.w, 1.5);
           thumb = {
             url: proxyImg(videoshot.images[sheet]),
             w: Math.round(videoshot.w * SC), h: Math.round(videoshot.h * SC),
@@ -1203,7 +1206,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           <div style={{
             position: 'absolute',
             left: `calc(60px + ${bubblePct} * (100% - 120px) / 100)`,
-            bottom: 250, transform: 'translateX(-50%)',
+            bottom: 104, transform: 'translateX(-50%)',
             textAlign: 'center', pointerEvents: 'none', zIndex: 80,
           }}>
             {thumb && (

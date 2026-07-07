@@ -42,12 +42,24 @@ export function isHoverDriven() { return hoverDriven; }
 let lastSidebarFocus = 'sidebar-0-0';
 
 // Direct DOM focus update - no React involved
+// The pages pin the FOCUSED row to the top of the viewport (VideoGrid:
+// scrollY = focusRow * rowHeight) — but only for non-hover focus changes.
+// So the view anchor = the last NON-hover focus. The wheel must step THIS
+// row (view movement), never "the card under the pointer": with the pointer
+// near the bottom, that card sits 2 rows below the anchor and stepping from
+// it scrolls the view the WRONG way / wedges (#11 v1.2.5 retest).
+let lastAnchor = null; // { group, row, col }
+
 function applyFocus(newId) {
   const prevId = currentFocusId;
   currentFocusId = newId;
 
   // Remember sidebar position
   if (newId?.startsWith('sidebar-')) lastSidebarFocus = newId;
+  if (newId && !hoverDriven) {
+    const meta = focusRegistry.get(newId);
+    if (meta) lastAnchor = { group: meta.group, row: meta.row, col: meta.col };
+  }
 
   // Remove focus from previous element
   if (prevId) {
@@ -233,17 +245,25 @@ export function initKeyboardNav() {
     const dir = wheelAcc > 0 ? 'down' : 'up';
     wheelAcc = 0;
     lastStepTs = now;
-    const el = document.elementFromPoint(pointerX, pointerY);
-    const card = el && el.closest ? el.closest('[data-focus-id]') : null;
-    const fromId = (card && card.getAttribute('data-focus-id')) || currentFocusId;
-    if (!fromId || !focusRegistry.has(fromId)) return;
-    let next = navigateGrid(fromId, dir);
-    // During the scroll animation the highlight can run one row AHEAD of the
-    // card under the stationary pointer; navigating from the pointer card then
-    // lands on the CURRENT focus and setFocus no-ops — the wheel wedges (#11).
-    // In that case step from the focus itself so scrolling always advances.
-    if (next === currentFocusId) next = navigateGrid(currentFocusId, dir);
-    if (next) { lastFocusFromPointer = true; setFocus(next); }
+    // Step the VIEW-ANCHOR row (see lastAnchor above). Falls back to the
+    // current focus for the very first wheel.
+    let base = lastAnchor;
+    if (!base || base.group !== 'content') {
+      const meta = currentFocusId ? focusRegistry.get(currentFocusId) : null;
+      if (!meta || meta.group !== 'content') return;
+      base = { group: meta.group, row: meta.row, col: meta.col };
+    }
+    const targetRow = base.row + (dir === 'down' ? 1 : -1);
+    if (targetRow < 0) return;
+    // Find a card in the target row, preferring the same column.
+    let next = null;
+    for (let cCol = base.col; cCol >= 0 && !next; cCol--) {
+      const id = `${base.group}-${targetRow}-${cCol}`;
+      if (focusRegistry.has(id)) next = id;
+    }
+    if (!next) return; // reached the end of the list
+    lastFocusFromPointer = true;
+    setFocus(next); // non-hover → pages re-anchor the view to targetRow
   }, { passive: true });
 }
 

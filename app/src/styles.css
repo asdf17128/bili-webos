@@ -43,7 +43,7 @@ html, body, #root {
   font-weight: 700;
 }
 .sidebar-logo span {
-  font-size: 12px;
+  font-size: 14px;
   color: #555;
 }
 .sidebar-item {
@@ -83,8 +83,8 @@ html, body, #root {
   overflow: hidden;
 }
 .sidebar-user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.sidebar-user-name { font-size: 14px; color: #888; }
-.sidebar-user-login { font-size: 14px; color: #00a1d6; }
+.sidebar-user-name { font-size: 16px; color: #999; }
+.sidebar-user-login { font-size: 16px; color: #00a1d6; }
 
 /* ===== Main Content ===== */
 .main-content {
@@ -159,7 +159,7 @@ html, body, #root {
   right: 8px;
   background: rgba(0,0,0,0.8);
   color: #fff;
-  font-size: 13px;
+  font-size: 16px;
   padding: 2px 8px;
   border-radius: 4px;
 }
@@ -185,10 +185,10 @@ html, body, #root {
 
 /* Denser grids (3/4 columns) → smaller cards, so scale text + padding down. */
 .video-grid.cols-3 .video-card-title { font-size: 22px; }
-.video-grid.cols-3 .video-card-meta { font-size: 17px; }
+.video-grid.cols-3 .video-card-meta { font-size: 18px; }
 .video-grid.cols-3 .video-card-info { padding: 12px 9px 9px; }
-.video-grid.cols-4 .video-card-title { font-size: 18px; line-height: 1.3; }
-.video-grid.cols-4 .video-card-meta { font-size: 14px; }
+.video-grid.cols-4 .video-card-title { font-size: 20px; line-height: 1.3; }
+.video-grid.cols-4 .video-card-meta { font-size: 16px; }
 .video-grid.cols-4 .video-card-info { padding: 10px 8px 8px; }
 .video-grid.cols-4 .video-card-meta span { margin-right: 10px; }
 
@@ -329,7 +329,7 @@ html, body, #root {
   transition: transform 0.15s ease, background 0.15s ease;
 }
 .player-btn.focused { background: #00a1d6; transform: scale(1.1); }
-.player-time { font-size: 18px; color: #ccc; margin-left: auto; }
+.player-time { font-size: 20px; color: #ccc; margin-left: auto; }
 
 /* ===== Danmaku ===== */
 .danmaku-container {
@@ -472,7 +472,7 @@ html, body, #root {
   font-size: 18px; color: #ddd; cursor: pointer;
   transition: background 0.15s ease, box-shadow 0.15s ease;
 }
-.settings-row-value { color: #888; font-size: 15px; }
+.settings-row-value { color: #9aa0a8; font-size: 20px; }
 .settings-row.focused {
   background: rgba(0,161,214,0.18);
   box-shadow: 0 0 0 2px #00a1d6;

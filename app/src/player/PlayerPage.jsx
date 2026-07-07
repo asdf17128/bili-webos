@@ -412,7 +412,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         setPanelTab('related');
         setFocusArea('related');
         setFocusIdx(0);
-        if (relatedRef.current.length > 0) setEndNextIn(8); // YouTube-style autoplay next
+        if (relatedRef.current.length > 0) setEndNextIn(10); // YouTube-style autoplay next
       });
 
       try { setDanmakus(await getDanmaku(cid)); } catch {}
@@ -1295,29 +1295,37 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       )}
       {ended && endNextIn != null && relatedVideos[0] && (
         <div style={{
-          position: 'absolute', top: '18%', left: '50%', transform: 'translateX(-50%)',
+          position: 'absolute', top: '14%', left: '50%', transform: 'translateX(-50%)',
           textAlign: 'center', pointerEvents: 'none',
         }}>
-          <div style={{ fontSize: 20, color: '#bbb', marginBottom: 12 }}>接下来播放</div>
+          <div style={{ fontSize: 22, color: '#aeb4bd', marginBottom: 14, letterSpacing: 6 }}>接下来播放</div>
           <div style={{
-            width: 420, borderRadius: 10, overflow: 'hidden', margin: '0 auto',
-            border: '3px solid rgba(255,255,255,0.85)', boxShadow: '0 8px 30px rgba(0,0,0,0.7)',
-            background: '#101425',
+            width: 560, borderRadius: 12, overflow: 'hidden', margin: '0 auto',
+            border: '1px solid rgba(255,255,255,0.16)',
+            boxShadow: '0 18px 60px rgba(0,0,0,0.75)',
+            background: '#0d1020',
           }}>
-            <div style={{ width: '100%', height: 236, background: '#0a0d1a' }}>
+            <div style={{ width: '100%', height: 315, background: '#0a0d1a', position: 'relative' }}>
               {relatedVideos[0].pic && (
-                <img src={proxyImg(relatedVideos[0].pic)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={proxyImg(relatedVideos[0].pic)} alt="" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
               )}
+              {/* quiet countdown: a thin progress line filling along the cover's bottom edge */}
+              <div style={{ position: 'absolute', left: 0, bottom: 0, width: '100%', height: 3, background: 'rgba(255,255,255,0.18)' }}>
+                <div style={{
+                  height: '100%', background: 'rgba(255,255,255,0.85)',
+                  width: `${Math.min(100, ((10 - endNextIn) / 10) * 100)}%`,
+                  transition: 'width 1s linear',
+                }} />
+              </div>
             </div>
-            <div style={{ padding: '10px 14px 12px', fontSize: 18, color: '#fff', lineHeight: 1.4, textAlign: 'left',
+            <div style={{ padding: '14px 18px 15px', fontSize: 24, color: '#f0f0f0', lineHeight: 1.45, textAlign: 'left',
               overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
               {cleanTitle(relatedVideos[0].title)}
             </div>
           </div>
-          <div style={{ marginTop: 14, fontSize: 20, color: '#fff' }}>
-            <span style={{ color: '#00a1d6', fontWeight: 700 }}>{endNextIn}</span> 秒后自动播放
+          <div style={{ marginTop: 14, fontSize: 20, color: '#9aa0a8' }}>
+            {endNextIn} 秒后自动播放&nbsp;&nbsp;·&nbsp;&nbsp;OK 立即播放&nbsp;&nbsp;·&nbsp;&nbsp;其他键取消
           </div>
-          <div style={{ marginTop: 6, fontSize: 15, color: '#999' }}>按 OK 立即播放 · 按其他键取消</div>
         </div>
       )}
 
@@ -1402,9 +1410,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                           borderRadius: 6, overflow: 'hidden',
                         }}>
                         <div style={{ width: '100%', height: 0, paddingTop: '56.25%', background: '#1a1a2e', borderRadius: 6, overflow: 'hidden', position: 'relative' }}>
-                          {thumb && <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
-                          {nowPlaying && <div style={{ position: 'absolute', top: 6, left: 6, background: '#00a1d6', color: '#fff', fontSize: 13, padding: '2px 8px', borderRadius: 4 }}>▶ 播放中</div>}
-                          {rv.duration != null && <div style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: 13, padding: '1px 6px', borderRadius: 3 }}>
+                          {thumb && <img src={thumb} alt="" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
+                          {nowPlaying && <div style={{ position: 'absolute', top: 6, left: 6, background: '#00a1d6', color: '#fff', fontSize: 16, padding: '2px 9px', borderRadius: 4 }}>▶ 播放中</div>}
+                          {rv.duration != null && <div style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: 16, padding: '1px 7px', borderRadius: 3 }}>
                             {typeof rv.duration === 'number' ? formatDuration(rv.duration) : rv.duration}
                           </div>}
                         </div>
@@ -1412,7 +1420,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                           overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
                           {cleanTitle(rv.title)}
                         </div>
-                        <div style={{ padding: '2px 4px 6px', fontSize: 14, color: '#888',
+                        <div style={{ padding: '2px 4px 6px', fontSize: 16, color: '#999',
                           overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
                           {[cleanTitle(rv.owner?.name), formatTime(rv.pubdate)].filter(Boolean).join(' · ')}
                         </div>

@@ -131,7 +131,7 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
         </div>
         <div>
           <div style={{ fontSize: 26, fontWeight: 600, color: '#fff' }}>{user ? user.uname : '未登录'}</div>
-          <div style={{ fontSize: 15, color: '#7a7a8c', marginTop: 4 }}>哔哩哔哩 webOS</div>
+          <div style={{ fontSize: 18, color: '#8a8a9c', marginTop: 4 }}>哔哩哔哩 webOS</div>
         </div>
       </div>
 

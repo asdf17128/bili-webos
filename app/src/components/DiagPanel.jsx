@@ -133,12 +133,12 @@ export default function DiagPanel() {
       <div style={{ display: 'flex', gap: 24 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           {rows.map(r => (
-            <div key={r.name} style={{ fontSize: 16, lineHeight: 1.9, color: r.status === 'fail' ? '#ff7a7a' : '#ccc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div key={r.name} style={{ fontSize: 18, lineHeight: 1.9, color: r.status === 'fail' ? '#ff7a7a' : '#ccc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {ICON[r.status] || ''} {r.name}{r.detail ? ` — ${r.detail}` : ''}
             </div>
           ))}
           {svcInfo && svcInfo.recentErrors && svcInfo.recentErrors.length > 0 && (
-            <div style={{ marginTop: 8, fontSize: 13, color: '#c96' }}>
+            <div style={{ marginTop: 8, fontSize: 16, color: '#c96' }}>
               服务近期错误:
               {svcInfo.recentErrors.slice(-4).map((e, i) => (
                 <div key={i} style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ago(e.t)} [{e.tag}] {e.d}</div>
@@ -150,7 +150,7 @@ export default function DiagPanel() {
           <div style={{ width: 190, flexShrink: 0, textAlign: 'center' }}>
             <div style={{ background: '#fff', borderRadius: 8, padding: 6, display: 'inline-block' }}
               dangerouslySetInnerHTML={{ __html: qrSvg }} />
-            <div style={{ fontSize: 13, color: '#999', marginTop: 6, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 16, color: '#999', marginTop: 8, lineHeight: 1.5 }}>
               手机扫码 → 自动生成 GitHub 反馈(内容可先检查,提交前不会发送任何数据)
             </div>
           </div>

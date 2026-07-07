@@ -186,12 +186,12 @@ export default function ConfigPage({ onLogout, user }) {
         </div>
       )}
 
-      <div style={{ marginTop: 28, color: '#888', fontSize: 15, lineHeight: 2 }}>
-        <div style={{ fontSize: 16, color: '#aaa', marginBottom: 6 }}>关于</div>
+      <div style={{ marginTop: 28, color: '#888', fontSize: 18, lineHeight: 2 }}>
+        <div style={{ fontSize: 20, color: '#aaa', marginBottom: 6 }}>关于</div>
         <div>哔哩哔哩 webOS · 版本 v{APP_VERSION}</div>
         <div>联系 / 反馈：{CONTACT_EMAIL}</div>
         <div>项目主页：github.com/asdf17128/bili-webos</div>
-        <div style={{ fontSize: 12, color: '#555', marginTop: 8 }}>代理: {proxyUrl}</div>
+        <div style={{ fontSize: 16, color: '#667', marginTop: 8 }}>代理: {proxyUrl}</div>
       </div>
     </div>
   );

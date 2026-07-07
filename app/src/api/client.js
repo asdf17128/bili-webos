@@ -291,6 +291,13 @@ export async function getVideoInfo(video) {
 
 // Player meta incl. resume position: last_play_cid (which part) + last_play_time
 // (ms into it). Used to 续播 a multi-part video where the user left off.
+// Seek-preview sprite sheets (YouTube-style scrub thumbnails). Returns
+// data.image[] sprite jpgs (10x10 grid of 160x90 frames by default) plus
+// per-frame timestamps in data.index[].
+export async function getVideoshot(bvid, cid) {
+  return apiFetch('/x/player/videoshot', { bvid, cid, index: 1 });
+}
+
 export async function getPlayerV2(aid, cid) {
   return wbiFetch('/x/player/wbi/v2', { aid, cid });
 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState } from '../api/client';
+import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot } from '../api/client';
 import { playPart, playAdvance } from './playIntent';
+
 import { formatDuration, formatTime, QUALITY_MAP, cleanTitle } from '../utils/format';
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
@@ -51,6 +52,14 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const [partsLabel, setPartsLabel] = useState('选集');
   const [partsList, setPartsList] = useState([]); // 选集/合集 items (separate from 相关推荐)
   const partsRef = useRef([]);
+  // YouTube-style deferred seek (scrub): arrows move a GHOST playhead with a
+  // time bubble + videoshot thumbnail; the video only jumps on OK or ~1s after
+  // the last press. Repeated presses accelerate 10s → 30s → 60s.
+  const [scrubTarget, setScrubTarget] = useState(null); // seconds | null
+  const scrubTargetRef = useRef(null);
+  const scrubStreakRef = useRef({ n: 0, last: 0 });
+  const scrubTimerRef = useRef(null);
+  const [videoshot, setVideoshot] = useState(null); // {images,xLen,yLen,w,h,index}
   // Bottom panel: 'related' (相关推荐) | 'up' (UP主投稿)
   const [panelTab, setPanelTab] = useState('related');
   const [upVideos, setUpVideos] = useState([]);
@@ -224,6 +233,21 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       }
       if (!isBangumi && !cid) throw new Error('No cid for video');
       cidRef.current = cid;
+      // Seek-preview sprites (YouTube-style scrub thumbnails) — best effort.
+      setVideoshot(null);
+      if (!isBangumi && (video.bvid || video.aid)) {
+        getVideoshot(video.bvid, cid).then(r => {
+          const d2 = r?.data;
+          if (d2 && Array.isArray(d2.image) && d2.image.length > 0) {
+            setVideoshot({
+              images: d2.image.map(u => (u.startsWith('//') ? 'https:' + u : u)),
+              xLen: d2.img_x_len || 10, yLen: d2.img_y_len || 10,
+              w: d2.img_x_size || 160, h: d2.img_y_size || 90,
+              index: Array.isArray(d2.index) ? d2.index : null,
+            });
+          }
+        }).catch(() => {});
+      }
       // Reset the "UP主投稿" tab (regular videos only).
       upMidRef.current = isBangumi ? null : ownerMid;
       upPnRef.current = 1;
@@ -652,6 +676,49 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     }
   }, [focusArea]);
 
+  // ===== Scrub (deferred seek) =====
+  const clearScrub = useCallback(() => {
+    if (scrubTimerRef.current) { clearTimeout(scrubTimerRef.current); scrubTimerRef.current = null; }
+    scrubTargetRef.current = null;
+    setScrubTarget(null);
+  }, []);
+
+  const commitScrubRef = useRef(null);
+  const commitScrub = useCallback(() => {
+    const t = scrubTargetRef.current;
+    clearScrub();
+    const v = videoRef.current;
+    if (t != null && v && !isNaN(v.duration)) {
+      v.currentTime = Math.min(t, Math.max(0, v.duration - 1));
+      if (v.paused) { v.play(); setPlaying(true); }
+    }
+    setFocusArea('none');
+    if (controlsTimer.current) clearTimeout(controlsTimer.current);
+    controlsTimer.current = setTimeout(() => {
+      setShowControls(false); setShowRelated(false); setShowQuality(false);
+    }, 1200);
+  }, [clearScrub]);
+  commitScrubRef.current = commitScrub;
+
+  const scrubBy = useCallback((dir) => {
+    const v = videoRef.current;
+    if (!v || !v.duration || isNaN(v.duration)) return;
+    const now = Date.now();
+    const st = scrubStreakRef.current;
+    st.n = (now - st.last < 800) ? st.n + 1 : 1;
+    st.last = now;
+    const step = st.n < 4 ? 10 : st.n < 10 ? 30 : 60; // accelerate like YouTube
+    const base = scrubTargetRef.current != null ? scrubTargetRef.current : v.currentTime;
+    const target = Math.max(0, Math.min(v.duration - 1, base + dir * step));
+    scrubTargetRef.current = target;
+    setScrubTarget(target);
+    setShowControls(true);
+    setFocusArea('scrub');
+    if (controlsTimer.current) clearTimeout(controlsTimer.current); // don't auto-hide mid-scrub
+    if (scrubTimerRef.current) clearTimeout(scrubTimerRef.current);
+    scrubTimerRef.current = setTimeout(() => commitScrubRef.current && commitScrubRef.current(), 1000);
+  }, []);
+
   // Auto-hide controls
   const hideControlsLater = useCallback(() => {
     if (controlsTimer.current) clearTimeout(controlsTimer.current);
@@ -824,7 +891,12 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         e.preventDefault();
         e.stopPropagation();
 
-        if (ended) {
+        if (scrubTargetRef.current != null) {
+          // Scrubbing: back cancels the pending seek, keep watching
+          clearScrub();
+          setShowControls(false);
+          setFocusArea('none');
+        } else if (ended) {
           // End screen: back exits player
           onBack();
         } else if (showControls || showQuality || showRelated) {
@@ -845,12 +917,12 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       if (focusArea === 'none') {
         if (e.key === 'ArrowLeft') {
           e.preventDefault();
-          if (videoRef.current) videoRef.current.currentTime -= 10;
+          scrubBy(-1);
           return true;
         }
         if (e.key === 'ArrowRight') {
           e.preventDefault();
-          if (videoRef.current) videoRef.current.currentTime += 10;
+          scrubBy(1);
           return true;
         }
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
@@ -866,6 +938,21 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           return true;
         }
         return false;
+      }
+
+      // === Scrubbing (deferred seek with ghost playhead) ===
+      if (focusArea === 'scrub') {
+        if (e.key === 'ArrowLeft') { e.preventDefault(); scrubBy(-1); return true; }
+        if (e.key === 'ArrowRight') { e.preventDefault(); scrubBy(1); return true; }
+        if (e.key === 'Enter') { e.preventDefault(); commitScrub(); return true; }
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+          // Leave scrub without seeking and hand over to the normal controls
+          e.preventDefault();
+          clearScrub();
+          openControls();
+          return true;
+        }
+        return true;
       }
 
       // === Controls visible ===
@@ -1034,7 +1121,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
     setCustomKeyHandler(handler);
     return () => setCustomKeyHandler(null);
-  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, ended, relatedVideos, partsList, isMultiP, panelTab, upVideos, loadUpVideos, onBack, onPlayNext, openControls, hideControlsLater, changeQuality]);
+  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, ended, relatedVideos, partsList, isMultiP, panelTab, upVideos, loadUpVideos, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -1074,6 +1161,67 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         )}
         <div className="player-progress-bar">
           <div className="player-progress-fill" style={{ width: `${progress}%` }} />
+          {scrubTarget != null && duration > 0 && (() => {
+            const pct = Math.min(100, Math.max(0, (scrubTarget / duration) * 100));
+            const bubblePct = Math.min(88, Math.max(12, pct)); // keep the 320px preview fully on screen
+            const delta = Math.round(scrubTarget - currentTime);
+            // Sprite-sheet frame for the preview (videoshot is 160x90 frames in
+            // an xLen*yLen grid per image; shown at 2x for TV legibility).
+            let thumb = null;
+            if (videoshot) {
+              const per = videoshot.xLen * videoshot.yLen;
+              const total = videoshot.images.length * per;
+              let f;
+              if (videoshot.index && videoshot.index.length > 1) {
+                f = 0;
+                while (f < videoshot.index.length - 1 && videoshot.index[f + 1] <= scrubTarget) f++;
+              } else {
+                f = Math.floor((scrubTarget / duration) * total);
+              }
+              f = Math.max(0, Math.min(total - 1, f));
+              const sheet = Math.floor(f / per), local = f % per;
+              const col = local % videoshot.xLen, row = Math.floor(local / videoshot.xLen);
+              const SC = 2;
+              thumb = {
+                url: proxyImg(videoshot.images[sheet]),
+                w: videoshot.w * SC, h: videoshot.h * SC,
+                size: `${videoshot.xLen * videoshot.w * SC}px ${videoshot.yLen * videoshot.h * SC}px`,
+                pos: `-${col * videoshot.w * SC}px -${row * videoshot.h * SC}px`,
+              };
+            }
+            return (
+              <>
+                <div style={{
+                  position: 'absolute', left: `${pct}%`, top: -7, width: 4, height: 20,
+                  background: '#fff', transform: 'translateX(-50%)', borderRadius: 2,
+                  boxShadow: '0 0 6px rgba(0,0,0,0.8)',
+                }} />
+                <div style={{
+                  position: 'absolute', left: `${bubblePct}%`, bottom: 22,
+                  transform: 'translateX(-50%)', textAlign: 'center', pointerEvents: 'none',
+                }}>
+                  {thumb && (
+                    <div style={{
+                      width: thumb.w, height: thumb.h,
+                      backgroundImage: `url(${thumb.url})`,
+                      backgroundSize: thumb.size, backgroundPosition: thumb.pos,
+                      borderRadius: 8, border: '3px solid rgba(255,255,255,0.9)',
+                      margin: '0 auto 8px', boxShadow: '0 4px 18px rgba(0,0,0,0.6)',
+                    }} />
+                  )}
+                  <span style={{
+                    fontSize: 22, color: '#fff', fontWeight: 600,
+                    background: 'rgba(0,0,0,0.75)', padding: '4px 14px', borderRadius: 6,
+                  }}>
+                    {formatDuration(scrubTarget)}
+                    <span style={{ color: '#7ecbff', marginLeft: 8, fontSize: 18 }}>
+                      {delta >= 0 ? `+${delta}s` : `${delta}s`}
+                    </span>
+                  </span>
+                </div>
+              </>
+            );
+          })()}
         </div>
         <div className="player-btns">
           {CONTROLS.map((btn, i) => (

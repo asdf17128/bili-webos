@@ -55,7 +55,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const [panelTab, setPanelTab] = useState('related');
   const [upVideos, setUpVideos] = useState([]);
   const [upName, setUpName] = useState('');
-  // Focus: 'none' | 'controls' | 'quality' | 'tabs' | 'related' (=grid) | 'endscreen'
+  // Focus: 'none' | 'controls' | 'quality' | 'tabs' | 'related' (=grid)
   const [focusArea, setFocusArea] = useState('none');
   const [focusIdx, setFocusIdx] = useState(0);
   const controlsTimer = useRef(null);
@@ -92,7 +92,6 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   }, []);
 
   const CONTROLS = ['play', 'danmaku', 'quality'];
-  const END_SCREEN_MAX = 8; // up to 2 rows of 4 on the end screen
 
   // Initialize Shaka Player
   useEffect(() => {
@@ -342,9 +341,14 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             return;
           }
         }
+        // Land back on the NORMAL player page (controls pinned + panel open)
+        // instead of a modal end screen — the old overlay trapped the D-pad in
+        // its grid, so 重播/选集/画质 were unreachable after playback finished.
         setEnded(true);
         setShowControls(true);
-        setFocusArea('endscreen');
+        setShowRelated(true);
+        setPanelTab('related');
+        setFocusArea('related');
         setFocusIdx(0);
       });
 
@@ -562,6 +566,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
     const handlePlay = () => {
       setPlaying(true);
+      setEnded(false); // replay (play() on an ended video restarts at 0)
       castReportState({ playState: 'playing' }).catch(() => {});
     };
     const handleLoadedMetadata = () => flushPendingSeek();
@@ -1024,26 +1029,6 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         return false;
       }
 
-      // === End screen (4-column grid) ===
-      if (focusArea === 'endscreen') {
-        e.preventDefault();
-        const ECOLS = 4;
-        const n = Math.min(END_SCREEN_MAX, relatedVideos.length);
-        if (e.key === 'ArrowLeft') {
-          if (focusIdx % ECOLS > 0) setFocusIdx(focusIdx - 1);
-        } else if (e.key === 'ArrowRight') {
-          if (focusIdx % ECOLS < ECOLS - 1 && focusIdx < n - 1) setFocusIdx(focusIdx + 1);
-        } else if (e.key === 'ArrowUp') {
-          if (focusIdx >= ECOLS) setFocusIdx(focusIdx - ECOLS);
-        } else if (e.key === 'ArrowDown') {
-          if (focusIdx + ECOLS < n) setFocusIdx(focusIdx + ECOLS);
-        } else if (e.key === 'Enter') {
-          const rv = relatedVideos[focusIdx];
-          if (rv && onPlayNext) onPlayNext(rv);
-        }
-        return true;
-      }
-
       return false;
     };
 
@@ -1093,7 +1078,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         <div className="player-btns">
           {CONTROLS.map((btn, i) => (
             <button key={btn} className={`player-btn ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''}`}>
-              {btn === 'play' ? (playing ? '⏸ 暂停' : '▶ 播放') :
+              {btn === 'play' ? (ended ? '↻ 重播' : playing ? '⏸ 暂停' : '▶ 播放') :
                 btn === 'danmaku' ? (danmakuEnabled ? '弹幕 开' : '弹幕 关') :
                   QUALITY_MAP[currentQuality] || `${currentQuality}`}
             </button>
@@ -1175,50 +1160,6 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       )}
 
       {/* End screen */}
-      {ended && relatedVideos.length > 0 && (
-        <div style={{
-          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-          background: 'rgba(0,0,0,0.85)', zIndex: 60,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <div style={{ fontSize: 30, color: '#fff', marginBottom: 6 }}>播放结束</div>
-          <div style={{ fontSize: 20, color: '#999', marginBottom: 28 }}>接下来播放</div>
-          <div style={{
-            display: 'grid', gridTemplateColumns: 'repeat(4, 300px)', gap: '24px 24px',
-            justifyContent: 'center',
-          }}>
-            {relatedVideos.slice(0, END_SCREEN_MAX).map((rv, i) => {
-              const thumb = proxyImg(rv.pic);
-              const focused = focusArea === 'endscreen' && focusIdx === i;
-              return (
-                <div key={rv.bvid || i} onClick={() => onPlayNext?.(rv)}
-                  style={{
-                    width: 300, cursor: 'pointer',
-                    background: focused ? '#1f2440' : 'transparent',
-                    outline: focused ? '4px solid #00a1d6' : 'none',
-                    borderRadius: 8, overflow: 'hidden',
-                    transition: 'background 0.15s',
-                  }}>
-                  <div style={{ width: '100%', aspectRatio: '16/9', background: '#1a1a2e', overflow: 'hidden' }}>
-                    {thumb && <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
-                  </div>
-                  <div style={{ padding: '8px 8px 2px', fontSize: 15, color: '#eee', lineHeight: 1.35,
-                    overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', height: 42 }}>
-                    {cleanTitle(rv.title)}
-                  </div>
-                  <div style={{ padding: '0 8px 10px', fontSize: 13, color: '#888',
-                    overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                    {[cleanTitle(rv.owner?.name), formatTime(rv.pubdate)].filter(Boolean).join(' · ')}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div style={{ marginTop: 24, fontSize: 16, color: '#666' }}>
-            ← → ↑ ↓ 选择 · OK 播放 · 返回键 退出
-          </div>
-        </div>
-      )}
     </div>
   );
 }

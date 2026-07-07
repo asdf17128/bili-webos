@@ -1,14 +1,14 @@
 {
   "id": "com.biliwebos.app",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "type": "web",
   "title": "BiliTV",
   "appDescription": "Bilibili client for webOS TV",
   "iconUri": "https://raw.githubusercontent.com/asdf17128/bili-webos/main/app/webos-meta/largeIcon.png",
   "sourceUrl": "https://github.com/asdf17128/bili-webos",
   "rootRequired": false,
-  "ipkUrl": "com.biliwebos.app_1.2.1_all.ipk",
+  "ipkUrl": "com.biliwebos.app_1.2.2_all.ipk",
   "ipkHash": {
-    "sha256": "c906bc03832ad053ac9b7556c10b7784a68a5b433e0ad19b509973db0d981c69"
+    "sha256": "19fff4f81a875fb0383402203e51bbf596b62fb0f730a54ef9f2ce6f90d3b302"
   }
 }

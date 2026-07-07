@@ -10,6 +10,20 @@ import DanmakuLayer from './DanmakuLayer';
 // Proxy + resize card thumbnails (same as VideoCard): the proxy adds the
 // Referer B站 image CDN needs, and @672w webp keeps the TV's image decoder from
 // choking on full-size covers (which is why direct-loaded thumbs failed).
+// Sprite sheets must NOT get the @672w_420h_1c resize: the CDN would scale
+// the whole 4800x2700 sheet to a CROPPED 672x420 — mushy and misaligned cells.
+function proxyImgRaw(url) {
+  if (!url) return '';
+  const u = url.startsWith('//') ? 'https:' + url : url;
+  const base = (typeof window !== 'undefined' && window.webOS) ? 'http://127.0.0.1:7654' : storage.getProxyUrl();
+  try {
+    const parsed = new URL(u);
+    return `${base}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
+  } catch {
+    return u;
+  }
+}
+
 function proxyImg(url) {
   if (!url) return '';
   let u = url.startsWith('//') ? 'https:' + url : url;
@@ -63,6 +77,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // YouTube-style chapters (B站 view_points): [{from,to,content}] — segment
   // ticks on the progress bar + chapter title in the scrub bubble/time row.
   const [chapters, setChapters] = useState([]);
+  // YouTube-TV-style end screen: dimmed video + centered "接下来播放" card with
+  // an 8s autoplay countdown. OK plays it now; any other key cancels. The
+  // embedded controls+panel stay fully reachable (v1.2.2 behavior preserved).
+  const [endNextIn, setEndNextIn] = useState(null); // seconds | null
+  const relatedRef = useRef([]);
   // Bottom panel: 'related' (相关推荐) | 'up' (UP主投稿)
   const [panelTab, setPanelTab] = useState('related');
   const [upVideos, setUpVideos] = useState([]);
@@ -393,6 +412,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         setPanelTab('related');
         setFocusArea('related');
         setFocusIdx(0);
+        if (relatedRef.current.length > 0) setEndNextIn(8); // YouTube-style autoplay next
       });
 
       try { setDanmakus(await getDanmaku(cid)); } catch {}
@@ -610,6 +630,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     const handlePlay = () => {
       setPlaying(true);
       setEnded(false); // replay (play() on an ended video restarts at 0)
+      setEndNextIn(null);
       castReportState({ playState: 'playing' }).catch(() => {});
     };
     const handleLoadedMetadata = () => flushPendingSeek();
@@ -643,6 +664,21 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       }
     };
   }, []);
+
+  useEffect(() => { relatedRef.current = relatedVideos; }, [relatedVideos]);
+
+  // End-screen autoplay countdown.
+  useEffect(() => {
+    if (endNextIn == null) return;
+    if (endNextIn <= 0) {
+      const rv = relatedRef.current[0];
+      setEndNextIn(null);
+      if (rv && onPlayNext) onPlayNext(rv);
+      return;
+    }
+    const t = setTimeout(() => setEndNextIn(v => (v == null ? null : v - 1)), 1000);
+    return () => clearTimeout(t);
+  }, [endNextIn, onPlayNext]);
 
   // Heartbeat
   useEffect(() => {
@@ -906,6 +942,18 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // ========== Keyboard handler ==========
   useEffect(() => {
     const handler = (e) => {
+      // End-screen countdown: OK plays the up-next video immediately; any
+      // other key cancels autoplay and continues as normal navigation.
+      if (ended && endNextIn != null) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const rv = relatedRef.current[0];
+          setEndNextIn(null);
+          if (rv && onPlayNext) onPlayNext(rv);
+          return true;
+        }
+        setEndNextIn(null); // cancel, then fall through
+      }
       if (e.keyCode === 461 || e.key === 'Backspace' || e.key === 'GoBack' || e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
@@ -1140,7 +1188,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
     setCustomKeyHandler(handler);
     return () => setCustomKeyHandler(null);
-  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, ended, relatedVideos, partsList, isMultiP, panelTab, upVideos, loadUpVideos, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub]);
+  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, loadUpVideos, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -1195,7 +1243,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           // 480px frames still downscale to a sharp 320px.
           const SC = Math.min(320 / videoshot.w, 1.5);
           thumb = {
-            url: proxyImg(videoshot.images[sheet]),
+            url: proxyImgRaw(videoshot.images[sheet]),
             w: Math.round(videoshot.w * SC), h: Math.round(videoshot.h * SC),
             size: `${Math.round(videoshot.xLen * videoshot.w * SC)}px ${Math.round(videoshot.yLen * videoshot.h * SC)}px`,
             pos: `-${Math.round(col * videoshot.w * SC)}px -${Math.round(row * videoshot.h * SC)}px`,
@@ -1240,6 +1288,38 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           </div>
         );
       })()}
+
+      {/* End screen (YouTube-TV style): dim + up-next autoplay card */}
+      {ended && (
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.55)' }} />
+      )}
+      {ended && endNextIn != null && relatedVideos[0] && (
+        <div style={{
+          position: 'absolute', top: '18%', left: '50%', transform: 'translateX(-50%)',
+          textAlign: 'center', pointerEvents: 'none',
+        }}>
+          <div style={{ fontSize: 20, color: '#bbb', marginBottom: 12 }}>接下来播放</div>
+          <div style={{
+            width: 420, borderRadius: 10, overflow: 'hidden', margin: '0 auto',
+            border: '3px solid rgba(255,255,255,0.85)', boxShadow: '0 8px 30px rgba(0,0,0,0.7)',
+            background: '#101425',
+          }}>
+            <div style={{ width: '100%', height: 236, background: '#0a0d1a' }}>
+              {relatedVideos[0].pic && (
+                <img src={proxyImg(relatedVideos[0].pic)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              )}
+            </div>
+            <div style={{ padding: '10px 14px 12px', fontSize: 18, color: '#fff', lineHeight: 1.4, textAlign: 'left',
+              overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+              {cleanTitle(relatedVideos[0].title)}
+            </div>
+          </div>
+          <div style={{ marginTop: 14, fontSize: 20, color: '#fff' }}>
+            <span style={{ color: '#00a1d6', fontWeight: 700 }}>{endNextIn}</span> 秒后自动播放
+          </div>
+          <div style={{ marginTop: 6, fontSize: 15, color: '#999' }}>按 OK 立即播放 · 按其他键取消</div>
+        </div>
+      )}
 
       {/* Controls bar */}
       <div className={`player-controls ${showControls ? '' : 'hidden'}`}>
@@ -1321,7 +1401,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                             : (nowPlaying ? '3px solid #00a1d6' : 'none'),
                           borderRadius: 6, overflow: 'hidden',
                         }}>
-                        <div style={{ width: '100%', aspectRatio: '16/9', background: '#1a1a2e', borderRadius: 6, overflow: 'hidden', position: 'relative' }}>
+                        <div style={{ width: '100%', height: 0, paddingTop: '56.25%', background: '#1a1a2e', borderRadius: 6, overflow: 'hidden', position: 'relative' }}>
                           {thumb && <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                           {nowPlaying && <div style={{ position: 'absolute', top: 6, left: 6, background: '#00a1d6', color: '#fff', fontSize: 13, padding: '2px 8px', borderRadius: 4 }}>▶ 播放中</div>}
                           {rv.duration != null && <div style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: 13, padding: '1px 6px', borderRadius: 3 }}>

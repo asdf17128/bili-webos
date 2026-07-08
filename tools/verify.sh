@@ -6,13 +6,17 @@
 #
 # Layers (fail-fast top to bottom):
 #   1. syntax   service files must parse as ES2017 (webOS 5 = Node 8)
-#   2. node8    REAL Node 8 via docker: evaluate service.js, drive the fetch
+#   2. static   design-spec + logic gates: no <16px text, no aspect-ratio CSS
+#               (Chromium 68), play-intent policy suite (resume regression)
+#   3. node8    REAL Node 8 via docker: evaluate service.js, drive the fetch
 #               handler + getDiagnostics end-to-end (catches URL-global-type
 #               regressions that took down webOS 5, #10/#13)
-#   3. build    vite production build
-#   4. deploy   build.sh → TV, relaunch app
-#   5. device   CDP: app rendered (sidebar+cards), no broken images, screenshot
+#   4. build    vite production build
+#   5. deploy   build.sh → TV, relaunch app
+#   6. device   CDP: app rendered (sidebar+cards), no broken images, screenshot
 #      (+ test-ui.mjs full smoke with --full)
+#
+# Case registry with evidence per gate: docs/TESTCASES.md
 set -e
 cd "$(dirname "$0")/.."
 NO_TV=""; FULL=""
@@ -21,7 +25,7 @@ for a in "$@"; do
   [ "$a" = "--full" ] && FULL=1
 done
 
-echo "=== [1/5] Service syntax (ES2017 / Node 8) ==="
+echo "=== [1/6] Service syntax (ES2017 / Node 8) ==="
 for f in service/com.biliwebos.app.service/service.js \
          service/com.biliwebos.app.service/danmaku.js \
          service/com.biliwebos.app.service/cast/*.js; do
@@ -30,7 +34,22 @@ done
 echo "OK: all service files parse as ES2017"
 
 echo ""
-echo "=== [2/5] Service on REAL Node 8 (docker) ==="
+echo "=== [2/6] Static gates (design spec + logic) ==="
+# C-UI-01: no visible text below 16px (docs/DESIGN.md; regression 2026-07-08)
+if grep -rn "fontSize: 1[0-5]\b" app/src --include="*.jsx" | grep -v "// spec-exempt"; then
+  echo "FAIL: fontSize <16px found (10-foot spec, docs/DESIGN.md)"; exit 1
+fi
+echo "OK: no <16px inline text"
+# C-UI-02: aspect-ratio CSS needs Chrome 88+; webOS 5/6 are 68/79 (covers collapse)
+if grep -rn "aspectRatio" app/src --include="*.jsx" | grep -v "// spec-exempt"; then
+  echo "FAIL: aspect-ratio CSS found (unsupported on webOS 5/6)"; exit 1
+fi
+echo "OK: no aspect-ratio CSS"
+# C-PLAY-01: play-start policy (resume shipped broken twice before this suite)
+node tools/test-playintent.mjs || { echo "FAIL: play-intent policy"; exit 1; }
+
+echo ""
+echo "=== [3/6] Service on REAL Node 8 (docker) ==="
 if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
   bash tools/test-node8/test.sh | grep -vE "buvid boot|Cast server|proxy on port"
 else
@@ -38,19 +57,19 @@ else
 fi
 
 echo ""
-echo "=== [3/5] App build ==="
+echo "=== [4/6] App build ==="
 (cd app && npx vite build 2>&1 | tail -1)
 
 if [ -n "$NO_TV" ]; then echo ""; echo "=== --no-tv: done ==="; exit 0; fi
 
 echo ""
-echo "=== [4/5] Deploy to TV ==="
+echo "=== [5/6] Deploy to TV ==="
 bash build.sh 2>&1 | tail -1
 node tools/launch.mjs com.biliwebos.app >/dev/null 2>&1 || true
 sleep 8
 
 echo ""
-echo "=== [5/5] On-device check (CDP) ==="
+echo "=== [6/6] On-device check (CDP) ==="
 node tools/eval.mjs "(function(){
   var cards = document.querySelectorAll('[data-focus-id]').length;
   var sidebar = !!document.querySelector('.sidebar');

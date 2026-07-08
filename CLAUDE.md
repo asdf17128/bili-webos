@@ -28,6 +28,7 @@ bash tools/verify.sh
 ```
 
 Testing methodology lives in the `tv-test` skill (.claude/skills/tv-test/SKILL.md).
+Development loop + release gate: docs/DEVELOPMENT.md · Regression case registry: docs/TESTCASES.md
 
 ## Project Structure
 

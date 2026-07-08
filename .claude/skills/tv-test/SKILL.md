@@ -55,6 +55,11 @@ bash tools/verify.sh --full   # 额外跑真机 UI smoke(test-ui.mjs,~3分钟)
 - **悬浮 UI(气泡/弹层)**:`getBoundingClientRect` 只给布局位置,**测不出 overflow 裁剪** —— 必须截图看像素。`.player-controls` 是 `overflow-y:auto`,往上探出的元素会被静默裁掉(v1.2.4 预览气泡被裁就是这么漏掉的);悬浮层挂到根节点。
 - **播放器改动**:`ended` 决策逻辑(收藏连播 vs 分P)可用真实数据在本地 node 里跑决策函数做确定性验证,比 flaky 的真机播放可靠。
 
+## Case 沉淀(硬性规则)
+
+开发完成 → 验证过的场景**必须**追加到 `docs/TESTCASES.md`(带事实佐证:抓过的真 bug 或正对照记录);
+发布前按 `docs/DEVELOPMENT.md` 的门禁清单回归。能自动化的 case 升级进 `tools/verify.sh`。
+
 ## 丰富本 skill
 
 每次踩到新坑/建立新方法,追加到对应小节。宁可啰嗦,不可失传。

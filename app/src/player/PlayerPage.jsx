@@ -6,6 +6,7 @@ import { formatDuration, formatTime, QUALITY_MAP, cleanTitle } from '../utils/fo
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
 import DanmakuLayer from './DanmakuLayer';
+import { t } from '../i18n';
 
 // Proxy + resize card thumbnails (same as VideoCard): the proxy adds the
 // Referer B站 image CDN needs, and @672w webp keeps the TV's image decoder from
@@ -63,7 +64,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // Multi-part (分P) videos: the parts replace 相关推荐 with a 选集 list, and
   // playing one auto-advances to the next part on end (#11).
   const [isMultiP, setIsMultiP] = useState(false);
-  const [partsLabel, setPartsLabel] = useState('选集');
+  const [partsLabel, setPartsLabel] = useState(t('选集'));
   const [partsList, setPartsList] = useState([]); // 选集/合集 items (separate from 相关推荐)
   const partsRef = useRef([]);
   // YouTube-style deferred seek (scrub): arrows move a GHOST playhead with a
@@ -134,7 +135,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         // Older webOS engines may lack MSE/EME — surface it instead of a
         // silent black screen / endless spinner.
         setLoading(false);
-        setErrorMsg('当前设备不支持视频播放(浏览器内核过旧)');
+        setErrorMsg(t('当前设备不支持视频播放(浏览器内核过旧)'));
         setLoadError(true);
         return;
       }
@@ -423,7 +424,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           const result = info?.result || info?.data || {};
           const eps = (result.episodes || []).map(e => ({
             isBangumi: true, epid: e.id, cid: e.cid,
-            title: e.long_title ? `第${e.title}话 ${e.long_title}` : (e.share_copy || `第${e.title}话`),
+            title: e.long_title ? t('第{n}话', { n: e.title }) + ' ' + e.long_title : (e.share_copy || t('第{n}话', { n: e.title })),
             pic: e.cover, owner: { name: result.season_title || '' },
           }));
           setRelatedVideos(eps.slice(0, 60));
@@ -439,7 +440,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             title: `P${p.page} ${p.part || ''}`.trim(), duration: p.duration,
             pic: video.pic, owner: { name: ownerName || '' },
           }));
-          setPartsLabel(`选集 · ${parts.length}P`);
+          setPartsLabel(t('选集 · {n}P', { n: parts.length }));
         } else if (ugcSeason && (ugcSeason.sections || []).some(s => (s.episodes || []).length > 1)) {
           // 合集: separate videos (own bvid) grouped into a series.
           (ugcSeason.sections || []).forEach(sec => (sec.episodes || []).forEach(e => parts.push({
@@ -447,7 +448,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             title: e.title, duration: e.arc?.duration, pic: e.arc?.pic || e.cover,
             owner: { name: ownerName || '' },
           })));
-          setPartsLabel(`合集 · ${parts.length}`);
+          setPartsLabel(t('合集 · {n}', { n: parts.length }));
         }
         partsRef.current = parts;
         setPartsList(parts);
@@ -1202,7 +1203,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: 'rgba(0,0,0,0.8)', zIndex: 50 }}>
-          <div className="loading"><div className="loading-spinner" />加载中...</div>
+          <div className="loading"><div className="loading-spinner" />{t('加载中...')}</div>
         </div>
       )}
 
@@ -1210,9 +1211,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           gap: 16, background: 'rgba(0,0,0,0.85)', zIndex: 50 }}>
-          <div style={{ fontSize: 26, color: '#fff' }}>{errorMsg || '视频加载失败'}</div>
+          <div style={{ fontSize: 26, color: '#fff' }}>{errorMsg || t('视频加载失败')}</div>
           <div style={{ fontSize: 18, color: '#aaa' }}>
-            {errorMsg ? '请按返回键退出' : '该视频源节点异常,请按返回键重试或换一个视频'}
+            {errorMsg ? t('请按返回键退出') : t('该视频源节点异常,请按返回键重试或换一个视频')}
           </div>
         </div>
       )}
@@ -1298,7 +1299,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           position: 'absolute', top: '14%', left: '50%', transform: 'translateX(-50%)',
           textAlign: 'center', pointerEvents: 'none',
         }}>
-          <div style={{ fontSize: 22, color: '#aeb4bd', marginBottom: 14, letterSpacing: 6 }}>接下来播放</div>
+          <div style={{ fontSize: 22, color: '#aeb4bd', marginBottom: 14, letterSpacing: 6 }}>{t('接下来播放')}</div>
           <div style={{
             width: 560, borderRadius: 12, overflow: 'hidden', margin: '0 auto',
             border: '1px solid rgba(255,255,255,0.16)',
@@ -1324,7 +1325,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             </div>
           </div>
           <div style={{ marginTop: 14, fontSize: 20, color: '#9aa0a8' }}>
-            {endNextIn} 秒后自动播放&nbsp;&nbsp;·&nbsp;&nbsp;OK 立即播放&nbsp;&nbsp;·&nbsp;&nbsp;其他键取消
+            {t('{n} 秒后自动播放', { n: endNextIn })}&nbsp;&nbsp;·&nbsp;&nbsp;{t('OK 立即播放')}&nbsp;&nbsp;·&nbsp;&nbsp;{t('其他键取消')}
           </div>
         </div>
       )}
@@ -1358,8 +1359,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         <div className="player-btns">
           {CONTROLS.map((btn, i) => (
             <button key={btn} className={`player-btn ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''}`}>
-              {btn === 'play' ? (ended ? '↻ 重播' : playing ? '⏸ 暂停' : '▶ 播放') :
-                btn === 'danmaku' ? (danmakuEnabled ? '弹幕 开' : '弹幕 关') :
+              {btn === 'play' ? (ended ? t('↻ 重播') : playing ? t('⏸ 暂停') : t('▶ 播放')) :
+                btn === 'danmaku' ? (danmakuEnabled ? t('弹幕 开') : t('弹幕 关')) :
                   QUALITY_MAP[currentQuality] || `${currentQuality}`}
             </button>
           ))}
@@ -1377,8 +1378,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           <div style={{ marginTop: 16, paddingBottom: 10 }}>
             <div className="panel-tab-row" style={{ display: 'flex', gap: 14, marginBottom: 12 }}>
               {(isMultiP
-                ? [['parts', partsLabel], ['related', '相关推荐'], ['up', upName ? `UP主投稿 · ${upName}` : 'UP主投稿']]
-                : [['related', '相关推荐'], ['up', upName ? `UP主投稿 · ${upName}` : 'UP主投稿']]
+                ? [['parts', partsLabel], ['related', t('相关推荐')], ['up', upName ? t('UP主投稿 · {name}', { name: upName }) : t('UP主投稿')]]
+                : [['related', t('相关推荐')], ['up', upName ? t('UP主投稿 · {name}', { name: upName }) : t('UP主投稿')]]
               ).map(([key, label]) => (
                 <div key={key} style={{
                   padding: '6px 18px', fontSize: 18, borderRadius: 6,
@@ -1393,7 +1394,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               const list = panelTab === 'parts' ? partsList : panelTab === 'up' ? upVideos : relatedVideos;
               if (list.length === 0) {
                 return <div style={{ color: '#888', fontSize: 18, padding: '20px 4px' }}>
-                  {panelTab === 'up' ? (upMidRef.current ? '加载中…' : '暂无 UP 主信息') : panelTab === 'parts' ? '暂无选集' : '暂无相关推荐'}
+                  {panelTab === 'up' ? (upMidRef.current ? t('加载中…') : t('暂无 UP 主信息')) : panelTab === 'parts' ? t('暂无选集') : t('暂无相关推荐')}
                 </div>;
               }
               return (
@@ -1411,7 +1412,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                         }}>
                         <div style={{ width: '100%', height: 0, paddingTop: '56.25%', background: '#1a1a2e', borderRadius: 6, overflow: 'hidden', position: 'relative' }}>
                           {thumb && <img src={thumb} alt="" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
-                          {nowPlaying && <div style={{ position: 'absolute', top: 6, left: 6, background: '#00a1d6', color: '#fff', fontSize: 16, padding: '2px 9px', borderRadius: 4 }}>▶ 播放中</div>}
+                          {nowPlaying && <div style={{ position: 'absolute', top: 6, left: 6, background: '#00a1d6', color: '#fff', fontSize: 16, padding: '2px 9px', borderRadius: 4 }}>{t('▶ 播放中')}</div>}
                           {rv.duration != null && <div style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: 16, padding: '1px 7px', borderRadius: 3 }}>
                             {typeof rv.duration === 'number' ? formatDuration(rv.duration) : rv.duration}
                           </div>}

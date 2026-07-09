@@ -3,6 +3,7 @@ import { getLiveStreamUrl, getRoomInit, getDanmuInfo, getBuvid3, danmakuSubscrib
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
 import LiveDanmakuLayer from './LiveDanmakuLayer';
+import { t } from '../i18n';
 
 export default function LivePlayerPage({ room, onBack }) {
   const videoRef = useRef(null);
@@ -147,7 +148,7 @@ export default function LivePlayerPage({ room, onBack }) {
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: 'rgba(0,0,0,0.8)', zIndex: 50 }}>
-          <div className="loading"><div className="loading-spinner" />加载直播...</div>
+          <div className="loading"><div className="loading-spinner" />{t('加载直播...')}</div>
         </div>
       )}
 
@@ -160,10 +161,10 @@ export default function LivePlayerPage({ room, onBack }) {
         }}>
           <div style={{ fontSize: 28, color: '#fff', fontWeight: 600 }}>{room.title}</div>
           <div style={{ fontSize: 20, color: '#aaa', marginTop: 8 }}>
-            {room.owner?.name || ''} · 直播中
+            {room.owner?.name || ''} · {t('直播中')}
           </div>
           <div style={{ fontSize: 16, color: '#888', marginTop: 6 }}>
-            OK 键：弹幕 {danmakuEnabled ? '开' : '关'}
+            {t('OK 键：弹幕')} {danmakuEnabled ? t('开') : t('关')}
           </div>
         </div>
       )}

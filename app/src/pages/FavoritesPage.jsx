@@ -3,6 +3,7 @@ import { getFavFolders, getFavList } from '../api/client';
 import VideoGrid from '../components/VideoGrid';
 import { storage } from '../utils/storage';
 import { useFocusable, getCurrentFocusId, setFocus, onFocusChange, isHoverDriven } from '../hooks/useFocus';
+import { t } from '../i18n';
 
 // A single folder chip in the top selector row (focus group 'content', row 0).
 // Styling lives in styles.css so the global `.focused` class gives the chip a
@@ -102,14 +103,14 @@ export default function FavoritesPage({ userMid, onPlayVideo }) {
     });
   }, [videos.length, folders, activeFolder]);
 
-  if (!userMid) return <div><div className="page-title">收藏夹</div><div className="empty-state">请先登录</div></div>;
+  if (!userMid) return <div><div className="page-title">{t('收藏夹')}</div><div className="empty-state">{t('请先登录')}</div></div>;
 
   return (
     <div style={{ height: '100%', overflow: 'hidden' }}>
       {/* Folder selector (focus row 0). Selecting a chip switches folder. */}
       <div style={{ padding: '20px 40px 6px', whiteSpace: 'nowrap', overflow: 'hidden' }}>
         {folders.length === 0
-          ? <span style={{ color: '#888', fontSize: 16 }}>{loading ? '加载收藏夹…' : '暂无收藏夹'}</span>
+          ? <span style={{ color: '#888', fontSize: 16 }}>{loading ? t('加载收藏夹…') : t('暂无收藏夹')}</span>
           : folders.map((f, i) => (
             <FolderChip key={f.id} folder={f} idx={i} active={i === activeFolder}
               // Focus already switched the folder; OK just drops into the grid.
@@ -118,9 +119,9 @@ export default function FavoritesPage({ userMid, onPlayVideo }) {
       </div>
 
       {loading ? (
-        <div className="loading"><div className="loading-spinner" />加载中...</div>
+        <div className="loading"><div className="loading-spinner" />{t('加载中...')}</div>
       ) : videos.length === 0 ? (
-        <div className="empty-state">这个收藏夹是空的</div>
+        <div className="empty-state">{t('这个收藏夹是空的')}</div>
       ) : (
         <VideoGrid
           videos={videos}

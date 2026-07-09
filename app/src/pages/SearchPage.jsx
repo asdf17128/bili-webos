@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { searchVideo } from '../api/client';
 import VideoCard from '../components/VideoCard';
 import OSKey from '../components/OSKey';
+import { t } from '../i18n';
 
 const KEYBOARD_ROWS = [
   ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
@@ -43,11 +44,11 @@ export default function SearchPage({ onPlayVideo }) {
 
   return (
     <div className="search-container" style={{ overflowY: 'auto' }}>
-      <div className="page-title" style={{ padding: 0 }}>搜索</div>
+      <div className="page-title" style={{ padding: 0 }}>{t('搜索')}</div>
 
       <div className="search-bar">
         <div className="search-input" style={{ display: 'flex', alignItems: 'center' }}>
-          {keyword || <span style={{ color: '#555' }}>输入关键词...</span>}
+          {keyword || <span style={{ color: '#555' }}>{t('输入关键词...')}</span>}
         </div>
       </div>
 
@@ -63,7 +64,7 @@ export default function SearchPage({ onPlayVideo }) {
                   row={rowIdx}
                   col={colIdx}
                   group="content"
-                  label={key}
+                  label={isAction ? t(key) : key}
                   isAction={isAction}
                   onPress={() => {
                     if (key === '删除') setKeyword(prev => prev.slice(0, -1));
@@ -78,12 +79,12 @@ export default function SearchPage({ onPlayVideo }) {
       </div>
 
       {loading ? (
-        <div className="loading" style={{ marginTop: 30 }}><div className="loading-spinner" />搜索中...</div>
+        <div className="loading" style={{ marginTop: 30 }}><div className="loading-spinner" />{t('搜索中...')}</div>
       ) : searched && results.length === 0 ? (
-        <div className="empty-state">未找到相关视频</div>
+        <div className="empty-state">{t('未找到相关视频')}</div>
       ) : results.length > 0 ? (
         <div style={{ marginTop: 18 }}>
-          <div style={{ fontSize: 18, color: '#aaa', margin: '0 4px 14px' }}>搜索结果</div>
+          <div style={{ fontSize: 18, color: '#aaa', margin: '0 4px 14px' }}>{t('搜索结果')}</div>
           <div style={{
             display: 'grid',
             gridTemplateColumns: `repeat(${RESULT_COLS}, 1fr)`,
@@ -105,7 +106,7 @@ export default function SearchPage({ onPlayVideo }) {
         </div>
       ) : (
         <div style={{ color: '#666', fontSize: 16, marginTop: 24, textAlign: 'center' }}>
-          输入关键词后选「搜索」
+          {t('输入关键词后选「搜索」')}
         </div>
       )}
     </div>

@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { qrCodeGenerate, qrCodePoll } from '../api/client';
 import { storage } from '../utils/storage';
 import QRCode from 'qrcode';
+import { t } from '../i18n';
 
 const STATUS_TEXT = {
-  waiting: '请使用哔哩哔哩手机客户端扫描二维码',
-  scanned: '已扫描，请在手机上确认登录',
-  expired: '二维码已过期，正在刷新...',
-  success: '登录成功！',
-  error: '登录失败，请重试',
+  waiting: t('请使用哔哩哔哩手机客户端扫描二维码'),
+  scanned: t('已扫描，请在手机上确认登录'),
+  expired: t('二维码已过期，正在刷新...'),
+  success: t('登录成功！'),
+  error: t('登录失败，请重试'),
 };
 
 export default function LoginPage({ onLogin }) {

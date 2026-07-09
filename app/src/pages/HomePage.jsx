@@ -4,6 +4,7 @@ import VideoGrid from '../components/VideoGrid';
 import { getCurrentFocusId, setFocus, onFocusChange, isHoverDriven } from '../hooks/useFocus';
 import { storage } from '../utils/storage';
 import { loadFollowedMids } from '../utils/follow';
+import { t } from '../i18n';
 
 const FETCH_SIZE = 20;
 
@@ -136,7 +137,7 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
   }, [videos.length, mode]);
 
   if (loading) {
-    return <div className="loading"><div className="loading-spinner" />加载中...</div>;
+    return <div className="loading"><div className="loading-spinner" />{t('加载中...')}</div>;
   }
 
   return (

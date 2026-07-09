@@ -11,6 +11,7 @@ import SearchPage from './pages/SearchPage';
 import SettingsPage from './pages/SettingsPage';
 import FavoritesPage from './pages/FavoritesPage';
 import ConfigPage from './pages/ConfigPage';
+import { t } from './i18n';
 // Lazy-loaded so the video engine (Shaka Player) is NOT pulled into the startup
 // bundle. On older webOS (6.x / Chromium 79) Shaka's module init throws at load
 // and blanked the entire app — even the home screen (issue #10). Deferring it
@@ -20,15 +21,15 @@ const PlayerPage = lazy(() => import('./player/PlayerPage'));
 const LivePlayerPage = lazy(() => import('./player/LivePlayerPage'));
 
 const NAV_ITEMS = [
-  { key: 'recommend', label: '推荐', icon: '🏠' },
-  { key: 'hot', label: '热门', icon: '🔥' },
-  { key: 'live', label: '直播', icon: '📡' },
-  { key: 'partition', label: '分区', icon: '📁' },
-  { key: 'follow', label: '关注', icon: '👤' },
-  { key: 'favorites', label: '收藏', icon: '⭐' },
-  { key: 'search', label: '搜索', icon: '🔍', dividerBefore: true },
-  { key: 'settings', label: '我的', icon: '🕘' },
-  { key: 'config', label: '设置', icon: '⚙️' },
+  { key: 'recommend', label: () => t('推荐'), icon: '🏠' },
+  { key: 'hot', label: () => t('热门'), icon: '🔥' },
+  { key: 'live', label: () => t('直播'), icon: '📡' },
+  { key: 'partition', label: () => t('分区'), icon: '📁' },
+  { key: 'follow', label: () => t('关注'), icon: '👤' },
+  { key: 'favorites', label: () => t('收藏'), icon: '⭐' },
+  { key: 'search', label: () => t('搜索'), icon: '🔍', dividerBefore: true },
+  { key: 'settings', label: () => t('我的'), icon: '🕘' },
+  { key: 'config', label: () => t('设置'), icon: '⚙️' },
 ];
 
 // Detect a bangumi (PGC) item across the shapes it arrives in: watch history
@@ -76,7 +77,7 @@ function Sidebar({ activePage, onPreview, onSelect, user }) {
           <SidebarItem
             id={`sidebar-${i}-0`}
             row={i}
-            label={item.label}
+            label={item.label()}
             icon={item.icon}
             active={activePage === item.key}
             onSelect={() => onSelect(item.key)}
@@ -93,7 +94,7 @@ function Sidebar({ activePage, onPreview, onSelect, user }) {
             <div className="sidebar-user-name">{user.uname}</div>
           </>
         ) : (
-          <div className="sidebar-user-login">未登录</div>
+          <div className="sidebar-user-login">{t('未登录')}</div>
         )}
       </div>
     </div>
@@ -132,7 +133,7 @@ export default function App() {
           setPlayerVideo(null);
           setLiveRoom({
             roomid: command.roomId,
-            title: command.title || '投屏直播',
+            title: command.title || t('投屏直播'),
             owner: { name: '' },
           });
         } else {
@@ -142,7 +143,7 @@ export default function App() {
             bvid: command.bvid,
             cid: command.cid,
             epid: command.epid,
-            title: command.title || '投屏视频',
+            title: command.title || t('投屏视频'),
             owner: { name: '' },
             fromCast: true,
           }, Number(command.seekTs || 0)));
@@ -222,7 +223,7 @@ export default function App() {
     setShowLogin(false);
     setLoggedIn(true);
     loadUserInfo();
-    showToastMsg('登录成功');
+    showToastMsg(t('登录成功'));
     setPage('recommend');
   }, [loadUserInfo]);
 
@@ -230,7 +231,7 @@ export default function App() {
     storage.clearAuth();
     setUser(null);
     setLoggedIn(false);
-    showToastMsg('已退出登录');
+    showToastMsg(t('已退出登录'));
     setPage('recommend');
   }, []);
 
@@ -259,7 +260,7 @@ export default function App() {
           if (pl[j]?.bvid) { setPlayerVideo({ ...pl[j], playlist: pl, playlistIndex: j }); return; }
         }
       }
-      showToastMsg('无法播放此视频'); return;
+      showToastMsg(t('无法播放此视频')); return;
     }
     setPlayerVideo(video);
   }, []);
@@ -304,7 +305,7 @@ export default function App() {
       </div>
 
       {(playerVideo || liveRoom) && (
-        <Suspense fallback={<div style={{ position: 'fixed', inset: 0, zIndex: 150, background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20 }}>加载播放器…</div>}>
+        <Suspense fallback={<div style={{ position: 'fixed', inset: 0, zIndex: 150, background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20 }}>{t('加载播放器…')}</div>}>
           {playerVideo && <PlayerPage key={`${playerVideo.bvid || playerVideo.epid || playerVideo.aid || ''}-${playerVideo.cid || playerVideo.epid || ''}`} video={playerVideo} onBack={() => setPlayerVideo(null)} onPlayNext={(v) => setPlayerVideo(normalizePlay(v))} />}
           {liveRoom && <LivePlayerPage key={liveRoom.roomid} room={liveRoom} onBack={() => setLiveRoom(null)} />}
         </Suspense>

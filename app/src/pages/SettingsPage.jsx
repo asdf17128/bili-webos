@@ -3,6 +3,7 @@ import { storage } from '../utils/storage';
 import { getHistory, getLiveRoomInfo } from '../api/client';
 import VideoCard from '../components/VideoCard';
 import { useFocusable } from '../hooks/useFocus';
+import { t } from '../i18n';
 
 // 扫码登录 button shown when logged out — the 我的 page previously had no way to
 // summon the login QR (only 关注/收藏 triggered it) (#11).
@@ -12,8 +13,8 @@ function LoginButton({ onRequestLogin }) {
   });
   return (
     <div {...props} className="settings-row" style={{ maxWidth: 420, marginTop: 18 }}>
-      <span>扫码登录</span>
-      <span className="settings-row-value">按 OK 显示二维码</span>
+      <span>{t('扫码登录')}</span>
+      <span className="settings-row-value">{t('按 OK 显示二维码')}</span>
     </div>
   );
 }
@@ -46,7 +47,7 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
         return {
           kind: 'live', isLive: true, ts, roomid, bvid: 'live-' + roomid,
           title: item.title, pic: item.cover, owner: { name: item.author_name },
-          duration: '未开播',
+          duration: t('未开播'),
         };
       }
       const isBangumi = h.business === 'pgc' || item.badge === '番剧';
@@ -87,7 +88,7 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
         .map(r => ({
           kind: 'live', isLive: true, roomid: r.roomid, bvid: 'live-' + r.roomid,
           title: r.title, pic: r.cover, owner: { name: r.uname },
-          ts: r.ts || 0, duration: '未开播',
+          ts: r.ts || 0, duration: t('未开播'),
         }));
 
       const merged = [...history, ...localLive].sort((a, b) => (b.ts || 0) - (a.ts || 0));
@@ -99,7 +100,7 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
           const info = res?.data?.room_info;
           if (info) {
             const status = info.live_status; // 0 未开播 / 1 直播 / 2 轮播
-            it.duration = status === 1 ? '🔴 直播' : (status === 2 ? '轮播' : '未开播');
+            it.duration = status === 1 ? t('🔴 直播') : (status === 2 ? t('轮播') : t('未开播'));
             it.pic = info.cover || info.keyframe || it.pic;
             if (info.title) it.title = info.title;
           }
@@ -130,14 +131,14 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
             : (user?.uname || '游')[0]}
         </div>
         <div>
-          <div style={{ fontSize: 26, fontWeight: 600, color: '#fff' }}>{user ? user.uname : '未登录'}</div>
-          <div style={{ fontSize: 18, color: '#8a8a9c', marginTop: 4 }}>哔哩哔哩 webOS</div>
+          <div style={{ fontSize: 26, fontWeight: 600, color: '#fff' }}>{user ? user.uname : t('未登录')}</div>
+          <div style={{ fontSize: 18, color: '#8a8a9c', marginTop: 4 }}>{t('哔哩哔哩 webOS')}</div>
         </div>
       </div>
 
       {!user && <LoginButton onRequestLogin={onRequestLogin} />}
 
-      <div style={{ fontSize: 20, color: '#aaa', margin: '18px 0 14px' }}>最近观看</div>
+      <div style={{ fontSize: 20, color: '#aaa', margin: '18px 0 14px' }}>{t('最近观看')}</div>
       {items.length > 0 ? (
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 20 }}>
           {items.map((v, i) => {
@@ -158,7 +159,7 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
         </div>
       ) : (
         <div style={{ color: '#666', fontSize: 16 }}>
-          {loading ? '加载中…' : (user ? '暂无观看记录' : '登录后可查看视频历史')}
+          {loading ? t('加载中…') : (user ? t('暂无观看记录') : t('登录后可查看视频历史'))}
         </div>
       )}
     </div>

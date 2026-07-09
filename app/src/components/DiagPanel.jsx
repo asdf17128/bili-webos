@@ -3,6 +3,7 @@ import qrcode from 'qrcode-generator';
 import { apiFetch, getRecommend, getServiceDiagnostics } from '../api/client';
 import { getErrors } from '../utils/errlog';
 import { APP_VERSION } from '../version';
+import { t } from '../i18n';
 
 // 网络诊断 (#10/#13): one screen that tells us WHY the app fails on a TV we
 // can't touch. Runs the full chain (Luna service → api → wbi/risk-control →
@@ -15,7 +16,7 @@ const REPO_ISSUE_URL = 'https://github.com/asdf17128/bili-webos/issues/new';
 // A well-known stable video for the playurl probe (B站 first video, av2).
 const PROBE_BVID = 'BV1xx411c7mD';
 
-function ago(t) { return Math.round((Date.now() - t) / 1000) + 's前'; }
+function ago(ts) { return t('{n}s前', { n: Math.round((Date.now() - ts) / 1000) }); }
 
 export default function DiagPanel() {
   const [rows, setRows] = useState([]);   // {name, status: 'run'|'ok'|'fail'|'skip', detail}
@@ -42,7 +43,7 @@ export default function DiagPanel() {
         svc = await getServiceDiagnostics();
         if (!dead) setSvcInfo(svc);
         push('后台服务', 'ok',
-          `Node ${svc.nodeVersion || '?'} · buvid ${svc.buvid ? '✓' : '✗'} · 弹幕模块 ${svc.danmakuModule ? '✓' : '✗'} · 运行 ${svc.uptimeSec != null ? svc.uptimeSec + 's' : '?'}`);
+          t('Node {v} · buvid {b} · 弹幕模块 {d} · 运行 {u}', { v: svc.nodeVersion || '?', b: svc.buvid ? '✓' : '✗', d: svc.danmakuModule ? '✓' : '✗', u: svc.uptimeSec != null ? svc.uptimeSec + 's' : '?' }));
       } catch (e) {
         push('后台服务', 'fail', e.message);
       }
@@ -53,8 +54,8 @@ export default function DiagPanel() {
       try {
         const j = await apiFetch('/x/web-interface/nav');
         const code = j && j.code;
-        if (code === 0) push('API 连通', 'ok', `已登录 ${j.data && j.data.uname ? j.data.uname : ''}`);
-        else if (code === -101) push('API 连通', 'ok', 'code=-101 (未登录,链路正常)');
+        if (code === 0) push('API 连通', 'ok', t('已登录 {name}', { name: j.data && j.data.uname ? j.data.uname : '' }));
+        else if (code === -101) push('API 连通', 'ok', t('code=-101 (未登录,链路正常)'));
         else push('API 连通', 'fail', 'code=' + code);
       } catch (e) { push('API 连通', 'fail', e.message); }
 
@@ -64,8 +65,8 @@ export default function DiagPanel() {
         const j = await getRecommend(4, 3);
         const code = j && j.code;
         const n = j && j.data && j.data.item ? j.data.item.length : 0;
-        if (code === 0 && n > 0) push('推荐流(风控)', 'ok', `返回 ${n} 条`);
-        else if (code === -352) push('推荐流(风控)', 'fail', 'code=-352 风控拦截(常见于海外 IP)');
+        if (code === 0 && n > 0) push('推荐流(风控)', 'ok', t('返回 {n} 条', { n }));
+        else if (code === -352) push('推荐流(风控)', 'fail', t('code=-352 风控拦截(常见于海外 IP)'));
         else push('推荐流(风控)', 'fail', `code=${code} items=${n}`);
       } catch (e) { push('推荐流(风控)', 'fail', e.message); }
 
@@ -84,11 +85,11 @@ export default function DiagPanel() {
       push('图片代理', 'run', '');
       const port = (svc && svc.localProxyPort) || 7654;
       await new Promise((resolve) => {
-        if (typeof window.webOS === 'undefined') { push('图片代理', 'skip', '浏览器模式跳过'); resolve(); return; }
+        if (typeof window.webOS === 'undefined') { push('图片代理', 'skip', t('浏览器模式跳过')); resolve(); return; }
         const img = new Image();
-        const timer = setTimeout(() => { push('图片代理', 'fail', '超时(8s)'); resolve(); }, 8000);
+        const timer = setTimeout(() => { push('图片代理', 'fail', t('超时(8s)')); resolve(); }, 8000);
         img.onload = () => { clearTimeout(timer); push('图片代理', 'ok', ':' + port); resolve(); };
-        img.onerror = () => { clearTimeout(timer); push('图片代理', 'fail', ':' + port + ' 加载失败'); resolve(); };
+        img.onerror = () => { clearTimeout(timer); push('图片代理', 'fail', ':' + port + ' ' + t('加载失败')); resolve(); };
         img.src = 'http://127.0.0.1:' + port + '/proxy/i0.hdslb.com/bfs/face/member/noface.jpg?_t=' + Date.now();
       });
 
@@ -134,12 +135,12 @@ export default function DiagPanel() {
         <div style={{ flex: 1, minWidth: 0 }}>
           {rows.map(r => (
             <div key={r.name} style={{ fontSize: 18, lineHeight: 1.9, color: r.status === 'fail' ? '#ff7a7a' : '#ccc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {ICON[r.status] || ''} {r.name}{r.detail ? ` — ${r.detail}` : ''}
+              {ICON[r.status] || ''} {t(r.name)}{r.detail ? ` — ${r.detail}` : ''}
             </div>
           ))}
           {svcInfo && svcInfo.recentErrors && svcInfo.recentErrors.length > 0 && (
             <div style={{ marginTop: 8, fontSize: 16, color: '#c96' }}>
-              服务近期错误:
+              {t('服务近期错误:')}
               {svcInfo.recentErrors.slice(-4).map((e, i) => (
                 <div key={i} style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ago(e.t)} [{e.tag}] {e.d}</div>
               ))}
@@ -151,7 +152,7 @@ export default function DiagPanel() {
             <div style={{ background: '#fff', borderRadius: 8, padding: 6, display: 'inline-block' }}
               dangerouslySetInnerHTML={{ __html: qrSvg }} />
             <div style={{ fontSize: 16, color: '#999', marginTop: 8, lineHeight: 1.5 }}>
-              手机扫码 → 自动生成 GitHub 反馈(内容可先检查,提交前不会发送任何数据)
+              {t('手机扫码 → 自动生成 GitHub 反馈(内容可先检查,提交前不会发送任何数据)')}
             </div>
           </div>
         )}

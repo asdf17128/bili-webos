@@ -1,6 +1,13 @@
-// Format view/play count: 12345 -> 1.2万
+import { getLocale, t } from '../i18n/index.js';
+
+// Format view/play count: zh 12345 -> 1.2万 · en 12345 -> 12.3K
 export function formatCount(n) {
   if (!n && n !== 0) return '';
+  if (getLocale() !== 'zh') {
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+    return String(n);
+  }
   if (n >= 100000000) return (n / 100000000).toFixed(1) + '亿';
   if (n >= 10000) return (n / 10000).toFixed(1) + '万';
   return String(n);
@@ -23,10 +30,10 @@ export function formatTime(ts) {
   if (!ts) return '';
   const now = Date.now() / 1000;
   const diff = now - ts;
-  if (diff < 60) return '刚刚';
-  if (diff < 3600) return Math.floor(diff / 60) + '分钟前';
-  if (diff < 86400) return Math.floor(diff / 3600) + '小时前';
-  if (diff < 2592000) return Math.floor(diff / 86400) + '天前';
+  if (diff < 60) return t('刚刚');
+  if (diff < 3600) return t('{n}分钟前', { n: Math.floor(diff / 60) });
+  if (diff < 86400) return t('{n}小时前', { n: Math.floor(diff / 3600) });
+  if (diff < 2592000) return t('{n}天前', { n: Math.floor(diff / 86400) });
   const d = new Date(ts * 1000);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
@@ -43,7 +50,7 @@ export function cleanTitle(s) {
 // Quality code to label
 export const QUALITY_MAP = {
   127: '8K',
-  126: '杜比视界',
+  126: t('杜比视界'),
   125: 'HDR',
   120: '4K',
   116: '1080P60',

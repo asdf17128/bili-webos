@@ -1,11 +1,12 @@
 import React, { useMemo } from 'react';
 import VideoCard from './VideoCard';
+import { t } from '../i18n';
 
 // Use transform:translateY for scrolling instead of overflow:scroll
 // This pushes scroll to GPU compositor, avoiding layout recalculation
 export default React.memo(function VideoGrid({ videos, group = 'content', startRow = 0, cols = 2, onSelect, focusRow = 0, followedMids = null }) {
   if (!videos || videos.length === 0) {
-    return <div className="empty-state">暂无内容</div>;
+    return <div className="empty-state">{t('暂无内容')}</div>;
   }
 
   // Calculate scroll offset based on which row is focused. Row height scales

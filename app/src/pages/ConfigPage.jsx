@@ -4,6 +4,7 @@ import { useFocusable } from '../hooks/useFocus';
 import { getLatestVersion } from '../api/client';
 import { APP_VERSION, compareVersions } from '../version';
 import DiagPanel from '../components/DiagPanel';
+import { t, getLocale, setLanguage, availableLanguages } from '../i18n';
 
 const CONTACT_EMAIL = 'asdf17128@gmail.com';
 
@@ -22,18 +23,18 @@ export default function ConfigPage({ onLogout, user }) {
   async function checkForUpdate() {
     if (checking.current) return;
     checking.current = true;
-    setUpdateMsg('检查中…');
+    setUpdateMsg(t('检查中…'));
     try {
       const latest = await getLatestVersion();
-      if (!latest) { setUpdateMsg('检查失败,请稍后再试'); return; }
+      if (!latest) { setUpdateMsg(t('检查失败,请稍后再试')); return; }
       if (compareVersions(latest, APP_VERSION) > 0) {
         setHasUpdate(true);
-        setUpdateMsg(`发现新版 v${latest} — 按 OK 打开应用商店更新`);
+        setUpdateMsg(t('发现新版 v{v} — 按 OK 打开应用商店更新', { v: latest }));
       } else {
-        setUpdateMsg(`已是最新 (v${APP_VERSION})`);
+        setUpdateMsg(t('已是最新 (v{v})', { v: APP_VERSION }));
       }
     } catch {
-      setUpdateMsg('检查更新失败,请检查网络后重试');
+      setUpdateMsg(t('检查更新失败,请检查网络后重试'));
     } finally {
       checking.current = false;
     }
@@ -46,7 +47,7 @@ export default function ConfigPage({ onLogout, user }) {
   // Updates are installed by the webosbrew Homebrew Channel (it pulls the new
   // ipk from the GitHub release). When an update exists, open it for the user.
   function openHomebrewChannel() {
-    const fallback = () => setUpdateMsg('请在 Homebrew Channel 中更新');
+    const fallback = () => setUpdateMsg(t('请在 Homebrew Channel 中更新'));
     try {
       if (!window.webOS?.service?.request) { fallback(); return; }
       // Launch via the public applicationManager bus. webOS.service.request
@@ -83,7 +84,7 @@ export default function ConfigPage({ onLogout, user }) {
 
   // 弹幕字号 — cycle 标准 → 大 → 特大 → 小 on OK.
   const DM_SCALES = [
-    { v: 1, label: '标准' }, { v: 1.3, label: '大' }, { v: 1.6, label: '特大' }, { v: 0.8, label: '小' },
+    { v: 1, label: t('标准') }, { v: 1.3, label: t('大') }, { v: 1.6, label: t('特大') }, { v: 0.8, label: t('小') },
   ];
   const { props: danmakuScaleProps } = useFocusable({
     id: 'content-2-0', row: 2, col: 0, group: 'content',
@@ -101,9 +102,9 @@ export default function ConfigPage({ onLogout, user }) {
   // that mirror when the auto-assigned node is slow (#10). Takes effect on the
   // next video load.
   const CDN_OPTS = [
-    { v: 'auto', label: '自动' }, { v: 'ali', label: '阿里云' },
-    { v: 'cos', label: '腾讯云' }, { v: 'ks3', label: '金山云' },
-    { v: 'akam', label: '海外 Akamai' },
+    { v: 'auto', label: t('自动') }, { v: 'ali', label: t('阿里云') },
+    { v: 'cos', label: t('腾讯云') }, { v: 'ks3', label: t('金山云') },
+    { v: 'akam', label: t('海外 Akamai') },
   ];
   const { props: cdnProps } = useFocusable({
     id: 'content-3-0', row: 3, col: 0, group: 'content',
@@ -135,8 +136,21 @@ export default function ConfigPage({ onLogout, user }) {
     onSelect: () => setShowDiag(v => !v),
   });
 
-  const { props: logoutProps } = useFocusable({
+  // 语言 / Language — cycles 自动 → 中文 → English → … (#14). Switching
+  // persists the choice and reloads the app (see src/i18n/index.js).
+  const LANG_LABELS = { auto: t('自动'), zh: '中文', en: 'English' };
+  const langPref = storage.getSettings().language || 'auto';
+  const { props: langProps } = useFocusable({
     id: 'content-6-0', row: 6, col: 0, group: 'content',
+    onSelect: () => {
+      const opts = availableLanguages();
+      const next = opts[(opts.indexOf(langPref) + 1) % opts.length];
+      setLanguage(next); // persists + reloads
+    },
+  });
+
+  const { props: logoutProps } = useFocusable({
+    id: 'content-7-0', row: 7, col: 0, group: 'content',
     onSelect: () => { if (user) { storage.clearAuth(); onLogout(); } },
   });
 
@@ -145,53 +159,60 @@ export default function ConfigPage({ onLogout, user }) {
 
   return (
     <div style={{ padding: '28px 40px', height: '100%', overflowY: 'auto', maxWidth: 720 }}>
-      <div style={{ fontSize: 26, fontWeight: 600, color: '#fff', marginBottom: 24 }}>设置</div>
+      <div style={{ fontSize: 26, fontWeight: 600, color: '#fff', marginBottom: 24 }}>{t('设置')}</div>
 
       <div className="settings-row" {...danmakuProps}>
-        <span>弹幕</span>
-        <span className="settings-row-value">{settings.danmaku ? '开' : '关'}</span>
+        <span>{t('弹幕')}</span>
+        <span className="settings-row-value">{settings.danmaku ? t('开') : t('关')}</span>
       </div>
 
       <div className="settings-row" {...gridProps}>
-        <span>每行视频</span>
-        <span className="settings-row-value">{gridCols} 个</span>
+        <span>{t('每行视频')}</span>
+        <span className="settings-row-value">{t('{n} 个', { n: gridCols })}</span>
       </div>
 
       <div className="settings-row" {...danmakuScaleProps}>
-        <span>弹幕字号</span>
+        <span>{t('弹幕字号')}</span>
         <span className="settings-row-value">{dmScaleLabel}</span>
       </div>
 
       <div className="settings-row" {...cdnProps}>
-        <span>CDN 线路</span>
+        <span>{t('CDN 线路')}</span>
         <span className="settings-row-value">{cdnLabel}</span>
       </div>
 
       <div className="settings-row" {...checkUpdateProps}>
-        <span>检查更新</span>
+        <span>{t('检查更新')}</span>
         <span className="settings-row-value">{updateMsg || `v${APP_VERSION}`}</span>
       </div>
 
       <div className="settings-row" {...diagProps}>
-        <span>网络诊断</span>
-        <span className="settings-row-value">{showDiag ? '按 OK 收起' : '检测网络与服务状态'}</span>
+        <span>{t('网络诊断')}</span>
+        <span className="settings-row-value">{showDiag ? t('按 OK 收起') : t('检测网络与服务状态')}</span>
       </div>
 
       {showDiag && <DiagPanel />}
 
+      <div className="settings-row" {...langProps}>
+        <span>{t('语言')} / Language</span>
+        <span className="settings-row-value">
+          {LANG_LABELS[langPref] || langPref}{langPref === 'auto' ? ` (${getLocale() === 'zh' ? '中文' : getLocale()})` : ''}
+        </span>
+      </div>
+
       {user && (
         <div className="settings-row settings-row-danger" {...logoutProps}>
-          <span>退出登录</span>
+          <span>{t('退出登录')}</span>
           <span className="settings-row-value">{user.uname}</span>
         </div>
       )}
 
       <div style={{ marginTop: 28, color: '#888', fontSize: 18, lineHeight: 2 }}>
-        <div style={{ fontSize: 20, color: '#aaa', marginBottom: 6 }}>关于</div>
-        <div>哔哩哔哩 webOS · 版本 v{APP_VERSION}</div>
-        <div>联系 / 反馈：{CONTACT_EMAIL}</div>
-        <div>项目主页：github.com/asdf17128/bili-webos</div>
-        <div style={{ fontSize: 16, color: '#667', marginTop: 8 }}>代理: {proxyUrl}</div>
+        <div style={{ fontSize: 20, color: '#aaa', marginBottom: 6 }}>{t('关于')}</div>
+        <div>{t('哔哩哔哩 webOS · 版本 v{v}', { v: APP_VERSION })}</div>
+        <div>{t('联系 / 反馈：')}{CONTACT_EMAIL}</div>
+        <div>{t('项目主页：')}github.com/asdf17128/bili-webos</div>
+        <div style={{ fontSize: 16, color: '#667', marginTop: 8 }}>{t('代理: ')}{proxyUrl}</div>
       </div>
     </div>
   );

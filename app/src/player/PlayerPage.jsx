@@ -1207,7 +1207,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               castReportState({ playState: 'paused' }).catch(() => {});
             }
           } else if (btn === 'danmaku') {
-            setDanmakuEnabled(prev => !prev);
+            setDanmakuEnabled(prev => {
+              const next = !prev;
+              // Persist — the live player and 设置 already do; the VOD button
+              // not doing so made the player and 设置 disagree (owner report).
+              storage.setSettings({ ...storage.getSettings(), danmaku: next });
+              return next;
+            });
           } else if (btn === 'subtitle') {
             setShowSubPanel(true);
             setFocusArea('subpanel');

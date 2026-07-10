@@ -62,11 +62,16 @@ export default function ConfigPage({ onLogout, user }) {
     } catch { fallback(); }
   }
 
+  // Stateful so the row VALUE flips on the same OK press — writing storage
+  // alone left the label stale until some unrelated re-render (read: "按了没反应").
+  const [danmakuOn, setDanmakuOn] = useState(() => settings.danmaku !== false);
   const { props: danmakuProps } = useFocusable({
     id: 'content-0-0', row: 0, col: 0, group: 'content',
     onSelect: () => {
       const s = storage.getSettings();
-      storage.setSettings({ ...s, danmaku: !s.danmaku });
+      const next = !(s.danmaku !== false);
+      storage.setSettings({ ...s, danmaku: next });
+      setDanmakuOn(next);
     },
   });
 
@@ -193,7 +198,7 @@ export default function ConfigPage({ onLogout, user }) {
 
       <div className="settings-row" {...danmakuProps}>
         <span>{t('弹幕')}</span>
-        <span className="settings-row-value">{settings.danmaku ? t('开') : t('关')}</span>
+        <span className="settings-row-value">{danmakuOn ? t('开') : t('关')}</span>
       </div>
 
       <div className="settings-row" {...gridProps}>

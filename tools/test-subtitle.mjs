@@ -8,7 +8,7 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const { parseSubtitleBody, pickCueIndex, isAiLan, AI_LEAD } =
+const { parseSubtitleBody, pickCueIndex, isAiLan, subtitleLanName, knownLanNames, AI_LEAD } =
   await import('file://' + join(ROOT, 'app/src/player/subtitles.js'));
 
 let n = 0;
@@ -88,5 +88,28 @@ ok('isAiLan / AI_LEAD', () => {
   assert.equal(isAiLan(null), false);
   assert.ok(AI_LEAD > 0 && AI_LEAD < 1);
 });
+
+// --- track display names ---
+ok('lan name: known enum localized, unknown falls back to lan_doc/lan', () => {
+  assert.equal(subtitleLanName('ai-zh', '中文(自动)'), '中文(自动生成)'); // enum wins
+  assert.equal(subtitleLanName('zh-CN', null), '中文');
+  assert.equal(subtitleLanName('ko', '韩语(API说的)'), '韩语(API说的)'); // unknown → lan_doc
+  assert.equal(subtitleLanName('ko', null), 'ko');                      // no doc → code
+  assert.equal(subtitleLanName(null, null), '');
+});
+
+// The t(subtitleLanName(...)) call site is DYNAMIC — invisible to the coverage
+// gate's literal t('…') scan. Close that blind spot here: every canonical name
+// must exist in every dictionary.
+{
+  const I18N = join(ROOT, 'app/src/i18n');
+  const { readdirSync } = await import('fs');
+  for (const df of readdirSync(I18N).filter(f => f.endsWith('.js') && f !== 'index.js')) {
+    const dict = (await import('file://' + join(I18N, df))).default;
+    const missing = knownLanNames().filter(k => !(k in dict));
+    assert.deepEqual(missing, [], `${df} missing lan names: ${missing.join(', ')}`);
+  }
+  ok('lan names covered by every i18n dictionary', () => {});
+}
 
 console.log(`PASS test-subtitle (${n} groups)`);

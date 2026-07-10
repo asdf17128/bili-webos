@@ -7,7 +7,7 @@ import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
 import DanmakuLayer from './DanmakuLayer';
 import SubtitleLayer from './SubtitleLayer';
-import { parseSubtitleBody, isAiLan, AI_LEAD } from './subtitles';
+import { parseSubtitleBody, isAiLan, subtitleLanName, AI_LEAD } from './subtitles';
 import { t } from '../i18n';
 
 // Proxy + resize card thumbnails (same as VideoCard): the proxy adds the
@@ -1410,9 +1410,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               {btn === 'play' ? (ended ? t('↻ 重播') : playing ? t('⏸ 暂停') : t('▶ 播放')) :
                 btn === 'danmaku' ? (danmakuEnabled ? t('弹幕 开') : t('弹幕 关')) :
                   btn === 'subtitle' ? (subLan == null ? t('字幕 关')
-                    // lan_doc is B站's own track name ('中文(自动生成)') — API
-                    // content, shown as-is per the i18n exceptions.
-                    : `${t('字幕')} ${String((subTracks.find(s => s.lan === subLan) || {}).lan_doc || subLan).slice(0, 10)}`) :
+                    // Known lan codes get a localized name (t over our enum,
+                    // see subtitles.js); unknown codes show lan_doc verbatim.
+                    : `${t('字幕')} ${t(subtitleLanName(subLan, (subTracks.find(s => s.lan === subLan) || {}).lan_doc)).slice(0, 16)}`) :
                     QUALITY_MAP[currentQuality] || `${currentQuality}`}
             </button>
           ))}

@@ -28,6 +28,33 @@ export function parseSubtitleBody(json) {
   return cues;
 }
 
+// Canonical Chinese display names for B站 subtitle lan codes. These are OUR
+// strings (a known enum), not API content — so they go through t() and every
+// dictionary must carry them (enforced by tools/test-subtitle.mjs, since the
+// t(subtitleLanName(...)) call site is dynamic and invisible to the coverage
+// gate's literal scan). Unknown codes fall back to the API's lan_doc verbatim
+// (that IS API content, shown untranslated per the i18n exceptions).
+const LAN_NAMES = {
+  'zh-CN': '中文',
+  'zh-Hans': '中文',
+  'zh-Hant': '中文(繁体)',
+  'ai-zh': '中文(自动生成)',
+  'en-US': '英语',
+  'en': '英语',
+  'ai-en': '英语(自动生成)',
+  'ja': '日语',
+  'ai-ja': '日语(自动生成)',
+};
+
+export function subtitleLanName(lan, lanDoc) {
+  return LAN_NAMES[lan] || lanDoc || lan || '';
+}
+
+export function knownLanNames() { // for the dictionary-coverage test
+  const seen = new Set(Object.values(LAN_NAMES));
+  return Array.from(seen);
+}
+
 // Active cue index at time t (seconds), or -1. Binary search on `from`, then a
 // short backward walk to cover overlapping cues — O(log n) per call, cheap
 // enough to run every rAF tick on TV silicon.

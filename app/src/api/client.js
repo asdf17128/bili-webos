@@ -9,9 +9,13 @@ const API_HOST = 'api.bilibili.com';
 const PASSPORT_HOST = 'passport.bilibili.com';
 const SERVICE_URI = 'luna://com.biliwebos.app.service/';
 
-// Detect if running on webOS with Luna service available
+// Detect if running on webOS with Luna service available. webOSTV.js defines
+// window.webOS.service in ANY browser — only the real TV has the underlying
+// PalmServiceBridge, so check that too or dev-mode calls die on the Luna path
+// instead of falling back to the Mac proxy.
 function hasLunaService() {
-  return typeof window !== 'undefined' && typeof window.webOS !== 'undefined' && window.webOS.service;
+  return typeof window !== 'undefined' && typeof window.webOS !== 'undefined' && window.webOS.service &&
+    typeof window.PalmServiceBridge !== 'undefined';
 }
 
 // Luna service fetch (on TV)
@@ -315,6 +319,28 @@ export async function getSubtitleBody(url) {
     try { return await res.json(); } catch (e) { return null; }
   }
   return res;
+}
+
+// Free keyless Google translate endpoint (translate_a/t): POST form body with
+// one q per line → JSON array of translations in the same order. Blocked in
+// mainland China, but subtitle translation only activates on non-zh UI locales
+// — i.e. overseas users, where it's reachable. Routed via Luna/proxy like
+// everything else.
+export async function gtxTranslate(texts, tl) {
+  var body = texts.map(function (s) { return 'q=' + encodeURIComponent(s); }).join('&');
+  var res = await smartFetch(
+    'translate.googleapis.com',
+    '/translate_a/t?client=gtx&format=text&sl=zh-CN&tl=' + encodeURIComponent(tl),
+    { method: 'POST', body: body, contentType: 'application/x-www-form-urlencoded' }
+  );
+  if (res && typeof res.json === 'function') {
+    try { res = await res.json(); } catch (e) { res = null; }
+  }
+  // Single-q requests come back as a bare JSON string, multi-q as an array.
+  if (typeof res === 'string') res = [res];
+  if (!Array.isArray(res)) throw new Error('bad translate response');
+  // sl fixed → plain strings; sl=auto variants wrap as [text, detectedLang].
+  return res.map(function (it) { return Array.isArray(it) ? String(it[0]) : String(it); });
 }
 
 export async function getPlayUrl(videoOrBvid, cid, qn) {

@@ -34,8 +34,13 @@ const BILI_HOSTS = [
   'xy220x145x.mcdn.bilivideo.com',
 ];
 
-// Allow any bilivideo.com or hdslb.com subdomain
+// Allow any bilivideo.com or hdslb.com subdomain; bili credentials/disguise
+// headers only ever go to these (see isBiliHost below).
 function isAllowedHost(host) {
+  return isBiliHost(host) || host === 'translate.googleapis.com';
+}
+
+function isBiliHost(host) {
   return BILI_HOSTS.some(h => host === h || host.endsWith('.' + h))
     || host.endsWith('.bilivideo.com')
     || host.endsWith('.bilivideo.cn')
@@ -156,17 +161,19 @@ const server = http.createServer((req, res) => {
       rejectUnauthorized: false, // Some CDN nodes have non-standard certs
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Referer': 'https://www.bilibili.com/',
         'Accept': isCDN ? '*/*' : 'application/json, text/plain, */*',
         'Accept-Language': 'zh-CN,zh;q=0.9',
         'Accept-Encoding': isCDN ? 'identity' : 'gzip, deflate',
-        'Cookie': serializeCookies(allCookies),
       }
     };
 
-    // CDN requests should not send Origin (causes 403)
-    if (!isCDN) {
-      options.headers['Origin'] = 'https://www.bilibili.com';
+    // Bili credentials + disguise headers go ONLY to the bilibili family —
+    // never to third-party hosts (the translator must not see our cookies).
+    if (isBiliHost(hostname)) {
+      options.headers['Referer'] = 'https://www.bilibili.com/';
+      options.headers['Cookie'] = serializeCookies(allCookies);
+      // CDN requests should not send Origin (causes 403)
+      if (!isCDN) options.headers['Origin'] = 'https://www.bilibili.com';
     }
 
     // Forward Range header for video segment requests

@@ -50,9 +50,25 @@ export function subtitleLanName(lan, lanDoc) {
   return LAN_NAMES[lan] || lanDoc || lan || '';
 }
 
+// Display names for the virtual machine-translated track ('x-mt'), keyed by
+// TARGET ui locale. Same enum-goes-through-t() contract as LAN_NAMES.
+const MT_NAMES = {
+  en: '英语(机翻)',
+};
+
+export function mtLanName(targetLocale) {
+  return MT_NAMES[targetLocale] || targetLocale || '';
+}
+
 export function knownLanNames() { // for the dictionary-coverage test
-  const seen = new Set(Object.values(LAN_NAMES));
+  const seen = new Set(Object.values(LAN_NAMES).concat(Object.values(MT_NAMES)));
   return Array.from(seen);
+}
+
+// The zh-source track a machine translation would feed on (ai or human).
+export function findZhTrack(tracks) {
+  if (!tracks) return null;
+  return tracks.find(s => s && /^(ai-)?zh/.test(s.lan)) || null;
 }
 
 // Active cue index at time t (seconds), or -1. Binary search on `from`, then a

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody } from '../api/client';
+import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate } from '../api/client';
 import { playPart, playAdvance } from './playIntent';
 
 import { formatDuration, formatTime, QUALITY_MAP, cleanTitle } from '../utils/format';
@@ -7,8 +7,9 @@ import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
 import DanmakuLayer from './DanmakuLayer';
 import SubtitleLayer from './SubtitleLayer';
-import { parseSubtitleBody, isAiLan, subtitleLanName, AI_LEAD } from './subtitles';
-import { t } from '../i18n';
+import { parseSubtitleBody, isAiLan, subtitleLanName, mtLanName, findZhTrack, AI_LEAD } from './subtitles';
+import { translateCues } from './subTranslate';
+import { t, getLocale } from '../i18n';
 
 // Proxy + resize card thumbnails (same as VideoCard): the proxy adds the
 // Referer B站 image CDN needs, and @672w webp keeps the TV's image decoder from
@@ -111,6 +112,24 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
   const pendingSeekRef = useRef(null);
 
+  // Non-zh UI also machine-translates the video TITLE and chapter names
+  // (matching the official international app's scope). Content translation,
+  // not UI strings — so gtx, not t().
+  const titleMtRef = useRef(''); // last translation we applied (loop guard)
+  const titleSrcRef = useRef('');
+  useEffect(() => {
+    titleSrcRef.current = videoTitle;
+    const loc = getLocale();
+    if (loc === 'zh' || !videoTitle || titleMtRef.current === videoTitle) return;
+    const src = videoTitle;
+    gtxTranslate([src], loc).then(r => {
+      // A part/video switch may have replaced the title while we translated.
+      if (titleSrcRef.current !== src || !r[0]) return;
+      titleMtRef.current = r[0];
+      setVideoTitle(r[0]);
+    }).catch(() => {});
+  }, [videoTitle]);
+
   const queueOrApplySeek = useCallback((seekSec) => {
     const target = Math.max(0, Number(seekSec) || 0);
     if (!videoRef.current) return;
@@ -137,23 +156,48 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     ? ['play', 'danmaku', 'subtitle', 'quality']
     : ['play', 'danmaku', 'quality'];
 
+  // Machine translation is offered as a VIRTUAL track ('x-mt') feeding on the
+  // zh source track, only when the UI locale itself isn't Chinese — an English
+  // UI user gets 关 → 中文轨 → English (translated) → 关.
   const selectSubtitle = useCallback((track) => {
     const req = ++subReqRef.current;
     if (!track) { setSubLan(null); setSubCues(null); return; }
     setSubLan(track.lan);
     setSubCues(null);
     getSubtitleBody(track.subtitle_url)
-      .then(body => { if (subReqRef.current === req) setSubCues(parseSubtitleBody(body)); })
+      .then(body => {
+        if (subReqRef.current !== req) return;
+        const cues = parseSubtitleBody(body);
+        setSubCues(cues); // originals show immediately; MT swaps in when ready
+        if (track.lan === 'x-mt' && cues.length > 0) {
+          translateCues(cues, track.mt, gtxTranslate, `bili_subtr:${cidRef.current || ''}:${track.mt}`, window.localStorage)
+            .then(tc => { if (subReqRef.current === req) setSubCues(tc); })
+            .catch(e => {
+              console.warn('[subtitle] MT failed, falling back to source:', e?.message || e);
+              // Keep the zh cues but relabel to the source track — the button
+              // must not claim a translation that isn't showing.
+              if (subReqRef.current === req) setSubLan(track.srcLan);
+            });
+        }
+      })
       .catch(() => { if (subReqRef.current === req) setSubCues(null); });
   }, []);
 
-  // 关 → 轨1 → 轨2 → … → 关. Persists on/off so the next video auto-enables.
+  const makeMtTrack = useCallback((tracks, loc) => {
+    const zh = findZhTrack(tracks);
+    if (!zh || loc === 'zh') return null;
+    return { lan: 'x-mt', subtitle_url: zh.subtitle_url, mt: loc, srcLan: zh.lan };
+  }, []);
+
+  // 关 → 轨1 → … → 机翻 → 关. Persists on/off so the next video auto-enables.
   const cycleSubtitle = useCallback(() => {
-    const i = subTracks.findIndex(s => s.lan === subLan);
-    const next = i + 1 < subTracks.length ? subTracks[i + 1] : null;
+    const mt = makeMtTrack(subTracks, getLocale());
+    const order = subTracks.concat(mt ? [mt] : []);
+    const i = order.findIndex(s => s.lan === subLan);
+    const next = i + 1 < order.length ? order[i + 1] : null;
     selectSubtitle(next);
     storage.setSettings({ ...storage.getSettings(), subtitle: !!next });
-  }, [subTracks, subLan, selectSubtitle]);
+  }, [subTracks, subLan, selectSubtitle, makeMtTrack]);
 
   // Initialize Shaka Player
   useEffect(() => {
@@ -300,7 +344,17 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               .filter(p => p && p.content && p.to > p.from)
               .map(p => ({ from: p.from, to: p.to, content: String(p.content).slice(0, 40) }))
               .sort((a, b) => a.from - b.from);
-            if (ch.length > 0) setChapters(ch);
+            if (ch.length > 0) {
+              setChapters(ch);
+              // Chapter names ride the same MT as the title on non-zh UIs.
+              const loc = getLocale();
+              if (loc !== 'zh') {
+                gtxTranslate(ch.map(c => c.content), loc).then(names => {
+                  if (cidRef.current !== cid || names.length !== ch.length) return;
+                  setChapters(ch.map((c, i) => ({ ...c, content: names[i] })));
+                }).catch(() => {});
+              }
+            }
           }
           // CC tracks ride the same response (human tracks first, then ai-zh).
           const st = pv?.data?.subtitle?.subtitles;
@@ -308,8 +362,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             const tracks = st.filter(s => s && s.lan && s.subtitle_url);
             if (tracks.length > 0) {
               setSubTracks(tracks);
-              // Re-enable automatically if the user had CC on last time.
-              if (storage.getSettings().subtitle) selectSubtitle(tracks[0]);
+              // Re-enable automatically if the user had CC on last time —
+              // non-zh UI prefers the translated virtual track.
+              if (storage.getSettings().subtitle) {
+                selectSubtitle(makeMtTrack(tracks, getLocale()) || tracks[0]);
+              }
             }
           }
         }).catch(() => {});
@@ -516,7 +573,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       setLoadError(true);
       castReportState({ playState: 'error', error: err?.message || 'load-failed' }).catch(() => {});
     }
-  }, [video, queueOrApplySeek, selectSubtitle]);
+  }, [video, queueOrApplySeek, selectSubtitle, makeMtTrack]);
 
   function buildMPD(dash, wantQn) {
     const duration = dash.duration || 0;
@@ -1244,7 +1301,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       <DanmakuLayer danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale} />
 
       <SubtitleLayer videoRef={videoRef} cues={subCues} enabled={subLan != null}
-        lead={isAiLan(subLan) ? AI_LEAD : 0}
+        lead={(isAiLan(subLan) || subLan === 'x-mt') ? AI_LEAD : 0}
         lift={showControls ? (showRelated ? 2 : 1) : 0} />
 
       {loading && (
@@ -1412,7 +1469,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                   btn === 'subtitle' ? (subLan == null ? t('字幕 关')
                     // Known lan codes get a localized name (t over our enum,
                     // see subtitles.js); unknown codes show lan_doc verbatim.
-                    : `${t('字幕')} ${t(subtitleLanName(subLan, (subTracks.find(s => s.lan === subLan) || {}).lan_doc)).slice(0, 16)}`) :
+                    : `${t('字幕')} ${t(subLan === 'x-mt' ? mtLanName(getLocale())
+                      : subtitleLanName(subLan, (subTracks.find(s => s.lan === subLan) || {}).lan_doc)).slice(0, 22)}`) :
                     QUALITY_MAP[currentQuality] || `${currentQuality}`}
             </button>
           ))}

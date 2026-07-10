@@ -128,13 +128,24 @@ function isAllowedHost(host) {
   var allowed = [
     'api.bilibili.com', 'passport.bilibili.com', 'api.live.bilibili.com',
     's1.hdslb.com', 'i0.hdslb.com', 'i1.hdslb.com', 'i2.hdslb.com',
-    'comment.bilibili.com'
+    'comment.bilibili.com',
+    // Subtitle machine translation (free gtx endpoint). NOT a bilibili host:
+    // isBiliHost() below must stay false for it so no cookies leak there.
+    'translate.googleapis.com'
   ];
   for (var i = 0; i < allowed.length; i++) {
     if (host === allowed[i]) return true;
   }
   return host.indexOf('.bilivideo.') >= 0 || host.indexOf('.hdslb.com') >= 0 ||
     host.indexOf('.akamaized.net') >= 0;
+}
+
+// Bilibili credentials (Cookie) and disguise headers (Referer/Origin) go ONLY
+// to the bilibili family — never to third-party hosts like the translator.
+function isBiliHost(host) {
+  return host.indexOf('bilibili.com') >= 0 || host.indexOf('.hdslb.com') >= 0 ||
+    host.indexOf('.bilivideo.') >= 0 || host.indexOf('.akamaized.net') >= 0 ||
+    host === 's1.hdslb.com';
 }
 
 // Make HTTPS request helper
@@ -147,15 +158,18 @@ function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity,
   var port = parsedUrl.port ? parseInt(parsedUrl.port) : 443;
   var isCDN = hostname.indexOf('bilivideo') >= 0 || hostname.indexOf('akamaized') >= 0;
 
+  var isBili = isBiliHost(hostname);
   var headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Referer': 'https://www.bilibili.com/',
     'Accept': isCDN ? '*/*' : 'application/json, text/plain, */*',
     'Accept-Language': 'zh-CN,zh;q=0.9',
-    'Accept-Encoding': (isCDN || forceIdentity) ? 'identity' : 'gzip, deflate',
-    'Cookie': serializeCookies(storedCookies)
+    'Accept-Encoding': (isCDN || forceIdentity) ? 'identity' : 'gzip, deflate'
   };
-  if (!isCDN) headers['Origin'] = 'https://www.bilibili.com';
+  if (isBili) {
+    headers['Referer'] = 'https://www.bilibili.com/';
+    headers['Cookie'] = serializeCookies(storedCookies);
+    if (!isCDN) headers['Origin'] = 'https://www.bilibili.com';
+  }
   if (contentType) headers['Content-Type'] = contentType;
   if (range) headers['Range'] = range;
 

@@ -53,6 +53,7 @@ export default {
   "弹幕 开": "Danmaku On",
   "字幕": "CC",
   "字幕 关": "CC Off",
+  "画质": "Quality",
   "中文": "Chinese",
   "中文(繁体)": "Chinese (Traditional)",
   "中文(自动生成)": "Chinese (auto)",

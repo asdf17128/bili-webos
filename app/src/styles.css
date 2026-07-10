@@ -386,11 +386,18 @@ html, body, #root {
   background: rgba(20,20,40,0.95);
   border-radius: 12px;
   padding: 12px;
-  min-width: 160px;
+  min-width: 200px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.quality-panel-title {
+  padding: 4px 20px 10px;
+  font-size: 17px;
+  color: #9aa0a8;
 }
 .quality-option {
   padding: 12px 20px;
-  font-size: 18px;
+  font-size: 20px;
   color: #aaa;
   border-radius: 8px;
   cursor: pointer;
@@ -398,6 +405,10 @@ html, body, #root {
 }
 .quality-option.focused { background: #00a1d6; color: #fff; }
 .quality-option.active { color: #00a1d6; }
+/* focused + active together must stay readable — .active's blue text on the
+   .focused blue pill was invisible (the panel opens ON the current item, so
+   this combination is the FIRST thing every user sees). */
+.quality-option.focused.active { color: #fff; font-weight: 600; }
 
 /* ===== Tabs ===== */
 .tabs { display: flex; gap: 8px; margin-bottom: 20px; padding: 0 60px; }

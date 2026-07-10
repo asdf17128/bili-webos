@@ -189,15 +189,25 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     return { lan: 'x-mt', subtitle_url: zh.subtitle_url, mt: loc, srcLan: zh.lan };
   }, []);
 
-  // 关 → 轨1 → … → 机翻 → 关. Persists on/off so the next video auto-enables.
-  const cycleSubtitle = useCallback(() => {
-    const mt = makeMtTrack(subTracks, getLocale());
-    const order = subTracks.concat(mt ? [mt] : []);
-    const i = order.findIndex(s => s.lan === subLan);
-    const next = i + 1 < order.length ? order[i + 1] : null;
-    selectSubtitle(next);
-    storage.setSettings({ ...storage.getSettings(), subtitle: !!next });
-  }, [subTracks, subLan, selectSubtitle, makeMtTrack]);
+  // CC selection panel (same interaction as the quality panel): 关 / each real
+  // track / the machine-translated virtual track. Selection persists on/off so
+  // the next video auto-enables.
+  const [showSubPanel, setShowSubPanel] = useState(false);
+  const subOptions = React.useMemo(() => {
+    if (subTracks.length === 0) return [];
+    const opts = [{ key: 'off', label: t('关') }]
+      .concat(subTracks.map(s => ({ key: s.lan, label: t(subtitleLanName(s.lan, s.lan_doc)) })));
+    if (makeMtTrack(subTracks, getLocale())) opts.push({ key: 'x-mt', label: t(mtLanName(getLocale())) });
+    return opts;
+  }, [subTracks, makeMtTrack]);
+
+  const applySubOption = useCallback((opt) => {
+    if (!opt) return;
+    if (opt.key === 'off') selectSubtitle(null);
+    else if (opt.key === 'x-mt') selectSubtitle(makeMtTrack(subTracks, getLocale()));
+    else selectSubtitle(subTracks.find(s => s.lan === opt.key) || null);
+    storage.setSettings({ ...storage.getSettings(), subtitle: opt.key !== 'off' });
+  }, [subTracks, selectSubtitle, makeMtTrack]);
 
   // Initialize Shaka Player
   useEffect(() => {
@@ -882,6 +892,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         setShowControls(false);
         setShowRelated(false);
         setShowQuality(false);
+        setShowSubPanel(false); // never strand a selection panel without its bar
         setFocusArea('none');
       }
     }, 5000);
@@ -1066,10 +1077,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         } else if (ended) {
           // End screen: back exits player
           onBack();
-        } else if (showControls || showQuality || showRelated) {
-          // Controls/quality/related visible: close them
+        } else if (showControls || showQuality || showRelated || showSubPanel) {
+          // Controls/quality/subtitle/related visible: close them
           setShowControls(false);
           setShowQuality(false);
+          setShowSubPanel(false);
           setShowRelated(false);
           setFocusArea('none');
           if (controlsTimer.current) clearTimeout(controlsTimer.current);
@@ -1169,13 +1181,46 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           } else if (btn === 'danmaku') {
             setDanmakuEnabled(prev => !prev);
           } else if (btn === 'subtitle') {
-            cycleSubtitle();
+            setShowSubPanel(true);
+            setFocusArea('subpanel');
+            const cur = subOptions.findIndex(o => o.key === (subLan || 'off'));
+            setFocusIdx(cur < 0 ? 0 : cur);
+            // A selection panel means the user is mid-decision: suspend
+            // auto-hide until they pick or back out (restarted on close).
+            if (controlsTimer.current) clearTimeout(controlsTimer.current);
+            return true;
           } else if (btn === 'quality') {
             setShowQuality(true);
             setFocusArea('quality');
             setFocusIdx(0);
+            if (controlsTimer.current) clearTimeout(controlsTimer.current);
+            return true;
           }
           hideControlsLater();
+          return true;
+        }
+        return false;
+      }
+
+      // === Subtitle panel (same pattern as quality) ===
+      if (focusArea === 'subpanel') {
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          setFocusIdx(prev => Math.max(0, prev - 1));
+          return true;
+        }
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          setFocusIdx(prev => Math.min(subOptions.length - 1, prev + 1));
+          return true;
+        }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          applySubOption(subOptions[focusIdx]);
+          setShowSubPanel(false);
+          setFocusArea('controls');
+          setFocusIdx(CONTROLS.indexOf('subtitle'));
+          hideControlsLater(); // decision made — resume the auto-hide clock
           return true;
         }
         return false;
@@ -1196,7 +1241,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         if (e.key === 'Enter') {
           e.preventDefault();
           const q = qualities[focusIdx];
-          if (q) { changeQuality(q.qn); setShowQuality(false); setFocusArea('controls'); setFocusIdx(CONTROLS.indexOf('quality')); }
+          if (q) { changeQuality(q.qn); setShowQuality(false); setFocusArea('controls'); setFocusIdx(CONTROLS.indexOf('quality')); hideControlsLater(); }
           return true;
         }
         return false;
@@ -1290,7 +1335,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
     setCustomKeyHandler(handler);
     return () => setCustomKeyHandler(null);
-  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, loadUpVideos, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, cycleSubtitle]);
+  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, loadUpVideos, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -1546,8 +1591,20 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       </div>
 
       {/* Quality panel */}
+      {showSubPanel && (
+        <div className="quality-panel">
+          <div className="quality-panel-title">{t('字幕')}</div>
+          {subOptions.map((o, i) => (
+            <div key={o.key} className={`quality-option ${focusArea === 'subpanel' && focusIdx === i ? 'focused' : ''} ${(subLan || 'off') === o.key ? 'active' : ''}`}>
+              {o.label}
+            </div>
+          ))}
+        </div>
+      )}
+
       {showQuality && (
         <div className="quality-panel">
+          <div className="quality-panel-title">{t('画质')}</div>
           {qualities.map((q, i) => (
             <div key={q.qn} className={`quality-option ${focusArea === 'quality' && focusIdx === i ? 'focused' : ''} ${currentQuality === q.qn ? 'active' : ''}`}>
               {q.label}

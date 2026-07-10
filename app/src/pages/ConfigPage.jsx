@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { storage } from '../utils/storage';
-import { useFocusable } from '../hooks/useFocus';
+import { useFocusable, setCustomKeyHandler } from '../hooks/useFocus';
 import { getLatestVersion } from '../api/client';
 import { APP_VERSION, compareVersions } from '../version';
 import DiagPanel from '../components/DiagPanel';
@@ -136,20 +136,48 @@ export default function ConfigPage({ onLogout, user }) {
     onSelect: () => setShowDiag(v => !v),
   });
 
-  // 语言 / Language — cycles 自动 → 中文 → English → … (#14). Switching
-  // persists the choice and reloads the app (see src/i18n/index.js).
+  // 语言 / Language (#14) — OK opens a picker LIST (cycling reloaded the app on
+  // every press, brutal for a low-frequency setting). OK in the list applies
+  // (persist + reload, only if actually changed); Back cancels with no reload.
   // Names stay endonyms (each language in itself) — standard for language
   // pickers, so users can find their way back from a language they can't read.
   const LANG_LABELS = { auto: t('自动'), zh: '中文', en: 'English', es: 'Español' };
   const langPref = storage.getSettings().language || 'auto';
+  const langOpts = availableLanguages();
+  const [showLangPicker, setShowLangPicker] = useState(false);
+  const [pickerIdx, setPickerIdx] = useState(0);
   const { props: langProps } = useFocusable({
     id: 'content-6-0', row: 6, col: 0, group: 'content',
     onSelect: () => {
-      const opts = availableLanguages();
-      const next = opts[(opts.indexOf(langPref) + 1) % opts.length];
-      setLanguage(next); // persists + reloads
+      setPickerIdx(Math.max(0, langOpts.indexOf(langPref)));
+      setShowLangPicker(true);
     },
   });
+
+  // Modal key handling: swallow everything while the picker is open so the
+  // grid/sidebar underneath doesn't move.
+  useEffect(() => {
+    if (!showLangPicker) return;
+    const handler = (e) => {
+      if (e.key === 'ArrowUp') { e.preventDefault(); setPickerIdx(p => Math.max(0, p - 1)); return true; }
+      if (e.key === 'ArrowDown') { e.preventDefault(); setPickerIdx(p => Math.min(langOpts.length - 1, p + 1)); return true; }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const sel = langOpts[pickerIdx];
+        setShowLangPicker(false);
+        if (sel && sel !== langPref) setLanguage(sel); // persists + reloads
+        return true;
+      }
+      if (e.keyCode === 461 || e.key === 'Backspace' || e.key === 'GoBack' || e.key === 'Escape') {
+        e.preventDefault(); e.stopPropagation();
+        setShowLangPicker(false);
+        return true;
+      }
+      return true;
+    };
+    setCustomKeyHandler(handler);
+    return () => setCustomKeyHandler(null);
+  }, [showLangPicker, pickerIdx, langPref]);
 
   const { props: logoutProps } = useFocusable({
     id: 'content-7-0', row: 7, col: 0, group: 'content',
@@ -196,11 +224,33 @@ export default function ConfigPage({ onLogout, user }) {
       {showDiag && <DiagPanel />}
 
       <div className="settings-row" {...langProps}>
-        <span>{t('语言')} / Language</span>
+        <span>语言 / Language</span>
         <span className="settings-row-value">
           {LANG_LABELS[langPref] || langPref}{langPref === 'auto' ? ` (${getLocale() === 'zh' ? '中文' : getLocale()})` : ''}
         </span>
       </div>
+
+      {showLangPicker && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)',
+          zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'rgba(24,26,44,0.98)', borderRadius: 12, padding: '18px 0', minWidth: 360,
+            boxShadow: '0 18px 60px rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            {/* Fixed bilingual label on purpose — a language picker must stay
+                findable from a language you can't read. */}
+            <div style={{ fontSize: 20, color: '#9aa0a8', padding: '0 26px 12px' }}>语言 / Language</div>
+            {langOpts.map((code, i) => (
+              <div key={code} style={{
+                padding: '12px 26px', fontSize: 22, display: 'flex', justifyContent: 'space-between', gap: 48,
+                color: i === pickerIdx ? '#fff' : '#c6cad2',
+                background: i === pickerIdx ? '#00a1d6' : 'transparent',
+              }}>
+                <span>{LANG_LABELS[code] || code}{code === 'auto' ? ` (${LANG_LABELS[getLocale()] || getLocale()})` : ''}</span>
+                {code === langPref && <span>✓</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {user && (
         <div className="settings-row settings-row-danger" {...logoutProps}>

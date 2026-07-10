@@ -45,8 +45,15 @@ assert.equal(f.formatTime(Date.now() / 1000 - 300), '5 min ago');
 assert.equal(f.formatTime(Date.now() / 1000 - 7200), '2h ago');
 `;
 
+const ES = `
+assert.equal(f.formatCount(12345), '12.3K');
+assert.equal(f.formatTime(Date.now() / 1000 - 30), 'ahora mismo');
+assert.equal(f.formatTime(Date.now() / 1000 - 300), 'hace 5 min');
+assert.equal(f.formatTime(Date.now() / 1000 - 7200), 'hace 2h');
+`;
+
 let fail = 0;
-for (const [lang, checks] of [['zh', ZH], ['en', EN]]) {
+for (const [lang, checks] of [['zh', ZH], ['en', EN], ['es', ES]]) {
   try {
     process.stdout.write(execFileSync(process.execPath, ['--input-type=module', '-e', CHILD(lang, checks)], { encoding: 'utf8' }));
   } catch (e) {

@@ -37,6 +37,15 @@
 4. 不翻译的例外(有意为之):API 返回的内容文本、'番剧' 等与 API 值比较的徽标、
    二维码 ASCII 报告、service 端错误串。
 
+**加一门语言的完整清单**(2026-07-10 以 es 实测,共 5 处):
+1. `app/src/i18n/<code>.js` —— 抄 en.js 全量翻译(含字幕轨道名等动态键);
+2. `i18n/index.js` DICTS 注册(一行 import + 一行);
+3. `player/subtitles.js` MT_NAMES 加 `<code>: '<语言名>(机翻)'`,且该中文名要加进
+   **其他所有字典**(coverage/lan-name 门禁会挡漏);
+4. `ConfigPage.jsx` LANG_LABELS 加自称名(endonym,如 'Español');
+5. `tools/test-i18n-format.mjs` 补该 locale 的格式化断言。
+门禁自动兜住 1/3;4/5 靠本清单。字幕/标题/章节机翻自动获得该语言(gtx tl=<code>)。
+
 ## 发布门禁(gh release 前的硬性检查单)
 
 ```bash

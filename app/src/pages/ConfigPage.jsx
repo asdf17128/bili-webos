@@ -138,7 +138,9 @@ export default function ConfigPage({ onLogout, user }) {
 
   // 语言 / Language — cycles 自动 → 中文 → English → … (#14). Switching
   // persists the choice and reloads the app (see src/i18n/index.js).
-  const LANG_LABELS = { auto: t('自动'), zh: '中文', en: 'English' };
+  // Names stay endonyms (each language in itself) — standard for language
+  // pickers, so users can find their way back from a language they can't read.
+  const LANG_LABELS = { auto: t('自动'), zh: '中文', en: 'English', es: 'Español' };
   const langPref = storage.getSettings().language || 'auto';
   const { props: langProps } = useFocusable({
     id: 'content-6-0', row: 6, col: 0, group: 'content',

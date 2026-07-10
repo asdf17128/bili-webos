@@ -61,6 +61,7 @@ export default {
   "日语": "Japanese",
   "日语(自动生成)": "Japanese (auto)",
   "英语(机翻)": "English (translated)",
+  "西班牙语(机翻)": "Spanish (translated)",
   "弹幕字号": "Danmaku Size",
   "当前设备不支持视频播放(浏览器内核过旧)": "This device cannot play video (browser engine too old)",
   "我的": "Me",

@@ -54,6 +54,7 @@ export function subtitleLanName(lan, lanDoc) {
 // TARGET ui locale. Same enum-goes-through-t() contract as LAN_NAMES.
 const MT_NAMES = {
   en: '英语(机翻)',
+  es: '西班牙语(机翻)',
 };
 
 export function mtLanName(targetLocale) {

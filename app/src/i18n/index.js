@@ -8,10 +8,12 @@
 //   Nothing else changes anywhere.
 import { storage } from '../utils/storage.js';
 import en from './en.js';
+import es from './es.js';
 
 const DICTS = {
   en: en,
-  // es: esDict,  ← future languages register here (one import + one line)
+  es: es,
+  // ← future languages register here (one import + one line)
 };
 
 // Map browser/system locale to a dictionary code. Region variants collapse to

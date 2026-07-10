@@ -54,22 +54,61 @@ function writeCache(store, key, texts) {
   } catch (e) { /* quota full etc — cache is best-effort */ }
 }
 
+// Order batch ranges so the one containing startIndex runs FIRST, then the
+// ones after it (what's about to play), then the ones before (rewind case) —
+// the stretch the user is watching turns translated soonest.
+export function orderRanges(ranges, startIndex) {
+  const at = ranges.findIndex(([a, b]) => startIndex >= a && startIndex < b);
+  if (at <= 0) return ranges.slice();
+  return ranges.slice(at).concat(ranges.slice(0, at));
+}
+
 // cues [{from,to,text}] → new array with translated text (same timings).
 // translateBatchFn(texts[], tl) → Promise<translated[]> (same length, or throw).
-// Throws on engine failure/misalignment — the caller falls back to the
-// original track and relabels honestly.
-export async function translateCues(cues, tl, translateBatchFn, cacheKey, store) {
+//
+// A 40-minute track is ~8 batches; serially that was 5s+ of Chinese before
+// the swap. Now: batches run CONCURRENTLY (pool), each landed batch fires
+// onPartial(mergedCues) so the screen turns translated progressively, and the
+// playhead's batch goes first (~one round-trip to first translated cue).
+//
+// Any batch failing (after one retry) still throws — the caller reverts to
+// the source track and relabels; a permanently half-translated track lying
+// under an "(translated)" label is worse than falling back.
+export async function translateCues(cues, tl, translateBatchFn, cacheKey, store, opts) {
+  const { onPartial, startIndex = 0, concurrency = 4 } = opts || {};
   const texts = cues.map(c => c.text);
   let out = readCache(store, cacheKey, texts.length);
   if (!out) {
-    out = [];
-    for (const [a, b] of batchRanges(texts)) {
+    const slots = new Array(texts.length).fill(null);
+    const queue = orderRanges(batchRanges(texts), startIndex);
+    const runOne = async ([a, b]) => {
       const part = await translateBatchFn(texts.slice(a, b), tl);
       if (!Array.isArray(part) || part.length !== b - a) {
         throw new Error('translate misaligned: got ' + (part && part.length) + ' want ' + (b - a));
       }
-      out.push.apply(out, part);
+      for (let i = a; i < b; i++) slots[i] = part[i - a];
+      if (onPartial) {
+        onPartial(cues.map((c, i) => (slots[i] != null ? { from: c.from, to: c.to, text: slots[i] } : c)));
+      }
+    };
+    const failed = [];
+    const workers = [];
+    let next = 0;
+    for (let w = 0; w < Math.min(concurrency, queue.length); w++) {
+      workers.push((async function work() {
+        while (next < queue.length) {
+          const range = queue[next++];
+          try { await runOne(range); } catch (e) { failed.push(range); }
+        }
+      })());
     }
+    await Promise.all(workers);
+    // one sequential retry round for stragglers (transient CDN/engine hiccups)
+    for (const range of failed.splice(0)) {
+      try { await runOne(range); } catch (e) { failed.push(range); }
+    }
+    if (failed.length > 0) throw new Error('translate failed for ' + failed.length + ' batch(es)');
+    out = slots;
     writeCache(store, cacheKey, out);
   }
   return cues.map((c, i) => ({ from: c.from, to: c.to, text: out[i] }));

@@ -8,7 +8,7 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const { batchRanges, translateCues, MT_BATCH_LINES, MT_BATCH_CHARS } =
+const { batchRanges, orderRanges, translateCues, MT_BATCH_LINES, MT_BATCH_CHARS } =
   await import('file://' + join(ROOT, 'app/src/player/subTranslate.js'));
 
 let n = 0;
@@ -37,6 +37,15 @@ const mkCues = (texts) => texts.map((t, i) => ({ from: i, to: i + 0.9, text: t }
   ok('batch: empty input → no ranges');
 }
 
+// --- orderRanges (playhead-first) ---
+{
+  const r = [[0, 100], [100, 200], [200, 250]];
+  assert.deepEqual(orderRanges(r, 150), [[100, 200], [200, 250], [0, 100]]);
+  assert.deepEqual(orderRanges(r, 0), r);
+  assert.deepEqual(orderRanges(r, 999), r); // not found → natural order
+  ok('orderRanges: playhead batch first, wraps, tolerates out-of-range');
+}
+
 // --- translateCues happy path + call accounting ---
 {
   const cues = mkCues(Array.from({ length: 250 }, (_, i) => '你好' + i));
@@ -48,8 +57,8 @@ const mkCues = (texts) => texts.map((t, i) => ({ from: i, to: i + 0.9, text: t }
   assert.equal(out[0].text, 'EN:你好0:en');
   assert.equal(out[249].text, 'EN:你好249:en');
   assert.equal(out[42].from, cues[42].from); // timings preserved
-  assert.deepEqual(calls, [100, 100, 50]);
-  ok('translate: batches sequentially, preserves order+timings');
+  assert.deepEqual(calls.slice().sort((a, b) => b - a), [100, 100, 50]); // concurrent → order-free
+  ok('translate: all batches issued (concurrent), preserves order+timings');
 
   // second run: served from cache, engine untouched
   calls.length = 0;
@@ -67,9 +76,28 @@ const mkCues = (texts) => texts.map((t, i) => ({ from: i, to: i + 0.9, text: t }
   ok('translate: stale cache (wrong length) ignored, re-fetched');
 }
 
-// --- misalignment / failure must throw ---
+// --- progressive delivery: onPartial fires per landed batch, playhead first ---
 {
-  const cues = mkCues(['一', '二', '三']);
+  const cues = mkCues(Array.from({ length: 250 }, (_, i) => '行' + i));
+  const partials = [];
+  const engine = async (texts) => texts.map(t => 'E' + t);
+  await translateCues(cues, 'en', engine, 'kp', mkStore(), {
+    startIndex: 150, concurrency: 1, // serial so partial order is deterministic
+    onPartial: pc => partials.push(pc.map(c => c.text.startsWith('E')).filter(Boolean).length),
+  });
+  assert.deepEqual(partials, [100, 150, 250]); // playhead batch [100,200) lands first
+  ok('translate: onPartial per batch, playhead batch first');
+}
+
+// --- transient failure retried; permanent failure throws ---
+{
+  const cues = mkCues(Array.from({ length: 3 }, (_, i) => '句' + i));
+  let first = true;
+  const flaky = async (ts) => { if (first) { first = false; throw new Error('net'); } return ts.map(t => 'E' + t); };
+  const out = await translateCues(cues, 'en', flaky, 'kr', mkStore());
+  assert.equal(out[0].text, 'E句0');
+  ok('translate: transient batch failure recovered by retry round');
+
   let threw = 0;
   try { await translateCues(cues, 'en', async ts => ts.slice(0, 2), 'k2', mkStore()); } catch (e) { threw++; }
   try { await translateCues(cues, 'en', async () => { throw new Error('net'); }, 'k3', mkStore()); } catch (e) { threw++; }

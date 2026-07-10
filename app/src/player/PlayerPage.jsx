@@ -7,7 +7,7 @@ import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
 import DanmakuLayer from './DanmakuLayer';
 import SubtitleLayer from './SubtitleLayer';
-import { parseSubtitleBody, isAiLan, subtitleLanName, mtLanName, findZhTrack, AI_LEAD } from './subtitles';
+import { parseSubtitleBody, pickCueIndex, isAiLan, subtitleLanName, mtLanName, findZhTrack, AI_LEAD } from './subtitles';
 import { translateCues } from './subTranslate';
 import { titleMT, useTitlesMT } from '../utils/titlemt';
 import { t, getLocale } from '../i18n';
@@ -165,29 +165,48 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // Machine translation is offered as a VIRTUAL track ('x-mt') feeding on the
   // zh source track, only when the UI locale itself isn't Chinese — an English
   // UI user gets 关 → 中文轨 → English (translated) → 关.
+  // Subtitle bodies are memoized per URL so opening the CC panel can PREFETCH
+  // the track before the user even confirms (cleared per part in loadVideo).
+  const subBodyCacheRef = useRef(new Map());
+  const fetchSubBody = useCallback((url) => {
+    const m = subBodyCacheRef.current;
+    if (!m.has(url)) {
+      m.set(url, getSubtitleBody(url).catch(e => { m.delete(url); throw e; }));
+    }
+    return m.get(url);
+  }, []);
+
   const selectSubtitle = useCallback((track) => {
     const req = ++subReqRef.current;
     if (!track) { setSubLan(null); setSubCues(null); return; }
     setSubLan(track.lan);
     setSubCues(null);
-    getSubtitleBody(track.subtitle_url)
+    fetchSubBody(track.subtitle_url)
       .then(body => {
         if (subReqRef.current !== req) return;
         const cues = parseSubtitleBody(body);
-        setSubCues(cues); // originals show immediately; MT swaps in when ready
+        setSubCues(cues); // originals show immediately; MT swaps in per batch
         if (track.lan === 'x-mt' && cues.length > 0) {
-          translateCues(cues, track.mt, gtxTranslate, `bili_subtr:${cidRef.current || ''}:${track.mt}`, window.localStorage)
+          // Start translating at the playhead so the stretch being WATCHED
+          // turns translated after ~one round-trip, not after the whole track.
+          const t = videoRef.current ? videoRef.current.currentTime : 0;
+          let startIndex = pickCueIndex(cues, t);
+          if (startIndex < 0) { startIndex = cues.findIndex(c => c.to > t); if (startIndex < 0) startIndex = 0; }
+          translateCues(cues, track.mt, gtxTranslate, `bili_subtr:${cidRef.current || ''}:${track.mt}`, window.localStorage, {
+            startIndex,
+            onPartial: pc => { if (subReqRef.current === req) setSubCues(pc); },
+          })
             .then(tc => { if (subReqRef.current === req) setSubCues(tc); })
             .catch(e => {
               console.warn('[subtitle] MT failed, falling back to source:', e?.message || e);
-              // Keep the zh cues but relabel to the source track — the button
-              // must not claim a translation that isn't showing.
-              if (subReqRef.current === req) setSubLan(track.srcLan);
+              // Revert to the source cues + label — the button must not claim
+              // a translation that isn't (fully) showing.
+              if (subReqRef.current === req) { setSubLan(track.srcLan); setSubCues(cues); }
             });
         }
       })
       .catch(() => { if (subReqRef.current === req) setSubCues(null); });
-  }, []);
+  }, [fetchSubBody]);
 
   const makeMtTrack = useCallback((tracks, loc) => {
     const zh = findZhTrack(tracks);
@@ -354,6 +373,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       setChapters([]);
       setSubTracks([]);
       selectSubtitle(null); // also bumps subReqRef → orphans in-flight bodies
+      subBodyCacheRef.current = new Map(); // bodies are per-cid
       if (!isBangumi && videoAidRef.current) {
         getPlayerV2(videoAidRef.current, cid).then(pv => {
           const vp = pv?.data?.view_points;
@@ -1196,6 +1216,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             // A selection panel means the user is mid-decision: suspend
             // auto-hide until they pick or back out (restarted on close).
             if (controlsTimer.current) clearTimeout(controlsTimer.current);
+            // Prefetch the likeliest track's body while they decide.
+            if (subTracks[0]) fetchSubBody(subTracks[0].subtitle_url).catch(() => {});
             return true;
           } else if (btn === 'quality') {
             setShowQuality(true);
@@ -1343,7 +1365,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
     setCustomKeyHandler(handler);
     return () => setCustomKeyHandler(null);
-  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, loadUpVideos, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption]);
+  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, loadUpVideos, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 

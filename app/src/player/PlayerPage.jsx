@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot } from '../api/client';
+import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody } from '../api/client';
 import { playPart, playAdvance } from './playIntent';
 
 import { formatDuration, formatTime, QUALITY_MAP, cleanTitle } from '../utils/format';
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
 import DanmakuLayer from './DanmakuLayer';
+import SubtitleLayer from './SubtitleLayer';
+import { parseSubtitleBody, isAiLan, AI_LEAD } from './subtitles';
 import { t } from '../i18n';
 
 // Proxy + resize card thumbnails (same as VideoCard): the proxy adds the
@@ -55,6 +57,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const [danmakuEnabled, setDanmakuEnabled] = useState(() => storage.getSettings().danmaku !== false);
   // Danmaku font scale (设置 → 弹幕字号). Read once per mount.
   const [danmakuScale] = useState(() => storage.getSettings().danmakuScale || 1);
+  // CC subtitles (player/v2 → data.subtitle.subtitles). subLan null = off.
+  // settings.subtitle persists only the on/off preference; the concrete track
+  // is re-picked per part (track lists differ video to video).
+  const [subTracks, setSubTracks] = useState([]);
+  const [subLan, setSubLan] = useState(null);
+  const [subCues, setSubCues] = useState(null);
+  const subReqRef = useRef(0); // drop stale subtitle-body fetches on switch
   const [videoTitle, setVideoTitle] = useState(video?.title || '');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -123,7 +132,28 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     pendingSeekRef.current = null;
   }, []);
 
-  const CONTROLS = ['play', 'danmaku', 'quality'];
+  // The CC button only exists when this part actually has subtitle tracks.
+  const CONTROLS = subTracks.length > 0
+    ? ['play', 'danmaku', 'subtitle', 'quality']
+    : ['play', 'danmaku', 'quality'];
+
+  const selectSubtitle = useCallback((track) => {
+    const req = ++subReqRef.current;
+    if (!track) { setSubLan(null); setSubCues(null); return; }
+    setSubLan(track.lan);
+    setSubCues(null);
+    getSubtitleBody(track.subtitle_url)
+      .then(body => { if (subReqRef.current === req) setSubCues(parseSubtitleBody(body)); })
+      .catch(() => { if (subReqRef.current === req) setSubCues(null); });
+  }, []);
+
+  // 关 → 轨1 → 轨2 → … → 关. Persists on/off so the next video auto-enables.
+  const cycleSubtitle = useCallback(() => {
+    const i = subTracks.findIndex(s => s.lan === subLan);
+    const next = i + 1 < subTracks.length ? subTracks[i + 1] : null;
+    selectSubtitle(next);
+    storage.setSettings({ ...storage.getSettings(), subtitle: !!next });
+  }, [subTracks, subLan, selectSubtitle]);
 
   // Initialize Shaka Player
   useEffect(() => {
@@ -260,6 +290,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       // lookup above may fetch player/v2 for the pre-jump cid, whose chapter
       // list would be the wrong part's.)
       setChapters([]);
+      setSubTracks([]);
+      selectSubtitle(null); // also bumps subReqRef → orphans in-flight bodies
       if (!isBangumi && videoAidRef.current) {
         getPlayerV2(videoAidRef.current, cid).then(pv => {
           const vp = pv?.data?.view_points;
@@ -269,6 +301,16 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               .map(p => ({ from: p.from, to: p.to, content: String(p.content).slice(0, 40) }))
               .sort((a, b) => a.from - b.from);
             if (ch.length > 0) setChapters(ch);
+          }
+          // CC tracks ride the same response (human tracks first, then ai-zh).
+          const st = pv?.data?.subtitle?.subtitles;
+          if (Array.isArray(st)) {
+            const tracks = st.filter(s => s && s.lan && s.subtitle_url);
+            if (tracks.length > 0) {
+              setSubTracks(tracks);
+              // Re-enable automatically if the user had CC on last time.
+              if (storage.getSettings().subtitle) selectSubtitle(tracks[0]);
+            }
           }
         }).catch(() => {});
       }
@@ -474,7 +516,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       setLoadError(true);
       castReportState({ playState: 'error', error: err?.message || 'load-failed' }).catch(() => {});
     }
-  }, [video, queueOrApplySeek]);
+  }, [video, queueOrApplySeek, selectSubtitle]);
 
   function buildMPD(dash, wantQn) {
     const duration = dash.duration || 0;
@@ -1069,6 +1111,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             }
           } else if (btn === 'danmaku') {
             setDanmakuEnabled(prev => !prev);
+          } else if (btn === 'subtitle') {
+            cycleSubtitle();
           } else if (btn === 'quality') {
             setShowQuality(true);
             setFocusArea('quality');
@@ -1095,7 +1139,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         if (e.key === 'Enter') {
           e.preventDefault();
           const q = qualities[focusIdx];
-          if (q) { changeQuality(q.qn); setShowQuality(false); setFocusArea('controls'); setFocusIdx(2); }
+          if (q) { changeQuality(q.qn); setShowQuality(false); setFocusArea('controls'); setFocusIdx(CONTROLS.indexOf('quality')); }
           return true;
         }
         return false;
@@ -1189,7 +1233,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
     setCustomKeyHandler(handler);
     return () => setCustomKeyHandler(null);
-  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, loadUpVideos, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub]);
+  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, loadUpVideos, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, cycleSubtitle]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -1198,6 +1242,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       <video ref={videoRef} className="player-video" />
 
       <DanmakuLayer danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale} />
+
+      <SubtitleLayer videoRef={videoRef} cues={subCues} enabled={subLan != null}
+        lead={isAiLan(subLan) ? AI_LEAD : 0}
+        lift={showControls ? (showRelated ? 2 : 1) : 0} />
 
       {loading && (
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
@@ -1361,7 +1409,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             <button key={btn} className={`player-btn ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''}`}>
               {btn === 'play' ? (ended ? t('↻ 重播') : playing ? t('⏸ 暂停') : t('▶ 播放')) :
                 btn === 'danmaku' ? (danmakuEnabled ? t('弹幕 开') : t('弹幕 关')) :
-                  QUALITY_MAP[currentQuality] || `${currentQuality}`}
+                  btn === 'subtitle' ? (subLan == null ? t('字幕 关')
+                    // lan_doc is B站's own track name ('中文(自动生成)') — API
+                    // content, shown as-is per the i18n exceptions.
+                    : `${t('字幕')} ${String((subTracks.find(s => s.lan === subLan) || {}).lan_doc || subLan).slice(0, 10)}`) :
+                    QUALITY_MAP[currentQuality] || `${currentQuality}`}
             </button>
           ))}
           <span className="player-time">

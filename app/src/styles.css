@@ -357,6 +357,28 @@ html, body, #root {
   to { transform: translateX(-100%); }
 }
 
+/* ===== CC Subtitles ===== */
+.subtitle-layer {
+  position: absolute;
+  left: 0; right: 0; bottom: 56px;
+  text-align: center;
+  pointer-events: none;
+  z-index: 40; /* above video/danmaku, below the controls gradient text */
+  transition: transform 0.25s ease; /* lift when the controls bar opens */
+}
+.subtitle-text {
+  display: inline-block;
+  max-width: 76%;
+  font-size: 34px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 8px;
+  padding: 6px 20px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
 /* ===== Quality Selector ===== */
 .quality-panel {
   position: absolute;

@@ -302,6 +302,21 @@ export async function getPlayerV2(aid, cid) {
   return wbiFetch('/x/player/wbi/v2', { aid, cid });
 }
 
+// Fetch a subtitle body JSON (player/v2 gives protocol-relative CDN urls on
+// aisubtitle.hdslb.com). Routed through Luna/proxy like every other request —
+// the CDN has no CORS headers, so a direct browser fetch would fail.
+export async function getSubtitleBody(url) {
+  var abs = url.indexOf('//') === 0 ? 'https:' + url : url;
+  var parsed = new URL(abs);
+  var res = await smartFetch(parsed.host, parsed.pathname + parsed.search);
+  // Proxy path hands back a raw Response when the CDN mislabels the JSON
+  // (octet-stream); Luna path already parsed it.
+  if (res && typeof res.json === 'function') {
+    try { return await res.json(); } catch (e) { return null; }
+  }
+  return res;
+}
+
 export async function getPlayUrl(videoOrBvid, cid, qn) {
   var payload = {
     cid: cid, qn: qn || 80, fnval: 4048, fnver: 0, fourk: 1, platform: 'pc',

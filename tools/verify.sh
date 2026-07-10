@@ -51,6 +51,8 @@ node tools/test-playintent.mjs || { echo "FAIL: play-intent policy"; exit 1; }
 node tools/test-i18n-coverage.mjs || { echo "FAIL: i18n coverage"; exit 1; }
 # C-I18N-04: locale-aware formatters (万/亿 vs K/M, relative time)
 node tools/test-i18n-format.mjs || { echo "FAIL: i18n formatters"; exit 1; }
+# C-SUB-01: subtitle cue parse/pick (wrong index paints the wrong line on screen)
+node tools/test-subtitle.mjs || { echo "FAIL: subtitle helpers"; exit 1; }
 
 echo ""
 echo "=== [3/6] Service on REAL Node 8 (docker) ==="

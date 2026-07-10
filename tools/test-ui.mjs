@@ -25,8 +25,11 @@ const KEYMAP = {
   left: { key: 'ArrowLeft', vk: 37 }, right: { key: 'ArrowRight', vk: 39 },
   ok: { key: 'Enter', vk: 13 }, back: { key: 'Backspace', vk: 8 },
 };
-// Sidebar order — keep in sync with NAV_ITEMS in app/src/App.jsx.
-const NAV = { recommend: 0, hot: 1, live: 2, partition: 3, follow: 4, search: 5, settings: 6, config: 7 };
+// Sidebar targets are located AT RUNTIME by their icon (locale-independent) —
+// a hardcoded index table silently drifted when 收藏 was inserted (2026-07-10:
+// 'settings:6' landed on 搜索, four "flaky" failures + one false-positive pass
+// all traced to this one stale map).
+const NAV_ICON = { recommend: '🏠', hot: '🔥', live: '📡', partition: '📁', follow: '👤', favorites: '⭐', search: '🔍', settings: '🕘', config: '⚙️' };
 
 // One probe reads every field the tests assert on, in a single round-trip.
 const PROBE = `JSON.stringify({
@@ -42,7 +45,8 @@ const PROBE = `JSON.stringify({
   liveBadge: Array.from(document.querySelectorAll('.video-card-duration')).some(function(e){return e.innerText.indexOf('直播')>=0}),
   recentLive: (function(){try{return JSON.parse(localStorage.getItem('bili_recentLive')||'[]').length}catch(e){return -1}})(),
   imgs: document.querySelectorAll('img').length,
-  broken: Array.from(document.querySelectorAll('img')).filter(function(i){return i.complete&&i.naturalWidth===0}).length
+  broken: Array.from(document.querySelectorAll('img')).filter(function(i){return i.complete&&i.naturalWidth===0}).length,
+  sidebar: Array.from(document.querySelectorAll('.sidebar-item')).map(function(e){return e.textContent})
 })`;
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -98,12 +102,15 @@ async function main(call) {
   };
 
   // Navigate to a top-level page: get to the sidebar, snap to the top, step down
-  // to the target, then OK to enter the content (new nav: OK enters content).
+  // to the target (index resolved from the LIVE sidebar by icon), then OK to
+  // enter the content.
   const goto = async (pageKey) => {
     const s = await probe();
+    const idx = (s.sidebar || []).findIndex(t => t.indexOf(NAV_ICON[pageKey]) >= 0);
+    if (idx < 0) throw new Error(`goto(${pageKey}): icon ${NAV_ICON[pageKey]} not in sidebar [${(s.sidebar || []).join(',')}]`);
     if (s.focus && s.focus.startsWith('content-')) await key('back'); // content → sidebar
-    await keyN('up', 8);
-    await keyN('down', NAV[pageKey]);
+    await keyN('up', (s.sidebar || []).length);
+    await keyN('down', idx);
     await key('ok');
     return waitFor(s2 => s2.focus && s2.focus.startsWith('content-'), { timeout: 6000 });
   };
@@ -161,6 +168,10 @@ async function main(call) {
 
   async function testLiveAndDanmaku() {
     console.log('\n[Live playback + danmaku + history]');
+    // The danmaku layer honors the persisted 设置 → 弹幕 toggle: force it on for
+    // this test (and restore after), or a user's "off" reads as a bogus failure.
+    const dmWas = await evalJSON(`JSON.stringify(JSON.parse(localStorage.getItem('bili_settings')||'{}').danmaku)`);
+    await evalJSON(`(function(){var s=JSON.parse(localStorage.getItem('bili_settings')||'{}');s.danmaku=true;localStorage.setItem('bili_settings',JSON.stringify(s));return '""'})()`);
     await reload();
     let s = await goto('live');
     check('Live list loads', s.cards > 0, `${s.cards} rooms`);
@@ -177,9 +188,12 @@ async function main(call) {
     s = await probe();
     check('Live room recorded to recentLive', s.recentLive > 0, `${s.recentLive} stored`);
     s = await goto('settings');
-    await waitFor(x => x.cards > 0, { timeout: 8000 });
-    s = await probe();
+    // 我的 loads server history + local recentLive — wait on the badge itself.
+    s = await waitFor(x => x.liveBadge, { timeout: 20000, interval: 700 });
     check('Live shows in 我的 → 最近观看 with 直播 badge', s.liveBadge, `cards=${s.cards}`);
+    // Restore the user's danmaku preference (dmWas: true/false, or {} if unset).
+    const dmRestore = (dmWas === true || dmWas === false) ? `s.danmaku=${dmWas}` : 'delete s.danmaku';
+    await evalJSON(`(function(){var s=JSON.parse(localStorage.getItem('bili_settings')||'{}');${dmRestore};localStorage.setItem('bili_settings',JSON.stringify(s));return '""'})()`);
   }
 
   async function testSearch() {

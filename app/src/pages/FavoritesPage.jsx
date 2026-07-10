@@ -34,6 +34,7 @@ export default function FavoritesPage({ userMid, onPlayVideo }) {
   const mapMedia = (m) => ({
     bvid: m.bvid, cid: m.ugc?.first_cid, title: m.title, pic: m.cover, duration: m.duration,
     owner: { name: m.upper?.name, mid: m.upper?.mid }, stat: { view: m.cnt_info?.play },
+    pubdate: m.pubtime, // publish time on the card, like every other list
   });
 
   // Load the user's folder list once.

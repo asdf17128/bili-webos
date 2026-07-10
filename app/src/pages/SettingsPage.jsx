@@ -48,6 +48,7 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
           kind: 'live', isLive: true, ts, roomid, bvid: 'live-' + roomid,
           title: item.title, pic: item.cover, owner: { name: item.author_name },
           duration: t('未开播'),
+          pubdate: ts, // card time = when it was watched
         };
       }
       const isBangumi = h.business === 'pgc' || item.badge === '番剧';
@@ -55,6 +56,7 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
         kind: 'video', ts, bvid: h.bvid, cid: h.cid,
         title: item.title, pic: item.cover, duration: item.duration,
         progress: item.progress, owner: { name: item.author_name },
+        pubdate: ts, // card time = when it was watched
         ...(isBangumi ? { isBangumi: true, epid: h.epid, seasonId: h.oid, badge: '番剧' } : {}),
       };
     };
@@ -89,6 +91,7 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
           kind: 'live', isLive: true, roomid: r.roomid, bvid: 'live-' + r.roomid,
           title: r.title, pic: r.cover, owner: { name: r.uname },
           ts: r.ts || 0, duration: t('未开播'),
+          pubdate: r.ts || 0, // recentLive ts is unix seconds (see storage.js)
         }));
 
       const merged = [...history, ...localLive].sort((a, b) => (b.ts || 0) - (a.ts || 0));

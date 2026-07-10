@@ -3,6 +3,7 @@ import { useFocusable } from '../hooks/useFocus';
 import { formatCount, formatDuration, formatTime, cleanTitle } from '../utils/format';
 import { storage } from '../utils/storage';
 import { t } from '../i18n';
+import { titleMT, useTitlesMT } from '../utils/titlemt';
 
 function getProxyBase() {
   return (typeof window !== 'undefined' && window.webOS)
@@ -33,6 +34,9 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
     id: focusId, row, col, group, onSelect: handleSelect,
   });
 
+  // Non-zh UIs machine-translate card titles (no-op subscription on zh).
+  useTitlesMT();
+
   const thumbUrl = proxyImg(video.pic || video.cover || '');
 
   return (
@@ -57,7 +61,7 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
         )}
       </div>
       <div className="video-card-info">
-        <div className="video-card-title">{cleanTitle(video.title)}</div>
+        <div className="video-card-title">{titleMT(cleanTitle(video.title))}</div>
         <div className="video-card-meta">
           {video.owner?.name && <span>{cleanTitle(video.owner.name)}</span>}
           {followed && <span style={{ color: '#00a1d6', fontWeight: 600 }}>{t('已关注')}</span>}

@@ -9,6 +9,7 @@ import DanmakuLayer from './DanmakuLayer';
 import SubtitleLayer from './SubtitleLayer';
 import { parseSubtitleBody, isAiLan, subtitleLanName, mtLanName, findZhTrack, AI_LEAD } from './subtitles';
 import { translateCues } from './subTranslate';
+import { titleMT, useTitlesMT } from '../utils/titlemt';
 import { t, getLocale } from '../i18n';
 
 // Proxy + resize card thumbnails (same as VideoCard): the proxy adds the
@@ -42,6 +43,7 @@ function proxyImg(url) {
 }
 
 export default function PlayerPage({ video, onBack, onPlayNext }) {
+  useTitlesMT(); // re-render when list-title translations land (no-op on zh)
   const videoRef = useRef(null);
   const shakaRef = useRef(null);
   const [playing, setPlaying] = useState(false);
@@ -66,6 +68,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const [subCues, setSubCues] = useState(null);
   const subReqRef = useRef(0); // drop stale subtitle-body fetches on switch
   const [videoTitle, setVideoTitle] = useState(video?.title || '');
+  // Owner + publish time under the title — the entry item often lacks them
+  // (deep link, related card), so the view fetch backfills.
+  const [metaOwner, setMetaOwner] = useState(video?.owner?.name || '');
+  const [metaPubdate, setMetaPubdate] = useState(video?.pubdate || 0);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -318,7 +324,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         if (d.owner) {
           ownerMid = ownerMid || d.owner.mid;
           ownerName = ownerName || d.owner.name;
+          if (d.owner.name) setMetaOwner(d.owner.name);
         }
+        if (d.pubdate) setMetaPubdate(d.pubdate);
         // Cast can hand us an aid-only video (no bvid). Backfill bvid from the
         // view response so heartbeat/related (which key on bvid) keep working.
         if (!video.bvid && d.bvid) video.bvid = d.bvid;
@@ -1469,10 +1477,15 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                 }} />
               </div>
             </div>
-            <div style={{ padding: '14px 18px 15px', fontSize: 24, color: '#f0f0f0', lineHeight: 1.45, textAlign: 'left',
+            <div style={{ padding: '14px 18px 6px', fontSize: 24, color: '#f0f0f0', lineHeight: 1.45, textAlign: 'left',
               overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-              {cleanTitle(relatedVideos[0].title)}
+              {titleMT(cleanTitle(relatedVideos[0].title))}
             </div>
+            {(relatedVideos[0].owner?.name || relatedVideos[0].pubdate) && (
+              <div style={{ padding: '0 18px 14px', fontSize: 18, color: '#9aa0a8', textAlign: 'left' }}>
+                {[cleanTitle(relatedVideos[0].owner?.name), formatTime(relatedVideos[0].pubdate)].filter(Boolean).join(' · ')}
+              </div>
+            )}
           </div>
           <div style={{ marginTop: 14, fontSize: 20, color: '#9aa0a8' }}>
             {t('{n} 秒后自动播放', { n: endNextIn })}&nbsp;&nbsp;·&nbsp;&nbsp;{t('OK 立即播放')}&nbsp;&nbsp;·&nbsp;&nbsp;{t('其他键取消')}
@@ -1483,10 +1496,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       {/* Controls bar */}
       <div className={`player-controls ${showControls ? '' : 'hidden'}`}>
         <div className="player-title">{cleanTitle(videoTitle)}</div>
-        {video?.owner?.name && (
+        {(metaOwner || metaPubdate > 0) && (
           <div style={{ fontSize: 18, color: '#999', marginBottom: 4 }}>
-            {video.owner.name}
-            {video.pubdate && ` · ${new Date(video.pubdate * 1000).toLocaleDateString('zh-CN')}`}
+            {metaOwner}
+            {metaPubdate > 0 && `${metaOwner ? ' · ' : ''}${new Date(metaPubdate * 1000).toLocaleDateString('zh-CN')}`}
           </div>
         )}
         <div className="player-progress-bar">
@@ -1574,7 +1587,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                         </div>
                         <div style={{ padding: '6px 4px 0', fontSize: 18, color: nowPlaying ? '#00a1d6' : '#ccc', lineHeight: 1.3,
                           overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
-                          {cleanTitle(rv.title)}
+                          {titleMT(cleanTitle(rv.title))}
                         </div>
                         <div style={{ padding: '2px 4px 6px', fontSize: 16, color: '#999',
                           overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>

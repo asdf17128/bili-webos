@@ -24,6 +24,9 @@ export default function HistoryPage({ onPlayVideo }) {
             bvid: item.history?.bvid, cid: item.history?.cid,
             title: item.title, pic: item.cover, duration: item.duration,
             progress: item.progress,
+            // Card time = when it was WATCHED (view_at) — that's what a
+            // history list is about ("3小时前" = watched 3h ago).
+            pubdate: item.view_at,
             owner: { name: item.author_name },
           })));
         } else { setError(res?.message || t('加载失败')); }

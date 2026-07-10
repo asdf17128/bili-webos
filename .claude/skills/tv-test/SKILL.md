@@ -48,6 +48,20 @@ bash tools/verify.sh --full   # 额外跑真机 UI smoke(test-ui.mjs,~3分钟)
 | `test-ui.mjs` | 真机 UI smoke 全家桶 | app 须在前台 |
 | `test-e2e.mjs` | API 集成测试 | 需先 `node proxy/server.js` |
 
+## 深链直达(测试专用钩子,owner 授权 2026-07-10)
+
+**"没法测试 = 不允许上线"。为可测试性可以给 app 加专门的测试钩子。**
+
+- `window.__openVideo({bvid, cid, title})`(App.jsx 注册)——CDP 里直接播放指定视频,
+  跳过整个 UI 导航;入口与卡片按键完全同路(normalizePlay 起全是生产代码)。
+  找"具备某特征"的测试素材(有字幕轨/有章节/多P):先用页内 luna fetch 查
+  `history/cursor` 或 `player/v2`,拿到 bvid+cid 再深链。
+- **保持瞬态 UI 存活以便截图**(scrub 气泡这类 1s 自动消失的):页内起
+  `setInterval(()=>dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight'})),700)`
+  合成键反复续命,另一个连接从容截图,完事 clearInterval。合成键走 JS 层
+  keydown handler,足够(不需要 trusted input 时)。
+- 逐卡片盲探(back,right,ok 循环 + eval 断言)是没有素材线索时的兜底,慢但可靠。
+
 ## 专项验证清单
 
 - **QR 码功能**:报告体必须纯 ASCII(CJK percent-encode 后 1 字变 9 字,QR 密到扫不出);用 jsQR 从**真机截图**解码验证,再开解码出的 URL 确认 GitHub 表单预填(body 在第 3 个 textarea,前两个是 GitHub 反馈组件)。

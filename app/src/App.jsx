@@ -265,6 +265,14 @@ export default function App() {
     setPlayerVideo(video);
   }, []);
 
+  // Test deep-link: lets the CDP harness play an exact video without driving
+  // the whole UI to it (tools/cases scripts; see tv-test skill "深链直达").
+  // Same entry as a card press — everything downstream is production code.
+  useEffect(() => {
+    window.__openVideo = (v) => handlePlayVideo(v);
+    return () => { delete window.__openVideo; };
+  }, [handlePlayVideo]);
+
   // Arrowing onto a sidebar item just previews its page — no refresh, no
   // jumping into the content.
   const previewPage = useCallback((key) => {

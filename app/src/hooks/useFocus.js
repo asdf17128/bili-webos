@@ -230,13 +230,15 @@ export function initKeyboardNav() {
   // pointer sits in the top/bottom edge zones; per-event stepping made the page
   // scroll wildly there (#11). Accumulation turns that stream into a gentle
   // scroll while a real wheel flick (large delta) still steps immediately.
-  // One LG Magic Remote wheel detent = deltaY 200 (MEASURED on the owner's C4
-  // via an in-page logger, 2026-07-11 — NOT the standard 120, and the official
-  // docs don't document it). Matching the step to the real detent gives exactly
-  // one-notch-one-row: 140 made notches worth 1.4 steps (carry made some
-  // notches jump 2 rows), 100 made every notch jump 2. The rate cap below
-  // still tames edge-zone streams.
-  const WHEEL_STEP = 200;
+  // LG Magic Remote wheel is VELOCITY-SENSITIVE (measured on the owner's C4
+  // via __wheelDiag, 2026-07-11): a slow notch sends deltaY=120, a fast one
+  // 200 — so pixel-accumulation can never make "one notch = one row" hold for
+  // both. Model it by INTENT instead: any event with |deltaY| ≥ NOTCH_MIN is a
+  // real notch → exactly one row (rate-capped, no carry — carries made some
+  // notches jump 2 rows). Smaller deltas are the pointer edge-zone auto-stream
+  // (#11) → gentle pixel accumulation with a slower cap.
+  const NOTCH_MIN = 100;
+  const STREAM_STEP = 200;
   let wheelAcc = 0;
   let lastWheelTs = 0;
   let lastStepTs = 0;
@@ -251,25 +253,23 @@ export function initKeyboardNav() {
   window.addEventListener('wheel', (e) => {
     if (customKeyHandler) { diag(e.deltaY, 'custom-handler-owns-input'); return; }
     const now = Date.now();
-    if (now - lastWheelTs > 600) wheelAcc = 0; // stale/direction-idle reset
+    if (now - lastWheelTs > 600) wheelAcc = 0; // stale stream reset
     lastWheelTs = now;
-    // Direction flip: discard the opposite-direction carry — a banked up-carry
-    // was silently EATING the next down notch (owner: "向下拨一格没反应").
-    if ((wheelAcc > 0 && e.deltaY < 0) || (wheelAcc < 0 && e.deltaY > 0)) wheelAcc = 0;
-    wheelAcc += e.deltaY;
-    if (Math.abs(wheelAcc) < WHEEL_STEP) { diag(e.deltaY, 'below-threshold', { acc: wheelAcc }); return; }
-    // Rate cap (edge-zone runaway protection), but CARRY the surplus instead
-    // of discarding it — zeroing on every step ate most of a vigorous flick
-    // and read as "卡卡的" (sticky). Carry is clamped to 2 rows so a banked
-    // stream can't keep scrolling after the finger stops.
-    if (now - lastStepTs < 120) {
-      const lim = WHEEL_STEP * 2;
-      if (wheelAcc > lim) wheelAcc = lim; else if (wheelAcc < -lim) wheelAcc = -lim;
-      diag(e.deltaY, 'rate-capped', { acc: wheelAcc });
-      return;
+    let dir;
+    if (Math.abs(e.deltaY) >= NOTCH_MIN) {
+      // A real notch: one row, always (120 slow / 200 fast — same intent).
+      wheelAcc = 0;
+      if (now - lastStepTs < 120) { diag(e.deltaY, 'rate-capped'); return; }
+      dir = e.deltaY > 0 ? 'down' : 'up';
+    } else {
+      // Edge-zone auto-stream: small continuous deltas → gentle scroll.
+      if ((wheelAcc > 0 && e.deltaY < 0) || (wheelAcc < 0 && e.deltaY > 0)) wheelAcc = 0;
+      wheelAcc += e.deltaY;
+      if (Math.abs(wheelAcc) < STREAM_STEP) { diag(e.deltaY, 'below-threshold', { acc: wheelAcc }); return; }
+      if (now - lastStepTs < 200) { diag(e.deltaY, 'rate-capped', { acc: wheelAcc }); return; }
+      dir = wheelAcc > 0 ? 'down' : 'up';
+      wheelAcc -= dir === 'down' ? STREAM_STEP : -STREAM_STEP;
     }
-    const dir = wheelAcc > 0 ? 'down' : 'up';
-    wheelAcc -= dir === 'down' ? WHEEL_STEP : -WHEEL_STEP;
     lastStepTs = now;
     // Step the VIEW-ANCHOR row (see lastAnchor above). Falls back to the
     // current focus for the very first wheel.

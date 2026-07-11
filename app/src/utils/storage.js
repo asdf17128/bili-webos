@@ -46,7 +46,10 @@ export const storage = {
     // Merge stored settings over the defaults so newly-added keys always have a
     // value even for users who saved settings before the key existed.
     const defaults = {
-      language: 'auto',
+      // Default CHINESE (owner decision 2026-07-11): the audience is bilibili
+      // users — a zh UI on an en-US system TV is less surprising than the
+      // reverse. 'auto' (follow system) stays available in 设置 → 语言.
+      language: 'zh',
       danmaku: true,
       quality: 80,
       gridCols: 3,

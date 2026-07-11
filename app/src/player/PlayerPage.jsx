@@ -1563,7 +1563,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             <button key={btn} className={`player-btn ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''}`}
               onMouseEnter={() => { setFocusArea('controls'); setFocusIdx(i); hideControlsLater(); }}
               onClick={() => pressControl(btn)}>
-              {btn === 'play' ? (ended ? t('↻ 重播') : playing ? t('⏸ 暂停') : t('▶ 播放')) :
+              {btn === 'play' ? (ended ? t('🔁 重播') : playing ? t('⏸ 暂停') : t('▶ 播放')) :
                 btn === 'danmaku' ? (danmakuEnabled ? t('弹幕 开') : t('弹幕 关')) :
                   btn === 'subtitle' ? (subLan == null ? t('字幕 关')
                     // Known lan codes get a localized name (t over our enum,

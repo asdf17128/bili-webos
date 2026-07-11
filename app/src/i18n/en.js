@@ -16,7 +16,7 @@ export default {
   "{n}分钟前": "{n} min ago",
   "{n}天前": "{n}d ago",
   "{n}小时前": "{n}h ago",
-  "↻ 重播": "↻ Replay",
+  "🔁 重播": "🔁 Replay",
   "⏸ 暂停": "⏸ Pause",
   "▶ 播放": "▶ Play",
   "▶ 播放中": "▶ Playing",

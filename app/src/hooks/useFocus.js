@@ -241,9 +241,17 @@ export function initKeyboardNav() {
     lastWheelTs = now;
     wheelAcc += e.deltaY;
     if (Math.abs(wheelAcc) < WHEEL_STEP) return;
-    if (now - lastStepTs < 220) return; // hard cap: ≤ ~4 rows/s even in edge zones
+    // Rate cap (edge-zone runaway protection), but CARRY the surplus instead
+    // of discarding it — zeroing on every step ate most of a vigorous flick
+    // and read as "卡卡的" (sticky). Carry is clamped to 2 rows so a banked
+    // stream can't keep scrolling after the finger stops.
+    if (now - lastStepTs < 150) {
+      const lim = WHEEL_STEP * 2;
+      if (wheelAcc > lim) wheelAcc = lim; else if (wheelAcc < -lim) wheelAcc = -lim;
+      return;
+    }
     const dir = wheelAcc > 0 ? 'down' : 'up';
-    wheelAcc = 0;
+    wheelAcc -= dir === 'down' ? WHEEL_STEP : -WHEEL_STEP;
     lastStepTs = now;
     // Step the VIEW-ANCHOR row (see lastAnchor above). Falls back to the
     // current focus for the very first wheel.

@@ -164,7 +164,7 @@ export default function ConfigPage({ onLogout, user }) {
   // Names stay endonyms (each language in itself) — standard for language
   // pickers, so users can find their way back from a language they can't read.
   const LANG_LABELS = { auto: t('自动'), zh: '中文', en: 'English', es: 'Español' };
-  const langPref = storage.getSettings().language || 'auto';
+  const langPref = storage.getSettings().language || 'zh';
   const langOpts = availableLanguages();
   const [showLangPicker, setShowLangPicker] = useState(false);
   const [pickerIdx, setPickerIdx] = useState(0);

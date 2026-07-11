@@ -14,7 +14,7 @@ export default {
   "{n}分钟前": "hace {n} min",
   "{n}天前": "hace {n}d",
   "{n}小时前": "hace {n}h",
-  "↻ 重播": "↻ Repetir",
+  "🔁 重播": "🔁 Repetir",
   "⏸ 暂停": "⏸ Pausa",
   "▶ 播放": "▶ Reproducir",
   "▶ 播放中": "▶ Reproduciendo",

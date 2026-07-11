@@ -19,7 +19,7 @@ const DICTS = {
 // Map browser/system locale to a dictionary code. Region variants collapse to
 // their base language ('en-US' → 'en'); Chinese in any variant → source strings.
 function detectLocale() {
-  const pref = storage.getSettings().language || 'auto';
+  const pref = storage.getSettings().language || 'zh'; // default zh (owner decision)
   if (pref !== 'auto') return pref;
   const nav = (typeof navigator !== 'undefined' && navigator.language) || 'zh';
   const base = nav.toLowerCase().split('-')[0];

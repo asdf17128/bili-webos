@@ -245,6 +245,9 @@ export function initKeyboardNav() {
     const now = Date.now();
     if (now - lastWheelTs > 600) wheelAcc = 0; // stale/direction-idle reset
     lastWheelTs = now;
+    // Direction flip: discard the opposite-direction carry — a banked up-carry
+    // was silently EATING the next down notch (owner: "向下拨一格没反应").
+    if ((wheelAcc > 0 && e.deltaY < 0) || (wheelAcc < 0 && e.deltaY > 0)) wheelAcc = 0;
     wheelAcc += e.deltaY;
     if (Math.abs(wheelAcc) < WHEEL_STEP) return;
     // Rate cap (edge-zone runaway protection), but CARRY the surplus instead
@@ -267,15 +270,27 @@ export function initKeyboardNav() {
       if (!meta || meta.group !== 'content') return;
       base = { group: meta.group, row: meta.row, col: meta.col };
     }
-    const targetRow = base.row + (dir === 'down' ? 1 : -1);
-    if (targetRow < 0) return;
     // Find a card in the target row, preferring the same column.
-    let next = null;
-    for (let cCol = base.col; cCol >= 0 && !next; cCol--) {
-      const id = `${base.group}-${targetRow}-${cCol}`;
-      if (focusRegistry.has(id)) next = id;
+    const findInRow = (group, rowN, col) => {
+      for (let cCol = col; cCol >= 0; cCol--) {
+        const id = `${group}-${rowN}-${cCol}`;
+        if (focusRegistry.has(id)) return id;
+      }
+      return null;
+    };
+    const targetRow = base.row + (dir === 'down' ? 1 : -1);
+    let next = targetRow < 0 ? null : findInRow(base.group, targetRow, base.col);
+    if (!next) {
+      // The ANCHOR is at a boundary (e.g. bottom row while load-more catches
+      // up) but the FOCUS may not be — retry from the focused row so a notch
+      // is never silently dead when there's still somewhere to go.
+      const meta = currentFocusId ? focusRegistry.get(currentFocusId) : null;
+      if (meta && meta.group === 'content' && meta.row !== base.row) {
+        const t2 = meta.row + (dir === 'down' ? 1 : -1);
+        if (t2 >= 0) next = findInRow(meta.group, t2, meta.col);
+      }
     }
-    if (!next) return; // reached the end of the list
+    if (!next) return; // genuinely the end of the list
     lastFocusFromPointer = true;
     setFocus(next); // non-hover → pages re-anchor the view to targetRow
   }, { passive: true });

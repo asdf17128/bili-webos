@@ -14,43 +14,114 @@ export default function LivePlayerPage({ room, onBack }) {
   const dmLayerRef = useRef(null);
 
   useEffect(() => {
-    async function load() {
-      try {
-        castReportState({ playState: 'loading' }).catch(() => {});
-        let src;
-        if (room.directUrl) {
-          // DLNA cast (Huya etc): play the sender's URL as-is — third-party
-          // CDNs aren't in our proxy allowlist, and <video> needs no CORS.
-          src = room.directUrl;
-        } else {
-          storage.addRecentLive(room); // local "recent live" history
-          const hlsUrl = await getLiveStreamUrl(room.roomid);
-          if (!hlsUrl || !videoRef.current) return;
-          // Proxy the HLS stream (local service or Mac proxy)
-          const proxyBase = (typeof window !== 'undefined' && window.webOS)
-            ? 'http://127.0.0.1:7654'
-            : storage.getProxyUrl();
-          const parsed = new URL(hlsUrl);
-          src = `${proxyBase}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
-        }
-        if (!videoRef.current) return;
+    let disposed = false;
+    let retries = 0;
+    const MAX_RETRIES = 5;
+    // Diagnostics breadcrumbs, readable after the fact via CDP — live drops
+    // used to leave NO trace ("有断的情况…黑屏", owner 2026-07-11).
+    const diag = (window.__liveDiag = window.__liveDiag || []);
+    const note = (why, extra) => {
+      diag.push({ t: Date.now() % 1000000, why, ...(extra || {}) });
+      if (diag.length > 100) diag.shift();
+      console.info('[live] ' + why + (extra ? ' ' + JSON.stringify(extra) : ''));
+    };
 
+    async function resolveSrc() {
+      if (room.directUrl) {
+        // DLNA cast (Huya etc): play the sender's URL as-is — third-party
+        // CDNs aren't in our proxy allowlist, and <video> needs no CORS.
+        return room.directUrl;
+      }
+      // B站 live: refetch on every (re)connect — the signed URL expires, so a
+      // reconnect with the OLD URL would just fail again.
+      const hlsUrl = await getLiveStreamUrl(room.roomid);
+      if (!hlsUrl) return null;
+      const proxyBase = (typeof window !== 'undefined' && window.webOS)
+        ? 'http://127.0.0.1:7654'
+        : storage.getProxyUrl();
+      const parsed = new URL(hlsUrl);
+      return `${proxyBase}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
+    }
+
+    async function connect(reason) {
+      if (disposed) return;
+      try {
+        note('connect', { reason, attempt: retries });
+        castReportState({ playState: 'loading' }).catch(() => {});
+        const src = await resolveSrc();
+        if (!src || !videoRef.current || disposed) return;
         videoRef.current.src = src;
         videoRef.current.play();
         setLoading(false);
-        castReportState({ playState: 'playing' }).catch(() => {});
-
-        // Hide info after 3s
         infoTimer.current = setTimeout(() => setShowInfo(false), 3000);
       } catch (err) {
-        console.error('Live stream error:', err);
-        setLoading(false);
-        castReportState({ playState: 'error', error: err?.message || 'live-load-failed' }).catch(() => {});
+        note('connect-failed', { msg: err?.message });
+        scheduleRetry('connect-failed');
       }
     }
-    load();
+
+    function scheduleRetry(why) {
+      if (disposed) return;
+      if (retries >= MAX_RETRIES) {
+        note('gave-up', { after: retries });
+        setLoading(false);
+        castReportState({ playState: 'error', error: 'live-' + why }).catch(() => {});
+        return;
+      }
+      retries++;
+      setLoading(true);
+      setTimeout(() => connect(why), Math.min(1000 * retries, 4000));
+    }
+
+    const v = videoRef.current;
+    // Honest state + self-healing: a live stream must never just sit black.
+    const onPlaying = () => {
+      retries = 0; // healthy again — future drops get a fresh retry budget
+      setLoading(false);
+      castReportState({ playState: 'playing' }).catch(() => {});
+    };
+    const onError = () => {
+      const e = v && v.error;
+      note('media-error', e ? { code: e.code, msg: e.message } : {});
+      scheduleRetry('media-error');
+    };
+    const onEnded = () => { note('ended'); scheduleRetry('ended'); }; // live never "ends" on purpose
+    if (v) {
+      v.addEventListener('playing', onPlaying);
+      v.addEventListener('error', onError);
+      v.addEventListener('ended', onEnded);
+    }
+
+    // Stall watchdog: frozen currentTime while "playing" = silent black screen.
+    let lastT = -1;
+    let stuckSince = 0;
+    const watchdog = setInterval(() => {
+      if (disposed || !v || v.paused || v.readyState < 2) return; // still buffering/connecting
+      if (Math.abs(v.currentTime - lastT) < 0.05) {
+        if (!stuckSince) stuckSince = Date.now();
+        else if (Date.now() - stuckSince > 8000) {
+          note('stall', { t: Math.round(v.currentTime) });
+          stuckSince = 0;
+          scheduleRetry('stall');
+        }
+      } else {
+        stuckSince = 0;
+      }
+      lastT = v.currentTime;
+    }, 2000);
+
+    if (!room.directUrl) storage.addRecentLive(room); // local "recent live" history
+    connect('initial');
+
     return () => {
+      disposed = true;
+      clearInterval(watchdog);
       if (infoTimer.current) clearTimeout(infoTimer.current);
+      if (v) {
+        v.removeEventListener('playing', onPlaying);
+        v.removeEventListener('error', onError);
+        v.removeEventListener('ended', onEnded);
+      }
       castReportState({ playState: 'stop' }).catch(() => {});
     };
   }, [room.roomid]);

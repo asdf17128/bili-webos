@@ -126,6 +126,22 @@ async function main(call) {
 
   // ───────────────────────── Tests ─────────────────────────
 
+  // The suite's text asserts are CHINESE ('相关推荐', '直播', '检查更新'…) —
+  // force zh for the run and restore the user's language after (2026-07-11:
+  // the owner's TV on Español turned 4 asserts into locale false-negatives).
+  const langWas = await evalJSON(`JSON.stringify(JSON.parse(localStorage.getItem('bili_settings')||'{}').language)`);
+  const setLang = async (l) => {
+    await evalJSON(`(function(){var s=JSON.parse(localStorage.getItem('bili_settings')||'{}');${l === undefined ? 'delete s.language' : `s.language=${JSON.stringify(l)}`};localStorage.setItem('bili_settings',JSON.stringify(s));return '""'})()`);
+  };
+  if (langWas !== 'zh') {
+    console.log(`[i18n] forcing zh for the suite (was ${JSON.stringify(langWas)}) — restored at the end`);
+    await setLang('zh');
+    await reload();
+  }
+  const restoreLang = async () => {
+    if (langWas !== 'zh') { await setLang(typeof langWas === 'string' ? langWas : undefined); await reload(); }
+  };
+
   async function testNavAndHome() {
     console.log('\n[Navigation + Home]');
     await reload();
@@ -267,6 +283,8 @@ async function main(call) {
     try { await t(); }
     catch (e) { fail(t.name, 'threw: ' + (e?.message || e)); }
   }
+
+  await restoreLang(); // put the user's language back
 
   console.log(`\n${'='.repeat(52)}`);
   console.log(`Results: ${passed} passed, ${failed} failed, ${warned} warned`);

@@ -1579,16 +1579,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           <div style={{ fontSize: 18, color: '#999', marginBottom: 4 }}>
             {metaOwner}
             {metaPubdate > 0 && `${metaOwner ? ' · ' : ''}${new Date(metaPubdate * 1000).toLocaleDateString('zh-CN')}`}
-            {argueMsg && (
-              <span style={{ color: '#e6a23c', marginLeft: metaOwner || metaPubdate > 0 ? 14 : 0 }}>
-                ⚠️ {titleMT(argueMsg)}
-              </span>
-            )}
-            {aigcMsg && (
-              <span style={{ color: '#e6a23c', marginLeft: 14 }}>
-                🤖 {titleMT(aigcMsg)}
-              </span>
-            )}
+            {/* Declarations as plain meta (owner: 常规展示,不要显眼) — same
+                gray, dot-separated like the rest of the line. */}
+            {argueMsg && <span>{(metaOwner || metaPubdate > 0) ? ' · ' : ''}{titleMT(argueMsg)}</span>}
+            {aigcMsg && <span> · {titleMT(aigcMsg)}</span>}
           </div>
         )}
         <div className="player-progress-bar" style={{ cursor: 'pointer' }}

@@ -151,6 +151,20 @@ export default function App() {
         return;
       }
 
+      if (command.type === 'playDirectUrl') {
+        // DLNA cast (Huya/generic): play the sender's URL via the live player's
+        // native <video> path (HLS/MP4; FLV isn't decodable on webOS).
+        pendingCastAckRef.current = command;
+        setPlayerVideo(null);
+        setLiveRoom({
+          roomid: 'dlna-' + Date.now(),
+          directUrl: command.url,
+          title: command.title || t('投屏视频'),
+          owner: { name: '' },
+        });
+        return;
+      }
+
       if (command.type === 'stop') {
         window.dispatchEvent(new CustomEvent('bili-cast-command', { detail: command }));
         setPlayerVideo(null);

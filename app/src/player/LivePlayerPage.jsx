@@ -17,18 +17,25 @@ export default function LivePlayerPage({ room, onBack }) {
     async function load() {
       try {
         castReportState({ playState: 'loading' }).catch(() => {});
-        storage.addRecentLive(room); // local "recent live" history
-        const hlsUrl = await getLiveStreamUrl(room.roomid);
-        if (!hlsUrl || !videoRef.current) return;
+        let src;
+        if (room.directUrl) {
+          // DLNA cast (Huya etc): play the sender's URL as-is — third-party
+          // CDNs aren't in our proxy allowlist, and <video> needs no CORS.
+          src = room.directUrl;
+        } else {
+          storage.addRecentLive(room); // local "recent live" history
+          const hlsUrl = await getLiveStreamUrl(room.roomid);
+          if (!hlsUrl || !videoRef.current) return;
+          // Proxy the HLS stream (local service or Mac proxy)
+          const proxyBase = (typeof window !== 'undefined' && window.webOS)
+            ? 'http://127.0.0.1:7654'
+            : storage.getProxyUrl();
+          const parsed = new URL(hlsUrl);
+          src = `${proxyBase}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
+        }
+        if (!videoRef.current) return;
 
-        // Proxy the HLS stream (local service or Mac proxy)
-        const proxyBase = (typeof window !== 'undefined' && window.webOS)
-          ? 'http://127.0.0.1:7654'
-          : storage.getProxyUrl();
-        const parsed = new URL(hlsUrl);
-        const proxied = `${proxyBase}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
-
-        videoRef.current.src = proxied;
+        videoRef.current.src = src;
         videoRef.current.play();
         setLoading(false);
         castReportState({ playState: 'playing' }).catch(() => {});
@@ -56,6 +63,7 @@ export default function LivePlayerPage({ room, onBack }) {
     let cancel = null;
     async function startDm() {
       try {
+        if (room.directUrl) return; // DLNA cast: no B站 chat to join
         let realId = room.roomid;
         try {
           const ri = await getRoomInit(room.roomid);

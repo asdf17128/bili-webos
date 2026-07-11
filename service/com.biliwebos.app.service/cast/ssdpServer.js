@@ -23,6 +23,41 @@ function parseHeaders(raw) {
   };
 }
 
+// Minimal XML entity unescape (SOAP payloads escape the URI and metadata).
+function xmlUnescape(s) {
+  return String(s || '')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'").replace(/&#(\d+);/g, function (m, d) { return String.fromCharCode(parseInt(d, 10)); })
+    .replace(/&amp;/g, '&');
+}
+
+// Extract the DLNA action + arguments from a SOAP POST. Regex-based on
+// purpose: Node 8, no XML parser dependency, and senders' envelopes vary.
+function parseSoapAction(request, body) {
+  var action = '';
+  var sa = request.headers.soapaction || '';
+  var m = sa.match(/#(\w+)/);
+  if (m) action = m[1];
+  if (!action) {
+    m = body.match(/<u:(\w+)[\s>]/);
+    if (m) action = m[1];
+  }
+  var out = { action: action, uri: '', title: '' };
+  m = body.match(/<CurrentURI>([\s\S]*?)<\/CurrentURI>/i);
+  if (m) out.uri = xmlUnescape(m[1]).trim();
+  m = body.match(/<CurrentURIMetaData>([\s\S]*?)<\/CurrentURIMetaData>/i);
+  if (m) {
+    var meta = xmlUnescape(m[1]);
+    var t = meta.match(/<dc:title>([\s\S]*?)<\/dc:title>/i);
+    if (t) out.title = xmlUnescape(t[1]).trim();
+  }
+  return out;
+}
+
+function soapFault() {
+  return '<?xml version="1.0"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><s:Fault><faultcode>s:Client</faultcode><faultstring>UPnPError</faultstring></s:Fault></s:Body></s:Envelope>';
+}
+
 function httpResponse(statusCode, statusText, headers, body) {
   var lines = ['HTTP/1.1 ' + statusCode + ' ' + statusText];
   Object.keys(headers || {}).forEach(function (key) {
@@ -121,18 +156,31 @@ CastLanServer.prototype.handleSocket = function (socket) {
     }
     var idx = headerBuffer.indexOf('\r\n\r\n');
     if (idx < 0) return;
-    handled = true;
 
     var raw = headerBuffer.slice(0, idx);
     var request = parseHeaders(raw);
+
+    // DLNA SOAP posts carry the action in the BODY — wait for Content-Length
+    // bytes after the header terminator before routing (cap 256KB).
+    var wantBody = parseInt(request.headers['content-length'] || '0', 10) || 0;
+    if (wantBody > 256 * 1024) {
+      handled = true;
+      socket.removeListener('data', onData);
+      try { socket.destroy(); } catch (e) {}
+      return;
+    }
+    var bodySoFar = headerBuffer.slice(idx + 4);
+    if (Buffer.byteLength(bodySoFar, 'utf8') < wantBody) return; // keep buffering
+
+    handled = true;
     socket.removeListener('data', onData);
-    self.routeRequest(socket, request);
+    self.routeRequest(socket, request, bodySoFar);
   }
 
   socket.on('data', onData);
 };
 
-CastLanServer.prototype.routeRequest = function (socket, request) {
+CastLanServer.prototype.routeRequest = function (socket, request, reqBody) {
   var path = request.path || '/';
   if (request.method === 'SETUP' && path === '/projection') {
     // Hand the socket off to a long-lived NVA session, which keeps it alive
@@ -174,7 +222,16 @@ CastLanServer.prototype.routeRequest = function (socket, request) {
   } else if (request.method === 'GET' && path === '/dlna/NirvanaControl.xml') {
     body = deviceProfile.renderNirvanaScpd();
     headers['Content-Type'] = 'text/xml; charset=utf-8';
-  } else if (request.method === 'POST' && (path === '/AVTransport/action' || path === '/NirvanaControl/action')) {
+  } else if (request.method === 'POST' && path === '/AVTransport/action') {
+    // Real DLNA control (Huya/generic senders). Parse the SOAP action and
+    // answer a proper envelope — an empty 200 here read as "cast failed" on
+    // every sender (owner report, 2026-07-11).
+    var soap = parseSoapAction(request, reqBody || '');
+    console.info('[dlna] ' + soap.action + (soap.uri ? ' uri=' + soap.uri.slice(0, 120) : ''));
+    body = this.controller.handleDlnaAction(soap.action, soap);
+    headers['Content-Type'] = 'text/xml; charset="utf-8"';
+    if (!body) { status = 500; statusText = 'Internal Server Error'; body = soapFault(); }
+  } else if (request.method === 'POST' && path === '/NirvanaControl/action') {
     body = '';
   } else {
     status = 404;

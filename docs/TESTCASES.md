@@ -85,6 +85,8 @@
 | C-CAST-02 | 接收端可发现:9958 LISTEN、SSDP 广播、手机设备列表出现"我的小电视 (Supports 4K)" | 📜 netstat + 手机截图 | 投屏调查期间多次验证 |
 | 已知空白 | 国际版(bstar)走 DLNA,SetAVTransportURI 是空壳→不播 | — 待做特性,非回归 | 2026-07-08 抓包(SetAVTransportURI 完整样本在案) |
 
+| C-CAST-02 | DLNA 投屏(虎牙/通用发送端):SETUP 之外的 SOAP 全流程 —— SetAVTransportURI(XML 反转义+DIDL 标题)→ Play(URI+Play 双触发去重 5s)→ App 直链播放(LivePlayerPage directUrl,原生 HLS/MP4;FLV 不支持);GetTransportInfo/GetPositionInfo 轮询应答;Stop 收播;NirvanaCast 路径零改动共存 | 📜 Mac curl 模拟发送端全流程:SetURI/Play 合法 SOAP 应答、Apple 测试流真机实播 t=39 ready=4、TransportState=PLAYING、Stop 回首页 | 2026-07-11 owner 虎牙投屏失败:/AVTransport/action 原是空 200(连 SOAP 应答都没有);服务器原本不读 POST body,一并补齐;真实虎牙流待 owner 复测(日志已记录 [dlna] 动作+URI) |
+
 ## API 存活(B站接口会下线!)
 
 | ID | Case | 门禁 | 佐证 |

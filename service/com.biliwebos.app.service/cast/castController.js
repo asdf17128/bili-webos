@@ -132,6 +132,82 @@ CastController.prototype.handleCommand = function (sessionId, action, rawBody) {
   return intent;
 };
 
+// ---- DLNA (generic senders: Huya, bstar, players) ----
+// Returns the SOAP response body ('' = unsupported → caller sends a fault).
+var DLNA_NS = 'urn:schemas-upnp-org:service:AVTransport:1';
+function soapOk(action, inner) {
+  return '<?xml version="1.0"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:' +
+    action + 'Response xmlns:u="' + DLNA_NS + '">' + (inner || '') + '</u:' + action + 'Response></s:Body></s:Envelope>';
+}
+function hms(totalSec) {
+  var s = Math.max(0, Math.floor(totalSec || 0));
+  var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  function two(n) { return (n < 10 ? '0' : '') + n; }
+  return h + ':' + two(m) + ':' + two(sec);
+}
+
+CastController.prototype.handleDlnaAction = function (action, args) {
+  this.status.lastCommandAt = Date.now();
+  if (action === 'SetAVTransportURI') {
+    this.dlnaUri = args.uri || '';
+    this.dlnaTitle = args.title || '';
+    // Most senders follow with Play, but some expect SetURI alone to start.
+    // Emit here; the Play that follows is deduped by URL+time below.
+    this.maybeEmitDlnaPlay();
+    return soapOk(action);
+  }
+  if (action === 'Play') {
+    this.maybeEmitDlnaPlay();
+    return soapOk(action);
+  }
+  if (action === 'Pause') { this.emitIntent({ type: 'pause' }); return soapOk(action); }
+  if (action === 'Stop') {
+    this.status.playState = 'stop';
+    this.dlnaUri = '';
+    this.emitIntent({ type: 'stop' });
+    return soapOk(action);
+  }
+  if (action === 'GetTransportInfo') {
+    var st = this.status.playState === 'playing' ? 'PLAYING'
+      : this.status.playState === 'paused' ? 'PAUSED_PLAYBACK'
+        : this.status.playState === 'loading' ? 'TRANSITIONING'
+          : this.dlnaUri ? 'STOPPED' : 'NO_MEDIA_PRESENT';
+    return soapOk(action,
+      '<CurrentTransportState>' + st + '</CurrentTransportState>' +
+      '<CurrentTransportStatus>OK</CurrentTransportStatus>' +
+      '<CurrentSpeed>1</CurrentSpeed>');
+  }
+  if (action === 'GetPositionInfo') {
+    var dur = hms(this.status.duration), pos = hms(this.status.progress);
+    return soapOk(action,
+      '<Track>1</Track><TrackDuration>' + dur + '</TrackDuration>' +
+      '<TrackMetaData></TrackMetaData><TrackURI></TrackURI>' +
+      '<RelTime>' + pos + '</RelTime><AbsTime>' + pos + '</AbsTime>' +
+      '<RelCount>2147483647</RelCount><AbsCount>2147483647</AbsCount>');
+  }
+  if (action === 'GetMediaInfo') {
+    return soapOk(action,
+      '<NrTracks>1</NrTracks><MediaDuration>' + hms(this.status.duration) + '</MediaDuration>' +
+      '<CurrentURI></CurrentURI><CurrentURIMetaData></CurrentURIMetaData>' +
+      '<NextURI></NextURI><NextURIMetaData></NextURIMetaData>' +
+      '<PlayMedium>NONE</PlayMedium><RecordMedium>NOT_IMPLEMENTED</RecordMedium><WriteStatus>NOT_IMPLEMENTED</WriteStatus>');
+  }
+  return ''; // unknown action → SOAP fault upstream
+};
+
+CastController.prototype.maybeEmitDlnaPlay = function () {
+  if (!this.dlnaUri) return;
+  var now = Date.now();
+  // Dedup the SetURI+Play pair (both trigger) without eating real replays.
+  if (this.lastDlnaUrl === this.dlnaUri && now - (this.lastDlnaEmitAt || 0) < 5000) return;
+  this.lastDlnaUrl = this.dlnaUri;
+  this.lastDlnaEmitAt = now;
+  var intent = { type: 'playDirectUrl', url: this.dlnaUri, title: this.dlnaTitle || '' };
+  this.status.activeContent = intent;
+  this.status.playState = 'loading';
+  this.emitIntent(intent);
+};
+
 CastController.prototype.reportState = function (payload) {
   payload = payload || {};
   this.status.playState = payload.playState || this.status.playState;

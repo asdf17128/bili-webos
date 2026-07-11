@@ -60,3 +60,21 @@ export const QUALITY_MAP = {
   32: '480P',
   16: '360P',
 };
+
+// arc_aigc (player/v2) — B站's AI-generated-content declaration. The shape is
+// undocumented (community docs don't have it yet; all probed samples were
+// null), so pull the first human-readable text out of it defensively; a typed
+// but text-less object falls back to the generic label.
+export function pickAigcText(a) {
+  if (!a) return '';
+  if (typeof a === 'string') return a.trim();
+  const KEYS = ['desc', 'tips', 'msg', 'text', 'content', 'title'];
+  for (let i = 0; i < KEYS.length; i++) {
+    const v = a[KEYS[i]];
+    if (typeof v === 'string' && v.trim()) return v.trim();
+  }
+  for (const k in a) {
+    if (typeof a[k] === 'string' && /[一-龥]/.test(a[k])) return a[k].trim();
+  }
+  return a.type ? t('内容由AI生成') : '';
+}

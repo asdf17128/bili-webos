@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate } from '../api/client';
 import { playPart, playAdvance } from './playIntent';
 
-import { formatDuration, formatTime, QUALITY_MAP, cleanTitle } from '../utils/format';
+import { formatDuration, formatTime, QUALITY_MAP, cleanTitle, pickAigcText } from '../utils/format';
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
 import DanmakuLayer from './DanmakuLayer';
@@ -77,6 +77,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // 创作声明 (argue_info): B站's own disclaimer line — AI 生成内容 / 剧情演绎 /
   // 个人观点 etc. Shown in the controls bar like the official clients do.
   const [argueMsg, setArgueMsg] = useState('');
+  // AI 生成声明 (player/v2 arc_aigc) — separate field from argue_info.
+  const [aigcMsg, setAigcMsg] = useState('');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -369,6 +371,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }
         if (d.pubdate) setMetaPubdate(d.pubdate);
         setArgueMsg((d.argue_info && d.argue_info.argue_msg) || '');
+        setAigcMsg(''); // reset per video; player/v2 below repopulates
         // Cast can hand us an aid-only video (no bvid). Backfill bvid from the
         // view response so heartbeat/related (which key on bvid) keep working.
         if (!video.bvid && d.bvid) video.bvid = d.bvid;
@@ -406,6 +409,12 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               .map(p => ({ from: p.from, to: p.to, content: String(p.content).slice(0, 40) }))
               .sort((a, b) => a.from - b.from);
             if (ch.length > 0) setChapters(ch); // names translate via titleMT at render
+          }
+          // AI 生成声明 rides the same response. Shape undocumented — log the
+          // raw object once so a real specimen can calibrate pickAigcText.
+          if (pv?.data?.arc_aigc) {
+            console.info('[aigc] arc_aigc specimen:', JSON.stringify(pv.data.arc_aigc).slice(0, 300));
+            setAigcMsg(pickAigcText(pv.data.arc_aigc));
           }
           // CC tracks ride the same response (human tracks first, then ai-zh).
           const st = pv?.data?.subtitle?.subtitles;
@@ -1566,13 +1575,18 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       {/* Controls bar */}
       <div className={`player-controls ${showControls ? '' : 'hidden'}`}>
         <div className="player-title">{titleMT(cleanTitle(videoTitle))}</div>
-        {(metaOwner || metaPubdate > 0 || argueMsg) && (
+        {(metaOwner || metaPubdate > 0 || argueMsg || aigcMsg) && (
           <div style={{ fontSize: 18, color: '#999', marginBottom: 4 }}>
             {metaOwner}
             {metaPubdate > 0 && `${metaOwner ? ' · ' : ''}${new Date(metaPubdate * 1000).toLocaleDateString('zh-CN')}`}
             {argueMsg && (
               <span style={{ color: '#e6a23c', marginLeft: metaOwner || metaPubdate > 0 ? 14 : 0 }}>
                 ⚠️ {titleMT(argueMsg)}
+              </span>
+            )}
+            {aigcMsg && (
+              <span style={{ color: '#e6a23c', marginLeft: 14 }}>
+                🤖 {titleMT(aigcMsg)}
               </span>
             )}
           </div>

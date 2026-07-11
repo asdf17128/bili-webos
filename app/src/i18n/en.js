@@ -65,6 +65,7 @@ export default {
   "西班牙语(机翻)": "Spanish (translated)",
   "弹幕字号": "Danmaku Size",
   "字幕字号": "CC Size",
+  "内容由AI生成": "AI-generated content",
   "当前设备不支持视频播放(浏览器内核过旧)": "This device cannot play video (browser engine too old)",
   "我的": "Me",
   "手机扫码 → 自动生成 GitHub 反馈(内容可先检查,提交前不会发送任何数据)": "Scan with your phone → opens a prefilled GitHub report (review before submitting; nothing is sent automatically)",

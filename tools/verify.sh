@@ -57,6 +57,8 @@ node tools/test-subtitle.mjs || { echo "FAIL: subtitle helpers"; exit 1; }
 node tools/test-subtranslate.mjs || { echo "FAIL: subtitle MT pipeline"; exit 1; }
 # C-DM-01: danmaku MT rolling window (dedup/global cache/retry/batch cap)
 node tools/test-dmtranslate.mjs || { echo "FAIL: danmaku MT"; exit 1; }
+# C-UI-08: arc_aigc declaration extraction (undocumented field, defensive)
+node tools/test-aigc.mjs || { echo "FAIL: aigc extraction"; exit 1; }
 
 echo ""
 echo "=== [3/6] Service on REAL Node 8 (docker) ==="

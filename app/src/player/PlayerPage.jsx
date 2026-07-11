@@ -74,6 +74,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // (deep link, related card), so the view fetch backfills.
   const [metaOwner, setMetaOwner] = useState(video?.owner?.name || '');
   const [metaPubdate, setMetaPubdate] = useState(video?.pubdate || 0);
+  // 创作声明 (argue_info): B站's own disclaimer line — AI 生成内容 / 剧情演绎 /
+  // 个人观点 etc. Shown in the controls bar like the official clients do.
+  const [argueMsg, setArgueMsg] = useState('');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -365,6 +368,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           if (d.owner.name) setMetaOwner(d.owner.name);
         }
         if (d.pubdate) setMetaPubdate(d.pubdate);
+        setArgueMsg((d.argue_info && d.argue_info.argue_msg) || '');
         // Cast can hand us an aid-only video (no bvid). Backfill bvid from the
         // view response so heartbeat/related (which key on bvid) keep working.
         if (!video.bvid && d.bvid) video.bvid = d.bvid;
@@ -1557,10 +1561,15 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       {/* Controls bar */}
       <div className={`player-controls ${showControls ? '' : 'hidden'}`}>
         <div className="player-title">{titleMT(cleanTitle(videoTitle))}</div>
-        {(metaOwner || metaPubdate > 0) && (
+        {(metaOwner || metaPubdate > 0 || argueMsg) && (
           <div style={{ fontSize: 18, color: '#999', marginBottom: 4 }}>
             {metaOwner}
             {metaPubdate > 0 && `${metaOwner ? ' · ' : ''}${new Date(metaPubdate * 1000).toLocaleDateString('zh-CN')}`}
+            {argueMsg && (
+              <span style={{ color: '#e6a23c', marginLeft: metaOwner || metaPubdate > 0 ? 14 : 0 }}>
+                ⚠️ {titleMT(argueMsg)}
+              </span>
+            )}
           </div>
         )}
         <div className="player-progress-bar" style={{ cursor: 'pointer' }}

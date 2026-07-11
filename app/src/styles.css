@@ -135,8 +135,9 @@ html, body, #root {
   z-index: 10;
   position: relative;
   transform: scale(1.03);
-}
-.video-card.focused .video-card-thumb {
+  /* Ring wraps the WHOLE card (thumb + title/UP/time) — with it only around
+     the thumb, its bottom edge sat right on the resume bar and the two blues
+     were unreadable (owner). */
   outline: 4px solid #00a1d6;
   outline-offset: -4px;
 }

@@ -67,14 +67,14 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
           }
           if (!(p > 0)) return null;
           return (
-            // bilibili pink, NOT the focus blue — a blue bar inside a blue
-            // focus ring was unreadable (owner); 5px reads at 10 feet.
+            // Blue again (owner) — readable now that the focus ring wraps the
+            // whole card instead of ending at the thumb's bottom edge.
             <div style={{
               position: 'absolute', bottom: 0, left: 0, right: 0, height: 5,
               background: 'rgba(255,255,255,0.25)',
             }}>
               <div style={{
-                height: '100%', background: '#fb7299',
+                height: '100%', background: '#00a1d6',
                 width: `${Math.min(100, p * 100)}%`,
               }} />
             </div>

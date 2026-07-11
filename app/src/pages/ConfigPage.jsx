@@ -176,13 +176,16 @@ export default function ConfigPage({ onLogout, user }) {
   // pickers, so users can find their way back from a language they can't read.
   const LANG_LABELS = { auto: t('自动'), zh: '中文', en: 'English', es: 'Español' };
   const langPref = storage.getSettings().language || 'zh';
+  // Label: the LOCALIZED word first + fixed "Language" as the wayfinding
+  // anchor (deduped on the English UI, where they'd be identical).
+  const LANG_ROW_LABEL = t('语言') === 'Language' ? 'Language' : `${t('语言')} / Language`;
   const LANG_OPTS = availableLanguages().map(code => ({
     v: code,
     label: (LANG_LABELS[code] || code) + (code === 'auto' ? ` (${LANG_LABELS[getLocale()] || getLocale()})` : ''),
   }));
   const { props: langProps } = useFocusable({
     id: 'content-7-0', row: 7, col: 0, group: 'content',
-    onSelect: () => openPicker('语言 / Language', LANG_OPTS, langPref,
+    onSelect: () => openPicker(LANG_ROW_LABEL, LANG_OPTS, langPref,
       (v) => { if (v !== langPref) setLanguage(v); /* persists + reloads */ }),
   });
 
@@ -239,7 +242,7 @@ export default function ConfigPage({ onLogout, user }) {
       {showDiag && <DiagPanel />}
 
       <div className="settings-row" {...langProps}>
-        <span>语言 / Language</span>
+        <span>{LANG_ROW_LABEL}</span>
         <span className="settings-row-value">
           {LANG_LABELS[langPref] || langPref}{langPref === 'auto' ? ` (${getLocale() === 'zh' ? '中文' : getLocale()})` : ''}
         </span>

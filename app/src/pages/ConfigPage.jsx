@@ -103,6 +103,23 @@ export default function ConfigPage({ onLogout, user }) {
     },
   });
 
+  // 字幕字号 — same scale ladder as danmaku. Takes effect on the next video.
+  const [subtitleScale, setSubtitleScale] = useState(() => settings.subtitleScale || 1);
+  const SUB_SCALES = [
+    { v: 1, label: t('标准') }, { v: 1.2, label: t('大') }, { v: 1.4, label: t('特大') }, { v: 0.85, label: t('小') },
+  ];
+  const { props: subtitleScaleProps } = useFocusable({
+    id: 'content-3-0', row: 3, col: 0, group: 'content',
+    onSelect: () => {
+      setSubtitleScale(prev => {
+        const i = SUB_SCALES.findIndex(s => s.v === prev);
+        const next = SUB_SCALES[(i + 1) % SUB_SCALES.length].v;
+        storage.setSettings({ ...storage.getSettings(), subtitleScale: next });
+        return next;
+      });
+    },
+  });
+
   // CDN线路 — cycle 自动 → 阿里云 → 腾讯云 → 金山云. Forces the video CDN onto
   // that mirror when the auto-assigned node is slow (#10). Takes effect on the
   // next video load.
@@ -112,7 +129,7 @@ export default function ConfigPage({ onLogout, user }) {
     { v: 'akam', label: t('海外 Akamai') },
   ];
   const { props: cdnProps } = useFocusable({
-    id: 'content-3-0', row: 3, col: 0, group: 'content',
+    id: 'content-4-0', row: 4, col: 0, group: 'content',
     onSelect: () => {
       setCdnRoute(prev => {
         const i = CDN_OPTS.findIndex(o => o.v === prev);
@@ -124,7 +141,7 @@ export default function ConfigPage({ onLogout, user }) {
   });
 
   const { props: checkUpdateProps } = useFocusable({
-    id: 'content-4-0', row: 4, col: 0, group: 'content',
+    id: 'content-5-0', row: 5, col: 0, group: 'content',
     onSelect: () => {
       // Once an update is known, OK opens the Homebrew Channel to install it;
       // otherwise re-run the check manually.
@@ -137,7 +154,7 @@ export default function ConfigPage({ onLogout, user }) {
   // the whole test suite.
   const [showDiag, setShowDiag] = useState(false);
   const { props: diagProps } = useFocusable({
-    id: 'content-5-0', row: 5, col: 0, group: 'content',
+    id: 'content-6-0', row: 6, col: 0, group: 'content',
     onSelect: () => setShowDiag(v => !v),
   });
 
@@ -152,7 +169,7 @@ export default function ConfigPage({ onLogout, user }) {
   const [showLangPicker, setShowLangPicker] = useState(false);
   const [pickerIdx, setPickerIdx] = useState(0);
   const { props: langProps } = useFocusable({
-    id: 'content-6-0', row: 6, col: 0, group: 'content',
+    id: 'content-7-0', row: 7, col: 0, group: 'content',
     onSelect: () => {
       setPickerIdx(Math.max(0, langOpts.indexOf(langPref)));
       setShowLangPicker(true);
@@ -185,7 +202,7 @@ export default function ConfigPage({ onLogout, user }) {
   }, [showLangPicker, pickerIdx, langPref]);
 
   const { props: logoutProps } = useFocusable({
-    id: 'content-7-0', row: 7, col: 0, group: 'content',
+    id: 'content-8-0', row: 8, col: 0, group: 'content',
     onSelect: () => { if (user) { storage.clearAuth(); onLogout(); } },
   });
 
@@ -209,6 +226,11 @@ export default function ConfigPage({ onLogout, user }) {
       <div className="settings-row" {...danmakuScaleProps}>
         <span>{t('弹幕字号')}</span>
         <span className="settings-row-value">{dmScaleLabel}</span>
+      </div>
+
+      <div className="settings-row" {...subtitleScaleProps}>
+        <span>{t('字幕字号')}</span>
+        <span className="settings-row-value">{(SUB_SCALES.find(s => s.v === subtitleScale) || SUB_SCALES[0]).label}</span>
       </div>
 
       <div className="settings-row" {...cdnProps}>
@@ -237,18 +259,26 @@ export default function ConfigPage({ onLogout, user }) {
 
       {showLangPicker && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)',
-          zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={() => setShowLangPicker(false)}>
           <div style={{ background: 'rgba(24,26,44,0.98)', borderRadius: 12, padding: '18px 0', minWidth: 360,
-            boxShadow: '0 18px 60px rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            boxShadow: '0 18px 60px rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.08)' }}
+            onClick={(e) => e.stopPropagation()}>
             {/* Fixed bilingual label on purpose — a language picker must stay
                 findable from a language you can't read. */}
             <div style={{ fontSize: 20, color: '#9aa0a8', padding: '0 26px 12px' }}>语言 / Language</div>
             {langOpts.map((code, i) => (
               <div key={code} style={{
                 padding: '12px 26px', fontSize: 22, display: 'flex', justifyContent: 'space-between', gap: 48,
+                cursor: 'pointer',
                 color: i === pickerIdx ? '#fff' : '#c6cad2',
                 background: i === pickerIdx ? '#00a1d6' : 'transparent',
-              }}>
+              }}
+                onMouseEnter={() => setPickerIdx(i)}
+                onClick={() => {
+                  setShowLangPicker(false);
+                  if (code !== langPref) setLanguage(code); // persists + reloads
+                }}>
                 <span>{LANG_LABELS[code] || code}{code === 'auto' ? ` (${LANG_LABELS[getLocale()] || getLocale()})` : ''}</span>
                 {code === langPref && <span>✓</span>}
               </div>

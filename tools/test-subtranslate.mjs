@@ -83,10 +83,15 @@ const mkCues = (texts) => texts.map((t, i) => ({ from: i, to: i + 0.9, text: t }
   const engine = async (texts) => texts.map(t => 'E' + t);
   await translateCues(cues, 'en', engine, 'kp', mkStore(), {
     startIndex: 150, concurrency: 1, // serial so partial order is deterministic
-    onPartial: pc => partials.push(pc.map(c => c.text.startsWith('E')).filter(Boolean).length),
+    onPartial: pc => {
+      // Filtered delivery: partials must contain ONLY translated cues — an
+      // untranslated original here = the Chinese flash the owner reported.
+      assert.ok(pc.every(c => c.text.startsWith('E')), 'untranslated cue leaked into partial');
+      partials.push(pc.length);
+    },
   });
   assert.deepEqual(partials, [100, 150, 250]); // playhead batch [100,200) lands first
-  ok('translate: onPartial per batch, playhead batch first');
+  ok('translate: onPartial per batch, playhead first, translated-only');
 }
 
 // --- transient failure retried; permanent failure throws ---

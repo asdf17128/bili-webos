@@ -88,7 +88,15 @@ export async function translateCues(cues, tl, translateBatchFn, cacheKey, store,
       }
       for (let i = a; i < b; i++) slots[i] = part[i - a];
       if (onPartial) {
-        onPartial(cues.map((c, i) => (slots[i] != null ? { from: c.from, to: c.to, text: slots[i] } : c)));
+        // Deliver ONLY the translated cues so far — showing the untranslated
+        // originals flashed Chinese on non-zh UIs (owner report). Untranslated
+        // stretches simply show nothing until their batch lands (time-based
+        // cue lookup is order-safe over the filtered list).
+        const done = [];
+        for (let i = 0; i < cues.length; i++) {
+          if (slots[i] != null) done.push({ from: cues[i].from, to: cues[i].to, text: slots[i] });
+        }
+        onPartial(done);
       }
     };
     const failed = [];

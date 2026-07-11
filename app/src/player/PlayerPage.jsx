@@ -58,8 +58,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // Respect the user's persisted danmaku toggle (设置 → 弹幕) instead of always
   // starting on (thanks @ponymuch, PR #2).
   const [danmakuEnabled, setDanmakuEnabled] = useState(() => storage.getSettings().danmaku !== false);
-  // Danmaku font scale (设置 → 弹幕字号). Read once per mount.
+  // Danmaku/subtitle font scales (设置 → 弹幕字号/字幕字号). Read once per mount.
   const [danmakuScale] = useState(() => storage.getSettings().danmakuScale || 1);
+  const [subtitleScale] = useState(() => storage.getSettings().subtitleScale || 1);
   // CC subtitles (player/v2 → data.subtitle.subtitles). subLan null = off.
   // settings.subtitle persists only the on/off preference; the concrete track
   // is re-picked per part (track lists differ video to video).
@@ -118,23 +119,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
   const pendingSeekRef = useRef(null);
 
-  // Non-zh UI also machine-translates the video TITLE and chapter names
-  // (matching the official international app's scope). Content translation,
-  // not UI strings — so gtx, not t().
-  const titleMtRef = useRef(''); // last translation we applied (loop guard)
-  const titleSrcRef = useRef('');
-  useEffect(() => {
-    titleSrcRef.current = videoTitle;
-    const loc = getLocale();
-    if (loc === 'zh' || !videoTitle || titleMtRef.current === videoTitle) return;
-    const src = videoTitle;
-    gtxTranslate([src], loc).then(r => {
-      // A part/video switch may have replaced the title while we translated.
-      if (titleSrcRef.current !== src || !r[0]) return;
-      titleMtRef.current = r[0];
-      setVideoTitle(r[0]);
-    }).catch(() => {});
-  }, [videoTitle]);
+  // Video title and chapter names go through the shared titleMT system at
+  // RENDER time (pending → blank, landed → translated, zh UI → passthrough)
+  // — no Chinese flash before the swap (owner report).
 
   const queueOrApplySeek = useCallback((seekSec) => {
     const target = Math.max(0, Number(seekSec) || 0);
@@ -185,7 +172,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       .then(body => {
         if (subReqRef.current !== req) return;
         const cues = parseSubtitleBody(body);
-        setSubCues(cues); // originals show immediately; MT swaps in per batch
+        // MT track: show NOTHING until translated batches land (a Chinese
+        // flash before the swap reads as a bug on non-zh UIs — owner report).
+        // Plain tracks show immediately.
+        if (track.lan !== 'x-mt') setSubCues(cues);
         if (track.lan === 'x-mt' && cues.length > 0) {
           // Start translating at the playhead so the stretch being WATCHED
           // turns translated after ~one round-trip, not after the whole track.
@@ -382,17 +372,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               .filter(p => p && p.content && p.to > p.from)
               .map(p => ({ from: p.from, to: p.to, content: String(p.content).slice(0, 40) }))
               .sort((a, b) => a.from - b.from);
-            if (ch.length > 0) {
-              setChapters(ch);
-              // Chapter names ride the same MT as the title on non-zh UIs.
-              const loc = getLocale();
-              if (loc !== 'zh') {
-                gtxTranslate(ch.map(c => c.content), loc).then(names => {
-                  if (cidRef.current !== cid || names.length !== ch.length) return;
-                  setChapters(ch.map((c, i) => ({ ...c, content: names[i] })));
-                }).catch(() => {});
-              }
-            }
+            if (ch.length > 0) setChapters(ch); // names translate via titleMT at render
           }
           // CC tracks ride the same response (human tracks first, then ai-zh).
           const st = pv?.data?.subtitle?.subtitles;
@@ -933,6 +913,46 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     hideControlsLater();
   }, [hideControlsLater]);
 
+  // One entry for a control-bar action — shared by D-pad OK and pointer click
+  // (the Magic Remote pointer must drive every button the D-pad can).
+  const pressControl = useCallback((btn) => {
+    if (btn === 'play') {
+      if (videoRef.current.paused) {
+        videoRef.current.play(); setPlaying(true);
+        castReportState({ playState: 'playing' }).catch(() => {});
+      } else {
+        videoRef.current.pause(); setPlaying(false);
+        castReportState({ playState: 'paused' }).catch(() => {});
+      }
+    } else if (btn === 'danmaku') {
+      setDanmakuEnabled(prev => {
+        const next = !prev;
+        // Persist — the live player and 设置 already do; the VOD button not
+        // doing so made the player and 设置 disagree (owner report).
+        storage.setSettings({ ...storage.getSettings(), danmaku: next });
+        return next;
+      });
+    } else if (btn === 'subtitle') {
+      setShowSubPanel(true);
+      setFocusArea('subpanel');
+      const cur = subOptions.findIndex(o => o.key === (subLan || 'off'));
+      setFocusIdx(cur < 0 ? 0 : cur);
+      // A selection panel means the user is mid-decision: suspend auto-hide
+      // until they pick or back out (restarted on close).
+      if (controlsTimer.current) clearTimeout(controlsTimer.current);
+      // Prefetch the likeliest track's body while they decide.
+      if (subTracks[0]) fetchSubBody(subTracks[0].subtitle_url).catch(() => {});
+      return;
+    } else if (btn === 'quality') {
+      setShowQuality(true);
+      setFocusArea('quality');
+      setFocusIdx(0);
+      if (controlsTimer.current) clearTimeout(controlsTimer.current);
+      return;
+    }
+    hideControlsLater();
+  }, [subOptions, subLan, subTracks, fetchSubBody, hideControlsLater]);
+
   // Load more related videos
   const loadingRelatedRef = useRef(false);
   const relatedSeenRef = useRef(new Set());
@@ -1197,42 +1217,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }
         if (e.key === 'Enter') {
           e.preventDefault();
-          const btn = CONTROLS[focusIdx];
-          if (btn === 'play') {
-            if (videoRef.current.paused) {
-              videoRef.current.play(); setPlaying(true);
-              castReportState({ playState: 'playing' }).catch(() => {});
-            } else {
-              videoRef.current.pause(); setPlaying(false);
-              castReportState({ playState: 'paused' }).catch(() => {});
-            }
-          } else if (btn === 'danmaku') {
-            setDanmakuEnabled(prev => {
-              const next = !prev;
-              // Persist — the live player and 设置 already do; the VOD button
-              // not doing so made the player and 设置 disagree (owner report).
-              storage.setSettings({ ...storage.getSettings(), danmaku: next });
-              return next;
-            });
-          } else if (btn === 'subtitle') {
-            setShowSubPanel(true);
-            setFocusArea('subpanel');
-            const cur = subOptions.findIndex(o => o.key === (subLan || 'off'));
-            setFocusIdx(cur < 0 ? 0 : cur);
-            // A selection panel means the user is mid-decision: suspend
-            // auto-hide until they pick or back out (restarted on close).
-            if (controlsTimer.current) clearTimeout(controlsTimer.current);
-            // Prefetch the likeliest track's body while they decide.
-            if (subTracks[0]) fetchSubBody(subTracks[0].subtitle_url).catch(() => {});
-            return true;
-          } else if (btn === 'quality') {
-            setShowQuality(true);
-            setFocusArea('quality');
-            setFocusIdx(0);
-            if (controlsTimer.current) clearTimeout(controlsTimer.current);
-            return true;
-          }
-          hideControlsLater();
+          pressControl(CONTROLS[focusIdx]);
           return true;
         }
         return false;
@@ -1371,19 +1356,32 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
     setCustomKeyHandler(handler);
     return () => setCustomKeyHandler(null);
-  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, loadUpVideos, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody]);
+  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, loadUpVideos, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody, pressControl]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
+  // Magic Remote: waving the pointer must summon the controls bar (the D-pad
+  // path was the only way in). Throttled; ignored while a panel/end screen has
+  // its own interaction going.
+  const lastMoveRef = useRef(0);
+  const handlePointerMove = useCallback(() => {
+    const now = Date.now();
+    if (now - lastMoveRef.current < 400) return;
+    lastMoveRef.current = now;
+    if (ended) return;
+    if (!showControls) { setShowControls(true); setFocusArea('controls'); setFocusIdx(0); }
+    if (!showSubPanel && !showQuality) hideControlsLater();
+  }, [ended, showControls, showSubPanel, showQuality, hideControlsLater]);
+
   return (
-    <div className="player-page">
+    <div className="player-page" onMouseMove={handlePointerMove}>
       <video ref={videoRef} className="player-video" />
 
       <DanmakuLayer danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale} />
 
       <SubtitleLayer videoRef={videoRef} cues={subCues} enabled={subLan != null}
         lead={(isAiLan(subLan) || subLan === 'x-mt') ? AI_LEAD : 0}
-        lift={showControls ? (showRelated ? 2 : 1) : 0} />
+        lift={showControls ? (showRelated ? 2 : 1) : 0} fontScale={subtitleScale} />
 
       {loading && (
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
@@ -1459,7 +1457,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                 background: 'rgba(0,0,0,0.75)', padding: '3px 12px', borderRadius: 6,
                 display: 'inline-block', maxWidth: 360,
                 overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
-              }}>{ch.content}</div>
+              }}>{titleMT(ch.content)}</div>
             )}
             <div>
               <span style={{
@@ -1483,8 +1481,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       {ended && endNextIn != null && relatedVideos[0] && (
         <div style={{
           position: 'absolute', top: '14%', left: '50%', transform: 'translateX(-50%)',
-          textAlign: 'center', pointerEvents: 'none',
-        }}>
+          textAlign: 'center', cursor: 'pointer',
+        }}
+          onClick={() => { // pointer click on the up-next card = OK (play now)
+            const rv = relatedRef.current[0];
+            setEndNextIn(null);
+            if (rv && onPlayNext) onPlayNext(rv);
+          }}>
           <div style={{ fontSize: 22, color: '#aeb4bd', marginBottom: 14, letterSpacing: 6 }}>{t('接下来播放')}</div>
           <div style={{
             width: 560, borderRadius: 12, overflow: 'hidden', margin: '0 auto',
@@ -1523,14 +1526,22 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
       {/* Controls bar */}
       <div className={`player-controls ${showControls ? '' : 'hidden'}`}>
-        <div className="player-title">{cleanTitle(videoTitle)}</div>
+        <div className="player-title">{titleMT(cleanTitle(videoTitle))}</div>
         {(metaOwner || metaPubdate > 0) && (
           <div style={{ fontSize: 18, color: '#999', marginBottom: 4 }}>
             {metaOwner}
             {metaPubdate > 0 && `${metaOwner ? ' · ' : ''}${new Date(metaPubdate * 1000).toLocaleDateString('zh-CN')}`}
           </div>
         )}
-        <div className="player-progress-bar">
+        <div className="player-progress-bar" style={{ cursor: 'pointer' }}
+          onClick={(e) => {
+            // Pointer click-to-seek: generous target courtesy of the row itself.
+            if (!(duration > 0)) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const frac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+            queueOrApplySeek(frac * duration);
+            hideControlsLater();
+          }}>
           <div className="player-progress-fill" style={{ width: `${progress}%` }} />
           {/* Chapter boundaries (YouTube-style segment gaps) */}
           {chapters.length > 1 && duration > 0 && chapters.slice(1).map((c, i) => (
@@ -1549,7 +1560,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         </div>
         <div className="player-btns">
           {CONTROLS.map((btn, i) => (
-            <button key={btn} className={`player-btn ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''}`}>
+            <button key={btn} className={`player-btn ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''}`}
+              onMouseEnter={() => { setFocusArea('controls'); setFocusIdx(i); hideControlsLater(); }}
+              onClick={() => pressControl(btn)}>
               {btn === 'play' ? (ended ? t('↻ 重播') : playing ? t('⏸ 暂停') : t('▶ 播放')) :
                 btn === 'danmaku' ? (danmakuEnabled ? t('弹幕 开') : t('弹幕 关')) :
                   btn === 'subtitle' ? (subLan == null ? t('字幕 关')
@@ -1564,7 +1577,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             {formatDuration(currentTime)} / {formatDuration(duration)}
             {(() => {
               const ch = chapters.find(c => currentTime >= c.from && currentTime < c.to);
-              return ch ? <span style={{ color: '#7ecbff', marginLeft: 10 }}>· {ch.content}</span> : null;
+              return ch ? <span style={{ color: '#7ecbff', marginLeft: 10 }}>· {titleMT(ch.content)}</span> : null;
             })()}
           </span>
         </div>
@@ -1578,11 +1591,17 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                 : [['related', t('相关推荐')], ['up', upName ? t('UP主投稿 · {name}', { name: upName }) : t('UP主投稿')]]
               ).map(([key, label]) => (
                 <div key={key} style={{
-                  padding: '6px 18px', fontSize: 18, borderRadius: 6,
+                  padding: '6px 18px', fontSize: 18, borderRadius: 6, cursor: 'pointer',
                   color: panelTab === key ? '#fff' : '#aaa',
                   background: panelTab === key ? '#00a1d6' : 'rgba(255,255,255,0.08)',
                   outline: focusArea === 'tabs' && panelTab === key ? '3px solid #fff' : 'none',
-                }}>{label}</div>
+                }}
+                  onMouseEnter={() => { setFocusArea('tabs'); if (controlsTimer.current) clearTimeout(controlsTimer.current); }}
+                  onClick={() => {
+                    setPanelTab(key);
+                    setFocusIdx(0);
+                    if (key === 'up' && upVideos.length === 0) loadUpVideos(true);
+                  }}>{label}</div>
               ))}
             </div>
 
@@ -1600,6 +1619,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                     const nowPlaying = panelTab === 'parts' && rv.cid === cidRef.current;
                     return (
                       <div key={rv.cid || rv.bvid || i} className="related-card" onClick={() => onPlayNext?.(panelTab === 'parts' ? playPart(rv) : rv)}
+                        onMouseEnter={() => {
+                          setFocusArea('related'); setFocusIdx(i);
+                          if (controlsTimer.current) clearTimeout(controlsTimer.current);
+                        }}
                         style={{
                           cursor: 'pointer',
                           outline: focusArea === 'related' && focusIdx === i ? '4px solid #00a1d6'
@@ -1636,7 +1659,15 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         <div className="quality-panel">
           <div className="quality-panel-title">{t('字幕')}</div>
           {subOptions.map((o, i) => (
-            <div key={o.key} className={`quality-option ${focusArea === 'subpanel' && focusIdx === i ? 'focused' : ''} ${(subLan || 'off') === o.key ? 'active' : ''}`}>
+            <div key={o.key} className={`quality-option ${focusArea === 'subpanel' && focusIdx === i ? 'focused' : ''} ${(subLan || 'off') === o.key ? 'active' : ''}`}
+              onMouseEnter={() => { setFocusArea('subpanel'); setFocusIdx(i); }}
+              onClick={() => {
+                applySubOption(o);
+                setShowSubPanel(false);
+                setFocusArea('controls');
+                setFocusIdx(CONTROLS.indexOf('subtitle'));
+                hideControlsLater();
+              }}>
               {o.label}
             </div>
           ))}
@@ -1647,7 +1678,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         <div className="quality-panel">
           <div className="quality-panel-title">{t('画质')}</div>
           {qualities.map((q, i) => (
-            <div key={q.qn} className={`quality-option ${focusArea === 'quality' && focusIdx === i ? 'focused' : ''} ${currentQuality === q.qn ? 'active' : ''}`}>
+            <div key={q.qn} className={`quality-option ${focusArea === 'quality' && focusIdx === i ? 'focused' : ''} ${currentQuality === q.qn ? 'active' : ''}`}
+              onMouseEnter={() => { setFocusArea('quality'); setFocusIdx(i); }}
+              onClick={() => { changeQuality(q.qn); setShowQuality(false); setFocusArea('controls'); setFocusIdx(CONTROLS.indexOf('quality')); hideControlsLater(); }}>
               {q.label}
             </div>
           ))}

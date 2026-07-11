@@ -54,6 +54,7 @@ export const storage = {
       danmakuScale: 1,
       // CC subtitles default off (B站 web default); the player button persists it.
       subtitle: false,
+      subtitleScale: 1,
       // Video CDN route (#10): 'auto' keeps B站's own ordering (origin-first,
       // PCDN last); a named route forces that mirror host for stability.
       cdnRoute: 'auto',

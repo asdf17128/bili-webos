@@ -27,26 +27,35 @@ async function flush() {
   batch.forEach(t => queue.delete(t));
   inFlight = true;
   try {
-    const out = await gtxTranslate(batch, getLocale());
+    // 5s cap: a hung engine must not leave titles blank forever — fall
+    // through to the originals instead.
+    const out = await Promise.race([
+      gtxTranslate(batch, getLocale()),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('mt-timeout')), 5000)),
+    ]);
     batch.forEach((t, i) => {
       cache.set(t, (out && out[i]) || t);
       if (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value);
     });
-    subs.forEach(fn => fn());
   } catch (e) {
     // Engine unreachable — cache originals so we don't hammer it per render.
     batch.forEach(t => cache.set(t, t));
   }
+  subs.forEach(fn => fn());
   inFlight = false;
   if (queue.size > 0) flushLater();
 }
 
+// Pending translations render as EMPTY (title pops in translated ~one round
+// trip later) — showing the Chinese first and swapping read as a bug on
+// non-zh UIs (owner report). Engine failure caches the originals, so text
+// always appears within the 5s cap.
 export function titleMT(title) {
   if (!title || getLocale() === 'zh') return title;
   const hit = cache.get(title);
   if (hit) return hit;
-  if (!cache.has(title) && !queue.has(title)) { queue.add(title); flushLater(); }
-  return title;
+  if (!queue.has(title)) { queue.add(title); flushLater(); }
+  return '';
 }
 
 // Subscribe a component to batch arrivals. No-op on zh UIs (memo()'d cards

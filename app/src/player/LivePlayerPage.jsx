@@ -138,8 +138,26 @@ export default function LivePlayerPage({ room, onBack }) {
     return () => setCustomKeyHandler(null);
   }, [onBack]);
 
+  // Magic Remote pointer: moving shows the info bar, clicking toggles danmaku
+  // (mirrors up/down and OK on the D-pad).
+  const showInfoBriefly = () => {
+    setShowInfo(true);
+    if (infoTimer.current) clearTimeout(infoTimer.current);
+    infoTimer.current = setTimeout(() => setShowInfo(false), 3000);
+  };
+
   return (
-    <div className="player-page">
+    <div className="player-page"
+      onMouseMove={showInfoBriefly}
+      onClick={() => {
+        setDanmakuEnabled(prev => {
+          const next = !prev;
+          storage.setSettings({ ...storage.getSettings(), danmaku: next });
+          if (!next) dmLayerRef.current?.clear();
+          return next;
+        });
+        showInfoBriefly();
+      }}>
       <video ref={videoRef} className="player-video" autoPlay />
 
       <LiveDanmakuLayer ref={dmLayerRef} enabled={danmakuEnabled} />

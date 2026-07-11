@@ -62,6 +62,7 @@ export default {
   "英语(机翻)": "Inglés (traducido)",
   "西班牙语(机翻)": "Español (traducido)",
   "弹幕字号": "Tamaño de danmaku",
+  "字幕字号": "Tamaño de CC",
   "当前设备不支持视频播放(浏览器内核过旧)": "Este dispositivo no puede reproducir vídeo (navegador demasiado antiguo)",
   "我的": "Yo",
   "手机扫码 → 自动生成 GitHub 反馈(内容可先检查,提交前不会发送任何数据)": "Escanea con el móvil → informe de GitHub prellenado (revísalo antes de enviar; no se envía nada automáticamente)",

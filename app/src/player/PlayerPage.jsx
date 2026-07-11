@@ -9,6 +9,7 @@ import DanmakuLayer from './DanmakuLayer';
 import SubtitleLayer from './SubtitleLayer';
 import { parseSubtitleBody, pickCueIndex, isAiLan, subtitleLanName, mtLanName, findZhTrack, AI_LEAD } from './subtitles';
 import { translateCues } from './subTranslate';
+import { createDmTranslator } from './dmTranslate';
 import { titleMT, useTitlesMT } from '../utils/titlemt';
 import { t, getLocale } from '../i18n';
 
@@ -122,6 +123,34 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // Video title and chapter names go through the shared titleMT system at
   // RENDER time (pending → blank, landed → translated, zh UI → passthrough)
   // — no Chinese flash before the swap (owner report).
+
+  // Danmaku MT (non-zh UI + danmaku on): rolling-window translator — the 40s
+  // ahead of the playhead is pre-translated every 8s (and on seeks), so items
+  // are ready by the time they'd scroll on. See dmTranslate.js.
+  const dmMtRef = useRef(null);
+  const dmMtActive = getLocale() !== 'zh';
+  useEffect(() => {
+    if (!dmMtActive || !danmakuEnabled || !danmakus || danmakus.length === 0) {
+      dmMtRef.current = null;
+      return undefined;
+    }
+    const tr = createDmTranslator(danmakus, getLocale(), gtxTranslate);
+    dmMtRef.current = tr;
+    const doTick = () => {
+      const v = videoRef.current;
+      if (v) tr.tick(v.currentTime).catch(() => {});
+    };
+    doTick();
+    const iv = setInterval(doTick, 8000);
+    const v = videoRef.current;
+    if (v) v.addEventListener('seeked', doTick);
+    return () => {
+      tr.stop();
+      clearInterval(iv);
+      if (v) v.removeEventListener('seeked', doTick);
+      dmMtRef.current = null;
+    };
+  }, [danmakus, danmakuEnabled, dmMtActive]);
 
   const queueOrApplySeek = useCallback((seekSec) => {
     const target = Math.max(0, Number(seekSec) || 0);
@@ -1377,7 +1406,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     <div className="player-page" onMouseMove={handlePointerMove}>
       <video ref={videoRef} className="player-video" />
 
-      <DanmakuLayer danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale} />
+      <DanmakuLayer danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale}
+        mtRef={dmMtActive ? dmMtRef : null} />
 
       <SubtitleLayer videoRef={videoRef} cues={subCues} enabled={subLan != null}
         lead={(isAiLan(subLan) || subLan === 'x-mt') ? AI_LEAD : 0}

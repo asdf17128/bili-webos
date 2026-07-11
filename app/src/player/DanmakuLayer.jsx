@@ -1,7 +1,10 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 
-// Danmaku rendering layer over video
-export default function DanmakuLayer({ danmakus, currentTime, enabled, fontScale = 1 }) {
+// Danmaku rendering layer over video.
+// mtRef (optional): a ref holding a dmTranslate translator — when present,
+// items render TRANSLATED text and untranslated items are skipped (they retry
+// while still inside their display window; no Chinese flash on non-zh UIs).
+export default function DanmakuLayer({ danmakus, currentTime, enabled, fontScale = 1, mtRef = null }) {
   const containerRef = useRef(null);
   const renderedRef = useRef(new Set()); // Track which danmakus have been shown
   // Track pitch scales with the font. Fill (nearly) the full 1080p height —
@@ -50,6 +53,14 @@ export default function DanmakuLayer({ danmakus, currentTime, enabled, fontScale
       // Only render scroll danmakus (mode 1) for simplicity
       if (dm.mode !== 1 && dm.mode !== undefined) continue;
 
+      // MT mode: only translated text goes on screen.
+      let text = dm.text;
+      if (mtRef) {
+        const tr = mtRef.current ? mtRef.current.get(i) : null;
+        if (!tr) continue; // not translated yet — retry within the window
+        text = tr;
+      }
+
       renderedRef.current.add(i);
 
       // Find a free track
@@ -65,7 +76,7 @@ export default function DanmakuLayer({ danmakus, currentTime, enabled, fontScale
 
       const el = document.createElement('div');
       el.className = 'danmaku-item';
-      el.textContent = dm.text;
+      el.textContent = text;
       // Scale the track pitch with the font so larger danmaku don't overlap.
       el.style.top = `${track * TRACK_H + 20}px`;
       el.style.color = dm.color || '#fff';

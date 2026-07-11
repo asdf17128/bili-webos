@@ -55,6 +55,8 @@ node tools/test-i18n-format.mjs || { echo "FAIL: i18n formatters"; exit 1; }
 node tools/test-subtitle.mjs || { echo "FAIL: subtitle helpers"; exit 1; }
 # C-SUB-03: subtitle MT pipeline (batching/alignment/cache — misalignment must throw)
 node tools/test-subtranslate.mjs || { echo "FAIL: subtitle MT pipeline"; exit 1; }
+# C-DM-01: danmaku MT rolling window (dedup/global cache/retry/batch cap)
+node tools/test-dmtranslate.mjs || { echo "FAIL: danmaku MT"; exit 1; }
 
 echo ""
 echo "=== [3/6] Service on REAL Node 8 (docker) ==="

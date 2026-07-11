@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getHistory } from '../api/client';
+import { storage } from '../utils/storage';
 import VideoGrid from '../components/VideoGrid';
 import { t } from '../i18n';
 
@@ -20,6 +21,14 @@ export default function HistoryPage({ onPlayVideo }) {
         if (cancelled) return;
         if (res?.code === -101) { setError(t('请先登录')); }
         else if (res?.data?.list) {
+          // Backfill local progress from server history (see SettingsPage).
+          res.data.list.forEach(item => {
+            const bv = item.history?.bvid;
+            if (bv && item.duration > 0 && !storage.getProgress(bv)) {
+              const p = item.progress === -1 ? item.duration : item.progress;
+              if (p > 0) storage.setProgress(bv, p, item.duration);
+            }
+          });
           setVideos(res.data.list.map(item => ({
             bvid: item.history?.bvid, cid: item.history?.cid,
             title: item.title, pic: item.cover, duration: item.duration,

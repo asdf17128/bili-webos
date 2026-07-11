@@ -52,6 +52,13 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
         };
       }
       const isBangumi = h.business === 'pgc' || item.badge === '番剧';
+      // Backfill the local progress map from server history so videos watched
+      // BEFORE the map existed (or on other devices) also get resume bars.
+      // progress -1 = watched to the end. Local entries stay authoritative.
+      if (h.bvid && item.duration > 0 && !storage.getProgress(h.bvid)) {
+        const p = item.progress === -1 ? item.duration : item.progress;
+        if (p > 0) storage.setProgress(h.bvid, p, item.duration);
+      }
       return {
         kind: 'video', ts, bvid: h.bvid, cid: h.cid,
         title: item.title, pic: item.cover, duration: item.duration,

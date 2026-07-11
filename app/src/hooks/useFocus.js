@@ -240,8 +240,16 @@ export function initKeyboardNav() {
   let wheelAcc = 0;
   let lastWheelTs = 0;
   let lastStepTs = 0;
+  // Always-on wheel diagnostics ring buffer (test hook, like __openVideo):
+  // every event records WHY it did or didn't step — reachable after any
+  // relaunch via `window.__wheelDiag` from CDP.
+  const wheelDiag = (window.__wheelDiag = []);
+  const diag = (dy, why, extra) => {
+    wheelDiag.push({ t: Date.now() % 1000000, dy, why, ...(extra || {}) });
+    if (wheelDiag.length > 200) wheelDiag.shift();
+  };
   window.addEventListener('wheel', (e) => {
-    if (customKeyHandler) return; // player owns input
+    if (customKeyHandler) { diag(e.deltaY, 'custom-handler-owns-input'); return; }
     const now = Date.now();
     if (now - lastWheelTs > 600) wheelAcc = 0; // stale/direction-idle reset
     lastWheelTs = now;
@@ -249,7 +257,7 @@ export function initKeyboardNav() {
     // was silently EATING the next down notch (owner: "向下拨一格没反应").
     if ((wheelAcc > 0 && e.deltaY < 0) || (wheelAcc < 0 && e.deltaY > 0)) wheelAcc = 0;
     wheelAcc += e.deltaY;
-    if (Math.abs(wheelAcc) < WHEEL_STEP) return;
+    if (Math.abs(wheelAcc) < WHEEL_STEP) { diag(e.deltaY, 'below-threshold', { acc: wheelAcc }); return; }
     // Rate cap (edge-zone runaway protection), but CARRY the surplus instead
     // of discarding it — zeroing on every step ate most of a vigorous flick
     // and read as "卡卡的" (sticky). Carry is clamped to 2 rows so a banked
@@ -257,6 +265,7 @@ export function initKeyboardNav() {
     if (now - lastStepTs < 120) {
       const lim = WHEEL_STEP * 2;
       if (wheelAcc > lim) wheelAcc = lim; else if (wheelAcc < -lim) wheelAcc = -lim;
+      diag(e.deltaY, 'rate-capped', { acc: wheelAcc });
       return;
     }
     const dir = wheelAcc > 0 ? 'down' : 'up';
@@ -290,7 +299,8 @@ export function initKeyboardNav() {
         if (t2 >= 0) next = findInRow(meta.group, t2, meta.col);
       }
     }
-    if (!next) return; // genuinely the end of the list
+    if (!next) { diag(e.deltaY, 'no-target-row', { baseRow: base.row, dir }); return; }
+    diag(e.deltaY, 'stepped', { to: next });
     lastFocusFromPointer = true;
     setFocus(next); // non-hover → pages re-anchor the view to targetRow
   }, { passive: true });

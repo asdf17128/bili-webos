@@ -69,6 +69,31 @@ export const storage = {
     this.set('settings', settings);
   },
 
+  // Local watch-progress map (bvid → [seconds, duration, ts]) so EVERY list's
+  // cards can draw the resume bar — the server history API only annotates its
+  // own rows. Written by the player, read per card render (parsed once, cached).
+  _progressCache: null,
+  getProgressMap() {
+    if (!this._progressCache) this._progressCache = this.get('progress') || {};
+    return this._progressCache;
+  },
+  getProgress(bvid) {
+    if (!bvid) return null;
+    const e = this.getProgressMap()[bvid];
+    return e && e[1] > 0 ? { progress: e[0], duration: e[1] } : null;
+  },
+  setProgress(bvid, progress, duration) {
+    if (!bvid || !(duration > 0) || !(progress >= 0)) return;
+    const m = this.getProgressMap();
+    m[bvid] = [Math.floor(progress), Math.floor(duration), Date.now()];
+    const keys = Object.keys(m);
+    if (keys.length > 300) {
+      keys.sort((a, b) => (m[a][2] || 0) - (m[b][2] || 0));
+      for (let i = 0; i < keys.length - 300; i++) delete m[keys[i]];
+    }
+    this.set('progress', m);
+  },
+
   // Locally-tracked recently watched live rooms (B站's history API doesn't
   // record live viewing without its obfuscated heartbeat, so we keep our own).
   getRecentLive() {

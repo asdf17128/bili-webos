@@ -812,6 +812,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       const v = videoRef.current;
       if (v && video?.bvid && cidRef.current && v.currentTime > 0) {
         reportHeartbeat(video.bvid, cidRef.current, v.currentTime, (Date.now() - startTimeRef.current) / 1000);
+        // Local progress map: every list's cards draw the resume bar from this.
+        storage.setProgress(video.bvid, v.currentTime, v.duration || 0);
       }
     };
   }, []);
@@ -836,6 +838,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     const hb = setInterval(() => {
       if (videoRef.current && video?.bvid && cidRef.current && !videoRef.current.paused) {
         reportHeartbeat(video.bvid, cidRef.current, videoRef.current.currentTime, (Date.now() - startTimeRef.current) / 1000);
+        storage.setProgress(video.bvid, videoRef.current.currentTime, videoRef.current.duration || 0);
       }
     }, 15000);
     return () => clearInterval(hb);

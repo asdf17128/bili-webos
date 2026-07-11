@@ -48,17 +48,29 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
             {typeof video.duration === 'number' ? formatDuration(video.duration) : video.duration}
           </span>
         )}
-        {video.progress > 0 && video.duration > 0 && (
-          <div style={{
-            position: 'absolute', bottom: 0, left: 0, right: 0, height: 3,
-            background: 'rgba(255,255,255,0.2)',
-          }}>
+        {(() => {
+          // Watch-progress bar on EVERY list (owner request): server-annotated
+          // progress (history rows) wins; otherwise the local map covers feed/
+          // search/favorites/related for anything watched on this TV.
+          let p = video.progress > 0 && video.duration > 0
+            ? video.progress / video.duration : 0;
+          if (!p && video.bvid && !video.isLive) {
+            const lp = storage.getProgress(video.bvid);
+            if (lp) p = lp.progress / lp.duration;
+          }
+          if (!(p > 0)) return null;
+          return (
             <div style={{
-              height: '100%', background: '#00a1d6',
-              width: `${Math.min(100, (video.progress / video.duration) * 100)}%`,
-            }} />
-          </div>
-        )}
+              position: 'absolute', bottom: 0, left: 0, right: 0, height: 3,
+              background: 'rgba(255,255,255,0.2)',
+            }}>
+              <div style={{
+                height: '100%', background: '#00a1d6',
+                width: `${Math.min(100, p * 100)}%`,
+              }} />
+            </div>
+          );
+        })()}
       </div>
       <div className="video-card-info">
         <div className="video-card-title">{titleMT(cleanTitle(video.title))}</div>

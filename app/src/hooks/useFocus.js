@@ -230,10 +230,13 @@ export function initKeyboardNav() {
   // pointer sits in the top/bottom edge zones; per-event stepping made the page
   // scroll wildly there (#11). Accumulation turns that stream into a gentle
   // scroll while a real wheel flick (large delta) still steps immediately.
-  // MUST be ≤ one wheel detent (standard deltaY=120/notch): at 140 a single
-  // gentle notch NEVER moved — every first flick felt dead ("卡"). 100 keeps
-  // one-notch-one-row while the rate cap below still tames edge-zone streams.
-  const WHEEL_STEP = 100;
+  // One LG Magic Remote wheel detent = deltaY 200 (MEASURED on the owner's C4
+  // via an in-page logger, 2026-07-11 — NOT the standard 120, and the official
+  // docs don't document it). Matching the step to the real detent gives exactly
+  // one-notch-one-row: 140 made notches worth 1.4 steps (carry made some
+  // notches jump 2 rows), 100 made every notch jump 2. The rate cap below
+  // still tames edge-zone streams.
+  const WHEEL_STEP = 200;
   let wheelAcc = 0;
   let lastWheelTs = 0;
   let lastStepTs = 0;

@@ -40,9 +40,14 @@ if grep -rn "fontSize: 1[0-5]\b" app/src --include="*.jsx" | grep -v "// spec-ex
   echo "FAIL: fontSize <16px found (10-foot spec, docs/DESIGN.md)"; exit 1
 fi
 echo "OK: no <16px inline text"
-# C-UI-02: aspect-ratio CSS needs Chrome 88+; webOS 5/6 are 68/79 (covers collapse)
+# C-UI-02: aspect-ratio CSS needs Chrome 88+; webOS 5/6 are 68/79 (covers collapse).
+# BOTH spellings, BOTH file kinds — the CSS spelling in styles.css slipped
+# through the jsx-only grep for weeks (caught 2026-07-11 pre-v1.3.0).
 if grep -rn "aspectRatio" app/src --include="*.jsx" | grep -v "// spec-exempt"; then
-  echo "FAIL: aspect-ratio CSS found (unsupported on webOS 5/6)"; exit 1
+  echo "FAIL: aspectRatio (JSX) found (unsupported on webOS 5/6)"; exit 1
+fi
+if grep -rnE "aspect-ratio[[:space:]]*:" app/src --include="*.css" | grep -v "/\* spec-exempt \*/"; then
+  echo "FAIL: aspect-ratio (CSS) found (unsupported on webOS 5/6)"; exit 1
 fi
 echo "OK: no aspect-ratio CSS"
 # C-PLAY-01: play-start policy (resume shipped broken twice before this suite)

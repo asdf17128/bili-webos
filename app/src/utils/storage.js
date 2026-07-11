@@ -93,6 +93,16 @@ export const storage = {
     }
     this.set('progress', m);
   },
+  // Cards subscribe so their resume bars refresh the moment the player exits —
+  // pages stay mounted and cards are memo()'d, so nothing else re-renders them.
+  _progressSubs: new Set(),
+  onProgressChange(fn) {
+    this._progressSubs.add(fn);
+    return () => this._progressSubs.delete(fn);
+  },
+  notifyProgressChange() {
+    this._progressSubs.forEach(fn => { try { fn(); } catch (e) { /* ignore */ } });
+  },
 
   // Locally-tracked recently watched live rooms (B站's history API doesn't
   // record live viewing without its obfuscated heartbeat, so we keep our own).
@@ -114,3 +124,8 @@ export const storage = {
     this.set('recentLive', list);
   }
 };
+
+// Test hook (like window.__openVideo): lets the CDP/Playwright harness drive
+// the REAL storage paths (incl. in-memory caches + subscriptions) instead of
+// poking localStorage underneath them.
+if (typeof window !== 'undefined') window.__appStorage = storage;

@@ -815,6 +815,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         // Local progress map: every list's cards draw the resume bar from this.
         storage.setProgress(video.bvid, v.currentTime, v.duration || 0);
       }
+      // Wake the (mounted, memo'd) list cards so their bars show this session.
+      storage.notifyProgressChange();
     };
   }, []);
 

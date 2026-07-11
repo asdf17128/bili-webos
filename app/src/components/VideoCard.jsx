@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useReducer } from 'react';
 import { useFocusable } from '../hooks/useFocus';
 import { formatCount, formatDuration, formatTime, cleanTitle } from '../utils/format';
 import { storage } from '../utils/storage';
@@ -37,6 +37,10 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
   // Non-zh UIs machine-translate card titles (no-op subscription on zh).
   useTitlesMT();
 
+  // Refresh the resume bar when the player exits (fires once per exit).
+  const [, bumpProgress] = useReducer(x => x + 1, 0);
+  useEffect(() => storage.onProgressChange(bumpProgress), []);
+
   const thumbUrl = proxyImg(video.pic || video.cover || '');
 
   return (
@@ -49,14 +53,17 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
           </span>
         )}
         {(() => {
-          // Watch-progress bar on EVERY list (owner request): server-annotated
-          // progress (history rows) wins; otherwise the local map covers feed/
-          // search/favorites/related for anything watched on this TV.
-          let p = video.progress > 0 && video.duration > 0
-            ? video.progress / video.duration : 0;
-          if (!p && video.bvid && !video.isLive) {
+          // Watch-progress bar on EVERY list (owner request). The LOCAL map is
+          // this TV's live truth (written on player exit) — it outranks the
+          // server annotation on history rows, which is only as fresh as the
+          // page fetch ("都放一半了列表里还在一开始").
+          let p = 0;
+          if (video.bvid && !video.isLive) {
             const lp = storage.getProgress(video.bvid);
             if (lp) p = lp.progress / lp.duration;
+          }
+          if (!p && video.progress > 0 && video.duration > 0) {
+            p = video.progress / video.duration;
           }
           if (!(p > 0)) return null;
           return (

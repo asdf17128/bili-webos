@@ -135,11 +135,18 @@ html, body, #root {
   z-index: 10;
   position: relative;
   transform: scale(1.03);
-  /* Ring wraps the WHOLE card (thumb + title/UP/time) — with it only around
-     the thumb, its bottom edge sat right on the resume bar and the two blues
-     were unreadable (owner). */
-  outline: 4px solid #00a1d6;
-  outline-offset: -4px;
+}
+/* Ring wraps the WHOLE card (thumb + title/UP/time) as a dedicated overlay:
+   an outline gets painted UNDER the composited cover image on the TV, so the
+   ring must be its own element above all card content. */
+.video-card.focused::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border: 4px solid #00a1d6;
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 5;
 }
 .video-card-thumb {
   width: 100%;

@@ -125,6 +125,20 @@ bili-webos/
 
 React 18 · Vite 6 · Shaka Player (DASH) · native HLS (live) · webOS JS Service (Node.js v16) · CDP-over-SSH tooling.
 
+## Privacy / 隐私
+
+The app makes exactly one non-Bilibili request: an update check against this
+repo's GitHub Releases (once per day, and when you press "Check for Updates"
+in Settings). It carries no identifier of any kind. The maintainer reads the
+release asset's public download counter as an approximate active-device count.
+Subtitle/title machine translation (only when the UI language is not Chinese)
+sends the text being translated to Google's public translate endpoint — also
+without any identifier.
+
+应用只有一类非 B 站请求:对本仓库 GitHub Releases 的更新检查(每日一次 +
+设置页手动触发),不携带任何标识;维护者以该资产的公开下载计数估算活跃设备量。
+界面为非中文时,字幕/标题机翻会把待翻译文本发送到 Google 公共翻译端点,同样不含任何标识。
+
 ## License
 
 MIT. Unofficial, fan-made client for personal use; not affiliated with or endorsed by Bilibili.

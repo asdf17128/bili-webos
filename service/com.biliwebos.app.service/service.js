@@ -131,13 +131,17 @@ function isAllowedHost(host) {
     'comment.bilibili.com',
     // Subtitle machine translation (free gtx endpoint). NOT a bilibili host:
     // isBiliHost() below must stay false for it so no cookies leak there.
-    'translate.googleapis.com'
+    'translate.googleapis.com',
+    // Update check via the version.json release asset (its download_count is
+    // the DAU proxy — owner-approved). Also not bili: no cookies.
+    'github.com', 'api.github.com'
   ];
   for (var i = 0; i < allowed.length; i++) {
     if (host === allowed[i]) return true;
   }
   return host.indexOf('.bilivideo.') >= 0 || host.indexOf('.hdslb.com') >= 0 ||
-    host.indexOf('.akamaized.net') >= 0;
+    host.indexOf('.akamaized.net') >= 0 ||
+    host.indexOf('.githubusercontent.com') >= 0; // release-asset redirect targets
 }
 
 // Bilibili credentials (Cookie) and disguise headers (Referer/Origin) go ONLY
@@ -322,6 +326,25 @@ var castLanServer = new CastLanServer({
 
 castController.setNetworkInfo(castProfile.ip, castProfile.httpPort);
 
+// Follow up to 3 redirects (GitHub release assets 302 to githubusercontent).
+// Every hop's host must pass the same allowlist. Node 8: no arrow functions.
+function requestFollow(parsedUrl, method, body, contentType, range, hops, callback) {
+  makeRequest(parsedUrl, method, body, contentType, range, false, function (err, res) {
+    if (err) { callback(err); return; }
+    var loc = res.headers && res.headers.location;
+    if (loc && res.statusCode >= 300 && res.statusCode < 400 && hops < 3) {
+      if (res.resume) res.resume(); // discard the redirect body
+      var NodeURL = require('url').URL;
+      var next;
+      try { next = new NodeURL(loc, parsedUrl.href); } catch (e) { callback(new Error('Bad redirect')); return; }
+      if (!isAllowedHost(next.hostname)) { callback(new Error('Redirect host not allowed')); return; }
+      requestFollow(next, 'GET', null, null, range, hops + 1, callback);
+      return;
+    }
+    callback(null, res);
+  });
+}
+
 // ==================== Luna Bus Methods ====================
 
 service.register('fetch', function (message) {
@@ -337,8 +360,8 @@ service.register('fetch', function (message) {
     message.respond({ returnValue: false, error: 'Host not allowed' }); return;
   }
 
-  makeRequest(parsed, message.payload.method, message.payload.body,
-    message.payload.contentType, message.payload.range, false, function (err, res) {
+  requestFollow(parsed, message.payload.method, message.payload.body,
+    message.payload.contentType, message.payload.range, 0, function (err, res) {
       if (err) { message.respond({ returnValue: false, error: err.message }); return; }
 
       decompressResponse(res, function (data) {

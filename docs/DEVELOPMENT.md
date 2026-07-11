@@ -59,6 +59,10 @@ bash tools/verify.sh --full     # 六层:语法→静态规范/逻辑→真Node8
    (如动了播放器 → C-PLAY-03~08;动了焦点 → C-FOCUS-*;动了投屏 → C-CAST-01 需手机);
 4. 涉及 UI 的改动:真机截图**当用户视角逐像素过目**(v1.2.7 黑封面就是只看断言没看图);
 5. 发布节奏:改动攒批、部署给 owner 过目、点头再发(feedback_release_pace)。
+6. **每个 release 必须上传 `version.json` 资产**(`{"version":"x.y.z"}`)——
+   app 每日一次的版本检查拉它,其 download_count 即日活代理
+   (`gh api repos/asdf17128/bili-webos/releases --jq '...download_count'`);
+   忘传则当日计数断档(app 侧静默容错,次日重试)。
 
 ## 文档地图
 

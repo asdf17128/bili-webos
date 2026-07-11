@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { initKeyboardNav, setFocus, onFocusChange, getCurrentFocusId, focusFirstContent, focusSidebar, isPointerFocus } from './hooks/useFocus';
-import { castAck, castSubscribe, getNavInfo } from './api/client';
+import { castAck, castSubscribe, getNavInfo, pingVersionAsset } from './api/client';
 import { normalizePlay, playAt } from './player/playIntent';
 import { storage } from './utils/storage';
 import SidebarItem from './components/SidebarItem';
@@ -272,6 +272,15 @@ export default function App() {
     window.__openVideo = (v) => handlePlayVideo(v);
     return () => { delete window.__openVideo; };
   }, [handlePlayVideo]);
+
+  // Once-a-day countable version check (see client.pingVersionAsset). The date
+  // stamps regardless of outcome so a missing asset doesn't retry all day.
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    if (storage.get('verPing') === today) return;
+    storage.set('verPing', today);
+    pingVersionAsset().catch(() => {});
+  }, []);
 
   // Arrowing onto a sidebar item just previews its page — no refresh, no
   // jumping into the content.

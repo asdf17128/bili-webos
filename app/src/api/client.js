@@ -406,6 +406,20 @@ export async function getLatestVersion() {
   return (data.tag_name || '').replace(/^v/i, '');
 }
 
+// Daily countable version check ("日活 via update requests", owner-approved):
+// fetches the version.json RELEASE ASSET via the Luna service — each fetch
+// bumps the asset's public download_count, which the maintainer reads as a
+// daily-active proxy. No identifier of any kind is sent; the manual check in
+// 设置 uses the API above so it doesn't pollute the count. TV-only (the asset
+// redirect has no CORS for browsers; dev just skips).
+export async function pingVersionAsset() {
+  if (!hasLunaService()) return null;
+  var url = 'https://github.com/asdf17128/bili-webos/releases/latest/download/version.json';
+  var parsed = new URL(url);
+  var res = await smartFetch(parsed.host, parsed.pathname + parsed.search);
+  return res && res.version ? String(res.version) : null;
+}
+
 // ============ Live ============
 
 export async function getLiveList(page, pageSize) {

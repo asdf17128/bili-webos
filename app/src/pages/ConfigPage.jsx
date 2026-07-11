@@ -62,6 +62,41 @@ export default function ConfigPage({ onLogout, user }) {
     } catch { fallback(); }
   }
 
+  // ── Generic modal picker (owner rule: >2 options = a selection LIST, not
+  // press-to-cycle). One picker state serves every multi-option row; booleans
+  // render as switches instead. ──
+  const [picker, setPicker] = useState(null); // {title, options:[{v,label}], current, onPick}
+  const [pickerIdx, setPickerIdx] = useState(0);
+  const openPicker = (title, options, current, onPick) => {
+    setPickerIdx(Math.max(0, options.findIndex(o => o.v === current)));
+    setPicker({ title, options, current, onPick });
+  };
+
+  // Modal key handling: swallow everything while open so the grid/sidebar
+  // underneath doesn't move.
+  useEffect(() => {
+    if (!picker) return undefined;
+    const handler = (e) => {
+      if (e.key === 'ArrowUp') { e.preventDefault(); setPickerIdx(p => Math.max(0, p - 1)); return true; }
+      if (e.key === 'ArrowDown') { e.preventDefault(); setPickerIdx(p => Math.min(picker.options.length - 1, p + 1)); return true; }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const o = picker.options[pickerIdx];
+        setPicker(null);
+        if (o) picker.onPick(o.v);
+        return true;
+      }
+      if (e.keyCode === 461 || e.key === 'Backspace' || e.key === 'GoBack' || e.key === 'Escape') {
+        e.preventDefault(); e.stopPropagation();
+        setPicker(null);
+        return true;
+      }
+      return true;
+    };
+    setCustomKeyHandler(handler);
+    return () => setCustomKeyHandler(null);
+  }, [picker, pickerIdx]);
+
   // Stateful so the row VALUE flips on the same OK press — writing storage
   // alone left the label stale until some unrelated re-render (read: "按了没反应").
   const [danmakuOn, setDanmakuOn] = useState(() => settings.danmaku !== false);
@@ -75,54 +110,36 @@ export default function ConfigPage({ onLogout, user }) {
     },
   });
 
-  // 每行视频数 — cycles 2 → 3 → 4 → 2 on OK.
+  // 每行视频数 — list picker.
   const { props: gridProps } = useFocusable({
     id: 'content-1-0', row: 1, col: 0, group: 'content',
-    onSelect: () => {
-      setGridCols(prev => {
-        const next = prev >= 4 ? 2 : prev + 1;
-        storage.setSettings({ ...storage.getSettings(), gridCols: next });
-        return next;
-      });
-    },
+    onSelect: () => openPicker(t('每行视频'), [2, 3, 4].map(n => ({ v: n, label: t('{n} 个', { n }) })), gridCols,
+      (v) => { setGridCols(v); storage.setSettings({ ...storage.getSettings(), gridCols: v }); }),
   });
 
-  // 弹幕字号 — cycle 标准 → 大 → 特大 → 小 on OK.
+  // 弹幕字号 — list picker (ascending sizes).
   const DM_SCALES = [
-    { v: 1, label: t('标准') }, { v: 1.3, label: t('大') }, { v: 1.6, label: t('特大') }, { v: 0.8, label: t('小') },
+    { v: 0.8, label: t('小') }, { v: 1, label: t('标准') }, { v: 1.3, label: t('大') }, { v: 1.6, label: t('特大') },
   ];
   const { props: danmakuScaleProps } = useFocusable({
     id: 'content-2-0', row: 2, col: 0, group: 'content',
-    onSelect: () => {
-      setDanmakuScale(prev => {
-        const i = DM_SCALES.findIndex(s => s.v === prev);
-        const next = DM_SCALES[(i + 1) % DM_SCALES.length].v;
-        storage.setSettings({ ...storage.getSettings(), danmakuScale: next });
-        return next;
-      });
-    },
+    onSelect: () => openPicker(t('弹幕字号'), DM_SCALES, danmakuScale,
+      (v) => { setDanmakuScale(v); storage.setSettings({ ...storage.getSettings(), danmakuScale: v }); }),
   });
 
-  // 字幕字号 — same scale ladder as danmaku. Takes effect on the next video.
+  // 字幕字号 — same ladder as danmaku. Takes effect on the next video.
   const [subtitleScale, setSubtitleScale] = useState(() => settings.subtitleScale || 1);
   const SUB_SCALES = [
-    { v: 1, label: t('标准') }, { v: 1.2, label: t('大') }, { v: 1.4, label: t('特大') }, { v: 0.85, label: t('小') },
+    { v: 0.85, label: t('小') }, { v: 1, label: t('标准') }, { v: 1.2, label: t('大') }, { v: 1.4, label: t('特大') },
   ];
   const { props: subtitleScaleProps } = useFocusable({
     id: 'content-3-0', row: 3, col: 0, group: 'content',
-    onSelect: () => {
-      setSubtitleScale(prev => {
-        const i = SUB_SCALES.findIndex(s => s.v === prev);
-        const next = SUB_SCALES[(i + 1) % SUB_SCALES.length].v;
-        storage.setSettings({ ...storage.getSettings(), subtitleScale: next });
-        return next;
-      });
-    },
+    onSelect: () => openPicker(t('字幕字号'), SUB_SCALES, subtitleScale,
+      (v) => { setSubtitleScale(v); storage.setSettings({ ...storage.getSettings(), subtitleScale: v }); }),
   });
 
-  // CDN线路 — cycle 自动 → 阿里云 → 腾讯云 → 金山云. Forces the video CDN onto
-  // that mirror when the auto-assigned node is slow (#10). Takes effect on the
-  // next video load.
+  // CDN线路 — list picker. Forces the video CDN onto that mirror when the
+  // auto-assigned node is slow (#10). Takes effect on the next video load.
   const CDN_OPTS = [
     { v: 'auto', label: t('自动') }, { v: 'ali', label: t('阿里云') },
     { v: 'cos', label: t('腾讯云') }, { v: 'ks3', label: t('金山云') },
@@ -130,14 +147,8 @@ export default function ConfigPage({ onLogout, user }) {
   ];
   const { props: cdnProps } = useFocusable({
     id: 'content-4-0', row: 4, col: 0, group: 'content',
-    onSelect: () => {
-      setCdnRoute(prev => {
-        const i = CDN_OPTS.findIndex(o => o.v === prev);
-        const next = CDN_OPTS[(i + 1) % CDN_OPTS.length].v;
-        storage.setSettings({ ...storage.getSettings(), cdnRoute: next });
-        return next;
-      });
-    },
+    onSelect: () => openPicker(t('CDN 线路'), CDN_OPTS, cdnRoute,
+      (v) => { setCdnRoute(v); storage.setSettings({ ...storage.getSettings(), cdnRoute: v }); }),
   });
 
   const { props: checkUpdateProps } = useFocusable({
@@ -165,41 +176,15 @@ export default function ConfigPage({ onLogout, user }) {
   // pickers, so users can find their way back from a language they can't read.
   const LANG_LABELS = { auto: t('自动'), zh: '中文', en: 'English', es: 'Español' };
   const langPref = storage.getSettings().language || 'zh';
-  const langOpts = availableLanguages();
-  const [showLangPicker, setShowLangPicker] = useState(false);
-  const [pickerIdx, setPickerIdx] = useState(0);
+  const LANG_OPTS = availableLanguages().map(code => ({
+    v: code,
+    label: (LANG_LABELS[code] || code) + (code === 'auto' ? ` (${LANG_LABELS[getLocale()] || getLocale()})` : ''),
+  }));
   const { props: langProps } = useFocusable({
     id: 'content-7-0', row: 7, col: 0, group: 'content',
-    onSelect: () => {
-      setPickerIdx(Math.max(0, langOpts.indexOf(langPref)));
-      setShowLangPicker(true);
-    },
+    onSelect: () => openPicker('语言 / Language', LANG_OPTS, langPref,
+      (v) => { if (v !== langPref) setLanguage(v); /* persists + reloads */ }),
   });
-
-  // Modal key handling: swallow everything while the picker is open so the
-  // grid/sidebar underneath doesn't move.
-  useEffect(() => {
-    if (!showLangPicker) return;
-    const handler = (e) => {
-      if (e.key === 'ArrowUp') { e.preventDefault(); setPickerIdx(p => Math.max(0, p - 1)); return true; }
-      if (e.key === 'ArrowDown') { e.preventDefault(); setPickerIdx(p => Math.min(langOpts.length - 1, p + 1)); return true; }
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        const sel = langOpts[pickerIdx];
-        setShowLangPicker(false);
-        if (sel && sel !== langPref) setLanguage(sel); // persists + reloads
-        return true;
-      }
-      if (e.keyCode === 461 || e.key === 'Backspace' || e.key === 'GoBack' || e.key === 'Escape') {
-        e.preventDefault(); e.stopPropagation();
-        setShowLangPicker(false);
-        return true;
-      }
-      return true;
-    };
-    setCustomKeyHandler(handler);
-    return () => setCustomKeyHandler(null);
-  }, [showLangPicker, pickerIdx, langPref]);
 
   const { props: logoutProps } = useFocusable({
     id: 'content-8-0', row: 8, col: 0, group: 'content',
@@ -215,7 +200,10 @@ export default function ConfigPage({ onLogout, user }) {
 
       <div className="settings-row" {...danmakuProps}>
         <span>{t('弹幕')}</span>
-        <span className="settings-row-value">{danmakuOn ? t('开') : t('关')}</span>
+        <span className="settings-row-value" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {danmakuOn ? t('开') : t('关')}
+          <span className={`settings-switch ${danmakuOn ? 'on' : ''}`}><span className="settings-switch-knob" /></span>
+        </span>
       </div>
 
       <div className="settings-row" {...gridProps}>
@@ -257,30 +245,25 @@ export default function ConfigPage({ onLogout, user }) {
         </span>
       </div>
 
-      {showLangPicker && (
+      {picker && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)',
           zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          onClick={() => setShowLangPicker(false)}>
+          onClick={() => setPicker(null)}>
           <div style={{ background: 'rgba(24,26,44,0.98)', borderRadius: 12, padding: '18px 0', minWidth: 360,
             boxShadow: '0 18px 60px rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.08)' }}
             onClick={(e) => e.stopPropagation()}>
-            {/* Fixed bilingual label on purpose — a language picker must stay
-                findable from a language you can't read. */}
-            <div style={{ fontSize: 20, color: '#9aa0a8', padding: '0 26px 12px' }}>语言 / Language</div>
-            {langOpts.map((code, i) => (
-              <div key={code} style={{
+            <div style={{ fontSize: 20, color: '#9aa0a8', padding: '0 26px 12px' }}>{picker.title}</div>
+            {picker.options.map((o, i) => (
+              <div key={String(o.v)} style={{
                 padding: '12px 26px', fontSize: 22, display: 'flex', justifyContent: 'space-between', gap: 48,
                 cursor: 'pointer',
                 color: i === pickerIdx ? '#fff' : '#c6cad2',
                 background: i === pickerIdx ? '#00a1d6' : 'transparent',
               }}
                 onMouseEnter={() => setPickerIdx(i)}
-                onClick={() => {
-                  setShowLangPicker(false);
-                  if (code !== langPref) setLanguage(code); // persists + reloads
-                }}>
-                <span>{LANG_LABELS[code] || code}{code === 'auto' ? ` (${LANG_LABELS[getLocale()] || getLocale()})` : ''}</span>
-                {code === langPref && <span>✓</span>}
+                onClick={() => { setPicker(null); picker.onPick(o.v); }}>
+                <span>{o.label}</span>
+                {o.v === picker.current && <span>✓</span>}
               </div>
             ))}
           </div>

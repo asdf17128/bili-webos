@@ -230,7 +230,10 @@ export function initKeyboardNav() {
   // pointer sits in the top/bottom edge zones; per-event stepping made the page
   // scroll wildly there (#11). Accumulation turns that stream into a gentle
   // scroll while a real wheel flick (large delta) still steps immediately.
-  const WHEEL_STEP = 140;
+  // MUST be ≤ one wheel detent (standard deltaY=120/notch): at 140 a single
+  // gentle notch NEVER moved — every first flick felt dead ("卡"). 100 keeps
+  // one-notch-one-row while the rate cap below still tames edge-zone streams.
+  const WHEEL_STEP = 100;
   let wheelAcc = 0;
   let lastWheelTs = 0;
   let lastStepTs = 0;
@@ -245,7 +248,7 @@ export function initKeyboardNav() {
     // of discarding it — zeroing on every step ate most of a vigorous flick
     // and read as "卡卡的" (sticky). Carry is clamped to 2 rows so a banked
     // stream can't keep scrolling after the finger stops.
-    if (now - lastStepTs < 150) {
+    if (now - lastStepTs < 120) {
       const lim = WHEEL_STEP * 2;
       if (wheelAcc > lim) wheelAcc = lim; else if (wheelAcc < -lim) wheelAcc = -lim;
       return;

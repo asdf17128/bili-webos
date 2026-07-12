@@ -370,6 +370,28 @@ export async function getPlayUrl(videoOrBvid, cid, qn) {
   return wbiFetch('/x/player/playurl', payload);
 }
 
+export async function getPlayerSubtitles(videoOrBvid, cid) {
+  var payload: Record<string, any> = { cid: cid };
+  if (typeof videoOrBvid === 'string') payload.bvid = videoOrBvid;
+  else if (videoOrBvid?.bvid) payload.bvid = videoOrBvid.bvid;
+  else if (videoOrBvid?.aid) payload.aid = videoOrBvid.aid;
+  var res = await wbiFetch('/x/player/wbi/v2', payload);
+  return res?.data?.subtitle?.subtitles || [];
+}
+
+export async function getSubtitleCues(subtitleUrl) {
+  if (!subtitleUrl) return [];
+  var normalizedUrl = subtitleUrl.startsWith('//')
+    ? 'https:' + subtitleUrl
+    : subtitleUrl;
+  var parsedUrl = new URL(normalizedUrl);
+  var res = await smartFetch(
+    parsedUrl.host,
+    parsedUrl.pathname + parsedUrl.search,
+  );
+  return Array.isArray(res?.body) ? res.body : [];
+}
+
 // Partition/region
 export async function getRegionDynamic(rid, pn, ps) {
   return wbiFetch('/x/web-interface/dynamic/region', {

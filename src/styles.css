@@ -446,6 +446,21 @@ body,
   color: #ccc;
   margin-left: auto;
 }
+.player-subtitle {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 120px;
+  z-index: 20;
+  color: #fff;
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: center;
+  white-space: pre-line;
+  pointer-events: none;
+  text-shadow: 0 2px 4px #000, 0 0 8px #000;
+}
 
 /* ===== Danmaku ===== */
 .danmaku-container {

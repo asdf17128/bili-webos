@@ -161,6 +161,8 @@ beforeEach(() => {
       url: 'https://live.test/stream.flv',
     })),
     getStoryboard: mock(async () => null),
+    getPlayerSubtitles: mock(async () => []),
+    getSubtitleCues: mock(async () => []),
   };
   storageState = {
     settings: { danmaku: true, quality: 80 },
@@ -242,6 +244,8 @@ beforeEach(() => {
     castReportState: (...args) => api.castReportState(...args),
     getLiveStreamSource: (...args) => api.getLiveStreamSource(...args),
     getStoryboard: (...args) => api.getStoryboard(...args),
+    getPlayerSubtitles: (...args) => api.getPlayerSubtitles(...args),
+    getSubtitleCues: (...args) => api.getSubtitleCues(...args),
   }));
   mock.module(storagePath, () => ({
     ...realStorage,
@@ -883,6 +887,59 @@ describe('PlayerPage', () => {
     await act(async () => {
       renderer.unmount();
     });
+  });
+
+  test('shows available subtitles and switches them off and on', async () => {
+    api.getPlayerSubtitles.mockImplementationOnce(async () => [
+      {
+        id: 1,
+        lan: 'zh-CN',
+        lan_doc: '中文（自动生成）',
+        subtitle_url: '//aisubtitle.hdslb.com/subtitle.json',
+      },
+    ]);
+    api.getSubtitleCues.mockImplementation(async () => [
+      { from: 1, to: 3, content: '字幕内容' },
+    ]);
+
+    const { default: PlayerPage } = await importFresh('./PlayerPage.tsx');
+    const video = createVideoMock();
+    const renderer = await renderWithNodeMock(
+      React.createElement(PlayerPage, {
+        video: { bvid: 'BV-SUBTITLE', cid: 18, title: '字幕视频' },
+      }),
+      (element) => (element.type === 'video' ? video : null),
+    );
+    await act(async () => {
+      await flush();
+      await flush();
+      await flush();
+    });
+
+    video.duration = 120;
+    video.currentTime = 2;
+    await interact(() =>
+      intervals.find((item) => item.delay === 500 && !item.cleared)?.fn(),
+    );
+    expect(JSON.stringify(renderer.toJSON())).toContain('字幕内容');
+
+    await interact(() => customKeyHandler(event('ArrowUp')));
+    await interact(() => customKeyHandler(event('ArrowDown')));
+    for (let i = 0; i < 4; i += 1) {
+      await interact(() => customKeyHandler(event('ArrowRight')));
+    }
+    await interact(() => customKeyHandler(event('Enter')));
+    expect(JSON.stringify(renderer.toJSON())).toContain('关闭字幕');
+    await interact(() => customKeyHandler(event('ArrowUp')));
+    await interact(() => customKeyHandler(event('Enter')));
+    expect(JSON.stringify(renderer.toJSON())).not.toContain('字幕内容');
+
+    await interact(() => customKeyHandler(event('Enter')));
+    await interact(() => customKeyHandler(event('ArrowDown')));
+    await interact(() => customKeyHandler(event('Enter')));
+    expect(api.getSubtitleCues).toHaveBeenCalledTimes(2);
+
+    await act(async () => renderer.unmount());
   });
 
   test('shows an unsupported-speed message inside packaged webos apps', async () => {

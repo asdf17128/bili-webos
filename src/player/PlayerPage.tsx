@@ -6,6 +6,8 @@ import {
   reportHeartbeat,
   getRelated,
   getStoryboard,
+  getPlayerSubtitles,
+  getSubtitleCues,
   castReportProgress,
   castReportState,
   type StoryboardTile,
@@ -36,6 +38,16 @@ const STALL_WATCH_INTERVAL_MS = 1000;
 const STALL_RECOVERY_AFTER_MS = 6000;
 const STALL_RECOVERY_SEEK_SEC = 0.05;
 const WEBOS_BROWSER_APP_ID = 'com.webos.app.browser';
+
+function getActiveSubtitleText(cues, currentTime) {
+  return cues
+    .filter(
+      (cue) => currentTime >= Number(cue.from) && currentTime < Number(cue.to),
+    )
+    .map((cue) => cue.content)
+    .filter(Boolean)
+    .join('\n');
+}
 
 function getSeekProfile(durationSec) {
   const safeDuration = Math.max(0, Number(durationSec) || 0);
@@ -87,6 +99,10 @@ export default function PlayerPage({
   const [currentQuality, setCurrentQuality] = useState(80);
   const [showQuality, setShowQuality] = useState(false);
   const [showSpeed, setShowSpeed] = useState(false);
+  const [showSubtitle, setShowSubtitle] = useState(false);
+  const [subtitleTracks, setSubtitleTracks] = useState([]);
+  const [currentSubtitleIndex, setCurrentSubtitleIndex] = useState(-1);
+  const [subtitleCues, setSubtitleCues] = useState([]);
   const [showRelated, setShowRelated] = useState(false);
   const [danmakus, setDanmakus] = useState([]);
   const [danmakuEnabled, setDanmakuEnabled] = useState(true);
@@ -163,7 +179,10 @@ export default function PlayerPage({
   }, []);
 
   const playbackSpeedSupported = supportsPlaybackSpeedControl();
-  const CONTROLS = ['play', 'danmaku', 'quality', 'speed'];
+  const CONTROLS =
+    subtitleTracks.length > 0
+      ? ['play', 'danmaku', 'quality', 'speed', 'subtitle']
+      : ['play', 'danmaku', 'quality', 'speed'];
 
   const getGridVerticalTarget = useCallback((currentIdx, direction, total) => {
     const nextIdx = currentIdx + direction * RELATED_GRID_COLS;
@@ -571,6 +590,9 @@ export default function PlayerPage({
       setLoading(true);
       setFirstFrameReady(false);
       setEnded(false);
+      setSubtitleTracks([]);
+      setCurrentSubtitleIndex(-1);
+      setSubtitleCues([]);
       endedRef.current = false;
       castReportState({ playState: 'loading' }).catch(() => {});
       try {
@@ -623,15 +645,30 @@ export default function PlayerPage({
         const storyboardPromise = getStoryboard(video.bvid, cid).catch(
           () => null,
         );
+        const subtitleTracksPromise = getPlayerSubtitles(video, cid).catch(
+          () => [],
+        );
 
-        const [danmakuData, relatedRes, storyboardData] = await Promise.all([
-          danmakuPromise,
-          relatedPromise,
-          storyboardPromise,
-        ]);
+        const [danmakuData, relatedRes, storyboardData, availableSubtitles] =
+          await Promise.all([
+            danmakuPromise,
+            relatedPromise,
+            storyboardPromise,
+            subtitleTracksPromise,
+          ]);
 
         if (storyboardVideoKeyRef.current !== videoKey) return;
         storyboardRef.current = storyboardData;
+        setSubtitleTracks(availableSubtitles);
+        if (availableSubtitles.length > 0) {
+          getSubtitleCues(availableSubtitles[0].subtitle_url)
+            .then((cues) => {
+              if (storyboardVideoKeyRef.current !== videoKey) return;
+              setCurrentSubtitleIndex(0);
+              setSubtitleCues(cues);
+            })
+            .catch(() => {});
+        }
         if (!storyboardData && typeof console !== 'undefined') {
           console.warn('[Player] No storyboard data for', video.bvid, cid);
         }
@@ -959,6 +996,7 @@ export default function PlayerPage({
         setShowRelated(false);
         setShowQuality(false);
         setShowSpeed(false);
+        setShowSubtitle(false);
         setFocusArea('none');
       }
     }, 5000);
@@ -969,6 +1007,7 @@ export default function PlayerPage({
     setShowRelated(false);
     setShowQuality(false);
     setShowSpeed(false);
+    setShowSubtitle(false);
     setFocusArea('timeline');
     setFocusIdx(0);
     hideControlsLater();
@@ -1075,6 +1114,26 @@ export default function PlayerPage({
     }
     setPlaybackRate(nextRate);
   }, []);
+
+  const changeSubtitle = useCallback(
+    async (index) => {
+      if (index < 0) {
+        setCurrentSubtitleIndex(-1);
+        setSubtitleCues([]);
+        return;
+      }
+      const track = subtitleTracks[index];
+      if (!track) return;
+      try {
+        const cues = await getSubtitleCues(track.subtitle_url);
+        setCurrentSubtitleIndex(index);
+        setSubtitleCues(cues);
+      } catch (error) {
+        console.error('Subtitle load error:', error);
+      }
+    },
+    [subtitleTracks],
+  );
 
   useEffect(() => {
     storage.setSettings({ ...storage.getSettings(), danmaku: danmakuEnabled });
@@ -1186,12 +1245,13 @@ export default function PlayerPage({
           commitPreviewSeek();
           persistResumeFromPlayer();
           onBack();
-        } else if (showControls || showQuality || showRelated) {
+        } else if (showControls || showQuality || showSubtitle || showRelated) {
           // Controls/quality/related visible: close them
           commitPreviewSeek();
           setShowControls(false);
           setShowQuality(false);
           setShowSpeed(false);
+          setShowSubtitle(false);
           setShowRelated(false);
           setFocusArea('none');
           if (controlsTimer.current) clearTimeout(controlsTimer.current);
@@ -1272,6 +1332,7 @@ export default function PlayerPage({
           setShowRelated(false);
           setShowQuality(false);
           setShowSpeed(false);
+          setShowSubtitle(false);
           setFocusArea('none');
           if (controlsTimer.current) clearTimeout(controlsTimer.current);
           return true;
@@ -1346,19 +1407,50 @@ export default function PlayerPage({
           } else if (btn === 'quality') {
             setShowQuality(true);
             setShowSpeed(false);
+            setShowSubtitle(false);
             setFocusArea('quality');
             setFocusIdx(0);
           } else if (btn === 'speed') {
             setShowQuality(false);
             setShowSpeed(true);
+            setShowSubtitle(false);
             setFocusArea('speed');
             setFocusIdx(
               playbackSpeedSupported
                 ? Math.max(0, PLAYBACK_SPEEDS.indexOf(playbackRate))
                 : 0,
             );
+          } else if (btn === 'subtitle') {
+            setShowQuality(false);
+            setShowSpeed(false);
+            setShowSubtitle(true);
+            setFocusArea('subtitle');
+            setFocusIdx(currentSubtitleIndex + 1);
           }
           hideControlsLater();
+          return true;
+        }
+        return false;
+      }
+
+      if (focusArea === 'subtitle') {
+        const optionCount = subtitleTracks.length + 1;
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          setFocusIdx((prev) => Math.max(0, prev - 1));
+          return true;
+        }
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          setFocusIdx((prev) => Math.min(optionCount - 1, prev + 1));
+          return true;
+        }
+        if (key === 'Enter') {
+          e.preventDefault();
+          changeSubtitle(focusIdx - 1);
+          setShowSubtitle(false);
+          setFocusArea('controls');
+          setFocusIdx(4);
           return true;
         }
         return false;
@@ -1537,6 +1629,7 @@ export default function PlayerPage({
     showControls,
     showQuality,
     showSpeed,
+    showSubtitle,
     showRelated,
     ended,
     relatedVideos,
@@ -1547,8 +1640,11 @@ export default function PlayerPage({
     hideControlsLater,
     changeQuality,
     changePlaybackRate,
+    changeSubtitle,
     getGridVerticalTarget,
     playbackRate,
+    subtitleTracks,
+    currentSubtitleIndex,
     showTimelineControls,
   ]);
 
@@ -1568,6 +1664,13 @@ export default function PlayerPage({
         currentTime={currentTime}
         enabled={danmakuEnabled && firstFrameReady}
       />
+
+      {currentSubtitleIndex >= 0 &&
+        getActiveSubtitleText(subtitleCues, currentTime) && (
+          <div className="player-subtitle">
+            {getActiveSubtitleText(subtitleCues, currentTime)}
+          </div>
+        )}
 
       {loading && (
         <div
@@ -1638,9 +1741,13 @@ export default function PlayerPage({
                       : '弹幕 关'
                     : btn === 'quality'
                       ? QUALITY_MAP[currentQuality] || `${currentQuality}`
-                      : playbackSpeedSupported
-                        ? `${playbackRate}x`
-                        : '倍速'}
+                      : btn === 'subtitle'
+                        ? currentSubtitleIndex >= 0
+                          ? `字幕 ${subtitleTracks[currentSubtitleIndex]?.lan_doc || '开'}`
+                          : '字幕 关'
+                        : playbackSpeedSupported
+                          ? `${playbackRate}x`
+                          : '倍速'}
               </button>
             ))}
             <span ref={timeTextRef} className="player-time">
@@ -1751,6 +1858,24 @@ export default function PlayerPage({
               此设备不支持倍速
             </div>
           )}
+        </div>
+      )}
+
+      {showSubtitle && (
+        <div className="quality-panel subtitle-panel">
+          <div
+            className={`quality-option ${focusArea === 'subtitle' && focusIdx === 0 ? 'focused' : ''} ${currentSubtitleIndex === -1 ? 'active' : ''}`}
+          >
+            关闭字幕
+          </div>
+          {subtitleTracks.map((track, i) => (
+            <div
+              key={track.id || track.lan || i}
+              className={`quality-option ${focusArea === 'subtitle' && focusIdx === i + 1 ? 'focused' : ''} ${currentSubtitleIndex === i ? 'active' : ''}`}
+            >
+              {track.lan_doc || track.lan || `字幕 ${i + 1}`}
+            </div>
+          ))}
         </div>
       )}
 

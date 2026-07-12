@@ -39,6 +39,9 @@ const supportsPlaybackSpeedControl = new Function(
   'WEBOS_BROWSER_APP_ID',
   `${extractFunction('supportsPlaybackSpeedControl')}; return supportsPlaybackSpeedControl;`,
 )(browserAppIdMatch[1]);
+const getActiveSubtitleText = new Function(
+  `${extractFunction('getActiveSubtitleText')}; return getActiveSubtitleText;`,
+)();
 
 test('escapeXml encodes xml-sensitive characters', () => {
   expect(escapeXml('a&b<c>"')).toBe('a&amp;b&lt;c&gt;&quot;');
@@ -81,4 +84,15 @@ test('supportsPlaybackSpeedControl disables speed in packaged webos apps only', 
   expect(supportsPlaybackSpeedControl()).toBe(false);
 
   globalThis.window = originalWindow;
+});
+
+test('getActiveSubtitleText returns active cues and preserves overlapping lines', () => {
+  const cues = [
+    { from: 1, to: 3, content: '第一行' },
+    { from: 2, to: 4, content: '第二行' },
+    { from: 5, to: 6, content: '稍后' },
+  ];
+
+  expect(getActiveSubtitleText(cues, 2.5)).toBe('第一行\n第二行');
+  expect(getActiveSubtitleText(cues, 4)).toBe('');
 });

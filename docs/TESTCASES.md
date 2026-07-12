@@ -87,7 +87,7 @@
 
 | C-CAST-02 | DLNA 投屏(虎牙/通用发送端):SETUP 之外的 SOAP 全流程 —— SetAVTransportURI(XML 反转义+DIDL 标题)→ Play(URI+Play 双触发去重 5s)→ App 直链播放(LivePlayerPage directUrl,原生 HLS/MP4/**FLV**——虎牙超清 FLV 流真机实播验证,webOS 管线原生解 FLV);GetTransportInfo/GetPositionInfo 轮询应答;Stop 收播;NirvanaCast 路径零改动共存 | 📜 Mac curl 模拟发送端全流程:SetURI/Play 合法 SOAP 应答、Apple 测试流真机实播 t=39 ready=4、TransportState=PLAYING、Stop 回首页 | 2026-07-11 owner 虎牙投屏失败:/AVTransport/action 原是空 200(连 SOAP 应答都没有);服务器原本不读 POST body,一并补齐;owner 虎牙复测成功(含超清):castGetStatus 记录到 tx.flv.huya.com 超清流 playState=playing、进度推进 |
 
-| C-CAST-03 | 虎牙 FLV→HLS 改写(casturl.js):同签名换域名+后缀,首选 HLS,重试≥2 次回退原 URL;非虎牙 URL 一律不动 | 🤖 verify.sh L2 (`tools/test-casturl.mjs`, 7 断言) + 📜 真机 E2E(用真实失败 URL 重放投屏 → tx.hls.huya.com 实播 t=6 无错误) | 2026-07-12 owner 虎牙再投失败:MEDIA_ERR 4 Format error(同 codec=264 参数,流级差异)——webOS FLV demux 不可靠;HLS 映射两次对真实签名 URL 验证 200 |
+| C-CAST-03 | 虎牙投屏画质阶梯(casturl.js):attempt0=HLS+ratio=8000(蓝光)→ attempt1=HLS+原档 → attempt2+=原 FLV;超上限 404/403 触发重试自然降档;非虎牙 URL 任何 attempt 都不动 | 🤖 verify.sh L2 (`tools/test-casturl.mjs`, 17 断言) + 📜 真机 E2E(重放真实投屏:attempt0 实际以 ratio=8000 HLS 起播,失败自动降 2000) | 2026-07-12 owner"画质跟不上":实测 **ratio 不在 wsSecret 签名内**(同签名 2000→8000 分片码率 3 倍,10000→404/20000→403);另 webOS FLV demux 流级不可靠(MEDIA_ERR 4)故 HLS 优先;虎牙官方收端协议无公开逆向资料,DIDL 元数据仅标题(全量捕获过),不追 |
 | C-LIVE-01 | 直播/投屏断流自愈(LivePlayerPage):media-error/意外 ended/8s 停滞 watchdog → 自动重连 ≤5 次(1-4s 递增退避,B站直播每次**重取新签名地址**),恢复后重试预算归零;极限后诚实上报 error;全程 __liveDiag 痕迹 | 📜 dev Playwright(Chrome 不能原生 HLS → 必触发):connect:0→media-error→…→connect:5→gave-up 完整链路 | 2026-07-11 owner 报虎牙投屏"有断的情况…黑屏":直播路径原本零恢复零日志,断=永久黑屏 |
 
 ## API 存活(B站接口会下线!)

@@ -30,11 +30,10 @@ export default function LivePlayerPage({ room, onBack }) {
     async function resolveSrc() {
       if (room.directUrl) {
         // DLNA cast (Huya etc): third-party CDNs aren't in our proxy
-        // allowlist and <video> needs no CORS, so play direct. Known-FLV
-        // senders get the HLS rewrite first (this TV's FLV demux is flaky —
-        // MEDIA_ERR 4); if two rewritten attempts fail, fall back to the
-        // original URL.
-        return retries >= 2 ? room.directUrl : rewriteCastUrl(room.directUrl);
+        // allowlist and <video> needs no CORS, so play direct. Huya gets the
+        // quality ladder (蓝光 HLS → sender-ratio HLS → original FLV); a 404
+        // above the streamer's top tier trips the retry and steps down.
+        return rewriteCastUrl(room.directUrl, retries);
       }
       // B站 live: refetch on every (re)connect — the signed URL expires, so a
       // reconnect with the OLD URL would just fail again.

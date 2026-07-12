@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { getLiveStreamUrl, getRoomInit, getDanmuInfo, getBuvid3, danmakuSubscribe, danmakuStop, castReportState } from '../api/client';
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
+import { rewriteCastUrl } from '../utils/casturl';
 import LiveDanmakuLayer from './LiveDanmakuLayer';
 import { t } from '../i18n';
 
@@ -28,9 +29,12 @@ export default function LivePlayerPage({ room, onBack }) {
 
     async function resolveSrc() {
       if (room.directUrl) {
-        // DLNA cast (Huya etc): play the sender's URL as-is — third-party
-        // CDNs aren't in our proxy allowlist, and <video> needs no CORS.
-        return room.directUrl;
+        // DLNA cast (Huya etc): third-party CDNs aren't in our proxy
+        // allowlist and <video> needs no CORS, so play direct. Known-FLV
+        // senders get the HLS rewrite first (this TV's FLV demux is flaky —
+        // MEDIA_ERR 4); if two rewritten attempts fail, fall back to the
+        // original URL.
+        return retries >= 2 ? room.directUrl : rewriteCastUrl(room.directUrl);
       }
       // B站 live: refetch on every (re)connect — the signed URL expires, so a
       // reconnect with the OLD URL would just fail again.

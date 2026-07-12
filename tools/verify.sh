@@ -64,6 +64,8 @@ node tools/test-subtranslate.mjs || { echo "FAIL: subtitle MT pipeline"; exit 1;
 node tools/test-dmtranslate.mjs || { echo "FAIL: danmaku MT"; exit 1; }
 # C-UI-08: arc_aigc declaration extraction (undocumented field, defensive)
 node tools/test-aigc.mjs || { echo "FAIL: aigc extraction"; exit 1; }
+# C-CAST-03: DLNA URL rewrite (Huya FLV→HLS; non-Huya untouched)
+node tools/test-casturl.mjs || { echo "FAIL: cast url rewrite"; exit 1; }
 
 echo ""
 echo "=== [3/6] Service on REAL Node 8 (docker) ==="

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.1](https://github.com/dotennin/bili-webos/compare/bili-webos-tv-v1.12.0...bili-webos-tv-v1.12.1) (2026-07-07)
+
+
+### Bug Fixes
+
+* prevent scheduleDefaultGridFocus from stealing focus on load-more ([#119](https://github.com/dotennin/bili-webos/issues/119)) ([743f0c7](https://github.com/dotennin/bili-webos/commit/743f0c73bf8bc7ec4402872658c468a723cb9509))
+
 ## [1.12.0](https://github.com/dotennin/bili-webos/compare/bili-webos-tv-v1.11.2...bili-webos-tv-v1.12.0) (2026-06-30)
 
 

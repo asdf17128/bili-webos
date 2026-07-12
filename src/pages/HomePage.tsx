@@ -105,7 +105,7 @@ export default function HomePage({
     return scheduleDefaultGridFocus({
       enabled: !loading && videos.length > 0,
     });
-  }, [loading, videos.length]);
+  }, [loading]);
 
   function dedupe(items) {
     return items.filter((v) => {

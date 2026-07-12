@@ -48,6 +48,7 @@ function parseSoapAction(request, body) {
   m = body.match(/<CurrentURIMetaData>([\s\S]*?)<\/CurrentURIMetaData>/i);
   if (m) {
     var meta = xmlUnescape(m[1]);
+    out.rawMeta = meta.slice(0, 3000); // full DIDL for diagnosis (sender extras)
     var t = meta.match(/<dc:title>([\s\S]*?)<\/dc:title>/i);
     if (t) out.title = xmlUnescape(t[1]).trim();
   }

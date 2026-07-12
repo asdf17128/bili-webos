@@ -151,6 +151,7 @@ CastController.prototype.handleDlnaAction = function (action, args) {
   if (action === 'SetAVTransportURI') {
     this.dlnaUri = args.uri || '';
     this.dlnaTitle = args.title || '';
+    this.status.lastDlnaMeta = args.rawMeta || ''; // inspectable via castGetStatus
     // Most senders follow with Play, but some expect SetURI alone to start.
     // Emit here; the Play that follows is deduped by URL+time below.
     this.maybeEmitDlnaPlay();

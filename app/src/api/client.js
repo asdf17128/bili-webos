@@ -398,11 +398,22 @@ export async function getFollowings(vmid, pn, ps) {
 // Latest released version from GitHub (direct fetch — github API sends CORS *,
 // so it doesn't need the B站 proxy, and no B站 cookies leak to github).
 export async function getLatestVersion() {
-  const res = await fetch('https://api.github.com/repos/asdf17128/bili-webos/releases/latest', {
+  // On TV, read the tiny version.json release asset via the service (~20 bytes,
+  // keep-alive, allowlisted) instead of the huge releases/latest API or a flaky
+  // direct file:// fetch. GitHub serves release assets as octet-stream, so the
+  // service returns bodyBase64 (not parsed body) — decode it.
+  if (hasLunaService()) {
+    var r = await lunaFetch('https://github.com/asdf17128/bili-webos/releases/latest/download/version.json', {});
+    var txt = (r && r.body) || '';
+    if (!txt && r && r.bodyBase64) { try { txt = atob(r.bodyBase64); } catch (e) { txt = ''; } }
+    try { return String(JSON.parse(txt).version || '').replace(/^v/i, ''); } catch (e) { return ''; }
+  }
+  // Dev browser: the GitHub API returns JSON with CORS.
+  var res = await fetch('https://api.github.com/repos/asdf17128/bili-webos/releases/latest', {
     headers: { 'Accept': 'application/vnd.github+json' },
   });
   if (!res.ok) throw new Error('HTTP ' + res.status);
-  const data = await res.json();
+  var data = await res.json();
   return (data.tag_name || '').replace(/^v/i, '');
 }
 
@@ -485,6 +496,56 @@ export async function searchVideo(keyword, page, pageSize) {
   return wbiFetch('/x/web-interface/search/type', {
     search_type: 'video', keyword: keyword, page: page || 1, page_size: pageSize || 20,
     order: '', duration: 0, tids: 0,
+  });
+}
+
+// Keyword autocomplete (s.search.bilibili.com/main/suggest). Returns an array of
+// plain-text suggestions — the single biggest relief for remote-control typing
+// (D-pad on a soft keyboard). No WBI signing needed for this endpoint.
+export async function searchSuggest(term) {
+  var q = (term || '').trim();
+  if (!q) return [];
+  try {
+    var res = await apiFetch('/main/suggest', {
+      func: 'suggest', suggest_type: 'accurate', sub_type: 'tag',
+      main_ver: 'v1', term: q,
+    }, { host: 's.search.bilibili.com' });
+    var tag = res && res.result && res.result.tag;
+    if (!Array.isArray(tag)) return [];
+    var out = [];
+    for (var i = 0; i < tag.length; i++) {
+      var v = tag[i] && (tag[i].value || tag[i].term);
+      if (v && out.indexOf(v) < 0) out.push(v);
+    }
+    return out.slice(0, 10);
+  } catch (e) {
+    return []; // suggestions are best-effort — never block typing on a failure
+  }
+}
+
+// Trending / hot searches (搜索发现) for the idle search page. On the
+// allowlisted api.bilibili.com host, no WBI needed. Returns plain keywords.
+export async function getHotSearches(limit) {
+  try {
+    var res = await apiFetch('/x/web-interface/search/square', { limit: limit || 10, platform: 'web' });
+    var list = (res && res.data && res.data.trending && res.data.trending.list) || [];
+    var out = [];
+    for (var i = 0; i < list.length; i++) {
+      var k = list[i] && list[i].keyword;
+      if (k && out.indexOf(k) < 0) out.push(k);
+    }
+    return out;
+  } catch (e) {
+    return [];
+  }
+}
+
+// Video comments (评论). oid = the video's aid, type=1 for videos.
+// sort: 1 = hot (recommended), 0 = time, 2 = reply-count. The legacy endpoint
+// needs no WBI signature; the service adds Referer/cookies (isBiliHost).
+export async function getReplies(oid, pn, sort) {
+  return apiFetch('/x/v2/reply', {
+    type: 1, oid: oid, pn: pn || 1, ps: 20, sort: sort == null ? 1 : sort,
   });
 }
 

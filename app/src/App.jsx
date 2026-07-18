@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
-import { initKeyboardNav, setFocus, onFocusChange, getCurrentFocusId, focusFirstContent, focusSidebar, isPointerFocus } from './hooks/useFocus';
+import { initKeyboardNav, setFocus, onFocusChange, getCurrentFocusId, focusFirstContent, setLastSidebarFocus, isPointerFocus } from './hooks/useFocus';
 import { castAck, castSubscribe, getNavInfo, pingVersionAsset } from './api/client';
 import { normalizePlay, playAt } from './player/playIntent';
 import { storage } from './utils/storage';
@@ -20,17 +20,44 @@ import { t } from './i18n';
 const PlayerPage = lazy(() => import('./player/PlayerPage'));
 const LivePlayerPage = lazy(() => import('./player/LivePlayerPage'));
 
+// The 6 pulled-out partitions, each its own sidebar entry (replaces the single
+// "分区" tab, which used a RANDOM old rid per fetch → mixed unrelated partitions
+// AND showed the FROZEN pre-2024-reform ranking, all ~2025-03 videos). rid here
+// is B站's NEW partition id (pid_v2) — ranking/v2 on these returns the current
+// hot ranking (~top 100). Easily swappable.
+const PARTITIONS = [
+  { key: 'p-1008', label: () => t('游戏'), icon: '🎮', rid: 1008 },
+  { key: 'p-1005', label: () => t('动画'), icon: '📺', rid: 1005 },
+  { key: 'p-1003', label: () => t('音乐'), icon: '🎵', rid: 1003 },
+  { key: 'p-1010', label: () => t('知识'), icon: '📚', rid: 1010 },
+  { key: 'p-1002', label: () => t('娱乐'), icon: '🎭', rid: 1002 },
+  { key: 'p-1007', label: () => t('鬼畜'), icon: '😜', rid: 1007 },
+];
+
+// Sidebar: main feeds · [divider] partitions · [divider] utilities — regular
+// partitions grouped apart from the rest (owner).
+// 搜索置顶(像 YouTube),但默认落地页仍是推荐;Back 回到推荐按钮(不落搜索)。
 const NAV_ITEMS = [
-  { key: 'recommend', label: () => t('推荐'), icon: '🏠' },
+  { key: 'search', label: () => t('搜索'), icon: '🔍' },
+  { key: 'recommend', label: () => t('推荐'), icon: '🏠', dividerBefore: true },
   { key: 'hot', label: () => t('热门'), icon: '🔥' },
   { key: 'live', label: () => t('直播'), icon: '📡' },
-  { key: 'partition', label: () => t('分区'), icon: '📁' },
   { key: 'follow', label: () => t('关注'), icon: '👤' },
   { key: 'favorites', label: () => t('收藏'), icon: '⭐' },
-  { key: 'search', label: () => t('搜索'), icon: '🔍', dividerBefore: true },
-  { key: 'settings', label: () => t('我的'), icon: '🕘' },
+  ...PARTITIONS.map((p, i) => (i === 0 ? { ...p, dividerBefore: true } : p)),
+  { key: 'settings', label: () => t('我的'), icon: '🕘', dividerBefore: true },
   { key: 'config', label: () => t('设置'), icon: '⚙️' },
 ];
+
+const PARTITION_KEYS = PARTITIONS.reduce((m, p) => { m[p.key] = p.rid; return m; }, {});
+
+// The sidebar cell id for a page key (partition keys are in NAV_ITEMS too).
+// Unknown keys fall back to the 推荐 button — the home target for Back.
+function sidebarIdForPage(key) {
+  let i = NAV_ITEMS.findIndex(n => n.key === key);
+  if (i < 0) i = NAV_ITEMS.findIndex(n => n.key === 'recommend');
+  return `sidebar-${i}-0`;
+}
 
 // Detect a bangumi (PGC) item across the shapes it arrives in: watch history
 // (business:'pgc', badge:'番剧'), the recommend feed (goto:'bangumi', a /ep|/ss
@@ -114,6 +141,7 @@ export default function App() {
 
   useEffect(() => {
     initKeyboardNav();
+    setLastSidebarFocus(sidebarIdForPage('recommend')); // home = 推荐, not 搜索(top)
     const auth = storage.getAuth();
     if (auth?.SESSDATA) {
       setLoggedIn(true);
@@ -202,17 +230,15 @@ export default function App() {
       } else if (showLogin) {
         setShowLogin(false);
       } else if (getCurrentFocusId()?.startsWith('content-')) {
-        // First Back from inside a page returns to the sidebar menu — one press
-        // to escape the search keyboard or any content grid.
-        focusSidebar();
+        // First Back from inside a page returns to the sidebar, landing on THIS
+        // page's own button (not sidebar[0], which is now 搜索).
+        setFocus(sidebarIdForPage(page));
       } else if (page !== 'recommend') {
-        // Go home DIRECTLY. This used to only setFocus('sidebar-0-0') and rely
-        // on the focus-change preview to switch the page — but when the pointer
-        // had already hover-focused that item (pointer focus doesn't preview),
-        // setFocus was a same-id no-op and the page never switched, wedging Back
-        // entirely (#11). Switch the page explicitly.
+        // On a non-home sidebar item → go home (推荐) and highlight it. Switch
+        // the page explicitly (a pointer-hovered item makes setFocus a no-op,
+        // so the preview wouldn't fire and Back would wedge, #11).
         setPage('recommend');
-        setFocus('sidebar-0-0');
+        setFocus(sidebarIdForPage('recommend'));
       } else {
         try { window.webOS?.platformBack?.(); } catch { window.close(); }
       }
@@ -325,7 +351,7 @@ export default function App() {
           {page === 'recommend' && <HomePage onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="recommend" />}
           {page === 'hot' && <HomePage onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="hot" />}
           {page === 'live' && <HomePage onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="live" />}
-          {page === 'partition' && <HomePage onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="partition" />}
+          {PARTITION_KEYS[page] != null && <HomePage key={page} onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="partition" rid={PARTITION_KEYS[page]} />}
           {page === 'follow' && <HomePage onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="follow" />}
           {page === 'search' && <SearchPage onPlayVideo={handlePlayVideo} />}
           {page === 'favorites' && <FavoritesPage userMid={user?.mid} onPlayVideo={handlePlayVideo} />}

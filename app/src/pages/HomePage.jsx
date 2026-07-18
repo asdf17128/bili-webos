@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getPopular, getRecommend, getRegionDynamic, getFollowFeed, getLiveList } from '../api/client';
+import { getPopular, getRecommend, getRanking, getFollowFeed, getLiveList } from '../api/client';
 import VideoGrid from '../components/VideoGrid';
 import { getCurrentFocusId, setFocus, onFocusChange, isHoverDriven } from '../hooks/useFocus';
 import { storage } from '../utils/storage';
@@ -10,7 +10,7 @@ const FETCH_SIZE = 20;
 
 // Returns { items, offset } — offset is the follow-feed cursor (undefined for
 // other modes, which paginate by page number).
-async function fetchByMode(mode, pn, offset) {
+async function fetchByMode(mode, pn, offset, rid) {
   if (mode === 'hot') {
     const res = await getPopular(pn, FETCH_SIZE);
     return { items: res?.data?.list || [] };
@@ -29,10 +29,12 @@ async function fetchByMode(mode, pn, offset) {
       roomid: item.roomid || item.room_id,
     })) };
   } else if (mode === 'partition') {
-    const rids = [1, 3, 4, 5, 36, 160, 188, 211, 129, 119];
-    const rid = rids[Math.floor(Math.random() * rids.length)];
-    const res = await getRegionDynamic(rid, pn, FETCH_SIZE);
-    return { items: res?.data?.archives || [] };
+    // Per-partition CURRENT hot ranking via B站's NEW partition id (pid_v2).
+    // The old region rankings are frozen at the 2024 reform (~2025-03 videos,
+    // owner: "都是去年的"); ranking/v2 on the new pid returns today's top ~100.
+    // Not paginated — load-more just no-ops via dedupe.
+    const res = await getRanking(rid || 1008, 'all');
+    return { items: res?.data?.list || [] };
   } else if (mode === 'follow') {
     const res = await getFollowFeed(pn, offset);
     const items = (res?.data?.items || []).map(item => {
@@ -53,7 +55,7 @@ async function fetchByMode(mode, pn, offset) {
   }
 }
 
-export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }) {
+export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend', rid }) {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [focusRow, setFocusRow] = useState(0);
@@ -76,7 +78,7 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
     setVideos([]);
     setFocusRow(0);
 
-    fetchByMode(mode, 1, '').then(({ items, offset }) => {
+    fetchByMode(mode, 1, '', rid).then(({ items, offset }) => {
       if (cancelled) return;
       setVideos(dedupe(items));
       setLoading(false);
@@ -92,7 +94,7 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
     }).catch(() => { if (!cancelled) setLoading(false); });
 
     return () => { cancelled = true; };
-  }, [refreshKey, mode]);
+  }, [refreshKey, mode, rid]);
 
   // Load followed UP mids once (logged-in only) to badge "已关注" on cards
   useEffect(() => {
@@ -125,7 +127,7 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
       const totalRows = Math.ceil(videos.length / cols);
       if (row >= totalRows - 2 && !fetchingRef.current) {
         fetchingRef.current = true;
-        fetchByMode(mode, pageRef.current, offsetRef.current).then(({ items, offset }) => {
+        fetchByMode(mode, pageRef.current, offsetRef.current, rid).then(({ items, offset }) => {
           const unique = dedupe(items);
           if (unique.length > 0) setVideos(prev => [...prev, ...unique]);
           pageRef.current++;
@@ -134,7 +136,7 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend' }
         }).catch(() => { fetchingRef.current = false; });
       }
     });
-  }, [videos.length, mode]);
+  }, [videos.length, mode, rid]);
 
   if (loading) {
     return <div className="loading"><div className="loading-spinner" />{t('加载中...')}</div>;

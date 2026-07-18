@@ -28,7 +28,7 @@ html, body, #root {
   background: #0a0a1e;
   display: flex;
   flex-direction: column;
-  padding: 30px 0;
+  padding: 20px 0;
   border-right: 1px solid #1a1a30;
 }
 .sidebar-logo {
@@ -47,23 +47,26 @@ html, body, #root {
   color: #555;
 }
 .sidebar-item {
-  padding: 18px 28px;
+  padding: 11px 16px;
+  margin: 2px 12px;
+  border-radius: 10px;
   font-size: 20px;
-  color: #6a6a8a;
+  color: #9a9ab0;
   cursor: pointer;
-  border-left: 3px solid transparent;
   display: flex;
   align-items: center;
   gap: 14px;
+  transition: background 0.12s ease, color 0.12s ease;
 }
 .sidebar-item .sidebar-label { font-size: 20px; }
+/* Focused = a solid, unmistakable selection box (owner: hard to tell otherwise) */
 .sidebar-item.focused {
-  background: #141430;
-  color: #00a1d6;
-  border-left-color: #00a1d6;
-  transition: background 0.15s ease, color 0.15s ease;
+  background: #00a1d6;
+  color: #fff;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
 }
-.sidebar-item.active { color: #00a1d6; }
+/* Active page (when not the focused item) just tints its text/icon blue */
+.sidebar-item.active:not(.focused) { color: #00a1d6; }
 .sidebar-divider {
   height: 1px;
   background: #1a1a30;
@@ -270,6 +273,25 @@ html, body, #root {
 }
 .search-input.focused, .search-input:focus { border-color: #00a1d6; }
 
+/* YouTube-style recommendation list below the search box */
+.search-recs { max-width: 1000px; margin-top: 10px; padding-bottom: 40px; }
+.search-rec-section { font-size: 16px; color: #888; margin: 18px 6px 8px; }
+.search-rec-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 52px;
+  padding: 0 16px;
+  border-radius: 10px;
+  color: #e1e1e6;
+  font-size: 20px;
+  cursor: pointer;
+}
+.search-rec-item .rec-ico { font-size: 17px; opacity: 0.7; width: 22px; text-align: center; flex-shrink: 0; }
+.search-rec-item .rec-label { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.search-rec-item.focused { background: #00a1d6; color: #fff; }
+.search-rec-item.focused .rec-ico { opacity: 1; }
+
 /* ===== On-Screen Keyboard ===== */
 .osk-container { margin-bottom: 16px; }
 .osk-row { display: flex; gap: 6px; margin-bottom: 6px; justify-content: center; }
@@ -292,6 +314,44 @@ html, body, #root {
   color: #fff;
   transform: scale(1.08);
 }
+
+/* ===== Search suggestions / history chips ===== */
+.search-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.search-chips-label { font-size: 15px; color: #888; margin-right: 2px; }
+.search-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  max-width: 340px;
+  background: #1a1a30;
+  border: 1px solid #2a2a4a;
+  border-radius: 20px;
+  color: #cfcfe0;
+  font-size: 17px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: transform 0.1s ease, background 0.1s ease, border-color 0.1s ease;
+}
+.search-chip .chip-ico { font-size: 13px; opacity: 0.55; }
+.search-chip.focused {
+  background: #00a1d6;
+  border-color: #00a1d6;
+  color: #fff;
+  transform: scale(1.06);
+}
+.search-chip.chip-clear { color: #ff9a9a; }
+.search-chip.chip-clear.focused { background: #b23b3b; border-color: #b23b3b; color: #fff; }
+.search-hint { font-size: 15px; color: #666; margin: 0 4px 14px; }
 
 /* ===== Player Page ===== */
 .player-page {

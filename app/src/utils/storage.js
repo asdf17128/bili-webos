@@ -104,6 +104,26 @@ export const storage = {
     this._progressSubs.forEach(fn => { try { fn(); } catch (e) { /* ignore */ } });
   },
 
+  // Search history (most-recent-first, deduped). Remote-control typing is the
+  // most painful TV interaction, so a one-tap "search it again" list matters.
+  getSearchHistory() {
+    return this.get('searchHistory') || [];
+  },
+  addSearchHistory(term) {
+    var q = (term || '').trim();
+    if (!q) return;
+    var list = this.getSearchHistory().filter(function (x) { return x !== q; });
+    list.unshift(q);
+    if (list.length > 12) list = list.slice(0, 12);
+    this.set('searchHistory', list);
+  },
+  removeSearchHistory(term) {
+    this.set('searchHistory', this.getSearchHistory().filter(function (x) { return x !== term; }));
+  },
+  clearSearchHistory() {
+    this.remove('searchHistory');
+  },
+
   // Locally-tracked recently watched live rooms (B站's history API doesn't
   // record live viewing without its obfuscated heartbeat, so we keep our own).
   getRecentLive() {

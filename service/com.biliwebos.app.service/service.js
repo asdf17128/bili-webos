@@ -127,6 +127,7 @@ ensureBuvid(0);
 function isAllowedHost(host) {
   var allowed = [
     'api.bilibili.com', 'passport.bilibili.com', 'api.live.bilibili.com',
+    's.search.bilibili.com', // search suggestions (keyword autocomplete)
     's1.hdslb.com', 'i0.hdslb.com', 'i1.hdslb.com', 'i2.hdslb.com',
     'comment.bilibili.com',
     // Subtitle machine translation (free gtx endpoint). NOT a bilibili host:

@@ -17,6 +17,7 @@ const BILI_HOSTS = [
   'api.bilibili.com',
   'passport.bilibili.com',
   'api.live.bilibili.com',
+  's.search.bilibili.com',
   's1.hdslb.com',
   'i0.hdslb.com',
   'i1.hdslb.com',

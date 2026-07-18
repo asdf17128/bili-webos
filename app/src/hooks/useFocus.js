@@ -118,6 +118,12 @@ export function focusSidebar() {
   if (id) setFocus(id);
 }
 
+// Seed the "home" sidebar target (the app sets this to 推荐, not sidebar[0]
+// which is now 搜索) so Left-from-content and focusSidebar default there.
+export function setLastSidebarFocus(id) {
+  if (id) lastSidebarFocus = id;
+}
+
 // Global listeners (minimal - only for things like page switching)
 const globalListeners = new Set();
 export function onFocusChange(fn) {

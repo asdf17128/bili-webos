@@ -27,6 +27,7 @@
 | C-PLAY-06 | Scrub(快进快退):影子游标动、视频不跳;停手1s 精确落点(t0+30=258 实测);OK 立即;Back 丢弃;连按加速 10/30/60(算术单测 570s) | 📜 单会话 CDP 场景脚本(v1.2.3 记录) + 加速纯函数单测 | 旧行为盲跳±10s;**教训**:跨连接读取延迟>1s 自动提交窗口会假阴(写入 tv-test skill) |
 | C-PLAY-07 | Scrub 预览图:**视觉完整**(不被 controls overflow 裁剪)、紧贴进度条(~104px)、帧对正清晰(**雪碧图必须原图直出,禁 @672w 缩略后缀**) | 👁 截图逐像素看(rect 测不出裁剪!) | ZMonsterror 抓到裁剪+距离;帧错位/糊 = proxyImg 的 @672w_1c 裁剪(抓包定位);thumb 320x180 复验 |
 | C-PLAY-08 | 章节:进度条分段刻痕(N-1 个)、scrub 气泡显示目标章节名、时间行显当前章节;**预览帧尺寸自适应**(160/480 宽都=320px 显示) | 📜 真机对真实 7 章节视频(BV1n8M86CEUy):6 刻痕、跨章气泡'10-20(4款)' | v1.2.4;480 帧雪碧图曾撑成 960px 宽(实测抓到) |
+| C-CMT-01 | 播放中看评论:底部面板新增「评论」tab(在 相关推荐/UP主投稿/选集 之后),标题带总数;单列列表(头像+用户名+时间+正文+👍赞数+回复数);焦点单列上下走、到底翻页 loadComments(false);空/加载态区分;评论走 api.bilibili.com `/x/v2/reply`(sort=1 热门,免 WBI,host 本已在白名单) | 📜 dev+Playwright(BV1xx411c7Xg/aid271):tab 显示「评论 · 2.6万」、20 张卡渲染(三师公张良/碧诗真实评论,含赞 4.0万·3072 条回复)、方向键入列表翻页 20→40、focus 单列跟随;👁 comments_panel.png | 2026-07-16 YouTube-TV 对标 P1「播放中看评论」;沿用现有 panelTab 架构(comments 为单列 list,RCOLS=1,Enter 不可播);评论接口对反爬敏感,失败(-412)静默显示暂无评论 |
 | C-SUB-01 | 字幕纯函数:parse 容忍脏数据(零长/NaN/乱序)、pickCueIndex 边界/间隙/重叠/1000条扫描=线性对照;**轨道名枚举映射 + 动态键字典覆盖**(t(subtitleLanName) 是动态调用,coverage 门禁的字面扫描看不见,由本测试兜底) | 🤖 verify.sh L2 (`tools/test-subtitle.mjs`, 9 组) | 正对照 2026-07-10 ×2:去掉重叠回溯 → 'overlapping' 组失败;从 en.js 删「日语(自动生成)」→ 字典覆盖组失败(均 exit 1) |
 | C-SUB-02 | CC 端到端:有轨视频才出「字幕」键;OK 循环 关→轨→关;cue 上屏/间隙隐藏;开关持久化→下一视频自动开;控制条打开字幕上移(-190px);无轨视频无键 | 📜 真机 CDP 全流程 + 👁 截图(sub_cc.png:34px 白字深底居中贴底;sub_cc_en.png:英文界面 'CC Chinese (auto)' + 字幕避让控制条同框) | 2026-07-10 真机:'♪ Love wu nothing ♪'/台风视频 cue 实渲、连播自动启用、无轨视频键消失全验;en 界面按钮/避让/零溢出截图过目;**教训复用**:跨工具调用控制条会自动隐藏,按键序列必须单次 drive 完成 |
 | C-SUB-03 | 字幕 MT 管线(subTranslate.js):批量上限、**并行池(4路)+ 逐批渐进(onPartial)+ 播放头批次优先**、瞬时失败重试一轮、错位/永久失败必 throw(半翻半中挂着 translated 标签比回退更糟)、LRU 缓存、坏 store 容忍 | 🤖 verify.sh L2 (`tools/test-subtranslate.mjs`, 12 组) | owner 报"翻译要很长时间":旧串行整轨 ≈5-6s 才见译文;并行+渐进+播放头优先后真机实测(台风视频、无缓存):**中文 1.09s 先行、962ms 后英文换入**;面板打开即预取字幕体 |
@@ -41,6 +42,22 @@
 | C-FOCUS-01 | 指针停在**半截边缘卡**上:高亮但**零滚动**,10s 焦点零漂移 | 📜 point.mjs park 测试(含**正对照**:坏版同操作焦点 0→4→8 漂移) | 六轮拉锯的 #11 边缘滚动;正对照是本仓库验证纪律的起点;报告人确认修复 |
 | C-FOCUS-02 | 滚轮方向=视图方向,**与指针位置无关**:指针在底部1/4向上滚→scrollY 减;顶部向下滚→增;不卡不反向 | 📜 `node tools/cases/c-focus-02-wheel-direction.mjs`(需 app 在首页网格;2026-07-09 固化脚本并复跑 PASS) | ZMonsterror"几乎必现"反向/卡死;根因=焦点行锚定模型 vs 指针起算(v1.2.6) |
 | C-FOCUS-03 | hover 跟随指针(高亮=指针=点击目标);滚轮/D-pad 滚动不受 hover 影响 | 📜 **必须 dev+Playwright 受信输入**(page.mouse),TV 端 CDP 鼠标注入会静默失效 | hover 曾被 hoverAllowed 误杀;"注入失效当产品坏"浪费一轮(挂 DOM 计数器定位);Playwright 3/3+滚动矩阵 |
+| C-NAV-01 | 侧栏:搜索置顶但**非默认**(默认落推荐);Back 从内容→**当前页按钮**、再 Back→**推荐**(不落搜索);左键回推荐;选中框=实心蓝圆角+白描边,**上下切换时不被预览重渲染冲掉**(SidebarItem 渲染时按 `getCurrentFocusId()` 自带 focused class) | 📜 dev+Playwright:顺序[搜索,推荐,…]、默认推荐20卡、Back 从游戏内容→游戏按钮→推荐、左键落推荐、上下连切 5 项焦点框 bg 恒为 rgb(0,161,214) | 2026-07-18 owner:①搜索置顶但推荐默认②Back回推荐③选中框看不清;**根因**:预览 setPage→active 变→React 重渲染重写 className 把 DOM 加的 .focused 冲掉(框一闪即没) |
+
+## 分区
+
+| ID | Case | 门禁 | 佐证 |
+|---|---|---|---|
+| C-PART-01 | 6 个分区做左侧导航(游戏/动画/音乐/知识/娱乐/鬼畜),各进各自**当前热门榜**;用**新版 pid_v2**(1008/1005/1003/1010/1002/1007)喂 `ranking/v2`——**旧 rid(3/4/…)的分区榜已被 B站 2024 改版冻结在 ~2025-03**,查出来全是去年视频 | 🤖 verify.sh L6 test-ui(goto 游戏→出内容) + 📜 dev+Playwright:音乐区 96 卡(17M/10M 播放·当天)、游戏区「寻找卢本伟 786万·2天前」;旧 rid 实测返回 2025-03 冻结榜 | 2026-07-18 owner:①原「分区」tab 随机 rid 混内容太乱→拆 6 个固定分区②"怎么全是去年的"→旧分区榜冻结,换 pid_v2 拿当前榜。**坑**:老 rid 分区榜不报错但数据冻结,必须用 pid_v2 |
+
+## 搜索
+
+| ID | Case | 门禁 | 佐证 |
+|---|---|---|---|
+| C-SRCH-02 | 搜索历史:去重+置顶+上限 12,空串忽略;chips 一点即搜;"清除历史"清空 | 🤖 verify.sh L2 (`tools/test-searchhistory.mjs`) + 📜 dev+Playwright:历史 chips + Clear 渲染,点 chip 触发搜索并写入历史 | 2026-07-14 搜索优化;遥控器打字是电视最痛交互,一点复搜价值最高 |
+| 教训 | **语音搜索放弃**(2026-07-18 owner 决定):webOS 对第三方 app **完全隔离麦克风**——实测 `getUserMedia`=NotFoundError/`audioInputs`=0、系统 `voiceinput/startStreaming` 与 `getDevices` 均 Denied;`voiceconductor/recordVoice` 卡 "precondition not satisfied";连 YouTube 自己也 `audioInputs`=0(它走私有 `RequestCrowNativeApi` + LG 未公开合作合同)。LG 官方原话"no APIs are provided for system-level voice control"。**唯一可行是"手机当话筒"**,owner 不做。故搜索只保留联想+历史 | — | 别再重开这个坑:麦克风源头就拿不到,不是权限弹窗问题 |
+| C-SRCH-03 | 搜索联想:输入 debounce 250ms 拉 `s.search.bilibili.com/main/suggest`,取 `result.tag[].value`;拼音/汉字均有结果,空输入→[];搜索后不再回弹已搜词的联想 | 📜 dev+Playwright:`yuan`→10 联想(圆桌动漫/原神/…),`原神`→汉字联想,`'   '`→[];搜索后抑制 | 2026-07-14;host 需加入服务+dev 代理白名单(`s.search.bilibili.com`);best-effort,失败不阻塞打字 |
+| C-SRCH-04 | 搜索页 = 原生 `<input>`(点框→**系统键盘**含话筒,LG 唯一语音路径)+ 下方推荐列表:**打字→联想**、**空闲→搜索历史+热门搜索**(热门走 `search/square` `data.trending.list`,host 已白名单);选任一推荐项即搜;无自绘键盘 | 🤖 verify.sh L6 test-ui(goto search→推荐列表 recItems>0→选首行→出结果) + 📜 dev+Playwright:原生 input、无 .osk-key、历史+热门两段、打字换联想、点项出结果;👁 search_yt_recs.png | 2026-07-18 owner 要"点框出系统键盘+下面搜索推荐 跟YouTube一样";联想曾被系统键盘遮挡故改推荐列表 |
 
 ## UI / 设计规范
 

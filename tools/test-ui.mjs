@@ -29,7 +29,7 @@ const KEYMAP = {
 // a hardcoded index table silently drifted when 收藏 was inserted (2026-07-10:
 // 'settings:6' landed on 搜索, four "flaky" failures + one false-positive pass
 // all traced to this one stale map).
-const NAV_ICON = { recommend: '🏠', hot: '🔥', live: '📡', partition: '📁', follow: '👤', favorites: '⭐', search: '🔍', settings: '🕘', config: '⚙️' };
+const NAV_ICON = { search: '🔍', recommend: '🏠', hot: '🔥', live: '📡', follow: '👤', favorites: '⭐', game: '🎮', settings: '🕘', config: '⚙️' };
 
 // One probe reads every field the tests assert on, in a single round-trip.
 const PROBE = `JSON.stringify({
@@ -46,6 +46,7 @@ const PROBE = `JSON.stringify({
   recentLive: (function(){try{return JSON.parse(localStorage.getItem('bili_recentLive')||'[]').length}catch(e){return -1}})(),
   imgs: document.querySelectorAll('img').length,
   broken: Array.from(document.querySelectorAll('img')).filter(function(i){return i.complete&&i.naturalWidth===0}).length,
+  recItems: document.querySelectorAll('.search-rec-item').length,
   sidebar: Array.from(document.querySelectorAll('.sidebar-item')).map(function(e){return e.textContent})
 })`;
 
@@ -215,12 +216,16 @@ async function main(call) {
   async function testSearch() {
     console.log('\n[Search]');
     await reload();
-    await goto('search'); // focus on OSK key "1" (content-0-0)
-    // Type "a": down,down → A (content-2-0), OK; then down,right*8 → 搜索, OK.
-    await press(['down', 'down', 'ok']);
-    await press(['down', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'ok']);
-    const s = await waitFor(x => x.cards > 0, { timeout: 12000, interval: 500 });
-    check('Search returns a results grid', s.cards > 0, `${s.cards} results for "a"`);
+    await goto('search'); // focus on the search box (content-0-0)
+    // The box is a native <input> → system keyboard (mic), not CDP-drivable; the
+    // idle page shows a 搜索历史 + 热门搜索 recommendation list. Pick the first
+    // row and search it — exercises the suggest/history/hot data path + results.
+    let s = await waitFor(x => x.recItems > 0, { timeout: 8000, interval: 400 });
+    check('Search recommendations render (热门/历史)', s.recItems > 0, `${s.recItems} rows`);
+    await key('down'); // box → first recommendation row
+    await key('ok');   // search that keyword
+    s = await waitFor(x => x.cards > 0, { timeout: 12000, interval: 500 });
+    check('Search returns a results grid', s.cards > 0, `${s.cards} results`);
   }
 
   async function testFollowPagination() {
@@ -242,7 +247,7 @@ async function main(call) {
     await reload();
     await goto('config');
     // The 检查更新 row auto-runs on mount; its value should populate w/o input.
-    const s = await waitFor(x => x.checkUpdate && x.checkUpdate !== '检查中…', { timeout: 9000, interval: 400 });
+    const s = await waitFor(x => x.checkUpdate && x.checkUpdate !== '检查中…', { timeout: 15000, interval: 400 });
     check('Auto update-check populated', !!s.checkUpdate, s.checkUpdate);
     check('Update-check resolved (latest/new/version)', /已是最新|发现新版|v?\d+\.\d+\.\d+/.test(s.checkUpdate || ''), s.checkUpdate);
   }
@@ -253,9 +258,10 @@ async function main(call) {
     let s = await goto('hot');
     s = await waitFor(x => x.cards > 0 || x.imgs > 3, { timeout: 9000 });
     check('热门 loads content', s.cards > 0 || s.imgs > 3, `${s.cards} cards / ${s.imgs} imgs`);
-    s = await goto('partition');
+    // 游戏 is one of the 6 pulled-out partitions (new pid_v2 ranking, current).
+    s = await goto('game');
     s = await waitFor(x => x.cards > 0 || x.imgs > 3, { timeout: 9000 });
-    check('分区 loads content', s.cards > 0 || s.imgs > 3, `${s.cards} cards / ${s.imgs} imgs`);
+    check('分区(游戏) loads content', s.cards > 0 || s.imgs > 3, `${s.cards} cards / ${s.imgs} imgs`);
   }
 
   async function testBangumiPlayback() {

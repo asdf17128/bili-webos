@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate } from '../api/client';
+import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies } from '../api/client';
 import { playPart, playAdvance } from './playIntent';
 
-import { formatDuration, formatTime, QUALITY_MAP, cleanTitle, pickAigcText } from '../utils/format';
+import { formatDuration, formatTime, formatCount, QUALITY_MAP, cleanTitle, pickAigcText } from '../utils/format';
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
 import DanmakuLayer from './DanmakuLayer';
@@ -106,10 +106,18 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // embedded controls+panel stay fully reachable (v1.2.2 behavior preserved).
   const [endNextIn, setEndNextIn] = useState(null); // seconds | null
   const relatedRef = useRef([]);
-  // Bottom panel: 'related' (相关推荐) | 'up' (UP主投稿)
+  // Bottom panel: 'related' (相关推荐) | 'up' (UP主投稿) | 'comments' (评论)
   const [panelTab, setPanelTab] = useState('related');
   const [upVideos, setUpVideos] = useState([]);
   const [upName, setUpName] = useState('');
+  // Comments (评论): a single-column list under its own tab. Lazy-loaded when
+  // the tab is first opened; paged like the UP主投稿 list.
+  const [comments, setComments] = useState([]);
+  const [commentCount, setCommentCount] = useState(0);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const commentPnRef = useRef(1);
+  const commentLoadingRef = useRef(false);
+  const commentDoneRef = useRef(false);
   // Focus: 'none' | 'controls' | 'quality' | 'tabs' | 'related' (=grid)
   const [focusArea, setFocusArea] = useState('none');
   const [focusIdx, setFocusIdx] = useState(0);
@@ -452,6 +460,12 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       upSeenRef.current = new Set();
       setUpVideos([]);
       setUpName(isBangumi ? '' : (ownerName || ''));
+      // Reset the "评论" tab for the new video.
+      commentPnRef.current = 1;
+      commentDoneRef.current = false;
+      setComments([]);
+      setCommentCount(0);
+      setCommentsLoading(false);
       setPanelTab('related');
 
       const settings = storage.getSettings();
@@ -1067,6 +1081,41 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     upLoadingRef.current = false;
   }, [video]);
 
+  // Load the video's comments (hot-sorted). reset=true starts fresh; otherwise
+  // appends the next page. oid = the video's aid (backfilled from the view API).
+  const loadComments = useCallback(async (reset) => {
+    if (commentLoadingRef.current) return;
+    if (!reset && commentDoneRef.current) return;
+    const oid = videoAidRef.current || video?.aid;
+    if (!oid) return;
+    commentLoadingRef.current = true;
+    if (reset) setCommentsLoading(true);
+    try {
+      if (reset) { commentPnRef.current = 1; commentDoneRef.current = false; }
+      const res = await getReplies(oid, commentPnRef.current, 1);
+      const data = (res && res.data) || {};
+      const replies = data.replies || [];
+      const mapped = replies.map(r => ({
+        rpid: r.rpid,
+        uname: (r.member && r.member.uname) || '',
+        avatar: (r.member && r.member.avatar) || '',
+        message: (r.content && r.content.message) || '',
+        like: r.like || 0,
+        time: r.ctime || 0,
+        replyCount: r.count || 0,
+      }));
+      if (reset && data.page) setCommentCount(data.page.count || 0);
+      setComments(prev => reset ? mapped : [...prev, ...mapped]);
+      if (replies.length === 0) commentDoneRef.current = true;
+      commentPnRef.current += 1;
+    } catch (e) {
+      console.warn('[loadComments] failed:', e && e.message);
+      if (reset) commentDoneRef.current = true; // risk-control / -412 → show empty
+    }
+    commentLoadingRef.current = false;
+    setCommentsLoading(false);
+  }, [video]);
+
   // Change quality
   const changeQuality = useCallback(async (qn) => {
     const isBangumi = !!(video?.isBangumi || video?.epid || video?.seasonId);
@@ -1318,7 +1367,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       // Scroll the focused related card into view
       function scrollRelatedIntoView(idx) {
         setTimeout(() => {
-          const cards = document.querySelectorAll('.related-card');
+          const cards = document.querySelectorAll(panelTab === 'comments' ? '.comment-card' : '.related-card');
           if (cards[idx]) {
             cards[idx].scrollIntoView({ block: 'nearest' });
           }
@@ -1329,13 +1378,14 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       if (focusArea === 'tabs') {
         e.preventDefault();
         if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-          const keys = isMultiP ? ['parts', 'related', 'up'] : ['related', 'up'];
+          const keys = isMultiP ? ['parts', 'related', 'up', 'comments'] : ['related', 'up', 'comments'];
           let i = keys.indexOf(panelTab); if (i < 0) i = 0;
           i = e.key === 'ArrowRight' ? (i + 1) % keys.length : (i - 1 + keys.length) % keys.length;
           const next = keys[i];
           setPanelTab(next);
           setFocusIdx(0);
           if (next === 'up' && upVideos.length === 0) loadUpVideos(true);
+          if (next === 'comments' && comments.length === 0) loadComments(true);
         } else if (e.key === 'ArrowUp') {
           setFocusArea('controls');
           setFocusIdx(0);
@@ -1346,10 +1396,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         return true;
       }
 
-      // === Video grid for the active tab (4-column) ===
+      // === Grid/list for the active tab ===
+      // 相关推荐 / UP主投稿 / 选集 are 4-col grids; 评论 is a single-column list.
       if (focusArea === 'related') {
-        const RCOLS = 4;
-        const gridList = panelTab === 'parts' ? partsList : panelTab === 'up' ? upVideos : relatedVideos;
+        const isComments = panelTab === 'comments';
+        const RCOLS = isComments ? 1 : 4;
+        const gridList = isComments ? comments
+          : panelTab === 'parts' ? partsList : panelTab === 'up' ? upVideos : relatedVideos;
         if (e.key === 'ArrowLeft') {
           e.preventDefault();
           if (focusIdx % RCOLS > 0) {
@@ -1384,13 +1437,15 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             setFocusIdx(nextIdx);
             scrollRelatedIntoView(nextIdx);
           } else {
-            if (panelTab === 'up') loadUpVideos(false);
+            if (isComments) loadComments(false);
+            else if (panelTab === 'up') loadUpVideos(false);
             else loadMoreRelated();
           }
           return true;
         }
         if (e.key === 'Enter') {
           e.preventDefault();
+          if (isComments) return true; // comments aren't playable
           const rv = gridList[focusIdx];
           if (rv && onPlayNext) onPlayNext(panelTab === 'parts' ? playPart(rv) : rv);
           return true;
@@ -1403,7 +1458,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
     setCustomKeyHandler(handler);
     return () => setCustomKeyHandler(null);
-  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, loadUpVideos, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody, pressControl]);
+  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, comments, loadUpVideos, loadComments, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody, pressControl]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -1639,8 +1694,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           <div style={{ marginTop: 16, paddingBottom: 10 }}>
             <div className="panel-tab-row" style={{ display: 'flex', gap: 14, marginBottom: 12 }}>
               {(isMultiP
-                ? [['parts', partsLabel], ['related', t('相关推荐')], ['up', upName ? t('UP主投稿 · {name}', { name: upName }) : t('UP主投稿')]]
-                : [['related', t('相关推荐')], ['up', upName ? t('UP主投稿 · {name}', { name: upName }) : t('UP主投稿')]]
+                ? [['parts', partsLabel], ['related', t('相关推荐')], ['up', upName ? t('UP主投稿 · {name}', { name: upName }) : t('UP主投稿')], ['comments', commentCount ? t('评论 · {n}', { n: formatCount(commentCount) }) : t('评论')]]
+                : [['related', t('相关推荐')], ['up', upName ? t('UP主投稿 · {name}', { name: upName }) : t('UP主投稿')], ['comments', commentCount ? t('评论 · {n}', { n: formatCount(commentCount) }) : t('评论')]]
               ).map(([key, label]) => (
                 <div key={key} style={{
                   padding: '6px 18px', fontSize: 18, borderRadius: 6, cursor: 'pointer',
@@ -1653,11 +1708,51 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                     setPanelTab(key);
                     setFocusIdx(0);
                     if (key === 'up' && upVideos.length === 0) loadUpVideos(true);
+                    if (key === 'comments' && comments.length === 0) loadComments(true);
                   }}>{label}</div>
               ))}
             </div>
 
-            {(() => {
+            {panelTab === 'comments' ? (
+              comments.length === 0 ? (
+                <div style={{ color: '#888', fontSize: 18, padding: '20px 4px' }}>
+                  {commentsLoading ? t('加载评论…') : t('暂无评论')}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {comments.map((c, i) => {
+                    const av = proxyImg(c.avatar);
+                    return (
+                      <div key={c.rpid || i} className="comment-card"
+                        onMouseEnter={() => {
+                          setFocusArea('related'); setFocusIdx(i);
+                          if (controlsTimer.current) clearTimeout(controlsTimer.current);
+                        }}
+                        style={{
+                          display: 'flex', gap: 14, padding: '14px 12px', borderRadius: 8,
+                          background: focusArea === 'related' && focusIdx === i ? 'rgba(0,161,214,0.16)' : 'transparent',
+                          outline: focusArea === 'related' && focusIdx === i ? '3px solid #00a1d6' : 'none',
+                        }}>
+                        <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#1a1a2e', flexShrink: 0, overflow: 'hidden' }}>
+                          {av && <img src={av} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 16, color: '#8ba7c0', marginBottom: 4 }}>
+                            {c.uname}{c.time ? ' · ' + formatTime(c.time) : ''}
+                          </div>
+                          <div style={{ fontSize: 19, color: '#e1e1e6', lineHeight: 1.5, wordBreak: 'break-word' }}>
+                            {c.message}
+                          </div>
+                          <div style={{ fontSize: 16, color: '#888', marginTop: 6 }}>
+                            👍 {formatCount(c.like)}{c.replyCount ? ' · ' + t('{n} 条回复', { n: formatCount(c.replyCount) }) : ''}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )
+            ) : (() => {
               const list = panelTab === 'parts' ? partsList : panelTab === 'up' ? upVideos : relatedVideos;
               if (list.length === 0) {
                 return <div style={{ color: '#888', fontSize: 18, padding: '20px 4px' }}>

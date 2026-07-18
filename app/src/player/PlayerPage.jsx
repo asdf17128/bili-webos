@@ -12,6 +12,25 @@ import { translateCues } from './subTranslate';
 import { createDmTranslator } from './dmTranslate';
 import { titleMT, useTitlesMT } from '../utils/titlemt';
 import { t, getLocale } from '../i18n';
+import {
+  DOLBY_QN,
+  createPlaybackAttemptPlan,
+  hasAudioRepresentations,
+  inspectDolbyRepresentation,
+  listPreferredAudio,
+  selectVideoRepresentation,
+} from './mediaSelection';
+import {
+  createDolbyTransformFailure,
+  createTargetDolby120Session,
+  findDolbyTransformFailure,
+  isTargetDolby120Identity,
+  matchTargetDolbyMediaRequest,
+  targetDolbyRequestPathMatches,
+  transformTargetDolbyIndex,
+  transformTargetDolbyInit,
+  transformTargetDolbyMedia,
+} from './dolby120Transform';
 
 // Proxy + resize card thumbnails (same as VideoCard): the proxy adds the
 // Referer B站 image CDN needs, and @672w webp keeps the TV's image decoder from
@@ -41,6 +60,72 @@ function proxyImg(url) {
   } catch {
     return u;
   }
+}
+
+function isMediaTypeSupported(contentType) {
+  try {
+    return typeof MediaSource !== 'undefined' && MediaSource.isTypeSupported(contentType);
+  } catch {
+    return false;
+  }
+}
+
+function requestRangeHeader(request) {
+  const headers = request?.headers || {};
+  const key = Object.keys(headers).find(name => name.toLowerCase() === 'range');
+  return key ? String(headers[key]).toLowerCase() : '';
+}
+
+function exactArrayBuffer(input) {
+  if (input instanceof ArrayBuffer) return input;
+  const bytes = input instanceof Uint8Array ? input : new Uint8Array(input);
+  if (bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength) {
+    return bytes.buffer;
+  }
+  return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+}
+
+// Initial playback and manual quality changes share exactly the same media
+// selection rules. This keeps Atmos/Hi-Res audio independent from video qn and
+// ensures only a real qn126 representation gets Dolby Vision signaling.
+async function preparePlayback(dash, requestedQn, options = {}) {
+  const video = selectVideoRepresentation(dash, requestedQn, {
+    allowFallback: !!options.allowFallback,
+  });
+  if (!video.representation) {
+    throw new Error(`Requested quality ${requestedQn} is unavailable`);
+  }
+
+  const audioCandidates = listPreferredAudio(dash, isMediaTypeSupported);
+  const audio = audioCandidates[0] || {
+    representation: null, kind: 'none', codec: '', label: '',
+  };
+  let dolbyCodec = null;
+  if (video.actualQn === DOLBY_QN && !options.disableDolbySignaling) {
+    try {
+      const proxyBase = (typeof window !== 'undefined' && window.webOS)
+        ? 'http://127.0.0.1:7654'
+        : storage.getProxyUrl();
+      const probe = await inspectDolbyRepresentation(video.representation, proxyBase);
+      if (probe && isMediaTypeSupported(`video/mp4; codecs="${probe.codec}"`)) {
+        dolbyCodec = probe.codec;
+      }
+    } catch (error) {
+      // The original hvc1/hev1 signaling remains a safe HDR/base-layer
+      // fallback when a CDN init-range probe fails.
+      console.warn('[dolby] init probe failed:', error?.message || error);
+    }
+  }
+
+  return {
+    videoRepresentation: video.representation,
+    audioRepresentation: audio.representation,
+    audioKind: audio.kind,
+    audioCandidates,
+    actualQn: video.actualQn,
+    exact: video.exact,
+    dolbyCodec,
+  };
 }
 
 export default function PlayerPage({ video, onBack, onPlayNext }) {
@@ -130,8 +215,40 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const upLoadingRef = useRef(false);
   const upPnRef = useRef(1);
   const upSeenRef = useRef(new Set());
+  const qualityRequestRef = useRef(0);
+  const qualityLoadRef = useRef(Promise.resolve());
+  // Runtime-only, source-bound Dolby 120 -> 60 transform state.  Request
+  // contexts are marked with an epoch so bytes from an aborted load can never
+  // leak into a newer SourceBuffer.
+  const dolbyTransformRef = useRef({
+    epoch: 0,
+    mode: 'off',
+    phase: 'idle',
+    session: null,
+    indexValidated: false,
+  });
+  const dolbyRequestContextsRef = useRef(new WeakMap());
+  const activeDolbyPlaybackRef = useRef(null);
+  const dolbyHlgFallbackRef = useRef(null);
 
   const pendingSeekRef = useRef(null);
+
+  function beginDolbyTransformAttempt(session) {
+    const epoch = dolbyTransformRef.current.epoch + 1;
+    dolbyTransformRef.current = {
+      epoch,
+      mode: session ? 'dv60' : 'off',
+      phase: session ? 'loading' : 'idle',
+      session: session || null,
+      indexValidated: false,
+    };
+    if (!session) activeDolbyPlaybackRef.current = null;
+    return epoch;
+  }
+
+  function disableDolbyTransform() {
+    beginDolbyTransformAttempt(null);
+  }
 
   // Video title and chapter names go through the shared titleMT system at
   // RENDER time (pending → blank, landed → translated, zh UI → passthrough)
@@ -282,11 +399,18 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       }
       const player = new shaka.Player();
       await player.attach(videoRef.current);
+      if (!mounted) {
+        player.destroy();
+        return;
+      }
       shakaRef.current = player;
 
       // Resilience: more retries + longer timeouts so a flaky segment fetch is
       // retried instead of fataling the whole playback (TV CDN is unreliable).
       player.configure({
+        // Some Bilibili cinema masters are 4096px wide. The decoder accepts
+        // them; Shaka's panel-resolution filter was the only blocker.
+        ignoreHardwareResolution: true,
         // ABR off: the app has an explicit quality selector, so don't let
         // Shaka silently downgrade bitrate mid-playback on bandwidth wobble.
         abr: { enabled: false },
@@ -298,6 +422,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           retryParameters: { maxAttempts: 6, baseDelay: 200, backoffFactor: 1, fuzzFactor: 0.5, timeout: 20000 },
           bufferingGoal: 30,
           rebufferingGoal: 2,
+          segmentPrefetchLimit: 1,
         },
       });
 
@@ -305,6 +430,43 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       // category 1 = NETWORK, 3 = MEDIA — usually recoverable mid-playback.
       player.addEventListener('error', (e) => {
         const err = e.detail;
+        const transformFailure = findDolbyTransformFailure(err);
+        if (transformFailure) {
+          // A response-filter failure is categorized as NETWORK by Shaka, but
+          // retrying the same raw 120fps bytes inside a dvh1 SourceBuffer would
+          // reproduce the black screen. Load-time failures are handled by the
+          // attempt ladder; a later failure gets one same-qn HLG reload.
+          // Shaka's Player error event is not cancelable.  StreamingEngine
+          // checks this flag after dispatch and leaves recovery to us.
+          if (err) err.handled = true;
+          const runtime = dolbyTransformRef.current;
+          if (transformFailure.dolbyTransformEpoch === runtime.epoch
+              && runtime.phase === 'playing') {
+            dolbyHlgFallbackRef.current?.(player, transformFailure);
+          }
+          return;
+        }
+        const runtime = dolbyTransformRef.current;
+        const activeDolby = activeDolbyPlaybackRef.current;
+        if (err?.category === 3
+            && runtime.mode === 'dv60'
+            && runtime.phase === 'playing'
+            && activeDolby?.player === player
+            && activeDolby.epoch === runtime.epoch) {
+          // A fragment can pass every structural proof and still be rejected
+          // later by the device's MSE/decoder.  Retrying the same transformed
+          // DV stream cannot repair a device-level MEDIA failure; use the
+          // audited same-qn HLG escape path once.
+          err.handled = true;
+          dolbyHlgFallbackRef.current?.(
+            player,
+            createDolbyTransformFailure(
+              `transformed-dv-media-error-${err.code || 'unknown'}`,
+              runtime.epoch,
+            ),
+          );
+          return;
+        }
         console.error('Shaka error code:', err?.code, 'category:', err?.category, err);
         if (err && (err.category === 1 || err.category === 3)) {
           try { player.retryStreaming(); } catch {}
@@ -314,7 +476,50 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       // Rewrite all media/segment URLs through the local proxy (TV) or Mac
       // proxy. Registered once here — not per load — so retries don't stack
       // duplicate filters.
-      player.getNetworkingEngine().registerRequestFilter((type, request) => {
+      const networking = player.getNetworkingEngine();
+      const requestType = shaka.net.NetworkingEngine.RequestType;
+      const advancedType = shaka.net.NetworkingEngine.AdvancedRequestType;
+      networking.registerRequestFilter((type, request, context) => {
+        const runtime = dolbyTransformRef.current;
+        const originalUri = request.uris[0] || '';
+        if (runtime.mode === 'dv60'
+            && type === requestType.SEGMENT
+            && context && originalUri.startsWith('http')
+            && targetDolbyRequestPathMatches(runtime.session, originalUri)) {
+          const range = requestRangeHeader(request);
+          const stream = context.stream;
+          let kind = null;
+          if (!stream && range === `bytes=${runtime.session.indexRange}`) {
+            kind = 'index';
+          } else if (stream?.type === 'video'
+              && Number(stream.originalId) === runtime.session.quality) {
+            if (context.type === advancedType.INIT_SEGMENT
+                && range === `bytes=${runtime.session.initRange}`) {
+              kind = 'init';
+            } else if (context.type === advancedType.MEDIA_SEGMENT && context.segment) {
+              const segmentEntry = matchTargetDolbyMediaRequest(
+                runtime.session,
+                range,
+                context.segment,
+              );
+              if (segmentEntry) {
+                kind = 'media';
+                dolbyRequestContextsRef.current.set(context, {
+                  epoch: runtime.epoch,
+                  kind,
+                  segmentEntry,
+                });
+              }
+            }
+          }
+          if (kind && kind !== 'media') {
+            dolbyRequestContextsRef.current.set(context, {
+              epoch: runtime.epoch,
+              kind,
+            });
+          }
+        }
+
         if (request.uris[0] && request.uris[0].startsWith('http')) {
           const originalUrl = new URL(request.uris[0]);
           const proxyBase = (typeof window !== 'undefined' && window.webOS)
@@ -324,15 +529,83 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }
       });
 
+      networking.registerResponseFilter((type, response, context) => {
+        const runtime = dolbyTransformRef.current;
+        const marker = context ? dolbyRequestContextsRef.current.get(context) : null;
+        const currentTargetVideoResponse = runtime.mode === 'dv60'
+          && type === requestType.SEGMENT
+          && context?.stream?.type === 'video'
+          && Number(context.stream.originalId) === runtime.session?.quality;
+
+        if (!marker) {
+          if (currentTargetVideoResponse) {
+            throw createDolbyTransformFailure(
+              'target-video-response-was-not-bound-to-the-current-request',
+              runtime.epoch,
+            );
+          }
+          return;
+        }
+        if (marker.epoch !== runtime.epoch || runtime.mode !== 'dv60') {
+          throw createDolbyTransformFailure('stale-transform-response', marker.epoch);
+        }
+
+        let result;
+        if (marker.kind === 'index') {
+          result = transformTargetDolbyIndex(response.data);
+          if (!result.supported) {
+            throw createDolbyTransformFailure(result.reason, runtime.epoch);
+          }
+          runtime.indexValidated = true;
+          return;
+        }
+        if (!runtime.indexValidated) {
+          throw createDolbyTransformFailure(
+            'target-segment-index-was-not-validated',
+            runtime.epoch,
+          );
+        }
+        if (marker.kind === 'init') {
+          result = transformTargetDolbyInit(response.data);
+          if (!result.supported) {
+            throw createDolbyTransformFailure(result.reason, runtime.epoch);
+          }
+          response.data = exactArrayBuffer(result.data);
+          return;
+        }
+        if (marker.kind === 'media') {
+          result = transformTargetDolbyMedia(
+            response.data,
+            runtime.session,
+            runtime.indexValidated,
+            marker.segmentEntry,
+          );
+          if (!result.supported || result.status !== 'reduced') {
+            throw createDolbyTransformFailure(result.reason, runtime.epoch);
+          }
+          response.data = exactArrayBuffer(result.data);
+        }
+      });
+
       if (mounted) loadVideo(player);
     }
     init();
-    return () => { mounted = false; shakaRef.current?.destroy(); };
+    return () => {
+      mounted = false;
+      qualityRequestRef.current += 1;
+      disableDolbyTransform();
+      const player = shakaRef.current;
+      shakaRef.current = null;
+      player?.destroy();
+    };
   }, []);
 
   const loadVideo = useCallback(async (player) => {
     const isBangumi = !!(video?.isBangumi || video?.epid || video?.seasonId);
     if (!video?.bvid && !video?.aid && !isBangumi) return;
+    // Invalidate any in-flight quality change from the previous video/part.
+    qualityRequestRef.current += 1;
+    disableDolbyTransform();
     setLoading(true);
     setLoadError(false);
     castReportState({ playState: 'loading' }).catch(() => {});
@@ -511,23 +784,28 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             }
 
             setQualities((meta?.accept_quality || []).map(q => ({ qn: q, label: QUALITY_MAP[q] || `${q}` })));
-            setCurrentQuality(wantQn || meta?.quality || 80);
 
-            const mpd = buildMPD(dash, wantQn);
-            const blob = new Blob([mpd], { type: 'application/dash+xml' });
-            const mpdUrl = URL.createObjectURL(blob);
             // Resume directly at the saved position via load()'s startTime — don't
             // load at 0 then seek, which buffers the intro and immediately throws
             // it away (the main cause of the long resume-load wait).
             const resumeAt = (resumeProgress > 0 && resumeProgress < (dash.duration || 9999) - 10)
               ? resumeProgress : 0;
-            try {
-              await player.load(mpdUrl, resumeAt || undefined);
-            } finally {
-              URL.revokeObjectURL(mpdUrl);
-            }
-            if (rung > 0) console.warn('[loadVideo] fell back to qn=' + fallbackQn + ' (top rep failed to load/decode)');
+
+            // Each ladder rung is exact. If B站 omitted that qn, advance to the
+            // next rung instead of silently playing a lower stream under a
+            // higher quality label. Runtime decoder fallbacks remain at this
+            // exact video qn while trying EC-3 → FLAC → AAC.
+            const playback = await loadDashWithFallbacks(
+              player,
+              dash,
+              wantQn,
+              resumeAt || undefined,
+            );
+            setCurrentQuality(playback.actualQn);
             loaded = true;
+            if (rung > 0) {
+              console.warn('[loadVideo] fell back to qn=' + playback.actualQn + ' (top rep failed to load/decode)');
+            }
           } catch (e) {
             lastErr = e;
             console.warn('[loadVideo] rung ' + rung + ' attempt ' + (attempt + 1) + ' failed:', e?.message || e);
@@ -649,36 +927,25 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     }
   }, [video, queueOrApplySeek, selectSubtitle, makeMtTrack]);
 
-  function buildMPD(dash, wantQn) {
+  function buildMPD(dash, videoRepresentation, audioRepresentation, options = {}) {
     const duration = dash.duration || 0;
     const minBuffer = dash.minBufferTime || 1.5;
     // ABR is off and manual quality re-fetches playurl, so the MPD only needs
     // the single highest-bitrate video + audio. Emitting every quality/codec
     // (B站 returns AVC+HEVC+AV1 × resolutions) makes Shaka's parse/codec-probe
     // on the TV's weak CPU take several seconds before the first byte loads.
-    const pickBest = (arr) => (arr && arr.length)
-      ? [arr.reduce((a, b) => ((b.bandwidth || 0) > (a.bandwidth || 0) ? b : a))] : [];
-    // When a specific quality is wanted (manual pick, or bangumi defaulting to
-    // its top rep), select by B站's quality id — HDR=125 / Dolby Vision=126 are
-    // keyed by id, and the HDR rep is usually NOT the highest bitrate (an SDR
-    // AVC rep often is), so picking by bitrate alone never lights up HDR.
-    const pickRep = (arr) => {
-      if (!arr || !arr.length) return [];
-      if (!wantQn) return pickBest(arr);
-      let pool = arr.filter(v => v.id === wantQn);
-      if (!pool.length) {
-        const ids = Array.from(new Set(arr.map(v => v.id))).sort((a, b) => b - a);
-        const t = ids.find(id => id <= wantQn);
-        pool = arr.filter(v => v.id === (t != null ? t : ids[0]));
-      }
-      return [pool.reduce((a, b) => ((b.bandwidth || 0) > (a.bandwidth || 0) ? b : a))];
-    };
-    const videoList = pickRep(dash.video);
-    const audioList = pickBest(dash.audio);
+    const videoList = videoRepresentation ? [videoRepresentation] : [];
+    const audioList = audioRepresentation ? [audioRepresentation] : [];
     let videoAdaptations = '';
     if (videoList.length > 0) {
       const reps = videoList.map(v => {
-        return `<Representation id="${v.id}" bandwidth="${v.bandwidth || 1000000}" codecs="${v.codecs || 'avc1.640032'}" mimeType="${v.mimeType || 'video/mp4'}" width="${v.width || 1920}" height="${v.height || 1080}" frameRate="${v.frameRate || v.frame_rate || '30'}">
+        const codec = (options.dolbyCodec && Number(v.id) === DOLBY_QN)
+          ? options.dolbyCodec
+          : (v.codecs || 'avc1.640032');
+        const frameRate = (options.frameRateOverride && Number(v.id) === DOLBY_QN)
+          ? options.frameRateOverride
+          : (v.frameRate || v.frame_rate || '30');
+        return `<Representation id="${v.id}" bandwidth="${v.bandwidth || 1000000}" codecs="${codec}" mimeType="${v.mimeType || 'video/mp4'}" width="${v.width || 1920}" height="${v.height || 1080}" frameRate="${frameRate}">
           ${buildBaseUrls(v)}
           <SegmentBase indexRange="${v.SegmentBase?.indexRange || v.segment_base?.index_range || '0-0'}">
             <Initialization range="${v.SegmentBase?.Initialization || v.segment_base?.initialization || '0-0'}" />
@@ -762,6 +1029,193 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       .map(u => `<BaseURL>${escapeXml(u)}</BaseURL>`)
       .join('\n          ') || '<BaseURL></BaseURL>';
   }
+
+  async function loadDashWithFallbacks(player, dash, requestedQn, startTime, loadOptions = {}) {
+    const prepared = await preparePlayback(dash, requestedQn, {
+      disableDolbySignaling: !!loadOptions.disableDolbySignaling,
+    });
+    let audioCandidates = prepared.audioCandidates;
+    if (loadOptions.preferredAudioKind) {
+      audioCandidates = audioCandidates.slice().sort((left, right) => {
+        const leftPreferred = left.kind === loadOptions.preferredAudioKind ? 1 : 0;
+        const rightPreferred = right.kind === loadOptions.preferredAudioKind ? 1 : 0;
+        return rightPreferred - leftPreferred;
+      });
+    }
+    const targetTransformSession = prepared.dolbyCodec
+      ? createTargetDolby120Session(video, cidRef.current, prepared.videoRepresentation)
+      : null;
+    const targetIdentity = prepared.dolbyCodec
+      && isTargetDolby120Identity(video, cidRef.current, prepared.videoRepresentation);
+    // If this known-problem 120fps source no longer matches every audited
+    // fingerprint/range, do not feed unmodified bytes to LG's DV pipeline.
+    // Keep the same qn126 representation and use its HLG base layer.
+    const effectiveDolbyCodec = targetIdentity && !targetTransformSession
+      ? null
+      : prepared.dolbyCodec;
+    const attempts = createPlaybackAttemptPlan(
+      audioCandidates,
+      effectiveDolbyCodec,
+      { allowVideoOnly: !hasAudioRepresentations(dash) },
+    );
+    if (!attempts.length) throw new Error('No supported audio representation');
+
+    let lastError = null;
+    for (let index = 0; index < attempts.length; index++) {
+      if (shakaRef.current !== player) throw new Error('Playback request is no longer active');
+      const attempt = attempts[index];
+      const transformThisAttempt = !!(targetTransformSession && attempt.dolbyCodec);
+      const transformEpoch = beginDolbyTransformAttempt(
+        transformThisAttempt ? targetTransformSession : null,
+      );
+      // The source-bound reducer briefly holds one large input and one shorter
+      // output fragment. Disable look-ahead only for that attempt; all normal
+      // playback and the same-qn HLG fallback keep Shaka's regular prefetch.
+      player.configure({
+        streaming: { segmentPrefetchLimit: transformThisAttempt ? 0 : 1 },
+      });
+      const mpd = buildMPD(
+        dash,
+        prepared.videoRepresentation,
+        attempt.audioRepresentation,
+        {
+          dolbyCodec: attempt.dolbyCodec,
+          frameRateOverride: transformThisAttempt ? 60 : null,
+        },
+      );
+      const blob = new Blob([mpd], { type: 'application/dash+xml' });
+      const mpdUrl = URL.createObjectURL(blob);
+      try {
+        await player.load(mpdUrl, startTime);
+        if (shakaRef.current !== player) throw new Error('Playback request is no longer active');
+        if (transformThisAttempt) {
+          const runtime = dolbyTransformRef.current;
+          if (runtime.epoch !== transformEpoch || !runtime.indexValidated) {
+            throw createDolbyTransformFailure(
+              'transformed-load-completed-without-validated-index',
+              transformEpoch,
+            );
+          }
+          runtime.phase = 'playing';
+          activeDolbyPlaybackRef.current = {
+            player,
+            epoch: transformEpoch,
+            dash,
+            requestedQn,
+            actualQn: prepared.actualQn,
+            audioKind: attempt.audioKind,
+            fallbackQueued: false,
+          };
+        } else {
+          activeDolbyPlaybackRef.current = null;
+        }
+        return {
+          ...prepared,
+          ...attempt,
+          audioRepresentation: attempt.audioRepresentation,
+        };
+      } catch (error) {
+        lastError = error;
+        if (shakaRef.current !== player) throw error;
+        const transformFailure = findDolbyTransformFailure(error);
+        if (transformFailure) {
+          if (dolbyTransformRef.current.epoch === transformFailure.dolbyTransformEpoch) {
+            dolbyTransformRef.current.phase = 'failed';
+          }
+          let fallbackIndex = attempts.findIndex((candidate, candidateIndex) => (
+            candidateIndex > index
+            && !candidate.dolbyCodec
+            && candidate.audioKind === attempt.audioKind
+          ));
+          if (fallbackIndex < 0) {
+            fallbackIndex = attempts.findIndex((candidate, candidateIndex) => (
+              candidateIndex > index && !candidate.dolbyCodec
+            ));
+          }
+          if (fallbackIndex >= 0) {
+            console.warn(
+              '[dolby60] compressed-domain transform rejected; retrying the same qn126 HLG base layer:',
+              transformFailure.dolbyTransformReason,
+            );
+            index = fallbackIndex - 1;
+            continue;
+          }
+          throw error;
+        }
+        // A CDN/network failure affects the shared video URL too; changing the
+        // audio codec cannot repair it. Let the outer fresh-URL/CDN retry handle
+        // category 1 instead of multiplying an identical failed download.
+        if (error?.category === 1) throw error;
+        const next = attempts[index + 1];
+        if (next) {
+          if (next.dolbyCodec !== attempt.dolbyCodec) {
+            console.warn('[dolby] dvh1 load failed, retrying the qn126 base layer:', error?.message || error);
+          } else {
+            console.warn(`[audio] ${attempt.audioLabel || attempt.audioKind} failed, retrying ${next.audioLabel || next.audioKind}:`, error?.message || error);
+          }
+        }
+      } finally {
+        URL.revokeObjectURL(mpdUrl);
+      }
+    }
+    throw lastError || new Error('Playback load failed');
+  }
+
+  function queueDolbyHlgFallback(player, transformFailure) {
+    const active = activeDolbyPlaybackRef.current;
+    if (!active || active.player !== player
+        || active.epoch !== transformFailure.dolbyTransformEpoch
+        || active.fallbackQueued) {
+      return;
+    }
+    active.fallbackQueued = true;
+    if (dolbyTransformRef.current.epoch === active.epoch) {
+      dolbyTransformRef.current.phase = 'fallback-queued';
+    }
+    const runFallback = async () => {
+      if (shakaRef.current !== player
+          || activeDolbyPlaybackRef.current !== active
+          || dolbyTransformRef.current.epoch !== active.epoch
+          || dolbyTransformRef.current.phase !== 'fallback-queued') {
+        return;
+      }
+      const media = videoRef.current;
+      const resumeAt = media && Number.isFinite(media.currentTime)
+        ? media.currentTime
+        : undefined;
+      const wasPaused = !media || media.paused;
+      try {
+        const playback = await loadDashWithFallbacks(
+          player,
+          active.dash,
+          active.requestedQn,
+          resumeAt,
+          {
+            disableDolbySignaling: true,
+            preferredAudioKind: active.audioKind,
+          },
+        );
+        if (shakaRef.current !== player) return;
+        selectBestVariant(player);
+        setCurrentQuality(playback.actualQn);
+        if (!wasPaused && videoRef.current) await videoRef.current.play();
+        setPlaying(!!videoRef.current && !videoRef.current.paused);
+        console.warn(
+          '[dolby60] switched to the same qn126 HLG base layer after a transform failure:',
+          transformFailure.dolbyTransformReason,
+        );
+      } catch (error) {
+        console.error(
+          '[dolby60] same-qn HLG fallback failed:',
+          error?.message || 'unknown playback error',
+        );
+      }
+    };
+    const queued = qualityLoadRef.current.catch(() => {}).then(runFallback);
+    qualityLoadRef.current = queued;
+  }
+
+  dolbyHlgFallbackRef.current = queueDolbyHlgFallback;
 
   // With ABR disabled, explicitly pin to the highest-bandwidth variant so the
   // stream stays at the requested quality (B站 only returns variants <= the
@@ -886,6 +1340,24 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       if (Math.abs(v.currentTime - lastTime) < 0.05) {
         stalledSec += 1;
         if (stalledSec === 3) {
+          const runtime = dolbyTransformRef.current;
+          const activeDolby = activeDolbyPlaybackRef.current;
+          if (runtime.mode === 'dv60'
+              && runtime.phase === 'playing'
+              && activeDolby?.player === shakaRef.current
+              && activeDolby.epoch === runtime.epoch) {
+            console.warn('[watchdog] transformed Dolby playback stalled; switching to same-qn HLG');
+            dolbyHlgFallbackRef.current?.(
+              activeDolby.player,
+              createDolbyTransformFailure(
+                'transformed-dv-playback-stalled',
+                runtime.epoch,
+              ),
+            );
+            stalledSec = 0;
+            lastTime = v.currentTime;
+            return;
+          }
           console.warn('[watchdog] playback stalled 3s, retrying streaming');
           try { shakaRef.current?.retryStreaming(); } catch {}
         } else if (stalledSec >= 8) {
@@ -1120,33 +1592,52 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const changeQuality = useCallback(async (qn) => {
     const isBangumi = !!(video?.isBangumi || video?.epid || video?.seasonId);
     if ((!video?.bvid && !video?.aid && !isBangumi) || !shakaRef.current) return;
-    setCurrentQuality(qn);
-    storage.setSettings({ ...storage.getSettings(), quality: qn });
+    const requestId = ++qualityRequestRef.current;
+    const player = shakaRef.current;
     try {
-      let cid = video.cid || cidRef.current;
-      let dash;
+      // cidRef is the resolved/current part. video.cid may still point at the
+      // entry part after resume or automatic multi-P navigation.
+      const cid = cidRef.current || video.cid;
+      let meta;
       if (isBangumi) {
         const res = await getBangumiPlayUrl({ epid: video.epid, cid }, qn);
-        dash = (res?.result || res?.data)?.dash;
+        meta = res?.result || res?.data;
       } else {
         const res = await getPlayUrl(video, cid, qn);
-        dash = res?.data?.dash;
+        meta = res?.data;
       }
-      if (dash) {
+      const dash = meta?.dash;
+      if (!dash) throw new Error('No DASH stream for requested quality');
+      if (requestId !== qualityRequestRef.current || shakaRef.current !== player) return;
+
+      // Shaka has one mutable MediaSource. Serialize actual load() calls while
+      // still allowing newer API requests to supersede queued older choices.
+      // If a newer choice arrives during a load, the completed stream is first
+      // reflected in the UI; the newest queued choice then replaces it.
+      const runLoad = async () => {
+        if (requestId !== qualityRequestRef.current || shakaRef.current !== player) return;
         const pos = videoRef.current.currentTime;
-        // Honor the picked quality id (this is how HDR=125 / Dolby=126 get
-        // selected — they aren't the highest-bitrate rep).
-        const mpd = buildMPD(dash, qn);
-        const blob = new Blob([mpd], { type: 'application/dash+xml' });
-        const mpdUrl = URL.createObjectURL(blob);
-        await shakaRef.current.load(mpdUrl);
-        URL.revokeObjectURL(mpdUrl);
-        selectBestVariant(shakaRef.current);
-        videoRef.current.currentTime = pos;
-        videoRef.current.play();
-        setCurrentQuality(qn);
-      }
+        const playback = await loadDashWithFallbacks(player, dash, qn, pos || undefined);
+        if (shakaRef.current !== player) return;
+
+        selectBestVariant(player);
+        setCurrentQuality(playback.actualQn);
+        if (requestId === qualityRequestRef.current) {
+          storage.setSettings({ ...storage.getSettings(), quality: playback.actualQn });
+        }
+        try {
+          await videoRef.current.play();
+          if (shakaRef.current === player) setPlaying(true);
+        } catch (playError) {
+          console.warn('Quality loaded but playback could not auto-resume:', playError?.message || playError);
+          if (shakaRef.current === player) setPlaying(!videoRef.current.paused);
+        }
+      };
+      const queued = qualityLoadRef.current.catch(() => {}).then(runLoad);
+      qualityLoadRef.current = queued;
+      await queued;
     } catch (e) {
+      if (requestId !== qualityRequestRef.current) return;
       console.error('Quality change error:', e);
     }
   }, [video]);

@@ -77,11 +77,13 @@ A free, open-source Bilibili client for LG webOS TVs. It runs entirely on the TV
 
 ## Screenshots / 截图
 
-| Home / 首页 | Player + Danmaku / 播放+弹幕 |
+| Home / 首页 | Player + Danmaku / 播放 + 弹幕 |
 |---|---|
 | ![home](docs/screenshots/home.png) | ![player](docs/screenshots/player.png) |
-| Search / 搜索 | Following / 关注 |
-| ![search](docs/screenshots/search.png) | ![following](docs/screenshots/following.png) |
+| **Search** — trending · suggest · history / 搜索 | **In-video comments** / 播放中看评论 |
+| ![search](docs/screenshots/search.png) | ![comments](docs/screenshots/comments.png) |
+| **Category shortcuts** / 分区导航 | Following / 关注 |
+| ![partition](docs/screenshots/partition.png) | ![following](docs/screenshots/following.png) |
 
 ## Install / 安装
 

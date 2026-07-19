@@ -4,9 +4,9 @@
 
 # BiliTV for webOS
 
-**Watch Bilibili (哔哩哔哩) natively on your LG webOS TV — DASH playback, danmaku, bangumi & live, all driven by the remote.**
+**Watch Bilibili (哔哩哔哩) natively on your LG webOS TV — up to 8K/HDR, danmaku, live & bangumi, search, in-video comments, even EN/ES subtitle translation — all driven by the remote.**
 
-LG webOS 智能电视的第三方哔哩哔哩客户端 · 弹幕 / 番剧 / 直播 / 搜索，全程遥控器操作。
+LG webOS 智能电视的第三方哔哩哔哩客户端 · 弹幕 · 番剧 · 直播 · 搜索 · 评论 · 分区 · 字幕翻译,全程遥控器操作。
 
 ![Platform](https://img.shields.io/badge/platform-LG%20webOS%20TV-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -25,7 +25,27 @@ A free, open-source Bilibili client for LG webOS TVs. It runs entirely on the TV
 
 > ⚠️ **Region notice:** Bilibili's APIs and especially its **video CDN are geo-restricted to mainland China**. Outside mainland China the content feed may be empty and playback will likely fail — you need a network route into mainland China. The app talks to Bilibili directly and has **no built-in proxy/VPN** for this.
 
-**Features:** recommendation / hot / category / following feeds · DASH adaptive playback (up to 4K/8K, HDR & Dolby Vision) · real-time danmaku · bangumi (番剧) with episode list · live streams with danmaku · on-screen-keyboard search · QR-code login · watch history with resume.
+### Features
+
+**Playback**
+- DASH adaptive streaming up to **4K / 8K**, with **HDR & Dolby Vision** — picks the real quality tier, not just the top bitrate
+- Real-time **danmaku** (弹幕) overlay and **CC subtitles**, both with adjustable size
+- **Chapters** marked on the progress bar, a **thumbnail scrub preview**, YouTube-style timeline seek, and an autoplay **"Up Next"** end screen
+- **In-video comments** — avatars, likes and reply counts, right inside the player
+
+**Browse**
+- Feeds for **recommendations, trending, live, following, and favorites** (favorites play through in order)
+- **6 one-tap category shortcuts** in the sidebar (Games · Anime · Music · Knowledge · Entertainment · Kichiku), each showing that category's *current* hot ranking
+- **Search** with the on-screen keyboard: trending searches, autocomplete suggestions, and search history
+- **Bangumi (番剧)** with full episode lists, and **live streams** with real-time danmaku
+- **Watch history & resume**, with a progress bar on every thumbnail
+
+**And more**
+- On-the-fly **machine translation** of subtitles, titles, chapters and danmaku when the UI language is English/Español
+- Trilingual UI — **English · Español · 中文**
+- **DLNA cast receiver** — send a video from the Huya / Bilibili phone app straight to the TV
+- Full **Magic Remote pointer** support (hover + click) alongside the D-pad
+- **QR-code login**, **auto-updates** via Homebrew Channel, and it runs **entirely on the TV** — no PC or external server
 
 ## 中文
 
@@ -33,7 +53,27 @@ A free, open-source Bilibili client for LG webOS TVs. It runs entirely on the TV
 
 > ⚠️ **地区限制：** B站 接口、尤其是**视频 CDN 仅对中国大陆开放**。在大陆以外内容可能为空、播放大概率失败，需要走大陆网络。本 app 直连 B站，**不内置代理/VPN**。
 
-**功能：** 推荐/热门/分区/关注动态 · DASH 自适应播放（最高 4K/8K，支持 HDR/杜比视界）· 实时弹幕 · 番剧（含整季剧集列表）· 直播（带弹幕）· 软键盘搜索 · 扫码登录 · 观看历史与续播。
+### 特色
+
+**播放**
+- DASH 自适应,最高 **4K / 8K**,支持 **HDR / 杜比视界** —— 按真实清晰度选流,不是只挑最高码率
+- 实时**弹幕**与 **CC 字幕**,均可调字号
+- 进度条**章节刻痕** + 拖动**缩略图预览** + YouTube 式时间线快进 + **「接下来播放」**结束页
+- **播放中看评论** —— 头像、点赞、回复数,就在播放器里
+
+**浏览**
+- **推荐 / 热门 / 直播 / 关注 / 收藏** 多种内容流(收藏夹可顺序连播)
+- 侧栏 **6 个一键分区**(游戏 · 动画 · 音乐 · 知识 · 娱乐 · 鬼畜),各自进入该区**当前**热门榜
+- **搜索**(屏幕键盘):热门搜索 + 输入联想 + 搜索历史
+- **番剧**(整季剧集列表)与**直播**(带实时弹幕)
+- **观看历史与续播**,每张封面都带进度条
+
+**更多**
+- 界面为英/西语时,**字幕 / 标题 / 章节 / 弹幕自动机翻**
+- 三语界面 —— **English · Español · 中文**
+- **DLNA 投屏接收** —— 从虎牙 / B站手机端直接投到电视
+- **Magic Remote 指针**全面支持(悬停 + 点击),与方向键并存
+- **扫码登录**、Homebrew **自动更新**,且**完全在电视上运行** —— 无需电脑或外部服务器
 
 ## Screenshots / 截图
 

@@ -68,6 +68,7 @@ node tools/test-aigc.mjs || { echo "FAIL: aigc extraction"; exit 1; }
 node tools/test-casturl.mjs || { echo "FAIL: cast url rewrite"; exit 1; }
 # C-SRCH-02: search-history dedup/cap
 node tools/test-searchhistory.mjs || { echo "FAIL: search history"; exit 1; }
+node --test app/src/player/*.test.js || { echo "FAIL: media/Dolby playback helpers"; exit 1; }
 
 echo ""
 echo "=== [3/6] Service on REAL Node 8 (docker) ==="

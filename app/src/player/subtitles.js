@@ -66,6 +66,27 @@ export function knownLanNames() { // for the dictionary-coverage test
   return Array.from(seen);
 }
 
+// Language family of a lan code: 'ai-en' → 'en', 'zh-Hant' → 'zh'.
+export function lanFamily(lan) {
+  if (typeof lan !== 'string' || lan === '') return '';
+  return lan.replace(/^ai-/, '').split('-')[0].toLowerCase();
+}
+
+// Resolve a remembered language preference against a NEW video's track list.
+// Track order in player/v2 is arbitrary per video, so "just take tracks[0]"
+// restores a random language (bug: picked English, next video showed Arabic).
+// Exact lan wins; else same language family, preferring human over ai tracks.
+// Null when the video has nothing in that language — caller picks the fallback.
+export function matchTrackByLan(tracks, lan) {
+  if (!Array.isArray(tracks) || !lan) return null;
+  const exact = tracks.find(s => s && s.lan === lan);
+  if (exact) return exact;
+  const fam = lanFamily(lan);
+  if (!fam) return null;
+  const sameFam = tracks.filter(s => s && lanFamily(s.lan) === fam);
+  return sameFam.find(s => !isAiLan(s.lan)) || sameFam[0] || null;
+}
+
 // The zh-source track a machine translation would feed on (ai or human).
 export function findZhTrack(tracks) {
   if (!tracks) return null;

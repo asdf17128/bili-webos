@@ -540,12 +540,80 @@ export async function getHotSearches(limit) {
   }
 }
 
+// ============ Interactions (点赞 / 投币 / 收藏 / 三连) ============
+// B站 write endpoints need the CSRF token = the bili_jct cookie, sent as a
+// `csrf` form field. The service returns its whole cookie jar as newCookies,
+// so bili_jct is synced into local auth after any authenticated request.
+function getCsrf() {
+  return (storage.getAuth() || {}).bili_jct || '';
+}
+
+async function biliWrite(path, params) {
+  var form = Object.assign({}, params || {}, { csrf: getCsrf() });
+  var body = new URLSearchParams(form).toString();
+  return smartFetch(API_HOST, path, {
+    method: 'POST', body: body, contentType: 'application/x-www-form-urlencoded',
+  });
+}
+
+// 一键三连(点赞 + 投币×2 + 收藏,一个接口全干)。返回 data:{like,coin,fav,multiply,prompt}.
+export async function tripleVideo(aid) {
+  return biliWrite('/x/web-interface/archive/like/triple', { aid: aid });
+}
+
+// 单独点赞(like=1 赞 / like=2 取消)。
+export async function likeVideo(aid, like) {
+  return biliWrite('/x/web-interface/archive/like', { aid: aid, like: like == null ? 1 : like });
+}
+
+// 当前用户对该视频的互动状态(是否已赞/投币/收藏),用于按钮回显。
+export async function getVideoRelation(aid) {
+  return apiFetch('/x/web-interface/archive/relation', { aid: aid });
+}
+
+// 投币(multiply 1 或 2;B站规则:UGC 每视频最多 2 枚,且不可撤销)。
+export async function coinVideo(aid, multiply) {
+  return biliWrite('/x/web-interface/coin/add', { aid: aid, multiply: multiply || 1 });
+}
+
+// 用户的收藏夹列表,针对某视频:带 rid(=aid)时每项含 fav_state(该视频是否
+// 已在此夹)。第一项即默认收藏夹。up_mid 从登录 cookie 的 DedeUserID 来。
+// (区别于下方 getFavFolders(mid):那个是收藏页用的纯列表。)
+export async function getFavFoldersFor(aid) {
+  var mid = (storage.getAuth() || {}).DedeUserID || '';
+  return apiFetch('/x/v3/fav/folder/created/list-all', { up_mid: mid, rid: aid, type: 2 });
+}
+
+// 收藏/取消收藏(add/del 均为逗号分隔的收藏夹 id 列表)。
+export async function favVideo(aid, addIds, delIds) {
+  return biliWrite('/x/v3/fav/resource/deal', {
+    rid: aid, type: 2,
+    add_media_ids: addIds || '', del_media_ids: delIds || '',
+  });
+}
+
+// 合流 MP4 播放地址(html5 端 durl 格式,单文件带音频)。倍速模式专用:
+// webOS 的原生播放管线(非 MSE)才响应 setPlayRate,而原生管线只吃单文件。
+// 画质上限 720P/1080P,倍速下可接受;恢复 1x 后切回 DASH 高画质。
+export async function getHtml5PlayUrl(video, cid) {
+  var params = { cid: cid, platform: 'html5', high_quality: 1, qn: 80 };
+  if (video.bvid) params.bvid = video.bvid; else params.avid = video.aid;
+  return apiFetch('/x/player/playurl', params);
+}
+
 // Video comments (评论). oid = the video's aid, type=1 for videos.
 // sort: 1 = hot (recommended), 0 = time, 2 = reply-count. The legacy endpoint
 // needs no WBI signature; the service adds Referer/cookies (isBiliHost).
 export async function getReplies(oid, pn, sort) {
   return apiFetch('/x/v2/reply', {
     type: 1, oid: oid, pn: pn || 1, ps: 20, sort: sort == null ? 1 : sort,
+  });
+}
+
+// 楼中楼: sub-replies under one root comment. root = parent's rpid.
+export async function getReplyReplies(oid, root, pn) {
+  return apiFetch('/x/v2/reply/reply', {
+    type: 1, oid: oid, root: root, pn: pn || 1, ps: 10,
   });
 }
 

@@ -43,7 +43,7 @@ html, body, #root {
   font-weight: 700;
 }
 .sidebar-logo span {
-  font-size: 14px;
+  font-size: 16px;
   color: #555;
 }
 .sidebar-item {
@@ -323,7 +323,7 @@ html, body, #root {
   gap: 10px;
   margin-bottom: 14px;
 }
-.search-chips-label { font-size: 15px; color: #888; margin-right: 2px; }
+.search-chips-label { font-size: 16px; color: #888; margin-right: 2px; }
 .search-chip {
   display: inline-flex;
   align-items: center;
@@ -342,7 +342,7 @@ html, body, #root {
   white-space: nowrap;
   transition: transform 0.1s ease, background 0.1s ease, border-color 0.1s ease;
 }
-.search-chip .chip-ico { font-size: 13px; opacity: 0.55; }
+.search-chip .chip-ico { font-size: 16px; opacity: 0.55; }
 .search-chip.focused {
   background: #00a1d6;
   border-color: #00a1d6;
@@ -351,7 +351,7 @@ html, body, #root {
 }
 .search-chip.chip-clear { color: #ff9a9a; }
 .search-chip.chip-clear.focused { background: #b23b3b; border-color: #b23b3b; color: #fff; }
-.search-hint { font-size: 15px; color: #666; margin: 0 4px 14px; }
+.search-hint { font-size: 16px; color: #666; margin: 0 4px 14px; }
 
 /* ===== Player Page ===== */
 .player-page {
@@ -402,6 +402,41 @@ html, body, #root {
   transition: transform 0.15s ease, background 0.15s ease;
 }
 .player-btn.focused { background: #00a1d6; transform: scale(1.1); }
+.player-btn { position: relative; }
+/* B站-style coin (owner-picked design D): bright-yellow disc + thin white
+   inner ring + bold white B — SVG so the ring stays crisp on the TV panel.
+   (The 🪙 emoji read as a stone; a CSS gradient disc read as chocolate.) */
+.coin-icon { vertical-align: -3px; }
+/* 已赞/已投/已藏 state — B站 pink, like the app */
+.player-btn.lit { color: #fb7299; }
+.player-btn.focused.lit { color: #fff; background: #fb7299; }
+
+/* Long-press 点赞 progress OUTLINE (三连): traces the button's own rounded
+   rect (owner: 圆圈配方块丑). Dash metrics are inline (measured per press);
+   the keyframe only animates dashoffset to 0, so it works with any size. */
+.like-ring {
+  position: absolute;
+  pointer-events: none;
+  overflow: visible;
+}
+.like-ring rect { fill: none; stroke-width: 4; }
+.like-ring-track { stroke: rgba(255,255,255,0.25); }
+.like-ring-fill {
+  stroke: #fb7299;
+  stroke-linecap: round;
+  animation: like-ring-fill 2s linear forwards; /* keep = HOLD_MS (B站网页端 2 秒) */
+}
+@keyframes like-ring-fill { to { stroke-dashoffset: 0; } }
+
+/* 三连成功: quick bounce on the 赞/币/藏 trio (transform-only) */
+.player-btn.triple-pop { animation: triple-pop 0.6s ease; }
+@keyframes triple-pop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.28); }
+  70% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+.player-btn.focused.triple-pop { animation: none; } /* focused already scales */
 .player-time { font-size: 20px; color: #ccc; margin-left: auto; }
 
 /* ===== Danmaku ===== */
@@ -482,6 +517,35 @@ html, body, #root {
   min-width: 200px;
   box-shadow: 0 12px 40px rgba(0,0,0,0.6);
   border: 1px solid rgba(255,255,255,0.08);
+}
+/* Anchored control popups (倍速/字幕/画质): compact menus right above their
+   own button (translateX centers on it; left/bottom computed from the button's
+   screen rect). Rendered at the page root — the controls bar would clip them. */
+.ctrl-popup {
+  position: absolute;
+  z-index: 65;
+  transform: translateX(-50%);
+  background: rgba(20,20,40,0.95);
+  border-radius: 12px;
+  padding: 8px;
+  min-width: 130px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.08);
+  white-space: nowrap;
+}
+/* Transient in-player feedback (e.g. 一键三连 result) */
+.player-toast {
+  position: absolute;
+  left: 50%; bottom: 150px;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.85);
+  color: #fff;
+  font-size: 22px;
+  padding: 12px 30px;
+  border-radius: 999px;
+  z-index: 60;
+  pointer-events: none;
+  white-space: nowrap;
 }
 .quality-panel-title {
   padding: 4px 20px 10px;
@@ -608,4 +672,15 @@ html, body, #root {
 .settings-row-danger.focused {
   background: rgba(214,64,64,0.18);
   box-shadow: 0 0 0 2px #d64a4a;
+}
+
+/* VIP-only quality tier tag in the quality popup */
+.vip-tag {
+  margin-left: 8px;
+  font-size: 16px;
+  color: #fb7299;
+  border: 1px solid #fb7299;
+  border-radius: 4px;
+  padding: 1px 5px;
+  vertical-align: 2px;
 }

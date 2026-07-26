@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies } from '../api/client';
+import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies, getReplyReplies, tripleVideo, likeVideo, coinVideo, favVideo, getFavFoldersFor, getVideoRelation, getHtml5PlayUrl } from '../api/client';
 import { playPart, playAdvance } from './playIntent';
 
 import { formatDuration, formatTime, formatCount, QUALITY_MAP, cleanTitle, pickAigcText } from '../utils/format';
@@ -7,7 +7,7 @@ import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
 import DanmakuLayer from './DanmakuLayer';
 import SubtitleLayer from './SubtitleLayer';
-import { parseSubtitleBody, pickCueIndex, isAiLan, subtitleLanName, mtLanName, findZhTrack, AI_LEAD } from './subtitles';
+import { parseSubtitleBody, pickCueIndex, isAiLan, subtitleLanName, mtLanName, findZhTrack, matchTrackByLan, AI_LEAD } from './subtitles';
 import { translateCues } from './subTranslate';
 import { createDmTranslator } from './dmTranslate';
 import { titleMT, useTitlesMT } from '../utils/titlemt';
@@ -41,6 +41,18 @@ function proxyImg(url) {
   } catch {
     return u;
   }
+}
+
+// B站-style coin icon (owner design pick "D"): bright-yellow disc + thin white
+// inner ring + bold white B. Inline SVG keeps the ring crisp at TV render.
+function CoinIcon() {
+  return (
+    <svg className="coin-icon" width="19" height="19" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="11" fill="#ffc331" />
+      <circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" strokeWidth="1.6" opacity="0.9" />
+      <text x="12" y="16.4" textAnchor="middle" fontSize="12" fontWeight="900" fill="#fff" fontFamily="Arial">B</text>
+    </svg>
+  );
 }
 
 export default function PlayerPage({ video, onBack, onPlayNext }) {
@@ -186,10 +198,22 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     pendingSeekRef.current = null;
   }, []);
 
-  // The CC button only exists when this part actually has subtitle tracks.
-  const CONTROLS = subTracks.length > 0
-    ? ['play', 'danmaku', 'subtitle', 'quality']
-    : ['play', 'danmaku', 'quality'];
+  // Control bar. 点赞/投币/收藏 only when logged in (B站 app style: three
+  // separate buttons with live counts; LONG-PRESS 点赞 = 一键三连). CC only
+  // when this part has subtitle tracks.
+  // Order: play · [赞·币·藏] · danmaku · [字幕] · 倍速 · 画质.
+  const loggedIn = !!storage.getAuth()?.SESSDATA;
+  const CONTROLS = [
+    'play',
+    ...(loggedIn ? ['like', 'coin', 'fav'] : []),
+    'danmaku',
+    ...(subTracks.length > 0 ? ['subtitle'] : []),
+    'speed',
+    'quality',
+  ];
+  const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2];
+  const controlsRef = useRef(CONTROLS);
+  controlsRef.current = CONTROLS;
 
   // Machine translation is offered as a VIRTUAL track ('x-mt') feeding on the
   // zh source track, only when the UI locale itself isn't Chinese — an English
@@ -246,6 +270,103 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     return { lan: 'x-mt', subtitle_url: zh.subtitle_url, mt: loc, srcLan: zh.lan };
   }, []);
 
+  // 倍速 (playback speed): PER-VIDEO only — switching to another video resets
+  // to 1x (owner: 切视频不应保留倍速). The options render as a small popup
+  // anchored right above the 倍速 button (owner: 选项离按钮太远).
+  const [showSpeedPanel, setShowSpeedPanel] = useState(false);
+  const [currentSpeed, setCurrentSpeed] = useState(1);
+  const speedRef = useRef(currentSpeed);
+  useEffect(() => { speedRef.current = currentSpeed; }, [currentSpeed]);
+  // Popup anchoring: 倍速/字幕/画质 panels pop up right above their own
+  // button (owner: 选项离按钮太远). Screen coords, rendered at the page ROOT —
+  // .player-controls is overflow-y:auto and would clip them (#11 trap).
+  const btnRefs = useRef({});
+  const [popupPos, setPopupPos] = useState(null); // {left, bottom}
+  const anchorFor = useCallback((name) => {
+    const el = btnRefs.current[name];
+    if (!el) return null;
+    const r = el.getBoundingClientRect(); // layout is a fixed 1920x1080
+    return { left: r.left + r.width / 2, bottom: 1080 - r.top + 12 };
+  }, []);
+
+  // 点赞/投币/收藏 (B站 app style). stat = the video's public counts (view
+  // API); rel = MY state on it (relation API). Short-press 点赞 toggles;
+  // LONG-PRESS 点赞 (~0.9s, ring animation) = 一键三连. 投币 is one coin per
+  // press, max 2, irreversible (B站 rule); 收藏 toggles the default folder.
+  const [stat, setStat] = useState({ like: 0, coin: 0, favorite: 0 });
+  const [rel, setRel] = useState({ liked: false, coined: 0, faved: false });
+  const relRef = useRef(rel);
+  useEffect(() => { relRef.current = rel; }, [rel]);
+  const triplingRef = useRef(false);
+  const holdRef = useRef({ active: false, fired: false, timer: null });
+  // Long-press progress OUTLINE: traces the like button's own rounded-rect
+  // border (owner: 方块按钮配圆圈丑). {w,h,perim} measured at hold start.
+  const [likeRing, setLikeRing] = useState(null);
+  const [triplePop, setTriplePop] = useState(false); // post-triple bounce
+  const [playerToast, setPlayerToast] = useState('');
+  const toastTimerRef = useRef(null);
+  const showPlayerToast = useCallback((msg) => {
+    setPlayerToast(msg);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setPlayerToast(''), 2200);
+  }, []);
+
+  // 倍速 native mode: webOS's MSE pipeline hard-ignores playbackRate ("TV app
+  // spec" per LG), but the NATIVE pipeline (plain src=muxed MP4, no MSE) obeys
+  // luna://com.webos.media/setPlayRate — with audio up to 2x (audioOutput).
+  // So speed≠1 on TV swaps the stream to B站's html5 durl MP4 (720P/1080P) and
+  // drives the rate over the Luna bus; speed=1 swaps back to DASH.
+  // Verified on-device 2026-07-22: 1.25/1.5/2.0 all play at true rate.
+  const nativeModeRef = useRef(false);
+  const onWebOS = typeof window !== 'undefined' && !!(window.webOS && window.webOS.service);
+
+  const lunaSetPlayRate = useCallback(async (rate) => {
+    if (!onWebOS) return false;
+    const v = videoRef.current;
+    if (!v) return false;
+    // mediaId populates shortly after the native pipeline spins up.
+    let id = v.mediaId;
+    for (let i = 0; i < 20 && !id; i++) {
+      await new Promise(r => setTimeout(r, 250));
+      id = v.mediaId;
+    }
+    if (!id) return false;
+    return new Promise((resolve) => {
+      let done = false;
+      window.webOS.service.request('luna://com.webos.media', {
+        method: 'setPlayRate',
+        parameters: { mediaId: id, playRate: rate, audioOutput: true },
+        onSuccess: (r) => { if (!done) { done = true; resolve(!!r.returnValue); } },
+        onFailure: () => { if (!done) { done = true; resolve(false); } },
+      });
+      setTimeout(() => { if (!done) { done = true; resolve(false); } }, 3000);
+    });
+  }, [onWebOS]);
+
+  const enterNativeSpeed = useCallback(async (s) => {
+    const v = videoRef.current;
+    if (!v || !cidRef.current) return false;
+    try {
+      const res = await getHtml5PlayUrl(video, cidRef.current);
+      const durl = res?.data?.durl && res.data.durl[0] && res.data.durl[0].url;
+      if (!durl) throw new Error('no durl (html5 playurl)');
+      const pos = v.currentTime || 0;
+      try { await shakaRef.current?.unload(); } catch (e) { /* ignore */ }
+      nativeModeRef.current = true;
+      v.src = proxyImgRaw(durl);
+      pendingSeekRef.current = pos > 1 ? pos : null; // flushed on loadedmetadata
+      const p = v.play();
+      if (p && p.catch) p.catch(() => {});
+      const ok = await lunaSetPlayRate(s);
+      if (!ok) console.warn('[speed] setPlayRate declined');
+      return true;
+    } catch (e) {
+      console.warn('[speed] native switch failed:', e?.message || e);
+      nativeModeRef.current = false;
+      return false;
+    }
+  }, [video, lunaSetPlayRate]);
+
   // CC selection panel (same interaction as the quality panel): 关 / each real
   // track / the machine-translated virtual track. Selection persists on/off so
   // the next video auto-enables.
@@ -263,7 +384,14 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     if (opt.key === 'off') selectSubtitle(null);
     else if (opt.key === 'x-mt') selectSubtitle(makeMtTrack(subTracks, getLocale()));
     else selectSubtitle(subTracks.find(s => s.lan === opt.key) || null);
-    storage.setSettings({ ...storage.getSettings(), subtitle: opt.key !== 'off' });
+    // Remember WHICH language, not just on/off — restoring tracks[0] on the
+    // next video picks a random language ("chose English, got Arabic" bug).
+    // 'off' keeps the last lan so re-enabling restores it.
+    storage.setSettings({
+      ...storage.getSettings(),
+      subtitle: opt.key !== 'off',
+      ...(opt.key !== 'off' ? { subtitleLan: opt.key } : {}),
+    });
   }, [subTracks, selectSubtitle, makeMtTrack]);
 
   // Initialize Shaka Player
@@ -283,6 +411,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       const player = new shaka.Player();
       await player.attach(videoRef.current);
       shakaRef.current = player;
+      if (typeof window !== 'undefined') window.__shakaPlayer = player; // test hook (speed diag)
 
       // Resilience: more retries + longer timeouts so a flaky segment fetch is
       // retried instead of fataling the whole playback (TV CDN is unreliable).
@@ -335,6 +464,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     if (!video?.bvid && !video?.aid && !isBangumi) return;
     setLoading(true);
     setLoadError(false);
+    nativeModeRef.current = false; // fresh video always starts on DASH
+    setCurrentSpeed(1);            // 倍速 is per-video, never carried over
+    setShowSpeedPanel(false);
     castReportState({ playState: 'loading' }).catch(() => {});
     try {
       let cid = video.cid;
@@ -371,6 +503,29 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         ugcPages = d.pages || [];
         ugcSeason = d.ugc_season || null; // UGC 合集 (multi-video series)
         videoAidRef.current = d.aid || null;
+        // 点赞/投币/收藏 counts + my own state on this video (button回显).
+        setStat({
+          like: (d.stat && d.stat.like) || 0,
+          coin: (d.stat && d.stat.coin) || 0,
+          favorite: (d.stat && d.stat.favorite) || 0,
+        });
+        setRel({ liked: false, coined: 0, faved: false });
+        if (d.aid && storage.getAuth()?.SESSDATA) {
+          // One retry: if this silently fails, the 已三连 guard can't see the
+          // truth and a long-press re-fires triple (harmless server-side — B站
+          // caps coins at 2/video — but the toast then lies "成功").
+          const fetchRel = (attempt) => getVideoRelation(d.aid).then(r => {
+            const rd = r?.data;
+            if (rd) {
+              setRel({
+                liked: !!(rd.like || rd.attitude > 0),
+                coined: rd.coin || 0,
+                faved: !!rd.favorite,
+              });
+            }
+          }).catch(() => { if (attempt < 1) setTimeout(() => fetchRel(attempt + 1), 1500); });
+          fetchRel(0);
+        }
         if (d.title) setVideoTitle(d.title);
         if (d.owner) {
           ownerMid = ownerMid || d.owner.mid;
@@ -430,10 +585,17 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             const tracks = st.filter(s => s && s.lan && s.subtitle_url);
             if (tracks.length > 0) {
               setSubTracks(tracks);
-              // Re-enable automatically if the user had CC on last time —
-              // non-zh UI prefers the translated virtual track.
-              if (storage.getSettings().subtitle) {
-                selectSubtitle(makeMtTrack(tracks, getLocale()) || tracks[0]);
+              // Re-enable automatically if the user had CC on last time,
+              // restoring the REMEMBERED language — track order is arbitrary
+              // per video, so tracks[0] alone lands on a random language.
+              // No saved-language match → MT track, then zh, then first.
+              const st2 = storage.getSettings();
+              if (st2.subtitle) {
+                const saved = st2.subtitleLan;
+                const pick = saved === 'x-mt' ? makeMtTrack(tracks, getLocale())
+                  : matchTrackByLan(tracks, saved);
+                selectSubtitle(pick || makeMtTrack(tracks, getLocale())
+                  || findZhTrack(tracks) || tracks[0]);
               }
             }
           }
@@ -511,7 +673,17 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             }
 
             setQualities((meta?.accept_quality || []).map(q => ({ qn: q, label: QUALITY_MAP[q] || `${q}` })));
-            setCurrentQuality(wantQn || meta?.quality || 80);
+            // Label what will ACTUALLY play: the retry ladder may force a qn
+            // the video doesn't have (e.g. Dolby 126 on an SDR video) and
+            // buildMPD then falls to the nearest available id — the label must
+            // follow that fall, or ordinary videos get 杜比视界/HDR labels.
+            const availIds = Array.from(new Set((dash.video || []).map(v => v.id || 0))).sort((a, b) => b - a);
+            let servedQn = wantQn != null ? wantQn : (meta?.quality || 80);
+            if (availIds.length && availIds.indexOf(servedQn) < 0) {
+              const near = availIds.find(id => id <= servedQn);
+              servedQn = near != null ? near : availIds[0];
+            }
+            setCurrentQuality(servedQn || 80);
 
             const mpd = buildMPD(dash, wantQn);
             const blob = new Blob([mpd], { type: 'application/dash+xml' });
@@ -807,8 +979,23 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       setEndNextIn(null);
       castReportState({ playState: 'playing' }).catch(() => {});
     };
-    const handleLoadedMetadata = () => flushPendingSeek();
-    const handleCanPlay = () => flushPendingSeek();
+    // Browser dev: plain playbackRate works under MSE. On webOS the element
+    // property is a no-op ("TV app spec") — the native pipeline + Luna
+    // setPlayRate path in enterNativeSpeed/lunaSetPlayRate does it instead,
+    // and the pipeline resets to 1x on seek/replay, so re-assert there.
+    const isTV = typeof window !== 'undefined' && !!window.webOS;
+    const applyRate = () => {
+      if (isTV) return;
+      try { el.playbackRate = speedRef.current || 1; } catch (e) { /* ignore */ }
+    };
+    const reassertLunaRate = () => {
+      if (nativeModeRef.current && (speedRef.current || 1) !== 1) {
+        lunaSetPlayRate(speedRef.current).catch(() => {});
+      }
+    };
+    const handleLoadedMetadata = () => { flushPendingSeek(); applyRate(); };
+    const handleCanPlay = () => { flushPendingSeek(); applyRate(); reassertLunaRate(); };
+    const handleSeeked = () => { reassertLunaRate(); };
 
     const handlePause = () => {
       if (!ended) castReportState({ playState: 'paused' }).catch(() => {});
@@ -819,13 +1006,15 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     el.addEventListener('pause', handlePause);
     el.addEventListener('loadedmetadata', handleLoadedMetadata);
     el.addEventListener('canplay', handleCanPlay);
+    el.addEventListener('seeked', handleSeeked);
     return () => {
       el.removeEventListener('play', handlePlay);
       el.removeEventListener('pause', handlePause);
       el.removeEventListener('loadedmetadata', handleLoadedMetadata);
       el.removeEventListener('canplay', handleCanPlay);
+      el.removeEventListener('seeked', handleSeeked);
     };
-  }, [ended, flushPendingSeek]);
+  }, [ended, flushPendingSeek, lunaSetPlayRate]);
 
   useEffect(() => {
     return () => {
@@ -974,6 +1163,155 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     hideControlsLater();
   }, [hideControlsLater]);
 
+  // ===== 点赞 / 投币 / 收藏 / 长按三连 =====
+  // 点赞: toggleable (like=1 赞, like=2 取消) — B站 app behavior.
+  const doLike = useCallback(async () => {
+    const aid = videoAidRef.current || video?.aid;
+    if (!aid) return;
+    const was = relRef.current.liked;
+    try {
+      const res = await likeVideo(aid, was ? 2 : 1);
+      if (res && res.code === 0) {
+        setRel(p => ({ ...p, liked: !was }));
+        setStat(p => ({ ...p, like: Math.max(0, p.like + (was ? -1 : 1)) }));
+        showPlayerToast(was ? t('已取消点赞') : t('已点赞 👍(长按=一键三连)'));
+      } else {
+        showPlayerToast((res && res.message) || t('操作失败,请重试'));
+      }
+    } catch (e) { showPlayerToast(t('操作失败,请重试')); }
+  }, [video, showPlayerToast]);
+
+  // 投币: one coin per press, hard max 2 per video, NOT cancelable (B站 rule).
+  const doCoin = useCallback(async () => {
+    const aid = videoAidRef.current || video?.aid;
+    if (!aid) return;
+    if (relRef.current.coined >= 2) { showPlayerToast(<>{t('两枚硬币已投满')} <CoinIcon /></>); return; }
+    try {
+      const res = await coinVideo(aid, 1);
+      if (res && res.code === 0) {
+        setRel(p => ({ ...p, coined: p.coined + 1 }));
+        setStat(p => ({ ...p, coin: p.coin + 1 }));
+        showPlayerToast(<>{t('投币成功')} <CoinIcon /></>);
+      } else if (res && res.code === 34005) {
+        setRel(p => ({ ...p, coined: 2 }));
+        showPlayerToast(<>{t('两枚硬币已投满')} <CoinIcon /></>);
+      } else {
+        showPlayerToast((res && res.message) || t('操作失败,请重试'));
+      }
+    } catch (e) { showPlayerToast(t('操作失败,请重试')); }
+  }, [video, showPlayerToast]);
+
+  // 收藏: toggle against the user's folders (add → 默认收藏夹; remove → every
+  // folder currently holding it, so the toggle really clears the state).
+  const doFav = useCallback(async () => {
+    const aid = videoAidRef.current || video?.aid;
+    if (!aid) return;
+    const was = relRef.current.faved;
+    try {
+      const folders = await getFavFoldersFor(aid);
+      const list = (folders?.data?.list) || [];
+      if (list.length === 0) { showPlayerToast(t('操作失败,请重试')); return; }
+      const res = was
+        ? await favVideo(aid, '', list.filter(f => f.fav_state).map(f => f.id).join(',') || String(list[0].id))
+        : await favVideo(aid, String(list[0].id), '');
+      if (res && res.code === 0) {
+        setRel(p => ({ ...p, faved: !was }));
+        setStat(p => ({ ...p, favorite: Math.max(0, p.favorite + (was ? -1 : 1)) }));
+        showPlayerToast(was ? t('已取消收藏') : t('已收藏 ⭐'));
+      } else {
+        showPlayerToast((res && res.message) || t('操作失败,请重试'));
+      }
+    } catch (e) { showPlayerToast(t('操作失败,请重试')); }
+  }, [video, showPlayerToast]);
+
+  // 一键三连 (LONG-PRESS 点赞): like + coin×2 + favorite in one request.
+  const doTriple = useCallback(async () => {
+    if (triplingRef.current) return;
+    const aid = videoAidRef.current || video?.aid;
+    if (!aid) return;
+    const r0 = relRef.current;
+    if (r0.liked && r0.coined >= 2 && r0.faved) { showPlayerToast(t('已经三连过啦 ✅')); return; }
+    triplingRef.current = true;
+    try {
+      const res = await tripleVideo(aid);
+      if (res && res.code === 0) {
+        const d = res.data || {};
+        const coinsAdded = d.coin ? (d.multiply || 2) : 0;
+        setStat(p => ({
+          like: p.like + (r0.liked ? 0 : (d.like ? 1 : 0)),
+          coin: p.coin + coinsAdded,
+          favorite: p.favorite + (r0.faved ? 0 : (d.fav ? 1 : 0)),
+        }));
+        setRel(p => ({
+          liked: p.liked || !!d.like,
+          coined: Math.min(2, p.coined + coinsAdded),
+          faved: p.faved || !!d.fav,
+        }));
+        setTriplePop(true);
+        setTimeout(() => setTriplePop(false), 700);
+        showPlayerToast(<>{t('三连成功')} 👍<CoinIcon />⭐</>);
+        // True-up from the server — the local increments above are best-effort
+        // (e.g. a triple fired past a failed relation fetch adds nothing new).
+        getVideoRelation(aid).then(r => {
+          const rd = r?.data;
+          if (rd) setRel({ liked: !!(rd.like || rd.attitude > 0), coined: rd.coin || 0, faved: !!rd.favorite });
+        }).catch(() => {});
+      } else {
+        showPlayerToast((res && res.message) || t('操作失败,请重试'));
+      }
+    } catch (e) { showPlayerToast(t('操作失败,请重试')); }
+    triplingRef.current = false;
+  }, [video, showPlayerToast]);
+
+  // Long-press machinery (D-pad OK hold + pointer hold share it), matching
+  // B站 PC-web semantics (owner):
+  //   release < TAP_MS            → plain 点赞 toggle (a click)
+  //   TAP_MS ≤ release < HOLD_MS  → CANCEL — a bailed long-press is nothing
+  //   held to HOLD_MS (2s, B站网页端时长) → 一键三连
+  const TAP_MS = 300;
+  const HOLD_MS = 2000;
+  const startLikeHold = useCallback(() => {
+    if (holdRef.current.active) return;
+    holdRef.current = {
+      active: true, fired: false, start: Date.now(),
+      timer: setTimeout(() => {
+        holdRef.current.fired = true;
+        setLikeRing(null);
+        doTriple();
+      }, HOLD_MS),
+    };
+    // Measure the button so the progress outline matches its rounded-rect
+    // shape exactly. rx=12 hugs the button's 8px radius with the 4px stroke.
+    const el = btnRefs.current.like;
+    if (el) {
+      const w = el.offsetWidth + 6, h = el.offsetHeight + 6, rx = 12;
+      const perim = 2 * (w + h) - 8 * rx + 2 * Math.PI * rx;
+      setLikeRing({ w, h, rx, perim });
+    }
+    if (controlsTimer.current) clearTimeout(controlsTimer.current); // no auto-hide mid-hold
+  }, [doTriple]);
+
+  const endLikeHold = useCallback((cancel) => {
+    const h = holdRef.current;
+    if (!h.active) return;
+    if (h.timer) clearTimeout(h.timer);
+    const fired = h.fired;
+    const heldMs = Date.now() - (h.start || 0);
+    holdRef.current = { active: false, fired: false, timer: null, start: 0 };
+    setLikeRing(null);
+    // Only a quick TAP likes; an aborted long-press does nothing.
+    if (!fired && !cancel && heldMs < TAP_MS) doLike();
+    hideControlsLater();
+  }, [doLike, hideControlsLater]);
+
+  // OK-key release ends the hold (keydown lives in the main handler below).
+  useEffect(() => {
+    const up = (e) => { if (e.key === 'Enter') endLikeHold(false); };
+    window.addEventListener('keyup', up);
+    return () => window.removeEventListener('keyup', up);
+  }, [endLikeHold]);
+  useEffect(() => () => { if (holdRef.current.timer) clearTimeout(holdRef.current.timer); }, []);
+
   // One entry for a control-bar action — shared by D-pad OK and pointer click
   // (the Magic Remote pointer must drive every button the D-pad can).
   const pressControl = useCallback((btn) => {
@@ -994,6 +1332,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         return next;
       });
     } else if (btn === 'subtitle') {
+      setPopupPos(anchorFor('subtitle'));
       setShowSubPanel(true);
       setFocusArea('subpanel');
       const cur = subOptions.findIndex(o => o.key === (subLan || 'off'));
@@ -1004,15 +1343,37 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       // Prefetch the likeliest track's body while they decide.
       if (subTracks[0]) fetchSubBody(subTracks[0].subtitle_url).catch(() => {});
       return;
-    } else if (btn === 'quality') {
-      setShowQuality(true);
-      setFocusArea('quality');
-      setFocusIdx(0);
+    } else if (btn === 'speed') {
+      setPopupPos(anchorFor('speed'));
+      setShowSpeedPanel(true);
+      setFocusArea('speed');
+      setFocusIdx(Math.max(0, SPEED_OPTIONS.indexOf(speedRef.current)));
       if (controlsTimer.current) clearTimeout(controlsTimer.current);
       return;
+    } else if (btn === 'quality') {
+      if (nativeModeRef.current) {
+        // 倍速模式吃的是合流 MP4,画质由 durl 固定 — 回 1x 才有 DASH 阶梯。
+        showPlayerToast(t('倍速模式画质固定,恢复正常速度后可调'));
+        hideControlsLater();
+        return;
+      }
+      setPopupPos(anchorFor('quality'));
+      setShowQuality(true);
+      setFocusArea('quality');
+      // Open ON the current tier (same as the subtitle/speed panels) — the
+      // panel opening at the top made OK-from-muscle-memory switch quality.
+      setFocusIdx(Math.max(0, qualities.findIndex(q => q.qn === currentQuality)));
+      if (controlsTimer.current) clearTimeout(controlsTimer.current);
+      return;
+    } else if (btn === 'coin') {
+      doCoin();
+    } else if (btn === 'fav') {
+      doFav();
     }
+    // 'like' never routes here: its press/release runs the long-press machinery
+    // (keydown/keyup + mousedown/mouseup on the button itself).
     hideControlsLater();
-  }, [subOptions, subLan, subTracks, fetchSubBody, hideControlsLater]);
+  }, [subOptions, subLan, subTracks, fetchSubBody, hideControlsLater, doCoin, doFav, showPlayerToast, anchorFor, qualities, currentQuality]);
 
   // Load more related videos
   const loadingRelatedRef = useRef(false);
@@ -1102,7 +1463,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         message: (r.content && r.content.message) || '',
         like: r.like || 0,
         time: r.ctime || 0,
-        replyCount: r.count || 0,
+        replyCount: r.count || r.rcount || 0,
+        // 楼中楼 preview rides the root response (up to 3) — show for free.
+        preview: (r.replies || []).slice(0, 3).map(s => ({
+          rpid: s.rpid,
+          uname: (s.member && s.member.uname) || '',
+          message: (s.content && s.content.message) || '',
+        })),
       }));
       if (reset && data.page) setCommentCount(data.page.count || 0);
       setComments(prev => reset ? mapped : [...prev, ...mapped]);
@@ -1116,6 +1483,47 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     setCommentsLoading(false);
   }, [video]);
 
+  // 楼中楼: OK/click on a comment cycles expand(page1) → load more pages →
+  // collapse. Sub-replies aren't focusable rows, so paging hangs off the same
+  // press instead of scroll position.
+  const subLoadingRef = useRef(false);
+  const pressComment = useCallback(async (idx) => {
+    const c = comments[idx];
+    if (!c || !c.replyCount) return;
+    if (c.expanded && c.subDone) {   // fully loaded → collapse back to preview
+      setComments(prev => prev.map((x, i) => i === idx
+        ? { ...x, expanded: false, subs: [], subPn: 1, subDone: false } : x));
+      return;
+    }
+    if (subLoadingRef.current) return;
+    subLoadingRef.current = true;
+    try {
+      const oid = videoAidRef.current || video?.aid;
+      const pn = c.expanded ? (c.subPn || 1) : 1;
+      const res = await getReplyReplies(oid, c.rpid, pn);
+      const subs = ((res && res.data && res.data.replies) || []).map(s => ({
+        rpid: s.rpid,
+        uname: (s.member && s.member.uname) || '',
+        message: (s.content && s.content.message) || '',
+        like: s.like || 0,
+      }));
+      setComments(prev => prev.map((x, i) => {
+        if (i !== idx) return x;
+        const all = pn === 1 ? subs : [...(x.subs || []), ...subs];
+        const done = subs.length < 10 || all.length >= (x.replyCount || 0);
+        return { ...x, expanded: true, subs: all, subPn: pn + 1, subDone: done };
+      }));
+      // the card grew downward — keep it in view
+      setTimeout(() => {
+        const cards = document.querySelectorAll('.comment-card');
+        if (cards[idx]) cards[idx].scrollIntoView({ block: 'nearest' });
+      }, 50);
+    } catch (e) {
+      console.warn('[subReplies] failed:', e && e.message);
+    }
+    subLoadingRef.current = false;
+  }, [comments, video]);
+
   // Change quality
   const changeQuality = useCallback(async (qn) => {
     const isBangumi = !!(video?.isBangumi || video?.epid || video?.seasonId);
@@ -1124,19 +1532,26 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     storage.setSettings({ ...storage.getSettings(), quality: qn });
     try {
       let cid = video.cid || cidRef.current;
-      let dash;
+      let dash, meta;
       if (isBangumi) {
         const res = await getBangumiPlayUrl({ epid: video.epid, cid }, qn);
-        dash = (res?.result || res?.data)?.dash;
+        meta = res?.result || res?.data;
+        dash = meta?.dash;
       } else {
         const res = await getPlayUrl(video, cid, qn);
-        dash = res?.data?.dash;
+        meta = res?.data;
+        dash = meta?.dash;
       }
       if (dash) {
+        // The server answers with what the ACCOUNT is allowed to have
+        // (meta.quality): a non-VIP pick of 1080P+/4K comes back as 1080P.
+        // Play and label that honestly instead of leaving the VIP tier lit.
+        const served = (meta?.quality && (dash.video || []).some(v => v.id === meta.quality))
+          ? meta.quality : qn;
         const pos = videoRef.current.currentTime;
         // Honor the picked quality id (this is how HDR=125 / Dolby=126 get
         // selected — they aren't the highest-bitrate rep).
-        const mpd = buildMPD(dash, qn);
+        const mpd = buildMPD(dash, served);
         const blob = new Blob([mpd], { type: 'application/dash+xml' });
         const mpdUrl = URL.createObjectURL(blob);
         await shakaRef.current.load(mpdUrl);
@@ -1144,12 +1559,44 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         selectBestVariant(shakaRef.current);
         videoRef.current.currentTime = pos;
         videoRef.current.play();
-        setCurrentQuality(qn);
+        setCurrentQuality(served);
+        if (served !== qn) {
+          storage.setSettings({ ...storage.getSettings(), quality: served });
+          showPlayerToast(t('该画质需要大会员,已按 {q} 播放', { q: QUALITY_MAP[served] || served }));
+        }
       }
     } catch (e) {
       console.error('Quality change error:', e);
     }
   }, [video]);
+
+  // 倍速: apply for THIS video only (no persistence). Browser = plain
+  // playbackRate; TV = native-pipeline swap (speed≠1) / back to DASH (speed=1).
+  const applySpeed = useCallback(async (s) => {
+    setCurrentSpeed(s);
+    setShowSpeedPanel(false);
+    setFocusArea('controls');
+    setFocusIdx(Math.max(0, controlsRef.current.indexOf('speed')));
+    hideControlsLater();
+    if (!onWebOS) {
+      try { if (videoRef.current) videoRef.current.playbackRate = s; } catch (e) { /* ignore */ }
+      return;
+    }
+    if (s === 1) {
+      if (nativeModeRef.current) {
+        nativeModeRef.current = false;
+        changeQuality(currentQuality); // captures position, reloads DASH, seeks back
+      }
+    } else if (nativeModeRef.current) {
+      lunaSetPlayRate(s).catch(() => {});
+    } else {
+      const ok = await enterNativeSpeed(s);
+      if (!ok) {
+        showPlayerToast(t('倍速切换失败'));
+        setCurrentSpeed(1);
+      }
+    }
+  }, [hideControlsLater, onWebOS, changeQuality, currentQuality, lunaSetPlayRate, enterNativeSpeed, showPlayerToast]);
 
   useEffect(() => {
     storage.setSettings({ ...storage.getSettings(), danmaku: danmakuEnabled });
@@ -1221,11 +1668,19 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         } else if (ended) {
           // End screen: back exits player
           onBack();
-        } else if (showControls || showQuality || showRelated || showSubPanel) {
-          // Controls/quality/subtitle/related visible: close them
-          setShowControls(false);
+        } else if (showQuality || showSubPanel || showSpeedPanel) {
+          // A secondary popup is open: Back closes ONLY the popup and returns
+          // focus to its button — one level at a time (owner: 返回应先关二级选项).
+          const backTo = showQuality ? 'quality' : showSubPanel ? 'subtitle' : 'speed';
           setShowQuality(false);
           setShowSubPanel(false);
+          setShowSpeedPanel(false);
+          setFocusArea('controls');
+          setFocusIdx(Math.max(0, controlsRef.current.indexOf(backTo)));
+          hideControlsLater(); // resume the auto-hide clock now that no panel is up
+        } else if (showControls || showRelated) {
+          // Controls/related visible: close them
+          setShowControls(false);
           setShowRelated(false);
           setFocusArea('none');
           if (controlsTimer.current) clearTimeout(controlsTimer.current);
@@ -1313,6 +1768,12 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }
         if (e.key === 'Enter') {
           e.preventDefault();
+          // 点赞 runs the hold machinery: press starts the ring, release before
+          // 0.9s = plain like toggle, holding through = 一键三连.
+          if (CONTROLS[focusIdx] === 'like') {
+            if (!e.repeat) startLikeHold();
+            return true;
+          }
           pressControl(CONTROLS[focusIdx]);
           return true;
         }
@@ -1361,6 +1822,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           if (q) { changeQuality(q.qn); setShowQuality(false); setFocusArea('controls'); setFocusIdx(CONTROLS.indexOf('quality')); hideControlsLater(); }
           return true;
         }
+        return false;
+      }
+
+      if (focusArea === 'speed') {
+        if (e.key === 'ArrowUp') { e.preventDefault(); setFocusIdx(prev => Math.max(0, prev - 1)); return true; }
+        if (e.key === 'ArrowDown') { e.preventDefault(); setFocusIdx(prev => Math.min(SPEED_OPTIONS.length - 1, prev + 1)); return true; }
+        if (e.key === 'Enter') { e.preventDefault(); applySpeed(SPEED_OPTIONS[focusIdx]); return true; }
         return false;
       }
 
@@ -1445,7 +1913,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }
         if (e.key === 'Enter') {
           e.preventDefault();
-          if (isComments) return true; // comments aren't playable
+          if (isComments) { pressComment(focusIdx); return true; } // 楼中楼 expand/page/collapse
           const rv = gridList[focusIdx];
           if (rv && onPlayNext) onPlayNext(panelTab === 'parts' ? playPart(rv) : rv);
           return true;
@@ -1458,7 +1926,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
     setCustomKeyHandler(handler);
     return () => setCustomKeyHandler(null);
-  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, comments, loadUpVideos, loadComments, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody, pressControl]);
+  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, showSpeedPanel, applySpeed, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, comments, loadUpVideos, loadComments, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody, pressControl, startLikeHold, pressComment]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -1666,20 +2134,49 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           )}
         </div>
         <div className="player-btns">
-          {CONTROLS.map((btn, i) => (
-            <button key={btn} className={`player-btn ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''}`}
-              onMouseEnter={() => { setFocusArea('controls'); setFocusIdx(i); hideControlsLater(); }}
-              onClick={() => pressControl(btn)}>
-              {btn === 'play' ? (ended ? t('🔁 重播') : playing ? t('⏸ 暂停') : t('▶ 播放')) :
-                btn === 'danmaku' ? (danmakuEnabled ? t('弹幕 开') : t('弹幕 关')) :
-                  btn === 'subtitle' ? (subLan == null ? t('字幕 关')
-                    // Known lan codes get a localized name (t over our enum,
-                    // see subtitles.js); unknown codes show lan_doc verbatim.
-                    : `${t('字幕')} ${t(subLan === 'x-mt' ? mtLanName(getLocale())
-                      : subtitleLanName(subLan, (subTracks.find(s => s.lan === subLan) || {}).lan_doc)).slice(0, 22)}`) :
-                    QUALITY_MAP[currentQuality] || `${currentQuality}`}
-            </button>
-          ))}
+          {CONTROLS.map((btn, i) => {
+            const isStatBtn = btn === 'like' || btn === 'coin' || btn === 'fav';
+            const lit = (btn === 'like' && rel.liked) || (btn === 'coin' && rel.coined > 0) || (btn === 'fav' && rel.faved);
+            const label =
+              btn === 'play' ? (ended ? t('🔁 重播') : playing ? t('⏸ 暂停') : t('▶ 播放')) :
+                btn === 'like' ? `👍 ${formatCount(stat.like)}` :
+                  // B站同款金币(金圆盘+B字)——emoji 的 🪙 像块石头(owner)。
+                  btn === 'coin' ? <><CoinIcon /> {formatCount(stat.coin)}</> :
+                    btn === 'fav' ? `⭐ ${formatCount(stat.favorite)}` :
+                      btn === 'danmaku' ? (danmakuEnabled ? t('弹幕 开') : t('弹幕 关')) :
+                        btn === 'subtitle' ? (subLan == null ? t('字幕 关')
+                          // Known lan codes get a localized name (t over our enum,
+                          // see subtitles.js); unknown codes show lan_doc verbatim.
+                          : `${t('字幕')} ${t(subLan === 'x-mt' ? mtLanName(getLocale())
+                            : subtitleLanName(subLan, (subTracks.find(s => s.lan === subLan) || {}).lan_doc)).slice(0, 22)}`) :
+                          btn === 'speed' ? (currentSpeed === 1 ? t('倍速') : `${currentSpeed}x`) :
+                            QUALITY_MAP[currentQuality] || `${currentQuality}`;
+            // 点赞 gets press/release handlers (long-press = 三连); the rest click.
+            const handlers = btn === 'like'
+              ? {
+                onMouseDown: () => startLikeHold(),
+                onMouseUp: () => endLikeHold(false),
+                onMouseLeave: () => endLikeHold(true),
+              }
+              : { onClick: () => pressControl(btn) };
+            return (
+              <button key={btn}
+                ref={el => { btnRefs.current[btn] = el; }}
+                className={`player-btn ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''} ${lit ? 'lit' : ''} ${isStatBtn && triplePop ? 'triple-pop' : ''}`}
+                onMouseEnter={() => { setFocusArea('controls'); setFocusIdx(i); hideControlsLater(); }}
+                {...handlers}>
+                {label}
+                {btn === 'like' && likeRing && (
+                  <svg className="like-ring" width={likeRing.w + 8} height={likeRing.h + 8}
+                    style={{ left: -7, top: -7 }}>
+                    <rect className="like-ring-track" x="4" y="4" width={likeRing.w} height={likeRing.h} rx={likeRing.rx} />
+                    <rect className="like-ring-fill" x="4" y="4" width={likeRing.w} height={likeRing.h} rx={likeRing.rx}
+                      style={{ strokeDasharray: likeRing.perim, strokeDashoffset: likeRing.perim }} />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
           <span className="player-time">
             {formatDuration(currentTime)} / {formatDuration(duration)}
             {(() => {
@@ -1724,6 +2221,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                     const av = proxyImg(c.avatar);
                     return (
                       <div key={c.rpid || i} className="comment-card"
+                        onClick={() => pressComment(i)}
                         onMouseEnter={() => {
                           setFocusArea('related'); setFocusIdx(i);
                           if (controlsTimer.current) clearTimeout(controlsTimer.current);
@@ -1746,6 +2244,27 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                           <div style={{ fontSize: 16, color: '#888', marginTop: 6 }}>
                             👍 {formatCount(c.like)}{c.replyCount ? ' · ' + t('{n} 条回复', { n: formatCount(c.replyCount) }) : ''}
                           </div>
+                          {(() => {
+                            // 楼中楼: expanded full list, else the free preview
+                            const subs = c.expanded ? (c.subs || []) : (c.preview || []);
+                            const hint = !c.replyCount ? null
+                              : !c.expanded
+                                ? (c.replyCount > subs.length ? t('展开 {n} 条回复', { n: formatCount(c.replyCount) }) : null)
+                                : (c.subDone ? t('收起回复') : t('加载更多回复'));
+                            if (subs.length === 0 && !hint) return null;
+                            return (
+                              <div style={{ marginTop: 8, padding: '8px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: 6, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                {subs.map(s => (
+                                  <div key={s.rpid} style={{ fontSize: 17, color: '#c6c9d0', lineHeight: 1.45, wordBreak: 'break-word' }}>
+                                    <span style={{ color: '#8ba7c0' }}>{s.uname}: </span>{s.message}
+                                  </div>
+                                ))}
+                                {hint && (
+                                  <div style={{ fontSize: 16, color: '#6f87a0' }}>{hint}</div>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </div>
                       </div>
                     );
@@ -1801,10 +2320,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         )}
       </div>
 
-      {/* Quality panel */}
+      {/* 字幕/画质/倍速 popups — anchored above their own buttons, rendered at
+          the ROOT (the controls bar is overflow-y:auto and would clip them). */}
       {showSubPanel && (
-        <div className="quality-panel">
-          <div className="quality-panel-title">{t('字幕')}</div>
+        <div className="ctrl-popup" style={popupPos ? { left: popupPos.left, bottom: popupPos.bottom } : { right: 60, bottom: 120, transform: 'none' }}>
           {subOptions.map((o, i) => (
             <div key={o.key} className={`quality-option ${focusArea === 'subpanel' && focusIdx === i ? 'focused' : ''} ${(subLan || 'off') === o.key ? 'active' : ''}`}
               onMouseEnter={() => { setFocusArea('subpanel'); setFocusIdx(i); }}
@@ -1822,17 +2341,30 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       )}
 
       {showQuality && (
-        <div className="quality-panel">
-          <div className="quality-panel-title">{t('画质')}</div>
+        <div className="ctrl-popup" style={popupPos ? { left: popupPos.left, bottom: popupPos.bottom } : { right: 60, bottom: 120, transform: 'none' }}>
           {qualities.map((q, i) => (
             <div key={q.qn} className={`quality-option ${focusArea === 'quality' && focusIdx === i ? 'focused' : ''} ${currentQuality === q.qn ? 'active' : ''}`}
               onMouseEnter={() => { setFocusArea('quality'); setFocusIdx(i); }}
               onClick={() => { changeQuality(q.qn); setShowQuality(false); setFocusArea('controls'); setFocusIdx(CONTROLS.indexOf('quality')); hideControlsLater(); }}>
-              {q.label}
+              {q.label}{q.qn >= 112 ? <span className="vip-tag">{t('大会员')}</span> : null}
             </div>
           ))}
         </div>
       )}
+
+      {showSpeedPanel && (
+        <div className="ctrl-popup" style={popupPos ? { left: popupPos.left, bottom: popupPos.bottom } : { right: 60, bottom: 120, transform: 'none' }}>
+          {SPEED_OPTIONS.map((s, i) => (
+            <div key={s} className={`quality-option ${focusArea === 'speed' && focusIdx === i ? 'focused' : ''} ${currentSpeed === s ? 'active' : ''}`}
+              onMouseEnter={() => { setFocusArea('speed'); setFocusIdx(i); }}
+              onClick={() => applySpeed(s)}>
+              {s === 1 ? t('正常') : `${s}x`}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {playerToast && <div className="player-toast">{playerToast}</div>}
 
       {/* End screen */}
     </div>

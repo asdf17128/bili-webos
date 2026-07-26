@@ -8,7 +8,7 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const { parseSubtitleBody, pickCueIndex, isAiLan, subtitleLanName, knownLanNames, AI_LEAD } =
+const { parseSubtitleBody, pickCueIndex, isAiLan, subtitleLanName, knownLanNames, AI_LEAD, lanFamily, matchTrackByLan } =
   await import('file://' + join(ROOT, 'app/src/player/subtitles.js'));
 
 let n = 0;
@@ -96,6 +96,32 @@ ok('lan name: known enum localized, unknown falls back to lan_doc/lan', () => {
   assert.equal(subtitleLanName('ko', '韩语(API说的)'), '韩语(API说的)'); // unknown → lan_doc
   assert.equal(subtitleLanName('ko', null), 'ko');                      // no doc → code
   assert.equal(subtitleLanName(null, null), '');
+});
+
+// --- remembered-language restore (C-SUB-02) ---
+// Real bug (2026-07-26): user picked English, next video restored tracks[0]
+// which happened to be Arabic. Restore must go by the SAVED lan, not order.
+ok('match: exact lan wins regardless of track order', () => {
+  const tracks = [{ lan: 'ar', subtitle_url: 'a' }, { lan: 'en-US', subtitle_url: 'b' }];
+  assert.equal(matchTrackByLan(tracks, 'en-US').lan, 'en-US');
+  assert.equal(matchTrackByLan(tracks, 'ar').lan, 'ar');
+});
+
+ok('match: language family bridges region/ai variants, human preferred', () => {
+  assert.equal(lanFamily('ai-en'), 'en');
+  assert.equal(lanFamily('zh-Hant'), 'zh');
+  // saved 'en' → video only has 'en-US'
+  assert.equal(matchTrackByLan([{ lan: 'ar' }, { lan: 'en-US' }], 'en').lan, 'en-US');
+  // saved 'en-US' → video only has ai-en
+  assert.equal(matchTrackByLan([{ lan: 'ar' }, { lan: 'ai-en' }], 'en-US').lan, 'ai-en');
+  // human beats ai within the family
+  assert.equal(matchTrackByLan([{ lan: 'ai-en' }, { lan: 'en' }], 'en-US').lan, 'en');
+});
+
+ok('match: no same-language track / no saved lan → null (caller falls back)', () => {
+  assert.equal(matchTrackByLan([{ lan: 'ar' }, { lan: 'ja' }], 'en'), null);
+  assert.equal(matchTrackByLan([{ lan: 'en' }], null), null);
+  assert.equal(matchTrackByLan(null, 'en'), null);
 });
 
 // The t(subtitleLanName(...)) call site is DYNAMIC — invisible to the coverage

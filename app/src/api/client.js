@@ -207,6 +207,18 @@ export async function ensureBuvid() {
     if (b3) {
       _buvid3 = b3;
       await setServiceCookies({ buvid3: b3, buvid4: b4 || '' });
+      // Dev browser: the service isn't there to hold the fingerprint, so hand
+      // it to the Mac proxy's cookie jar instead. Without it the live chat
+      // token request answers -352 (risk control) and danmaku/interaction
+      // could not be tested off-device at all.
+      if (!hasLunaService()) {
+        try {
+          await fetch(storage.getProxyUrl() + '/cookies', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ buvid3: b3, buvid4: b4 || '' }),
+          });
+        } catch (e) { /* best effort */ }
+      }
       buvidEnsured = true;
     }
   } catch (e) { /* best effort */ }
@@ -235,7 +247,30 @@ export async function getServiceDiagnostics() {
 // Subscribe to live danmaku relayed by the service. onDanmaku(text) per message.
 // Returns an unsubscribe function. Pair with danmakuStop() to close the relay.
 export function danmakuSubscribe(params, onDanmaku, onEvent) {
-  if (!hasLunaService()) return function () {};
+  if (!hasLunaService()) {
+    // Dev browser: the service doesn't exist here, so the Mac proxy runs the
+    // same relay module and bridges it over a WebSocket (see proxy/server.js).
+    // Without this, live danmaku and the gift/SC feed could only be tested on
+    // the TV (owner 2026-08-02: "直播为什么测不了,解决一下").
+    if (!import.meta.env.DEV) return function () {};
+    try {
+      var base = storage.getProxyUrl().replace(/^http/, 'ws');
+      var p = params || {};
+      var ws = new WebSocket(base + '/danmaku?roomid=' + encodeURIComponent(p.roomid)
+        + '&token=' + encodeURIComponent(p.token || '')
+        + '&host=' + encodeURIComponent(p.host || ''));
+      ws.onmessage = function (m) {
+        try {
+          var d = JSON.parse(m.data);
+          if (d.danmaku && onDanmaku) onDanmaku(d.danmaku);
+          if (d.event && onEvent) onEvent(d.event);
+        } catch (e) { /* ignore */ }
+      };
+      return function () { try { ws.close(); } catch (e) { /* ignore */ } };
+    } catch (e) {
+      return function () {};
+    }
+  }
   let cancelled = false;
   window.webOS.service.request(SERVICE_URI, {
     method: 'danmakuSubscribe',

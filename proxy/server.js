@@ -283,6 +283,44 @@ const server = http.createServer((req, res) => {
   res.end(JSON.stringify({ error: 'Not found' }));
 });
 
+// ── Dev-only live danmaku bridge ──────────────────────────────────────────
+// On the TV the app talks to the Node service, which holds the B站 chat
+// WebSocket (the browser can't: wrong Origin, no cookies). In the dev browser
+// that path is simply absent, so live danmaku AND the gift/SC/上舰 interaction
+// feed were untestable without the TV (owner 2026-08-02). Reuse the SAME relay
+// module the service runs, and expose it over a plain WebSocket here.
+import { WebSocketServer } from 'ws';
+import { createRequire } from 'node:module';
+const requireCjs = createRequire(import.meta.url);
+let danmakuRelay = null;
+try {
+  danmakuRelay = requireCjs('../service/com.biliwebos.app.service/danmaku.js');
+} catch (e) {
+  console.warn('[Proxy] danmaku relay unavailable:', e.message);
+}
+
+const dmWss = new WebSocketServer({ noServer: true });
+server.on('upgrade', (req, socket, head) => {
+  if (!req.url.startsWith('/danmaku')) { socket.destroy(); return; }
+  dmWss.handleUpgrade(req, socket, head, (ws) => {
+    const q = new URL(req.url, 'http://localhost');
+    const roomid = parseInt(q.searchParams.get('roomid') || '0', 10);
+    const token = q.searchParams.get('token') || '';
+    const host = q.searchParams.get('host') || 'broadcastlv.chat.bilibili.com';
+    if (!danmakuRelay || !roomid || !token) { ws.close(); return; }
+    const uid = parseInt(storedCookies['DedeUserID'] || '0', 10) || 0;
+    const stop = danmakuRelay.connectDanmaku(
+      { host, port: 443, roomid, token, buvid: storedCookies['buvid3'] || '', uid,
+        cookie: serializeCookies(storedCookies) },
+      (text, evt) => {
+        if (ws.readyState !== 1) return;
+        try { ws.send(JSON.stringify({ danmaku: text || null, event: evt || null })); } catch (e) { /* ignore */ }
+      });
+    console.log('[Proxy] danmaku bridge open, room', roomid);
+    ws.on('close', () => { try { stop && stop(); } catch (e) { /* ignore */ } });
+  });
+});
+
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`\n  🚀 Bilibili proxy server running at http://0.0.0.0:${PORT}`);
   console.log(`  TV app should connect to: http://<your-mac-ip>:${PORT}\n`);

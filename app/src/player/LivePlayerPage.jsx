@@ -18,6 +18,7 @@ export default function LivePlayerPage({ room, onBack }) {
   const [danmakuEnabled, setDanmakuEnabled] = useState(storage.getSettings().danmaku !== false);
   const infoTimer = useRef(null);
   const dmLayerRef = useRef(null);
+  const hlsRef = useRef(null);   // dev-only hls.js instance
   // 画质 (#18): live has its own ladder (原画/蓝光/超清…), separate from VOD's.
   const [qualities, setQualities] = useState([]);
   const [curQn, setCurQn] = useState(() => storage.getSettings().liveQn || 0);
@@ -95,6 +96,34 @@ export default function LivePlayerPage({ room, onBack }) {
       return `${proxyBase}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
     }
 
+    // The TV plays HLS natively; desktop Chrome does not, so live streams were
+    // untestable in the dev browser (owner 2026-08-02: "直播为什么测不了,解决
+    // 一下"). In DEV only, attach hls.js when the engine can't do it itself —
+    // the production bundle never imports it (import.meta.env.DEV is folded to
+    // false and the dynamic import is dropped).
+    async function attachSrc(v, src) {
+      const nativeHls = v.canPlayType('application/vnd.apple.mpegurl');
+      if (import.meta.env.DEV && !nativeHls && /\.m3u8(\?|$)/.test(src)) {
+        const { default: Hls } = await import('hls.js');
+        if (Hls.isSupported()) {
+          if (hlsRef.current) { try { hlsRef.current.destroy(); } catch (e) { /* ignore */ } }
+          const h = new Hls({ lowLatencyMode: false, enableWorker: false });
+          hlsRef.current = h;
+          h.on(Hls.Events.ERROR, (_e, data) => {
+            if (!data || !data.fatal) return;
+            note('hls-error', { type: data.type, details: data.details });
+            v.dispatchEvent(new Event('error'));   // same path as a native error
+          });
+          h.loadSource(src);
+          h.attachMedia(v);
+          v.play().catch(() => {});
+          return;
+        }
+      }
+      v.src = src;
+      v.play();
+    }
+
     async function connect(reason) {
       if (disposed) return;
       try {
@@ -102,8 +131,7 @@ export default function LivePlayerPage({ room, onBack }) {
         castReportState({ playState: 'loading' }).catch(() => {});
         const src = await resolveSrc();
         if (!src || !videoRef.current || disposed) return;
-        videoRef.current.src = src;
-        videoRef.current.play();
+        await attachSrc(videoRef.current, src);
         setLoading(false);
         infoTimer.current = setTimeout(() => setShowInfo(false), 3000);
       } catch (err) {
@@ -176,6 +204,7 @@ export default function LivePlayerPage({ room, onBack }) {
 
     return () => {
       disposed = true;
+      if (hlsRef.current) { try { hlsRef.current.destroy(); } catch (e) { /* ignore */ } hlsRef.current = null; }
       clearInterval(watchdog);
       if (infoTimer.current) clearTimeout(infoTimer.current);
       if (v) {
@@ -293,8 +322,19 @@ export default function LivePlayerPage({ room, onBack }) {
       const proxyBase = (typeof window !== 'undefined' && window.PalmServiceBridge)
         ? 'http://127.0.0.1:7654' : storage.getProxyUrl();
       const parsed = new URL(url);
-      v.src = `${proxyBase}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
-      v.play();
+      const next = `${proxyBase}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
+      const nativeHls = v.canPlayType('application/vnd.apple.mpegurl');
+      if (import.meta.env.DEV && !nativeHls && /\.m3u8(\?|$)/.test(next)) {
+        import('hls.js').then(({ default: Hls }) => {
+          if (!Hls.isSupported()) { v.src = next; v.play(); return; }
+          if (hlsRef.current) { try { hlsRef.current.destroy(); } catch (e) { /* ignore */ } }
+          const h = new Hls({ enableWorker: false });
+          hlsRef.current = h; h.loadSource(next); h.attachMedia(v); v.play().catch(() => {});
+        });
+      } else {
+        v.src = next;
+        v.play();
+      }
       setLoading(false);
     }).catch(() => setLoading(false));
   };
@@ -355,6 +395,10 @@ export default function LivePlayerPage({ room, onBack }) {
         e.stopPropagation();
         if (showQuality) { setShowQuality(false); return true; }
         if (showControls) { setShowControls(false); return true; }
+        // The chat rail is a layer too — Back closes it before leaving the
+        // room, matching the VOD comment rail. Without this the second Back
+        // jumped straight out with the rail still open (measured 2026-08-02).
+        if (interactOn) { toggleInteract(); return true; }
         onBack();
         return true;
       }

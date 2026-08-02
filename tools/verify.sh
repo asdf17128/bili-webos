@@ -76,6 +76,17 @@ node tools/test-casturl.mjs || { echo "FAIL: cast url rewrite"; exit 1; }
 node tools/test-searchhistory.mjs || { echo "FAIL: search history"; exit 1; }
 
 echo ""
+# Version drift gate: appinfo.json (what webOS installs) and src/version.js
+# (what 设置 → 关于 shows and the update check compares) must agree. They
+# drifted once — appinfo 1.5.0 vs version.js 1.4.0 — so every v1.5.0 user was
+# permanently told "发现新版 v1.5.0". Only a human noticed.
+V_APP=$(node -e "console.log(require('./app/webos-meta/appinfo.json').version)")
+V_SRC=$(grep -oE "APP_VERSION = '[^']+'" app/src/version.js | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")
+if [ "$V_APP" != "$V_SRC" ]; then
+  echo "FAIL: version drift — appinfo.json=$V_APP but src/version.js=$V_SRC"; exit 1
+fi
+echo "OK: version $V_APP consistent (appinfo == src/version.js)"
+
 echo "=== [3/6] Service on REAL Node 8 (docker) ==="
 if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
   bash tools/test-node8/test.sh | grep -vE "buvid boot|Cast server|proxy on port"
@@ -100,6 +111,9 @@ if [ -n "$SIM" ]; then
       curl -s --max-time 2 http://127.0.0.1:9528/ping >/dev/null 2>&1 && break
       sleep 1
     done
+    curl -s --max-time 2 http://127.0.0.1:9528/ping >/dev/null 2>&1 \
+      && echo "  bridge ready after ${i}s" \
+      || { echo "  bridge FAILED to start — see /tmp/verify-dev-service.log"; tail -3 /tmp/verify-dev-service.log; }
   fi
   if ! curl -s --max-time 2 http://127.0.0.1:5173 >/dev/null 2>&1; then
     (cd app && npm run dev > /tmp/verify-vite.log 2>&1 &)
@@ -110,7 +124,7 @@ if [ -n "$SIM" ]; then
     done
   fi
   set +e
-  node tools/test-sim.mjs
+  SIM_STRICT=1 node tools/test-sim.mjs
   SIM_RC=$?
   set -e
   # dev-service advertises SSDP as 我的小电视 — leaving it up would put a

@@ -31,10 +31,18 @@ const warn = (name, detail) => { warned++; console.log(`  ⚠️  ${name}${detai
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function main() {
-  // The bridge is what makes dev meaningful; say so loudly if it's missing.
+  // The bridge is what makes dev meaningful. Probe with retries — a single
+  // shot raced the service's startup and silently downgraded a whole run to
+  // the proxy path (2026-08-02). SIM_STRICT=1 (set by verify.sh --sim) turns a
+  // missing bridge into a failure instead of a warning.
   let bridgeUp = false;
-  try { bridgeUp = (await fetch(BRIDGE)).ok; } catch (e) { /* down */ }
-  if (!bridgeUp) warn('dev-service bridge down', 'falling back to proxy — results are less TV-like');
+  for (let i = 0; i < 10 && !bridgeUp; i++) {
+    try { bridgeUp = (await fetch(BRIDGE)).ok; } catch (e) { /* not yet */ }
+    if (!bridgeUp) await sleep(1000);
+  }
+  if (bridgeUp) check('dev-service bridge up (same code path as the TV)', true);
+  else if (process.env.SIM_STRICT) check('dev-service bridge up (same code path as the TV)', false, 'not reachable on :9528');
+  else warn('dev-service bridge down', 'falling back to proxy — results are less TV-like');
 
   const browser = await chromium.launch({ channel: 'chrome' });
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
@@ -67,6 +75,18 @@ async function main() {
   try {
     console.log('\n[Home grid + scroll geometry]');
     await page.goto(URL_BASE);
+    // A fresh browser profile is logged OUT, so like/coin/fav never rendered
+    // and the whole logged-in surface went untested (caught 2026-08-02: the
+    // control bar came back as 暂停|弹幕|倍速|画质|评论, no 三连 buttons).
+    // Seed the same cookies the service holds.
+    try {
+      const jar = JSON.parse(await (await fetch('http://127.0.0.1:9528/luna/getCookies', { method: 'POST', body: '{}' })).text());
+      const ck = (jar && (jar.cookies || jar)) || {};
+      if (ck.SESSDATA) {
+        await page.evaluate((c) => localStorage.setItem('bili_auth', JSON.stringify(c)), ck);
+        await page.reload();
+      }
+    } catch (e) { /* bridge down — covered by the check above */ }
     await sleep(4000);
     const home = await page.evaluate(() => ({
       sidebar: document.querySelectorAll('.sidebar-item').length,
@@ -134,6 +154,14 @@ async function main() {
     const controls = await page.evaluate(() => [...document.querySelectorAll('.player-btn')].map(b => b.textContent.trim()));
     check('Control bar has the expected buttons', controls.some(c => c.includes('弹幕')) && controls.some(c => c.includes('倍速')) && controls.some(c => c.includes('评论')),
       controls.join(' | '));
+    const loggedIn = await page.evaluate(() => !!(JSON.parse(localStorage.getItem('bili_auth') || '{}').SESSDATA));
+    if (loggedIn) {
+      check('Logged in: 赞/币/藏 present in the control bar',
+        controls.some(c => c.includes('👍')) && controls.some(c => c.includes('⭐')),
+        controls.filter(c => /👍|B |⭐/.test(c)).join(' '));
+    } else {
+      warn('Not logged in', 'like/coin/fav surface skipped — start tools/dev-service.mjs to seed cookies');
+    }
 
     let f = '';
     for (let i = 0; i < 10; i++) { f = await focusedBtn(); if (f.includes('评论')) break; await key('ArrowRight'); await sleep(220); }

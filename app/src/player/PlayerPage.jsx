@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies, getReplyReplies, tripleVideo, likeVideo, coinVideo, favVideo, getFavFoldersFor, getVideoRelation, getHtml5PlayUrl } from '../api/client';
+import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies, getReplyReplies, tripleVideo, likeVideo, coinVideo, favVideo, getFavFoldersFor, getVideoRelation, getHtml5PlayUrl, mediaProxyBase } from '../api/client';
 import { playPart, playAdvance } from './playIntent';
 
 import { formatDuration, formatTime, formatCount, QUALITY_MAP, cleanTitle, pickAigcText } from '../utils/format';
@@ -21,7 +21,7 @@ import { t, getLocale } from '../i18n';
 function proxyImgRaw(url) {
   if (!url) return '';
   const u = url.startsWith('//') ? 'https:' + url : url;
-  const base = (typeof window !== 'undefined' && window.PalmServiceBridge) ? 'http://127.0.0.1:7654' : storage.getProxyUrl();
+  const base = mediaProxyBase();
   try {
     const parsed = new URL(u);
     return `${base}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
@@ -34,7 +34,7 @@ function proxyImg(url) {
   if (!url) return '';
   let u = url.startsWith('//') ? 'https:' + url : url;
   if (u.includes('hdslb.com') && !u.includes('@')) u += '@672w_420h_1c.webp';
-  const base = (typeof window !== 'undefined' && window.PalmServiceBridge) ? 'http://127.0.0.1:7654' : storage.getProxyUrl();
+  const base = mediaProxyBase();
   try {
     const parsed = new URL(u);
     return `${base}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
@@ -458,9 +458,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       player.getNetworkingEngine().registerRequestFilter((type, request) => {
         if (request.uris[0] && request.uris[0].startsWith('http')) {
           const originalUrl = new URL(request.uris[0]);
-          const proxyBase = (typeof window !== 'undefined' && window.PalmServiceBridge)
-            ? 'http://127.0.0.1:7654'
-            : storage.getProxyUrl();
+          const proxyBase = mediaProxyBase();
           request.uris[0] = `${proxyBase}/proxy/${originalUrl.host}${originalUrl.pathname}${originalUrl.search}`;
         }
       });

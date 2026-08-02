@@ -1,14 +1,13 @@
 import React, { useCallback, useEffect, useReducer } from 'react';
 import { useFocusable } from '../hooks/useFocus';
 import { formatCount, formatDuration, formatTime, cleanTitle } from '../utils/format';
+import { mediaProxyBase } from '../api/client';
 import { storage } from '../utils/storage';
 import { t } from '../i18n';
 import { titleMT, useTitlesMT } from '../utils/titlemt';
 
 function getProxyBase() {
-  return (typeof window !== 'undefined' && window.PalmServiceBridge)
-    ? 'http://127.0.0.1:7654'
-    : storage.getProxyUrl();
+  return mediaProxyBase();
 }
 
 function proxyImg(url) {

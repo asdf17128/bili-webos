@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
+    "preview": "vite preview --port 5180 --host",
     "package": "vite build && cp -r webos-meta/* dist/ && cd dist && ares-package ."
   },
   "dependencies": {

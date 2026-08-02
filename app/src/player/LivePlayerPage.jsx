@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getLiveStreamUrl, getLiveQualities, getRoomInit, getDanmuInfo, getBuvid3, danmakuSubscribe, danmakuStop, castReportState, castReportProgress } from '../api/client';
+import { getLiveStreamUrl, getLiveQualities, getRoomInit, getDanmuInfo, getBuvid3, danmakuSubscribe, danmakuStop, castReportState, castReportProgress, mediaProxyBase } from '../api/client';
 import { formatCount } from '../utils/format';
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
@@ -89,9 +89,7 @@ export default function LivePlayerPage({ room, onBack }) {
       // reconnect with the OLD URL would just fail again.
       const hlsUrl = await getLiveStreamUrl(room.roomid, qnRef.current || undefined);
       if (!hlsUrl) return null;
-      const proxyBase = (typeof window !== 'undefined' && window.PalmServiceBridge)
-        ? 'http://127.0.0.1:7654'
-        : storage.getProxyUrl();
+      const proxyBase = mediaProxyBase();
       const parsed = new URL(hlsUrl);
       return `${proxyBase}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
     }
@@ -319,8 +317,7 @@ export default function LivePlayerPage({ room, onBack }) {
     setLoading(true);
     getLiveStreamUrl(room.roomid, qn).then(url => {
       if (!url) { setLoading(false); return; }
-      const proxyBase = (typeof window !== 'undefined' && window.PalmServiceBridge)
-        ? 'http://127.0.0.1:7654' : storage.getProxyUrl();
+      const proxyBase = mediaProxyBase();
       const parsed = new URL(url);
       const next = `${proxyBase}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
       const nativeHls = v.canPlayType('application/vnd.apple.mpegurl');

@@ -18,6 +18,54 @@ function hasLunaService() {
     typeof window.PalmServiceBridge !== 'undefined';
 }
 
+// ── DEV: the same service the TV runs, bridged from the Mac ──────────────
+// tools/dev-service.mjs loads service/com.biliwebos.app.service/service.js with
+// the Node-8 test stub and exposes its Luna methods over HTTP/WS. Routing dev
+// through it means the simulator exercises the TV's *actual* fetch, cookie,
+// WBI, risk-control, danmaku and cast code instead of proxy/server.js's
+// parallel implementation (owner 2026-08-02: 模拟器和真机一个效果).
+// Falls back to the plain proxy when the bridge isn't running.
+const DEV_LUNA = 'http://127.0.0.1:9528';
+let devLunaUp = null;                       // null = unknown, then true/false
+export function devBridgeState() { return devLunaUp; }
+
+async function devLunaAvailable() {
+  if (!import.meta.env.DEV) return false;
+  if (devLunaUp !== null) return devLunaUp;
+  try {
+    const r = await fetch(DEV_LUNA + '/ping', { cache: 'no-store' });
+    devLunaUp = r.ok;
+  } catch (e) { devLunaUp = false; }
+  if (devLunaUp) console.info('[dev] using the real TV service via bridge :9528');
+  return devLunaUp;
+}
+
+async function devLunaCall(method, params) {
+  const r = await fetch(DEV_LUNA + '/luna/' + method, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params || {}),
+  });
+  if (!r.ok) throw new Error('bridge http ' + r.status);
+  return r.json();
+}
+
+function devLunaSubscribe(method, params, onFrame) {
+  const qs = new URLSearchParams(params || {}).toString();
+  const ws = new WebSocket(DEV_LUNA.replace(/^http/, 'ws') + '/luna-sub/' + method + (qs ? '?' + qs : ''));
+  ws.onmessage = (m) => { try { onFrame(JSON.parse(m.data)); } catch (e) { /* ignore */ } };
+  return function () { try { ws.close(); } catch (e) { /* ignore */ } };
+}
+
+// Media (images / video / sprites) always go through the SERVICE's local proxy
+// on the TV — it adds the Referer B站's CDN requires. In dev the bridge runs
+// that same proxy on the Mac, so point there too and the media path matches
+// the TV byte for byte; without the bridge fall back to the standalone proxy.
+export function mediaProxyBase() {
+  if (typeof window !== 'undefined' && window.PalmServiceBridge) return 'http://127.0.0.1:7654';
+  if (import.meta.env.DEV && devLunaUp === true) return 'http://127.0.0.1:7654';
+  return storage.getProxyUrl();
+}
+
 // Luna service fetch (on TV)
 function lunaFetch(url, options) {
   return new Promise(function(resolve, reject) {
@@ -92,6 +140,21 @@ async function smartFetch(host, path, options) {
     return res;
   }
 
+  // DEV with the bridge up: same path the TV takes (service.fetch)
+  if (await devLunaAvailable()) {
+    var br = await devLunaCall('fetch', {
+      url: url, method: opts.method || 'GET', body: opts.body,
+      contentType: opts.contentType, range: opts.range,
+    });
+    if (br && br.newCookies) {
+      var a2 = storage.getAuth() || {};
+      storage.setAuth(Object.assign({}, a2, br.newCookies));
+    }
+    if (!br || !br.returnValue) throw new Error((br && br.error) || 'bridge fetch failed');
+    if (br.body) { try { return JSON.parse(br.body); } catch (e) { return br; } }
+    return br;
+  }
+
   // Fallback to proxy
   var proxyRes = await proxyFetchRaw(url, opts);
   var ct = proxyRes.headers.get('content-type') || '';
@@ -132,8 +195,20 @@ function lunaRequest(method, parameters, subscribe, handlers) {
   handlers = handlers || {};
   return new Promise(function(resolve, reject) {
     if (!hasLunaService()) {
-      if (handlers.allowMissing) { resolve(null); return; }
-      reject(new Error('Luna not available'));
+      devLunaAvailable().then(function (up) {
+        if (!up) {
+          if (handlers.allowMissing) { resolve(null); return; }
+          reject(new Error('Luna not available'));
+          return;
+        }
+        devLunaCall(method, parameters || {}).then(function (r) {
+          if (handlers.onSuccess) handlers.onSuccess(r);
+          resolve(r);
+        }).catch(function (e) {
+          if (handlers.allowMissing) { resolve(null); return; }
+          reject(e);
+        });
+      });
       return;
     }
 
@@ -154,7 +229,19 @@ function lunaRequest(method, parameters, subscribe, handlers) {
 }
 
 export function castSubscribe(onEvent, onFailure) {
-  if (!hasLunaService()) return function () {};
+  if (!hasLunaService()) {
+    // DEV: the bridge runs the real cast controller (SSDP + DLNA receiver on
+    // the Mac), so a phone can cast straight to the dev browser.
+    if (!import.meta.env.DEV) return function () {};
+    var devStop = null, devCancelled = false;
+    devLunaAvailable().then(function (up) {
+      if (!up || devCancelled) return;
+      devStop = devLunaSubscribe('castSubscribe', { subscribe: true }, function (res) {
+        if (res && res.event && onEvent) onEvent(res.event, res.status);
+      });
+    });
+    return function () { devCancelled = true; if (devStop) devStop(); };
+  }
 
   let cancelled = false;
   window.webOS.service.request(SERVICE_URI, {
@@ -253,6 +340,21 @@ export function danmakuSubscribe(params, onDanmaku, onEvent) {
     // Without this, live danmaku and the gift/SC feed could only be tested on
     // the TV (owner 2026-08-02: "直播为什么测不了,解决一下").
     if (!import.meta.env.DEV) return function () {};
+    // Prefer the dev-service bridge: that's literally the TV's relay, reached
+    // through the TV's own danmakuSubscribe method. The proxy bridge below
+    // stays as a fallback for when only proxy/server.js is running.
+    var cancelledBridge = false, stopBridge = null;
+    devLunaAvailable().then(function (up) {
+      if (!up || cancelledBridge) return;
+      stopBridge = devLunaSubscribe('danmakuSubscribe', params || {}, function (res) {
+        if (!res) return;
+        if (res.danmaku && onDanmaku) onDanmaku(res.danmaku);
+        if (res.event && onEvent) onEvent(res.event);
+      });
+    });
+    if (devLunaUp === true) {
+      return function () { cancelledBridge = true; if (stopBridge) stopBridge(); };
+    }
     try {
       var base = storage.getProxyUrl().replace(/^http/, 'ws');
       var p = params || {};

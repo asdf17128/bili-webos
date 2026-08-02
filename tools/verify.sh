@@ -1,7 +1,12 @@
 #!/bin/bash
 # Full verification pipeline. Run before every release.
-# Usage: bash tools/verify.sh [--no-tv] [--full]
+# Usage: bash tools/verify.sh [--no-tv] [--sim] [--full]
 #   --no-tv  skip the on-device layers (syntax/node8/build only)
+#   --sim    run the SIMULATOR functional suite instead of the TV (test-sim.mjs)
+#            — same coverage as the TV smoke minus what only hardware can show
+#            (old-Chromium quirks, decode/perf, 倍速 via the luna bus). Boots
+#            the real service via tools/dev-service.mjs so dev and TV share one
+#            code path, plus vite; both are stopped again afterwards.
 #   --full   also run the on-device UI smoke suite (test-ui.mjs, ~3 min)
 #
 # Layers (fail-fast top to bottom):
@@ -19,9 +24,10 @@
 # Case registry with evidence per gate: docs/TESTCASES.md
 set -e
 cd "$(dirname "$0")/.."
-NO_TV=""; FULL=""
+NO_TV=""; FULL=""; SIM=""
 for a in "$@"; do
   [ "$a" = "--no-tv" ] && NO_TV=1
+  [ "$a" = "--sim" ] && SIM=1
   [ "$a" = "--full" ] && FULL=1
 done
 
@@ -80,6 +86,39 @@ fi
 echo ""
 echo "=== [4/6] App build ==="
 (cd app && npx vite build 2>&1 | tail -1)
+
+if [ -n "$SIM" ]; then
+  echo ""
+  echo "=== [S] Simulator functional suite (test-sim.mjs) ==="
+  # Bring up the pieces the suite needs, remember what WE started so a dev
+  # session already running isn't killed underneath the user.
+  STARTED_SVC=""; STARTED_VITE=""
+  if ! curl -s --max-time 3 http://127.0.0.1:9528/ping >/dev/null 2>&1; then
+    (node tools/dev-service.mjs > /tmp/verify-dev-service.log 2>&1 &)
+    STARTED_SVC=1
+    for i in $(seq 1 20); do
+      curl -s --max-time 2 http://127.0.0.1:9528/ping >/dev/null 2>&1 && break
+      sleep 1
+    done
+  fi
+  if ! curl -s --max-time 2 http://127.0.0.1:5173 >/dev/null 2>&1; then
+    (cd app && npm run dev > /tmp/verify-vite.log 2>&1 &)
+    STARTED_VITE=1
+    for i in $(seq 1 25); do
+      curl -s --max-time 2 http://127.0.0.1:5173 >/dev/null 2>&1 && break
+      sleep 1
+    done
+  fi
+  set +e
+  node tools/test-sim.mjs
+  SIM_RC=$?
+  set -e
+  # dev-service advertises SSDP as 我的小电视 — leaving it up would put a
+  # second identical device in the phone's cast list.
+  [ -n "$STARTED_SVC" ] && pkill -f "tools/dev-service.mjs" 2>/dev/null
+  [ -n "$STARTED_VITE" ] && pkill -f "bili_webos/app/node_modules/.bin/vite" 2>/dev/null
+  [ "$SIM_RC" != "0" ] && { echo "FAIL: simulator suite"; exit 1; }
+fi
 
 if [ -n "$NO_TV" ]; then echo ""; echo "=== --no-tv: done ==="; exit 0; fi
 

@@ -7,5 +7,8 @@
     "test": "node --test service/com.biliwebos.app.service/test/*.test.js",
     "test:api": "node tools/test-e2e.mjs",
     "test:ui": "node tools/test-ui.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
   }
 }

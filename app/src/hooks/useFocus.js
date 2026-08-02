@@ -73,7 +73,21 @@ function applyFocus(newId) {
     if (newEl) {
       newEl.classList.add('focused');
       // Don't scroll for a pointer-hover focus — that's the edge-scroll loop (#11).
-      if (!hoverDriven) newEl.scrollIntoView({ block: 'nearest' });
+      // And never inside VideoGrid: it scrolls itself via translateY, so a
+      // browser scroll STACKS on top of the transform (measured: wrapper
+      // scrollTop 608px, focused card pushed above the viewport — PR #16).
+      // Test by ANCESTRY, not by id prefix: 设置/搜索/我的 rows are also
+      // 'content-N-0' but live in real overflow:auto containers and DO need
+      // scrollIntoView (gating them by prefix broke 4 smoke assertions).
+      const selfScrolled = !!(newEl.closest && newEl.closest('.video-grid'));
+      if (!hoverDriven && !selfScrolled) newEl.scrollIntoView({ block: 'nearest' });
+      if (selfScrolled) {                    // undo any stray wrapper scroll
+        let p = newEl.parentElement;
+        while (p && p !== document.body) {
+          if (p.scrollTop) p.scrollTop = 0;
+          p = p.parentElement;
+        }
+      }
     }
   }
 
@@ -150,6 +164,22 @@ function navigateGrid(fromId, direction) {
     for (let c = col; c >= 0; c--) {
       const id = `${group}-${tr}-${c}`;
       if (focusRegistry.has(id)) return id;
+    }
+  }
+
+  // 侧栏上下循环:顶部按上 → 最底 icon,底部按下 → 顶部(owner request)。
+  // 只给 sidebar 组 — 内容网格到边就该停,循环会让长列表迷失方向。
+  if (group === 'sidebar' && (direction === 'up' || direction === 'down')) {
+    let min = Infinity, max = -Infinity;
+    for (const [, d] of focusRegistry) {
+      if (d.group === 'sidebar') {
+        if (d.row < min) min = d.row;
+        if (d.row > max) max = d.row;
+      }
+    }
+    if (min !== Infinity) {
+      const wrapId = `sidebar-${direction === 'up' ? max : min}-0`;
+      if (focusRegistry.has(wrapId) && wrapId !== fromId) return wrapId;
     }
   }
   return null;

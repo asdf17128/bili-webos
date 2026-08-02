@@ -24,7 +24,7 @@ function proxyImg(url) {
   if (!url) return '';
   let u = url.startsWith('//') ? 'https:' + url : url;
   if (u.includes('hdslb.com') && !u.includes('@')) u += '@160w_160h_1c.webp';
-  const base = (typeof window !== 'undefined' && window.webOS) ? 'http://127.0.0.1:7654' : storage.getProxyUrl();
+  const base = (typeof window !== 'undefined' && window.PalmServiceBridge) ? 'http://127.0.0.1:7654' : storage.getProxyUrl();
   try { const p = new URL(u); return `${base}/proxy/${p.host}${p.pathname}${p.search}`; } catch { return u; }
 }
 

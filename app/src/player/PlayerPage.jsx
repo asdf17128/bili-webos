@@ -21,7 +21,7 @@ import { t, getLocale } from '../i18n';
 function proxyImgRaw(url) {
   if (!url) return '';
   const u = url.startsWith('//') ? 'https:' + url : url;
-  const base = (typeof window !== 'undefined' && window.webOS) ? 'http://127.0.0.1:7654' : storage.getProxyUrl();
+  const base = (typeof window !== 'undefined' && window.PalmServiceBridge) ? 'http://127.0.0.1:7654' : storage.getProxyUrl();
   try {
     const parsed = new URL(u);
     return `${base}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
@@ -34,7 +34,7 @@ function proxyImg(url) {
   if (!url) return '';
   let u = url.startsWith('//') ? 'https:' + url : url;
   if (u.includes('hdslb.com') && !u.includes('@')) u += '@672w_420h_1c.webp';
-  const base = (typeof window !== 'undefined' && window.webOS) ? 'http://127.0.0.1:7654' : storage.getProxyUrl();
+  const base = (typeof window !== 'undefined' && window.PalmServiceBridge) ? 'http://127.0.0.1:7654' : storage.getProxyUrl();
   try {
     const parsed = new URL(u);
     return `${base}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
@@ -45,6 +45,10 @@ function proxyImg(url) {
 
 // B站-style coin icon (owner design pick "D"): bright-yellow disc + thin white
 // inner ring + bold white B. Inline SVG keeps the ring crisp at TV render.
+const RAIL_W = 420;                       // comment rail width (= live chat rail)
+const RAIL_VW = 1920 - RAIL_W;            // 1500
+const RAIL_VH = Math.round(RAIL_VW * 9 / 16); // 844; the rest holds metadata
+
 function CoinIcon() {
   return (
     <svg className="coin-icon" width="19" height="19" viewBox="0 0 24 24" aria-hidden="true">
@@ -120,11 +124,18 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const relatedRef = useRef([]);
   // Bottom panel: 'related' (相关推荐) | 'up' (UP主投稿) | 'comments' (评论)
   const [panelTab, setPanelTab] = useState('related');
+  // 评论 rail (owner: "为什么聊天竖着,评论不这么做"): reading-while-watching
+  // content goes in a right rail with the video shrunk — same as the live chat
+  // rail. The bottom tab panel keeps the 4-col grids (相关推荐/UP主投稿/选集),
+  // which need the width and mean "I'm picking the next video" anyway.
+  const [showCommentRail, setShowCommentRail] = useState(false);
   const [upVideos, setUpVideos] = useState([]);
   const [upName, setUpName] = useState('');
   // Comments (评论): a single-column list under its own tab. Lazy-loaded when
   // the tab is first opened; paged like the UP主投稿 list.
   const [comments, setComments] = useState([]);
+  // pressControl (defined above loadComments) reaches it through this ref — TDZ.
+  const loadCommentsRef = useRef(null);
   const [commentCount, setCommentCount] = useState(0);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const commentPnRef = useRef(1);
@@ -210,6 +221,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     ...(subTracks.length > 0 ? ['subtitle'] : []),
     'speed',
     'quality',
+    'comments',
   ];
   const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2];
   const controlsRef = useRef(CONTROLS);
@@ -318,7 +330,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // drives the rate over the Luna bus; speed=1 swaps back to DASH.
   // Verified on-device 2026-07-22: 1.25/1.5/2.0 all play at true rate.
   const nativeModeRef = useRef(false);
-  const onWebOS = typeof window !== 'undefined' && !!(window.webOS && window.webOS.service);
+  const onWebOS = typeof window !== 'undefined' && !!(window.PalmServiceBridge && window.webOS && window.webOS.service);
 
   const lunaSetPlayRate = useCallback(async (rate) => {
     if (!onWebOS) return false;
@@ -446,7 +458,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       player.getNetworkingEngine().registerRequestFilter((type, request) => {
         if (request.uris[0] && request.uris[0].startsWith('http')) {
           const originalUrl = new URL(request.uris[0]);
-          const proxyBase = (typeof window !== 'undefined' && window.webOS)
+          const proxyBase = (typeof window !== 'undefined' && window.PalmServiceBridge)
             ? 'http://127.0.0.1:7654'
             : storage.getProxyUrl();
           request.uris[0] = `${proxyBase}/proxy/${originalUrl.host}${originalUrl.pathname}${originalUrl.search}`;
@@ -1350,6 +1362,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       setFocusIdx(Math.max(0, SPEED_OPTIONS.indexOf(speedRef.current)));
       if (controlsTimer.current) clearTimeout(controlsTimer.current);
       return;
+    } else if (btn === 'comments') {
+      setShowCommentRail(true);
+      setFocusArea('commentRail');
+      setFocusIdx(0);
+      if (comments.length === 0) loadCommentsRef.current?.(true);
+      if (controlsTimer.current) clearTimeout(controlsTimer.current);
+      return;
     } else if (btn === 'quality') {
       if (nativeModeRef.current) {
         // 倍速模式吃的是合流 MP4,画质由 durl 固定 — 回 1x 才有 DASH 阶梯。
@@ -1373,7 +1392,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     // 'like' never routes here: its press/release runs the long-press machinery
     // (keydown/keyup + mousedown/mouseup on the button itself).
     hideControlsLater();
-  }, [subOptions, subLan, subTracks, fetchSubBody, hideControlsLater, doCoin, doFav, showPlayerToast, anchorFor, qualities, currentQuality]);
+  }, [subOptions, subLan, subTracks, fetchSubBody, hideControlsLater, doCoin, doFav, showPlayerToast, anchorFor, qualities, currentQuality, comments]);
 
   // Load more related videos
   const loadingRelatedRef = useRef(false);
@@ -1482,6 +1501,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     commentLoadingRef.current = false;
     setCommentsLoading(false);
   }, [video]);
+
+  loadCommentsRef.current = loadComments;
 
   // 楼中楼: OK/click on a comment cycles expand(page1) → load more pages →
   // collapse. Sub-replies aren't focusable rows, so paging hangs off the same
@@ -1668,7 +1689,12 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         } else if (ended) {
           // End screen: back exits player
           onBack();
-        } else if (showQuality || showSubPanel || showSpeedPanel) {
+        } else if (showCommentRail) {
+        setShowCommentRail(false);
+        setFocusArea('controls');
+        setFocusIdx(Math.max(0, controlsRef.current.indexOf('comments')));
+        hideControlsLater();
+      } else if (showQuality || showSubPanel || showSpeedPanel) {
           // A secondary popup is open: Back closes ONLY the popup and returns
           // focus to its button — one level at a time (owner: 返回应先关二级选项).
           const backTo = showQuality ? 'quality' : showSubPanel ? 'subtitle' : 'speed';
@@ -1842,11 +1868,30 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }, 30);
       }
 
+      // === 评论竖栏 ===
+      if (focusArea === 'commentRail') {
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          const next = e.key === 'ArrowUp'
+            ? Math.max(0, focusIdx - 1)
+            : Math.min(comments.length - 1, focusIdx + 1);
+          setFocusIdx(next);
+          if (e.key === 'ArrowDown' && next >= comments.length - 3) loadComments(false);
+          setTimeout(() => {
+            const cards = document.querySelectorAll('.comment-card');
+            if (cards[next]) cards[next].scrollIntoView({ block: 'nearest' });
+          }, 30);
+          return true;
+        }
+        if (e.key === 'Enter') { e.preventDefault(); pressComment(focusIdx); return true; }
+        return false;
+      }
+
       // === Tab row (相关推荐 / UP主投稿) ===
       if (focusArea === 'tabs') {
         e.preventDefault();
         if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-          const keys = isMultiP ? ['parts', 'related', 'up', 'comments'] : ['related', 'up', 'comments'];
+          const keys = isMultiP ? ['parts', 'related', 'up'] : ['related', 'up'];
           let i = keys.indexOf(panelTab); if (i < 0) i = 0;
           i = e.key === 'ArrowRight' ? (i + 1) % keys.length : (i - 1 + keys.length) % keys.length;
           const next = keys[i];
@@ -1926,7 +1971,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
     setCustomKeyHandler(handler);
     return () => setCustomKeyHandler(null);
-  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, showSpeedPanel, applySpeed, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, comments, loadUpVideos, loadComments, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody, pressControl, startLikeHold, pressComment]);
+  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, showSpeedPanel, applySpeed, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, comments, loadUpVideos, loadComments, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody, pressControl, startLikeHold, pressComment, showCommentRail]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -1945,7 +1990,106 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
   return (
     <div className="player-page" onMouseMove={handlePointerMove}>
-      <video ref={videoRef} className="player-video" />
+      <video ref={videoRef} className="player-video"
+        style={showCommentRail ? { width: RAIL_VW, height: RAIL_VH } : undefined} />
+      {/* Same treatment as the live layout: 16:9 in a 1500-wide column leaves
+          ~236px, so it carries the video's own metadata instead of black. */}
+      {showCommentRail && (
+        <div style={{
+          position: 'absolute', top: RAIL_VH, left: 0, width: RAIL_VW, height: 1080 - RAIL_VH,
+          padding: '20px 44px', boxSizing: 'border-box', zIndex: 20,
+          display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 10,
+        }}>
+          <div style={{ fontSize: 26, color: '#fff', fontWeight: 600, overflow: 'hidden',
+            textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{titleMT(cleanTitle(videoTitle || ''))}</div>
+          <div style={{ fontSize: 19, color: '#9aa0a8', display: 'flex', gap: 18 }}>
+            {(upName || video?.owner?.name) && <span>{upName || video.owner.name}</span>}
+            {stat.like > 0 && <span>👍 {formatCount(stat.like)}</span>}
+            {stat.coin > 0 && <span>投币 {formatCount(stat.coin)}</span>}
+            {stat.favorite > 0 && <span>⭐ {formatCount(stat.favorite)}</span>}
+          </div>
+        </div>
+      )}
+
+
+      {/* 评论竖栏 — same shape as the live chat rail: video shrinks, nothing
+          is covered, and a ~420px column keeps the line length readable at
+          3m viewing distance (a 1920-wide single column did not). */}
+      {showCommentRail && (
+        <div style={{
+          position: 'absolute', top: 0, right: 0, width: RAIL_W, height: 1080,
+          background: '#16161c', borderLeft: '1px solid #2b2c33',
+          display: 'flex', flexDirection: 'column', zIndex: 45,
+        }}>
+          <div style={{ padding: '20px 22px 12px', borderBottom: '1px solid #2b2c33',
+            fontSize: 20, color: '#fff', fontWeight: 600 }}>
+            {commentCount ? t('评论 · {n}', { n: formatCount(commentCount) }) : t('评论')}
+          </div>
+          <div className="comment-rail-body" style={{ flex: 1, overflow: 'hidden', padding: '10px 14px 20px' }}>
+
+            comments.length === 0 ? (
+              <div style={{ color: '#888', fontSize: 18, padding: '20px 4px' }}>
+                {commentsLoading ? t('加载评论…') : t('暂无评论')}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {comments.map((c, i) => {
+                  const av = proxyImg(c.avatar);
+                  return (
+                    <div key={c.rpid || i} className="comment-card"
+                      onClick={() => pressComment(i)}
+                      onMouseEnter={() => {
+                        setFocusArea('commentRail'); setFocusIdx(i);
+                        if (controlsTimer.current) clearTimeout(controlsTimer.current);
+                      }}
+                      style={{
+                        display: 'flex', gap: 14, padding: '14px 12px', borderRadius: 8,
+                        background: focusArea === 'commentRail' && focusIdx === i ? 'rgba(0,161,214,0.16)' : 'transparent',
+                        outline: focusArea === 'commentRail' && focusIdx === i ? '3px solid #00a1d6' : 'none',
+                      }}>
+                      <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#1a1a2e', flexShrink: 0, overflow: 'hidden' }}>
+                        {av && <img src={av} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 16, color: '#8ba7c0', marginBottom: 4 }}>
+                        {c.uname}{c.time ? ' · ' + formatTime(c.time) : ''}
+                        </div>
+                        <div style={{ fontSize: 19, color: '#e1e1e6', lineHeight: 1.5, wordBreak: 'break-word' }}>
+                        {c.message}
+                        </div>
+                        <div style={{ fontSize: 16, color: '#888', marginTop: 6 }}>
+                        👍 {formatCount(c.like)}{c.replyCount ? ' · ' + t('{n} 条回复', { n: formatCount(c.replyCount) }) : ''}
+                        </div>
+                        {(() => {
+                        // 楼中楼: expanded full list, else the free preview
+                        const subs = c.expanded ? (c.subs || []) : (c.preview || []);
+                        const hint = !c.replyCount ? null
+                          : !c.expanded
+                            ? (c.replyCount > subs.length ? t('展开 {n} 条回复', { n: formatCount(c.replyCount) }) : null)
+                            : (c.subDone ? t('收起回复') : t('加载更多回复'));
+                        if (subs.length === 0 && !hint) return null;
+                        return (
+                          <div style={{ marginTop: 8, padding: '8px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: 6, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            {subs.map(s => (
+                              <div key={s.rpid} style={{ fontSize: 17, color: '#c6c9d0', lineHeight: 1.45, wordBreak: 'break-word' }}>
+                                <span style={{ color: '#8ba7c0' }}>{s.uname}: </span>{s.message}
+                              </div>
+                            ))}
+                            {hint && (
+                              <div style={{ fontSize: 16, color: '#6f87a0' }}>{hint}</div>
+                            )}
+                          </div>
+                        );
+                        })()}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            
+          </div>
+        </div>
+      )}
 
       <DanmakuLayer danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale}
         mtRef={dmMtActive ? dmMtRef : null} />
@@ -2149,7 +2293,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                           // see subtitles.js); unknown codes show lan_doc verbatim.
                           : `${t('字幕')} ${t(subLan === 'x-mt' ? mtLanName(getLocale())
                             : subtitleLanName(subLan, (subTracks.find(s => s.lan === subLan) || {}).lan_doc)).slice(0, 22)}`) :
-                          btn === 'speed' ? (currentSpeed === 1 ? t('倍速') : `${currentSpeed}x`) :
+                          btn === 'comments' ? (commentCount ? t('评论 · {n}', { n: formatCount(commentCount) }) : t('评论')) :
+                            btn === 'speed' ? (currentSpeed === 1 ? t('倍速') : `${currentSpeed}x`) :
                             QUALITY_MAP[currentQuality] || `${currentQuality}`;
             // 点赞 gets press/release handlers (long-press = 三连); the rest click.
             const handlers = btn === 'like'
@@ -2191,8 +2336,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           <div style={{ marginTop: 16, paddingBottom: 10 }}>
             <div className="panel-tab-row" style={{ display: 'flex', gap: 14, marginBottom: 12 }}>
               {(isMultiP
-                ? [['parts', partsLabel], ['related', t('相关推荐')], ['up', upName ? t('UP主投稿 · {name}', { name: upName }) : t('UP主投稿')], ['comments', commentCount ? t('评论 · {n}', { n: formatCount(commentCount) }) : t('评论')]]
-                : [['related', t('相关推荐')], ['up', upName ? t('UP主投稿 · {name}', { name: upName }) : t('UP主投稿')], ['comments', commentCount ? t('评论 · {n}', { n: formatCount(commentCount) }) : t('评论')]]
+                ? [['parts', partsLabel], ['related', t('相关推荐')], ['up', upName ? t('UP主投稿 · {name}', { name: upName }) : t('UP主投稿')]]
+                : [['related', t('相关推荐')], ['up', upName ? t('UP主投稿 · {name}', { name: upName }) : t('UP主投稿')]]
               ).map(([key, label]) => (
                 <div key={key} style={{
                   padding: '6px 18px', fontSize: 18, borderRadius: 6, cursor: 'pointer',
@@ -2205,73 +2350,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                     setPanelTab(key);
                     setFocusIdx(0);
                     if (key === 'up' && upVideos.length === 0) loadUpVideos(true);
-                    if (key === 'comments' && comments.length === 0) loadComments(true);
                   }}>{label}</div>
               ))}
             </div>
 
-            {panelTab === 'comments' ? (
-              comments.length === 0 ? (
-                <div style={{ color: '#888', fontSize: 18, padding: '20px 4px' }}>
-                  {commentsLoading ? t('加载评论…') : t('暂无评论')}
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  {comments.map((c, i) => {
-                    const av = proxyImg(c.avatar);
-                    return (
-                      <div key={c.rpid || i} className="comment-card"
-                        onClick={() => pressComment(i)}
-                        onMouseEnter={() => {
-                          setFocusArea('related'); setFocusIdx(i);
-                          if (controlsTimer.current) clearTimeout(controlsTimer.current);
-                        }}
-                        style={{
-                          display: 'flex', gap: 14, padding: '14px 12px', borderRadius: 8,
-                          background: focusArea === 'related' && focusIdx === i ? 'rgba(0,161,214,0.16)' : 'transparent',
-                          outline: focusArea === 'related' && focusIdx === i ? '3px solid #00a1d6' : 'none',
-                        }}>
-                        <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#1a1a2e', flexShrink: 0, overflow: 'hidden' }}>
-                          {av && <img src={av} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 16, color: '#8ba7c0', marginBottom: 4 }}>
-                            {c.uname}{c.time ? ' · ' + formatTime(c.time) : ''}
-                          </div>
-                          <div style={{ fontSize: 19, color: '#e1e1e6', lineHeight: 1.5, wordBreak: 'break-word' }}>
-                            {c.message}
-                          </div>
-                          <div style={{ fontSize: 16, color: '#888', marginTop: 6 }}>
-                            👍 {formatCount(c.like)}{c.replyCount ? ' · ' + t('{n} 条回复', { n: formatCount(c.replyCount) }) : ''}
-                          </div>
-                          {(() => {
-                            // 楼中楼: expanded full list, else the free preview
-                            const subs = c.expanded ? (c.subs || []) : (c.preview || []);
-                            const hint = !c.replyCount ? null
-                              : !c.expanded
-                                ? (c.replyCount > subs.length ? t('展开 {n} 条回复', { n: formatCount(c.replyCount) }) : null)
-                                : (c.subDone ? t('收起回复') : t('加载更多回复'));
-                            if (subs.length === 0 && !hint) return null;
-                            return (
-                              <div style={{ marginTop: 8, padding: '8px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: 6, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                {subs.map(s => (
-                                  <div key={s.rpid} style={{ fontSize: 17, color: '#c6c9d0', lineHeight: 1.45, wordBreak: 'break-word' }}>
-                                    <span style={{ color: '#8ba7c0' }}>{s.uname}: </span>{s.message}
-                                  </div>
-                                ))}
-                                {hint && (
-                                  <div style={{ fontSize: 16, color: '#6f87a0' }}>{hint}</div>
-                                )}
-                              </div>
-                            );
-                          })()}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )
-            ) : (() => {
+            {(() => {
               const list = panelTab === 'parts' ? partsList : panelTab === 'up' ? upVideos : relatedVideos;
               if (list.length === 0) {
                 return <div style={{ color: '#888', fontSize: 18, padding: '20px 4px' }}>

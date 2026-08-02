@@ -234,14 +234,19 @@ export async function getServiceDiagnostics() {
 
 // Subscribe to live danmaku relayed by the service. onDanmaku(text) per message.
 // Returns an unsubscribe function. Pair with danmakuStop() to close the relay.
-export function danmakuSubscribe(params, onDanmaku) {
+export function danmakuSubscribe(params, onDanmaku, onEvent) {
   if (!hasLunaService()) return function () {};
   let cancelled = false;
   window.webOS.service.request(SERVICE_URI, {
     method: 'danmakuSubscribe',
     subscribe: true,
     parameters: params || {},
-    onSuccess: function (res) { if (!cancelled && res && res.danmaku && onDanmaku) onDanmaku(res.danmaku); },
+    onSuccess: function (res) {
+      if (cancelled || !res) return;
+      if (res.danmaku && onDanmaku) onDanmaku(res.danmaku);
+      // Gifts / SC / 上舰 / 进场 / 人气 — service ≥1.5.1 only.
+      if (res.event && onEvent) onEvent(res.event);
+    },
     onFailure: function () {},
   });
   return function () { cancelled = true; };
@@ -467,9 +472,40 @@ export async function getDanmuInfo(realRoomId) {
   return wbiFetch('/xlive/web-room/v1/index/getDanmuInfo', { id: realRoomId, type: 0, web_location: 444.8 }, { host: 'api.live.bilibili.com' });
 }
 
-export async function getLiveStreamUrl(roomId) {
+// Live stream ladder: accept_qn + the names B站 uses (原画/蓝光/超清…).
+// Returns { qn, accept: [{qn,label}] } — accept is ordered best-first.
+export async function getLiveQualities(roomId) {
   var res = await smartFetch('api.live.bilibili.com',
     '/xlive/web-room/v2/index/getRoomPlayInfo?room_id=' + roomId + '&protocol=0,1&format=0,1,2&codec=0,1,2&platform=web&ptype=8');
+  var pu = res && res.data && res.data.playurl_info && res.data.playurl_info.playurl;
+  if (!pu) return { qn: 0, accept: [] };
+  var names = {};
+  var descs = pu.g_qn_desc || [];
+  for (var i = 0; i < descs.length; i++) names[descs[i].qn] = descs[i].desc;
+  // Read the ladder off the HLS/AVC codec entry the player actually uses.
+  var streams = pu.stream || [];
+  for (var s = 0; s < streams.length; s++) {
+    var formats = streams[s].format || [];
+    for (var f = 0; f < formats.length; f++) {
+      var codecs = formats[f].codec || [];
+      for (var c = 0; c < codecs.length; c++) {
+        if (codecs[c].codec_name !== 'avc') continue;
+        var acc = codecs[c].accept_qn || [];
+        if (!acc.length) continue;
+        var list = acc.slice().sort(function (a, b) { return b - a; }).map(function (q) {
+          return { qn: q, label: names[q] || String(q) };
+        });
+        return { qn: codecs[c].current_qn || list[0].qn, accept: list };
+      }
+    }
+  }
+  return { qn: 0, accept: [] };
+}
+
+export async function getLiveStreamUrl(roomId, qn) {
+  var res = await smartFetch('api.live.bilibili.com',
+    '/xlive/web-room/v2/index/getRoomPlayInfo?room_id=' + roomId + '&protocol=0,1&format=0,1,2&codec=0,1,2&platform=web&ptype=8'
+      + (qn ? '&qn=' + qn : ''));
   var streams = res && res.data && res.data.playurl_info && res.data.playurl_info.playurl && res.data.playurl_info.playurl.stream;
   if (!streams) return null;
   // Find HLS AVC stream

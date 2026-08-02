@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { initKeyboardNav, setFocus, onFocusChange, getCurrentFocusId, focusFirstContent, setLastSidebarFocus, isPointerFocus } from './hooks/useFocus';
-import { castAck, castSubscribe, getNavInfo, pingVersionAsset } from './api/client';
+import { castAck, castSubscribe, castGetStatus, getNavInfo, pingVersionAsset } from './api/client';
 import { normalizePlay, playAt } from './player/playIntent';
 import { storage } from './utils/storage';
 import SidebarItem from './components/SidebarItem';
@@ -151,9 +151,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = castSubscribe(async (event) => {
-      if (!event || event.kind !== 'command' || !event.command) return;
-      const command = event.command;
+    const handleCastCommand = (command) => {
+      if (!command) return;
 
       if (command.type === 'play') {
         pendingCastAckRef.current = command;
@@ -201,9 +200,30 @@ export default function App() {
       }
 
       window.dispatchEvent(new CustomEvent('bili-cast-command', { detail: command }));
+    };
+
+    const unsubscribe = castSubscribe(async (event) => {
+      if (!event || event.kind !== 'command' || !event.command) return;
+      handleCastCommand(event.command);
     }, (err) => {
       console.error('Cast subscribe error:', err);
     });
+
+    // Claim a cast that arrived while we were NOT running/subscribed.
+    // The service launches the app on a cast intent, but the intent itself was
+    // already emitted by then — nobody was listening, so it was lost and the
+    // sender just saw "loading" forever (owner 2026-07-30: "退到后台之后
+    // 现在连投屏都失败"; reproduced from a Mac SOAP push: SetURI/Play both
+    // answered 200, activeContent recorded, playState stuck at 'loading').
+    castGetStatus().then((res) => {
+      const st = res && res.status;
+      const c = st && st.activeContent;
+      if (!c || st.playState === 'playing') return;
+      // Only recent commands — don't resurrect yesterday's cast on a cold start.
+      const age = Date.now() - (st.lastCommandAt || 0);
+      if (!(age >= 0 && age < 120000)) return;
+      handleCastCommand(c);
+    }).catch(() => {});
 
     return () => unsubscribe?.();
   }, []);
@@ -310,7 +330,10 @@ export default function App() {
   // Same entry as a card press — everything downstream is production code.
   useEffect(() => {
     window.__openVideo = (v) => handlePlayVideo(v);
-    return () => { delete window.__openVideo; };
+    // Live rooms take a different entry (they aren't videos) — same idea:
+    // __openLive({roomid, title, owner}) drops straight into LivePlayerPage.
+    window.__openLive = (r) => setLiveRoom(r);
+    return () => { delete window.__openVideo; delete window.__openLive; };
   }, [handlePlayVideo]);
 
   // Once-a-day countable version check (see client.pingVersionAsset). The date

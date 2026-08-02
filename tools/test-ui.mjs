@@ -110,8 +110,23 @@ async function main(call) {
     const idx = (s.sidebar || []).findIndex(t => t.indexOf(NAV_ICON[pageKey]) >= 0);
     if (idx < 0) throw new Error(`goto(${pageKey}): icon ${NAV_ICON[pageKey]} not in sidebar [${(s.sidebar || []).join(',')}]`);
     if (s.focus && s.focus.startsWith('content-')) await key('back'); // content → sidebar
-    await keyN('up', (s.sidebar || []).length);
-    await keyN('down', idx);
+    // Step to the target by READING the focus each press. The old trick was
+    // "press up N times, it clamps at the top, then press down idx times" —
+    // that broke the moment the sidebar gained up/down WRAPPING (2026-07-30):
+    // overshooting now loops around instead of stopping, so 4 assertions
+    // silently landed on the wrong page. Never rely on edge clamping.
+    const row = async () => {
+      const st = await probe();
+      const m = /^sidebar-(\d+)-/.exec(st.focus || '');
+      return m ? parseInt(m[1]) : null;
+    };
+    let cur = await row();
+    for (let guard = 0; cur !== idx && guard < (s.sidebar || []).length + 2; guard++) {
+      if (cur == null) { await key('left'); cur = await row(); continue; }
+      await key(cur > idx ? 'up' : 'down');
+      cur = await row();
+    }
+    if (cur !== idx) throw new Error(`goto(${pageKey}): stuck at sidebar row ${cur}, want ${idx}`);
     await key('ok');
     return waitFor(s2 => s2.focus && s2.focus.startsWith('content-'), { timeout: 6000 });
   };
@@ -307,11 +322,34 @@ conn.on('ready', () => {
     });
   });
   server.listen(19995, '127.0.0.1', () => {
-    http.get('http://127.0.0.1:19995/json', res => {
-      let d = ''; res.on('data', c => d += c);
-      res.on('end', async () => {
-        const app = JSON.parse(d).find(p => p.title?.includes('哔哩') || p.url?.includes('biliwebos'));
-        if (!app) { console.log('App not running on TV'); process.exit(1); }
+    // Find the app's CDP page — and LAUNCH it if it isn't up. The suite itself
+    // ends with Back presses that drop out of the app, so a second run used to
+    // die at startup ("App not running on TV") and, worse, a mid-run exit made
+    // every later goto() fail against an empty sidebar — cascading red that
+    // looked like feature regressions (2026-08-02). Bring it up and retry.
+    const pages = () => new Promise((resolve) => {
+      http.get('http://127.0.0.1:19995/json', r2 => {
+        let d2 = ''; r2.on('data', c => d2 += c);
+        r2.on('end', () => { try { resolve(JSON.parse(d2)); } catch (e) { resolve([]); } });
+      }).on('error', () => resolve([]));
+    });
+    const findApp = (list) => list.find(p => p.title?.includes('哔哩') || p.url?.includes('biliwebos'));
+    const launchApp = () => new Promise((resolve) => {
+      conn.exec("luna-send-pub -n 1 luna://com.webos.service.applicationmanager/launch '{\"id\":\"com.biliwebos.app\"}'",
+        (e, stream) => { if (e) return resolve(); stream.on('close', () => resolve()).resume(); });
+    });
+    (async () => {
+      let app = findApp(await pages());
+      if (!app) {
+        console.log('App not in foreground — launching it…');
+        await launchApp();
+        for (let i = 0; i < 12 && !app; i++) {
+          await new Promise(r => setTimeout(r, 1500));
+          app = findApp(await pages());
+        }
+      }
+      if (!app) { console.log('App not running on TV (launch failed)'); process.exit(1); }
+      await (async () => {
         const ws = new WebSocket(app.webSocketDebuggerUrl.replace(/127\.0\.0\.1:\d+/, '127.0.0.1:19995'));
         let id = 1;
         const call = (method, params) => new Promise((resolve, reject) => {
@@ -325,8 +363,8 @@ conn.on('ready', () => {
         try { failedCount = await main(call); }
         catch (e) { console.error('Fatal:', e); }
         finally { ws.close(); server.close(); conn.end(); process.exit(failedCount > 0 ? 1 : 0); }
-      });
-    });
+      })();
+    })();
   });
 });
 conn.on('error', e => { console.error('SSH error:', e.message); process.exit(1); });

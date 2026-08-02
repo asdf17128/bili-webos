@@ -405,10 +405,15 @@ var danmakuSubscribers = [];
 var danmakuStop = null;
 var danmakuRoom = null;
 
-function broadcastDanmaku(text) {
+// text = chat line (null for non-danmaku events); evt = typed event object.
+// Both ride the same subscription: `danmaku` keeps the old contract, `event`
+// is additive so older app builds simply ignore it.
+function broadcastDanmaku(text, evt) {
   danmakuSubscribers = danmakuSubscribers.filter(function (m) {
-    try { m.respond({ returnValue: true, subscribed: true, danmaku: text }); return true; }
-    catch (e) { return false; }
+    try {
+      m.respond({ returnValue: true, subscribed: true, danmaku: text, event: evt || null });
+      return true;
+    } catch (e) { return false; }
   });
   if (danmakuSubscribers.length === 0 && danmakuStop) {
     danmakuStop(); danmakuStop = null; danmakuRoom = null;

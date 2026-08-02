@@ -21,11 +21,55 @@ function buildPacket(op, bodyStr) {
   return buf;
 }
 
+// Chat messages the app cares about. Danmaku still arrives as a plain string
+// (the old contract — app builds < 1.5.1 only understand that); everything
+// else rides a second argument as a typed event object, which old apps ignore.
 function handleCmd(msg, onDanmaku) {
-  if (!msg || msg.cmd !== 'DANMU_MSG') return;
-  var text = msg.info && msg.info[1];
-  var user = msg.info && msg.info[2] && msg.info[2][1];
-  if (text) onDanmaku(text, user);
+  if (!msg || !msg.cmd) return;
+  // DANMU_MSG carries a suffix on some rooms (DANMU_MSG:4:0:2:2:2:0)
+  var cmd = msg.cmd.indexOf('DANMU_MSG') === 0 ? 'DANMU_MSG' : msg.cmd;
+  var d = msg.data || {};
+  if (cmd === 'DANMU_MSG') {
+    var text = msg.info && msg.info[1];
+    var user = msg.info && msg.info[2] && msg.info[2][1];
+    if (text) onDanmaku(text, { t: 'dm', text: text, user: user });
+    return;
+  }
+  if (cmd === 'SEND_GIFT') {
+    onDanmaku(null, { t: 'gift', user: d.uname, gift: d.giftName, num: d.num || 1,
+      coin: d.total_coin || 0, face: d.face || '' });
+    return;
+  }
+  if (cmd === 'SUPER_CHAT_MESSAGE') {
+    onDanmaku(null, { t: 'sc', user: d.user_info && d.user_info.uname,
+      text: d.message, price: d.price || 0 });
+    return;
+  }
+  if (cmd === 'GUARD_BUY') {
+    onDanmaku(null, { t: 'guard', user: d.username, level: d.guard_level || 0,
+      name: d.gift_name, num: d.num || 1 });
+    return;
+  }
+  if (cmd === 'INTERACT_WORD' || cmd === 'INTERACT_WORD_V2') {
+    // msg_type 1 = 进入直播间, 2 = 关注, 3 = 分享
+    onDanmaku(null, { t: 'enter', user: d.uname, kind: d.msg_type || 1 });
+    return;
+  }
+  if (cmd === 'WATCHED_CHANGE') {
+    onDanmaku(null, { t: 'watched', num: d.num || 0, text: d.text_small || '' });
+    return;
+  }
+  if (cmd === 'LIKE_INFO_V3_UPDATE') {
+    onDanmaku(null, { t: 'likes', num: d.click_count || 0 });
+    return;
+  }
+  if (cmd === 'ONLINE_RANK_COUNT') {
+    onDanmaku(null, { t: 'online', num: d.count || d.online_count || 0 });
+    return;
+  }
+  if (cmd === 'POPULARITY_RED_POCKET_START') {
+    onDanmaku(null, { t: 'redpacket', user: d.sender_uname || '', num: d.num || 1 });
+  }
 }
 
 function parse(buf, onDanmaku) {

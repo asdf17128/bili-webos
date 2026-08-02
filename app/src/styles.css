@@ -130,7 +130,11 @@ html, body, #root {
   cursor: pointer;
   outline: none;
   contain: content;
-  content-visibility: auto;
+  /* NO content-visibility:auto. It collapses offscreen cards to zero height,
+     which (a) let the browser's scrollIntoView shove the overflow:hidden
+     wrapper (measured 608px on-device) on top of our transform scroll, pushing
+     the focused tile off-screen — the bug in PR #16 by @zachitect — and (b)
+     poisoned VideoGrid's row-pitch measurement (155px vs the real 342px). */
   transform: scale(1);
   transition: transform 0.15s ease;
 }

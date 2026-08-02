@@ -6,7 +6,7 @@ import { t } from '../i18n';
 import { titleMT, useTitlesMT } from '../utils/titlemt';
 
 function getProxyBase() {
-  return (typeof window !== 'undefined' && window.webOS)
+  return (typeof window !== 'undefined' && window.PalmServiceBridge)
     ? 'http://127.0.0.1:7654'
     : storage.getProxyUrl();
 }

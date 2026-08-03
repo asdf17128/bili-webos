@@ -27,9 +27,14 @@ const ipkSum = (rel) => (rel.assets || [])
 const hb = await gh('/repos/webosbrew/webos-homebrew-channel/releases/latest');
 const global = ipkSum(hb);
 
-// Our own: average the last 3 releases that have had time to propagate (a
-// just-published one still reads near zero and would understate us).
-const ours = await gh('/repos/asdf17128/bili-webos/releases?per_page=6');
+// Our own: average the last 3 releases that have had time to propagate. A
+// just-published one still reads near zero and would understate us — the >50
+// filter is not enough (v1.5.1 read 72 one day after release and dragged the
+// mean from 433 to 327), so also require the release to be at least 5 days old.
+const RIPE_MS = 5 * 864e5;
+const now = Date.now();
+const ours = (await gh('/repos/asdf17128/bili-webos/releases?per_page=8'))
+  .filter(r => now - new Date(r.published_at).getTime() > RIPE_MS);
 const counts = ours.map(ipkSum).filter(n => n > 50).slice(0, 3);
 const mine = counts.length ? Math.round(counts.reduce((s, n) => s + n, 0) / counts.length) : 0;
 

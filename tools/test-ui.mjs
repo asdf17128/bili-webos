@@ -47,7 +47,13 @@ const PROBE = `JSON.stringify({
   imgs: document.querySelectorAll('img').length,
   broken: Array.from(document.querySelectorAll('img')).filter(function(i){return i.complete&&i.naturalWidth===0}).length,
   recItems: document.querySelectorAll('.search-rec-item').length,
-  sidebar: Array.from(document.querySelectorAll('.sidebar-item')).map(function(e){return e.textContent})
+  sidebar: Array.from(document.querySelectorAll('.sidebar-item')).map(function(e){return e.textContent}),
+  btns: Array.from(document.querySelectorAll('.player-btn')).map(function(e){return e.textContent.trim()}),
+  focusedBtn: (document.querySelector('.player-btn.focused')||{}).textContent||'',
+  chips: Array.from(document.querySelectorAll('.fav-chip')).map(function(e){return e.textContent.trim()}),
+  cardTexts: Array.from(document.querySelectorAll('.video-card')).map(function(e){return (e.innerText||'').split(String.fromCharCode(10)).join(' ')}),
+  holding: !!document.querySelector('.video-card.holding'),
+  focusedCard: ((document.querySelector('.video-card.focused')||{}).innerText||'').split(String.fromCharCode(10)).join(' ')
 })`;
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -279,6 +285,74 @@ async function main(call) {
     check('分区(游戏) loads content', s.cards > 0 || s.imgs > 3, `${s.cards} cards / ${s.imgs} imgs`);
   }
 
+  // 稍后再看(issue #19)。真机专测长按:遥控器的 OK 是"按住 = 连发 keyDown,
+  // 松手才 keyUp",浏览器里模拟不出这个时序,所以这条只有在电视上跑才算数。
+  // 写操作净零:加什么删什么,删之前先核对卡片身份。
+  async function testWatchLater() {
+    console.log('\n[稍后再看 / Watch Later]');
+    await exitPlayer();
+    await goto('recommend');
+    await key('ok');                       // 进网格
+    await key('ok');                       // 播第一个视频
+    let s = await waitFor(x => x.v && x.v.t > 0.2, { timeout: 20000 });
+    if (!s.v) { warn('Watch Later', '视频没起来,跳过'); return; }
+    const title = await evalJSON(`JSON.stringify((document.querySelector('.player-title')||{}).innerText||'')`);
+    await key('up');                       // 呼出控制栏
+    s = await waitFor(x => (x.btns || []).length > 0, { timeout: 6000 });
+    check('播放器控制栏有「稍后再看」', (s.btns || []).some(b => b.includes('稍后再看')), (s.btns || []).join(' | '));
+
+    for (let i = 0; i < 10; i++) {
+      s = await probe();
+      if ((s.focusedBtn || '').includes('稍后再看')) break;
+      await key('right');
+    }
+    const onBtn = ((await probe()).focusedBtn || '').includes('稍后再看');
+    if (!onBtn) { fail('走到「稍后再看」按钮', '走不到'); return; }
+    await key('ok');
+    s = await waitFor(x => (x.focusedBtn || '').includes('已稍后再看'), { timeout: 8000 });
+    const added = (s.focusedBtn || '').includes('已稍后再看');
+    check('OK 加入后按钮翻成「已稍后再看」', added, s.focusedBtn);
+
+    await exitPlayer();
+    await goto('settings');                // 侧栏「我的」
+    s = await waitFor(x => (x.chips || []).length >= 2, { timeout: 8000 });
+    check('「我的」页有 观看历史 / 稍后再看 两个 tab', (s.chips || []).some(c => c.includes('稍后再看')), (s.chips || []).join(' | '));
+
+    // 焦点在 chip 行:右移到「稍后再看」= 选中即切换
+    await key('right');
+    s = await waitFor(x => (x.cardTexts || []).length > 0, { timeout: 10000 });
+    const seen = (s.cardTexts || []).some(c => title && c.includes(title.slice(0, 8)));
+    check('刚加入的视频出现在稍后再看里', seen || !title, `${(s.cardTexts || []).length} 张 · ${title.slice(0, 14)}`);
+
+    if (!added) return;
+    await key('down');                     // 进网格
+    // 焦点未必落在第一张:chip 在第几列,进网格就落第几列。必须把焦点走到
+    // 目标卡上,并且**用被聚焦的那张卡**做身份断言 —— 2026-08-06 就是因为
+    // 断言读了列表第一张、长按打在第二张,把 owner 真存的视频删掉了。
+    const key8 = title.slice(0, 8);
+    let onTarget = false;
+    for (let i = 0; i < 8 && !onTarget; i++) {
+      s = await probe();
+      if ((s.focusedCard || '').includes(key8)) { onTarget = true; break; }
+      await key('left');
+    }
+    s = await probe();
+    check('待移除的是刚加的那个,不是 owner 原有条目(读的是被聚焦的卡)',
+      onTarget && (s.focusedCard || '').includes(key8), (s.focusedCard || '(无焦点卡)').slice(0, 40));
+    if (!onTarget) return;   // 焦点不在目标上就绝不长按
+
+    // 长按:keyDown 持续 1.1s(过 800ms 阈值)再 keyUp
+    const m = KEYMAP.ok;
+    await call('Input.dispatchKeyEvent', { type: 'keyDown', key: m.key, windowsVirtualKeyCode: m.vk, nativeVirtualKeyCode: m.vk });
+    await sleep(400);
+    const mid = await probe();
+    check('按住时卡片出现长按进度条', mid.holding === true);
+    await sleep(700);
+    await call('Input.dispatchKeyEvent', { type: 'keyUp', key: m.key, windowsVirtualKeyCode: m.vk, nativeVirtualKeyCode: m.vk });
+    s = await waitFor(x => !(x.cardTexts || []).some(c => c.includes(title.slice(0, 8))), { timeout: 8000 });
+    check('长按 OK 从列表移除', !(s.cardTexts || []).some(c => c.includes(title.slice(0, 8))), `${(s.cardTexts || []).length} 张剩余`);
+  }
+
   async function testBangumiPlayback() {
     console.log('\n[番剧 / Bangumi (PGC) + HDR]');
     const EPID = 433947; // JOJO 石之海 ep1 — issue #7 repro
@@ -298,7 +372,7 @@ async function main(call) {
 
   const tests = [
     testNavAndHome, testVideoPlayback, testBangumiPlayback, testLiveAndDanmaku, testSearch,
-    testFollowPagination, testSettingsAutoCheck, testHotAndPartition,
+    testFollowPagination, testSettingsAutoCheck, testHotAndPartition, testWatchLater,
   ];
   for (const t of tests) {
     try { await t(); }

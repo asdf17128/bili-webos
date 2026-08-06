@@ -318,11 +318,17 @@ async function main() {
 
       if (added) {
         // 长按移除 —— 只对夹具视频动手,先核对身份
-        const target = await page.evaluate(() => {
+        // 悬停把焦点移到目标卡上,然后**回读 .video-card.focused** 再断言身份 ——
+        // 长按打在哪张卡由焦点决定,断言就必须读焦点那张。真机套件里正是因为
+        // 断言读了列表第一张、长按落在第二张,误删了 owner 真存的视频(2026-08-06)。
+        await page.evaluate(() => {
           const c = [...document.querySelectorAll('.video-card')].find(x => x.innerText.includes('弹幕'));
-          if (!c) return null;
-          c.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
-          return c.innerText.replace(/\n/g, ' ');
+          if (c) c.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+        });
+        await sleep(400);
+        const target = await page.evaluate(() => {
+          const f = document.querySelector('.video-card.focused');
+          return f ? f.innerText.replace(/\n/g, ' ') : null;
         });
         check('Remove target is the fixture video, not a real saved item', !!target && target.includes('弹幕'), target || '(none)');
         if (target && target.includes('弹幕')) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies, getReplyReplies, tripleVideo, likeVideo, coinVideo, favVideo, getFavFoldersFor, getVideoRelation, getHtml5PlayUrl, mediaProxyBase } from '../api/client';
+import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies, getReplyReplies, tripleVideo, likeVideo, coinVideo, favVideo, getFavFoldersFor, getVideoRelation, getHtml5PlayUrl, mediaProxyBase, addToView, delToView } from '../api/client';
 import { playPart, playAdvance } from './playIntent';
 
 import { formatDuration, formatTime, formatCount, QUALITY_MAP, cleanTitle, pickAigcText } from '../utils/format';
@@ -216,7 +216,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const loggedIn = !!storage.getAuth()?.SESSDATA;
   const CONTROLS = [
     'play',
-    ...(loggedIn ? ['like', 'coin', 'fav'] : []),
+    ...(loggedIn ? ['like', 'coin', 'fav', 'later'] : []),
     'danmaku',
     ...(subTracks.length > 0 ? ['subtitle'] : []),
     'speed',
@@ -307,6 +307,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // press, max 2, irreversible (B站 rule); 收藏 toggles the default folder.
   const [stat, setStat] = useState({ like: 0, coin: 0, favorite: 0 });
   const [rel, setRel] = useState({ liked: false, coined: 0, faved: false });
+  // 稍后再看只有本地态:B站没有"这个视频在不在队列里"的查询接口。
+  const [inToView, setInToView] = useState(false);
   const relRef = useRef(rel);
   useEffect(() => { relRef.current = rel; }, [rel]);
   const triplingRef = useRef(false);
@@ -520,6 +522,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           favorite: (d.stat && d.stat.favorite) || 0,
         });
         setRel({ liked: false, coined: 0, faved: false });
+        // 换视频要清掉稍后再看的本地态 —— 它是"这次会话里我按过没有",
+        // 不是服务端回显(B站没有单视频查询接口),跟着视频走才不会串。
+        setInToView(false);
         if (d.aid && storage.getAuth()?.SESSDATA) {
           // One retry: if this silently fails, the 已三连 guard can't see the
           // truth and a long-press re-fires triple (harmless server-side — B站
@@ -1234,6 +1239,24 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     } catch (e) { showPlayerToast(t('操作失败,请重试')); }
   }, [video, showPlayerToast]);
 
+  // 稍后再看:一个与收藏夹平行的队列(上限 100)。B站没有"查询单个视频是否在
+  // 队列里"的接口,所以按钮不做回显,只在本地记住这次会话里加过/移除过,
+  // 让同一个视频上的第二次按下变成"移除"。
+  const doToView = useCallback(async () => {
+    const aid = videoAidRef.current || video?.aid;
+    if (!aid) return;
+    const was = inToView;
+    try {
+      const res = was ? await delToView(aid) : await addToView(aid);
+      if (res && res.code === 0) {
+        setInToView(!was);
+        showPlayerToast(was ? t('已从稍后再看移除') : t('已加入稍后再看 · 在「我的」里看'));
+      } else {
+        showPlayerToast((res && res.message) || t('操作失败,请重试'));
+      }
+    } catch (e) { showPlayerToast(t('操作失败,请重试')); }
+  }, [video, inToView, showPlayerToast]);
+
   // 一键三连 (LONG-PRESS 点赞): like + coin×2 + favorite in one request.
   const doTriple = useCallback(async () => {
     if (triplingRef.current) return;
@@ -1386,11 +1409,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       doCoin();
     } else if (btn === 'fav') {
       doFav();
+    } else if (btn === 'later') {
+      doToView();
     }
     // 'like' never routes here: its press/release runs the long-press machinery
     // (keydown/keyup + mousedown/mouseup on the button itself).
     hideControlsLater();
-  }, [subOptions, subLan, subTracks, fetchSubBody, hideControlsLater, doCoin, doFav, showPlayerToast, anchorFor, qualities, currentQuality, comments]);
+  }, [subOptions, subLan, subTracks, fetchSubBody, hideControlsLater, doCoin, doFav, doToView, showPlayerToast, anchorFor, qualities, currentQuality, comments]);
 
   // Load more related videos
   const loadingRelatedRef = useRef(false);
@@ -2285,6 +2310,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                   // B站同款金币(金圆盘+B字)——emoji 的 🪙 像块石头(owner)。
                   btn === 'coin' ? <><CoinIcon /> {formatCount(stat.coin)}</> :
                     btn === 'fav' ? `⭐ ${formatCount(stat.favorite)}` :
+                      btn === 'later' ? (inToView ? t('已稍后再看') : t('稍后再看')) :
                       btn === 'danmaku' ? (danmakuEnabled ? t('弹幕 开') : t('弹幕 关')) :
                         btn === 'subtitle' ? (subLan == null ? t('字幕 关')
                           // Known lan codes get a localized name (t over our enum,

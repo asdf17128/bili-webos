@@ -20,7 +20,35 @@ import { chromium } from 'playwright';
 const URL_BASE = process.env.SIM_URL || 'http://localhost:5173';
 const BRIDGE = 'http://127.0.0.1:9528/ping';
 const FIXTURE = 'BV1xx411c7Xg';        // 弹幕测试专用 — stable, busy comments
-const LIVE_ROOM = 3683436;
+const LIVE_ROOM_FALLBACK = 3683436;
+
+// 直播断言曾经写死一个房间号,那个房间下播后整段变红(2026-08-06:live_status=0
+// 连挂 4 条)。改成运行时挑一个"此刻真的在播"的房间;一个都挑不到就跳过直播段
+// 并 warn —— 没有直播源可测是环境事实,不该记成代码缺陷。
+async function pickLiveRoom() {
+  const call = async (host, path) => {
+    const r = await fetch('http://127.0.0.1:9528/luna/fetch', {
+      method: 'POST',
+      body: JSON.stringify({ url: `https://${host}${path}` }),
+    });
+    const j = JSON.parse(await r.text());
+    try { return JSON.parse(j.body || '{}'); } catch (e) { return {}; }
+  };
+  try {
+    const rec = await call('api.live.bilibili.com',
+      '/xlive/web-interface/v1/webMain/getMoreRecList?platform=web&page=1&page_size=12');
+    const rooms = rec?.data?.recommend_room_list || rec?.data?.list || [];
+    for (const r of rooms) {
+      const id = r.roomid || r.room_id;
+      if (!id) continue;
+      const info = await call('api.live.bilibili.com',
+        `/xlive/web-room/v1/index/getRoomBaseInfo?room_ids=${id}&req_biz=web`);
+      const one = Object.values(info?.data?.by_room_ids || {})[0];
+      if (one && one.live_status === 1) return { id, title: one.title };
+    }
+  } catch (e) { /* 桥不通,下面回退 */ }
+  return null;
+}
 
 let passed = 0, failed = 0, warned = 0;
 const check = (name, ok, detail) => {
@@ -197,6 +225,8 @@ async function main() {
       `video=${afterBack.videoW} focus=${afterBack.focused}`);
 
     console.log('\n[Live: playback, controls, quality, chat rail, back layering]');
+    const liveRoom = (await pickLiveRoom()) || { id: LIVE_ROOM_FALLBACK, title: '(fallback)', stale: true };
+    if (liveRoom.stale) warn('No live room is streaming right now', 'live assertions skipped (environment, not code)');
     // Leave the VOD player FIRST. Both players can be mounted at once (the VOD
     // page stays behind the live one), and then every '.player-btn' query hits
     // the VOD control bar — which is exactly how this suite first "failed"
@@ -208,14 +238,14 @@ async function main() {
     }
     check('Left the VOD player before live', !(await page.evaluate(() => !!document.querySelector('.player-page'))));
     await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('bili_settings') || '{}'); s.liveInteract = false; localStorage.setItem('bili_settings', JSON.stringify(s)); });
-    await page.evaluate((r) => window.__openLive({ roomid: r, title: 'SIM', owner: { name: 'SIM' } }), LIVE_ROOM);
+    await page.evaluate((r) => window.__openLive({ roomid: r, title: 'SIM', owner: { name: 'SIM' } }), liveRoom.id);
     await sleep(14000);
     const live = await page.evaluate(() => {
       const v = document.querySelector('video');
       return { playing: !!v && !v.paused && v.currentTime > 0.5, ct: v ? +v.currentTime.toFixed(1) : null,
         res: v ? v.videoWidth + 'x' + v.videoHeight : null };
     });
-    check('Live stream plays', live.playing, `t=${live.ct}s ${live.res}`);
+    check('Live stream plays', live.playing || liveRoom.stale, `${liveRoom.title.slice(0,18)} t=${live.ct}s ${live.res}`);
     for (let a = 0; a < 4; a++) { await key('ArrowUp'); await sleep(700); if (await focusedBtn()) break; }
     const liveCtrls = await page.evaluate(() => [...document.querySelectorAll('.player-btn')].map(b => b.textContent.trim()));
     check('Live control bar: danmaku / quality / chat', liveCtrls.length >= 3 && liveCtrls.some(c => c.includes('聊天')),
@@ -226,24 +256,85 @@ async function main() {
     for (let i = 0; i < 5; i++) { lf = await focusedBtn(); if (!lf.includes('弹幕') && !lf.includes('聊天')) break; await key('ArrowRight'); await sleep(250); }
     await key('Enter'); await sleep(900);
     const qual = await page.evaluate(() => [...document.querySelectorAll('.ctrl-popup .quality-option')].map(o => o.textContent.trim()));
-    check('Live quality ladder opens', qual.length >= 2, qual.join('/'));
+    // 有的房间只推一档(原画),ladder 有内容就算通过 —— 断 >=2 会被房间选择左右
+    check('Live quality ladder opens', liveRoom.stale || qual.length >= 1, qual.join('/'));
     await key('Escape'); await sleep(600);
 
     // chat rail on → layered Back
     for (let i = 0; i < 6; i++) { const b = await focusedBtn(); if (b.includes('聊天')) break; await key('ArrowRight'); await sleep(220); }
     await key('Enter'); await sleep(1500);
     const railOn = await page.evaluate(() => !![...document.querySelectorAll('div')].find(d => d.style && d.style.width === '420px'));
-    check('Chat rail opens from the control bar', railOn);
+    check('Chat rail opens from the control bar', liveRoom.stale || railOn);
     await key('Escape'); await sleep(700);   // controls
     await key('Escape'); await sleep(900);   // rail
     const afterRail = await page.evaluate(() => ({
       rail: !![...document.querySelectorAll('div')].find(d => d.style && d.style.width === '420px'),
       live: !!document.querySelector('.player-page'),
     }));
-    check('Back closes the chat rail, stays in the room', !afterRail.rail && afterRail.live);
+    check('Back closes the chat rail, stays in the room', liveRoom.stale || (!afterRail.rail && afterRail.live));
     await key('Escape'); await sleep(900);
     const leftRoom = await page.evaluate(() => !document.querySelector('.player-page'));
     check('Back again leaves the live room', leftRoom);
+
+
+    console.log('\n[稍后再看 / Watch Later]');
+    // 端到端:播放器里加入 → 「我的」页看到 → 长按移除。净零写入(加什么移什么),
+    // 且移除前断言卡片身份 —— 绝不能把 owner 真正存的东西长按掉(写操作安全线)。
+    if (!loggedIn) {
+      warn('Watch Later skipped', 'needs a logged-in session');
+    } else {
+      await page.evaluate((bv) => window.__openVideo({ bvid: bv }), FIXTURE);
+      await sleep(8000);
+      for (let a = 0; a < 4; a++) { await key('ArrowUp'); await sleep(600); if (await focusedBtn()) break; }
+      const laterBtns = await page.evaluate(() => [...document.querySelectorAll('.player-btn')].map(b => b.textContent.trim()));
+      check('Player has a 稍后再看 button', laterBtns.some(c => c.includes('稍后再看')), laterBtns.join(' | '));
+      // 走到那个按钮上按 OK
+      let hops = 0, cur = await focusedBtn();
+      while (hops < 10 && !cur.includes('稍后再看')) { await key('ArrowRight'); await sleep(250); cur = await focusedBtn(); hops++; }
+      let added = false;
+      if (cur.includes('稍后再看')) {
+        await key('Enter'); await sleep(2200);
+        const after = await focusedBtn();
+        added = after.includes('已稍后再看');
+        check('OK adds it and the button flips to 已稍后再看', added, after);
+      } else {
+        check('OK adds it and the button flips to 已稍后再看', false, 'button not reachable');
+      }
+      for (let i = 0; i < 4; i++) { await key('Escape'); await sleep(700); }
+
+      await gotoPage('我的');
+      await sleep(1500);
+      const tabs = await page.evaluate(() => [...document.querySelectorAll('.fav-chip')].map(c => c.textContent.trim()));
+      check('「我的」has 观看历史 / 稍后再看 tabs', tabs.length >= 2 && tabs.some(x => x.includes('稍后再看')), tabs.join(' | '));
+      // 焦点移到第二个 chip = 切到稍后再看(选中即切换)
+      await page.evaluate(() => {
+        const c = [...document.querySelectorAll('.fav-chip')].find(x => x.textContent.includes('稍后再看'));
+        if (c) c.click();   // mouseenter 派发不出去(React 用 mouseover 模拟),click 走 handleClick
+      });
+      await sleep(4000);
+      // 卡片第一行是时长角标,标题在后面 —— 用整段 innerText 匹配
+      const inList = await page.evaluate(() => [...document.querySelectorAll('.video-card')].map(c => c.innerText.replace(/\n/g, ' ')));
+      check('The added video shows up in 稍后再看', inList.some(x => x.includes('弹幕')), `${inList.length} cards`);
+
+      if (added) {
+        // 长按移除 —— 只对夹具视频动手,先核对身份
+        const target = await page.evaluate(() => {
+          const c = [...document.querySelectorAll('.video-card')].find(x => x.innerText.includes('弹幕'));
+          if (!c) return null;
+          c.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+          return c.innerText.replace(/\n/g, ' ');
+        });
+        check('Remove target is the fixture video, not a real saved item', !!target && target.includes('弹幕'), target || '(none)');
+        if (target && target.includes('弹幕')) {
+          await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
+          await sleep(1100);   // 长按阈值 800ms
+          await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true })));
+          await sleep(2500);
+          const left = await page.evaluate(() => [...document.querySelectorAll('.video-card')].map(c => c.innerText.replace(/\n/g, ' ')));
+          check('Long-press OK removes it from the list', !left.some(x => x.includes('弹幕')), `${left.length} cards left`);
+        }
+      }
+    }
 
     console.log('\n[Runtime health]');
     check('No uncaught page errors', pageErrors.length === 0, pageErrors.slice(0, 2).join(' | '));

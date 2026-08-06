@@ -203,8 +203,48 @@ let keyHandler = null;
 let customKeyHandler = null;
 export function setCustomKeyHandler(handler) { customKeyHandler = handler; }
 
+// ---- 通用长按(OK 键按住)---------------------------------------------------
+// 播放器里的三连长按是按钮私有的实现;网格卡片也需要长按(稍后再看里长按移除),
+// 所以把它做成焦点系统的通用能力:useFocusable 传了 onLongPress 的项才启用,
+// 没传的项行为一个字节都不变(仍然 keydown 即触发 onSelect)。
+const HOLD_MS = 800;   // 比播放器三连的 2s 短:移除是轻量操作,不需要那么强的确认
+let hold = { id: null, timer: null, fired: false };
+const elOf = (id) => document.querySelector(`[data-focus-id="${id}"]`);
+
+function clearHold() {
+  if (hold.timer) clearTimeout(hold.timer);
+  if (hold.id) elOf(hold.id)?.classList.remove('holding');
+  hold = { id: null, timer: null, fired: false };
+}
+
+function startHold(id) {
+  if (hold.id) return;              // 已在长按中(自动重复的 keydown)
+  elOf(id)?.classList.add('holding');   // CSS 里画进度条,让用户知道正在按住
+  hold = {
+    id, fired: false,
+    timer: setTimeout(() => {
+      hold.fired = true;
+      elOf(id)?.classList.remove('holding');
+      focusRegistry.get(id)?.onLongPress?.();
+    }, HOLD_MS),
+  };
+}
+
+// 松开:没到时长就是普通 OK;到了时长长按已经触发过,松开什么也不做。
+function endHold() {
+  if (!hold.id) return;
+  const { id, fired } = hold;
+  clearHold();
+  if (!fired) focusRegistry.get(id)?.onSelect?.();
+}
+
 export function initKeyboardNav() {
   if (keyHandler) return;
+  window.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') endHold();
+  });
+  // 焦点被移走(方向键/指针)时中断长按,否则松手会误触发到别的卡片上
+  onFocusChange(() => { if (hold.id && hold.id !== currentFocusId) clearHold(); });
   keyHandler = (e) => {
     if (customKeyHandler && customKeyHandler(e)) return;
     const key = e.key;
@@ -220,7 +260,14 @@ export function initKeyboardNav() {
     lastFocusFromPointer = false; // this focus move is from the D-pad
 
     if (key === 'Enter') {
-      if (currentFocusId) focusRegistry.get(currentFocusId)?.onSelect?.();
+      if (!currentFocusId) return;
+      const entry = focusRegistry.get(currentFocusId);
+      if (!entry) return;
+      // Items WITHOUT a long-press action keep the old behaviour exactly: fire on
+      // keydown. Only items that opt in wait for the release, so nothing else in
+      // the app changes timing (the player runs its own hold machinery).
+      if (!entry.onLongPress) { entry.onSelect?.(); return; }
+      if (!e.repeat) startHold(currentFocusId);
       return;
     }
 
@@ -343,17 +390,23 @@ export function initKeyboardNav() {
 }
 
 // Hook: registers element, NO re-renders on focus change
-export function useFocusable({ id, row = 0, col = 0, group = 'content', onSelect }) {
+export function useFocusable({ id, row = 0, col = 0, group = 'content', onSelect, onLongPress }) {
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
+  const onLongPressRef = useRef(onLongPress);
+  onLongPressRef.current = onLongPress;
+  // 只有"这一项是否支持长按"会改变 OK 键的时序,所以它进依赖数组;
+  // 回调本身走 ref,重渲染不会重新注册。
+  const hasLongPress = !!onLongPress;
 
   useEffect(() => {
     registerFocusable(id, {
       row, col, group,
       onSelect: () => onSelectRef.current?.(),
+      onLongPress: hasLongPress ? () => onLongPressRef.current?.() : undefined,
     });
     return () => unregisterFocusable(id);
-  }, [id, row, col, group]);
+  }, [id, row, col, group, hasLongPress]);
 
   const handleClick = useCallback((e) => {
     e.preventDefault();

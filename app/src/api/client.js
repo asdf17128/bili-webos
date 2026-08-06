@@ -765,6 +765,26 @@ export async function favVideo(aid, addIds, delIds) {
   });
 }
 
+// ============ 稍后再看(toview) ============
+// B站的「稍后再看」是一个独立于收藏夹的队列,上限 100 条。列表接口一次全返回
+// (无分页),字段与收藏夹的 medias 不同:直接就是 archive 结构 + progress。
+
+// 全量列表。data.list 为空时 B站返回 null(不是空数组),调用方要兜住。
+export async function getToView() {
+  return apiFetch('/x/v2/history/toview');
+}
+
+// 加入稍后再看。只吃 aid(不认 bvid),所以调用前必须拿到 aid。
+export async function addToView(aid) {
+  return biliWrite('/x/v2/history/toview/add', { aid: aid });
+}
+
+// 移除。viewed=true 表示"清除已观看的",与 aid 互斥;两者都不给会被服务端拒绝。
+export async function delToView(aids, viewed) {
+  var params = viewed ? { viewed: true } : { aid: Array.isArray(aids) ? aids.join(',') : aids };
+  return biliWrite('/x/v2/history/toview/del', params);
+}
+
 // 合流 MP4 播放地址(html5 端 durl 格式,单文件带音频)。倍速模式专用:
 // webOS 的原生播放管线(非 MSE)才响应 setPlayRate,而原生管线只吃单文件。
 // 画质上限 720P/1080P,倍速下可接受;恢复 1x 后切回 DASH 高画质。

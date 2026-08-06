@@ -196,5 +196,13 @@ export default {
   "推荐流(风控)": "Feed (antirriesgo)",
   "取流 playurl": "Stream (playurl)",
   "图片代理": "Proxy de imágenes",
-  "删除": "Borrar"
+  "删除": "Borrar",
+  "稍后再看": "Ver más tarde",
+  "已稍后再看": "En Ver más tarde",
+  "观看历史": "Historial",
+  "已加入稍后再看 · 在「我的」里看": "Añadido a Ver más tarde · en Mi cuenta",
+  "已从稍后再看移除": "Eliminado de Ver más tarde",
+  "移除失败,请重试": "No se pudo eliminar, inténtalo de nuevo",
+  "长按 OK 可从列表移除": "Mantén OK para quitarlo de la lista",
+  "稍后再看是空的 · 在播放页按「稍后再看」加入": "Ver más tarde está vacío · añade vídeos con el botón durante la reproducción",
 };

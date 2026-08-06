@@ -24,13 +24,20 @@ function proxyImg(url) {
   }
 }
 
-export default React.memo(function VideoCard({ video, focusId, row, col, group, onSelect, followed = false }) {
+export default React.memo(function VideoCard({ video, focusId, row, col, group, onSelect, onLongPress, followed = false }) {
   const handleSelect = useCallback(() => {
     onSelect?.(video);
   }, [video, onSelect]);
 
+  // 长按 OK 的动作(目前只有稍后再看用它做"移除")。没传就完全不启用,
+  // OK 键时序保持原样。
+  const handleLongPress = useCallback(() => {
+    onLongPress?.(video);
+  }, [video, onLongPress]);
+
   const { props } = useFocusable({
     id: focusId, row, col, group, onSelect: handleSelect,
+    onLongPress: onLongPress ? handleLongPress : undefined,
   });
 
   // Non-zh UIs machine-translate card titles (no-op subscription on zh).

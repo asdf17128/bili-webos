@@ -198,5 +198,13 @@ export default {
   "推荐流(风控)": "Feed (risk control)",
   "取流 playurl": "Stream (playurl)",
   "图片代理": "Image proxy",
-  "删除": "Delete"
+  "删除": "Delete",
+  "稍后再看": "Watch Later",
+  "已稍后再看": "In Watch Later",
+  "观看历史": "Watch history",
+  "已加入稍后再看 · 在「我的」里看": "Added to Watch Later · find it under Mine",
+  "已从稍后再看移除": "Removed from Watch Later",
+  "移除失败,请重试": "Could not remove, try again",
+  "长按 OK 可从列表移除": "Hold OK to remove from the list",
+  "稍后再看是空的 · 在播放页按「稍后再看」加入": "Watch Later is empty · add videos with the Watch Later button while playing",
 };

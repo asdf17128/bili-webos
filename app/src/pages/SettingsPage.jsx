@@ -260,7 +260,7 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
             <div style={{ color: '#666', fontSize: 16 }}>
               {busy ? t('加载中…')
                 : !user ? t('登录后可查看视频历史')
-                : tab === 1 ? t('稍后再看是空的 · 在播放页按「稍后再看」加入')
+                : tab === 1 ? t('稍后再看是空的 · 在任意视频上长按 OK 即可加入,播放页也有「稍后再看」按钮')
                 : t('暂无观看记录')}
             </div>
           );
@@ -269,7 +269,7 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
           <>
             {tab === 1 && (
               <div style={{ fontSize: 18, color: '#8a8f98', marginBottom: 10 }}>
-                {t('长按 OK 打开菜单')}
+                {t('长按 OK:加入/移出稍后再看')}
               </div>
             )}
             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 20 }}>

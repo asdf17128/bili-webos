@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { getToView, addToView, delToView, getVideoInfo } from '../api/client';
 import { storage } from '../utils/storage';
 import { t } from '../i18n';
@@ -80,7 +80,13 @@ export default function CardMenu({ video, onClose }) {
     } catch (e) { setMsg(t('操作失败,请重试')); setBusy(false); }
   };
 
+  // 菜单是"按住 OK 800ms"弹出来的,弹出来的那一刻**手还按着**。遥控器按住不放会
+  // 连发 keydown,这些连发会立刻落到菜单上把第一项确认掉 —— 实测按住 2 秒就直接
+  // 把视频加进了列表(owner:「不能一直长按就可以点击吧,得再按一次」)。
+  // 所以菜单要先"解除保险":必须先看到一次**松手**,之后的 OK 才算数。
+  const armedRef = useRef(false);
   useEffect(() => {
+    const onUp = (e) => { if (e.key === 'Enter') armedRef.current = true; };
     const onKey = (e) => {
       const k = e.key;
       if (!['ArrowUp', 'ArrowDown', 'Enter', 'Backspace', 'GoBack', 'Escape'].includes(k) && e.keyCode !== 461) return;
@@ -88,11 +94,15 @@ export default function CardMenu({ video, onClose }) {
       e.stopPropagation();
       if (k === 'ArrowUp') setIdx(i => Math.max(0, i - 1));
       else if (k === 'ArrowDown') setIdx(i => Math.min(items.length - 1, i + 1));
-      else if (k === 'Enter') run(items[idx]?.key);
+      else if (k === 'Enter') { if (armedRef.current) run(items[idx]?.key); }   // 没松过手就不认
       else onClose();
     };
+    window.addEventListener('keyup', onUp, true);
     window.addEventListener('keydown', onKey, true);   // 捕获阶段
-    return () => window.removeEventListener('keydown', onKey, true);
+    return () => {
+      window.removeEventListener('keyup', onUp, true);
+      window.removeEventListener('keydown', onKey, true);
+    };
   }, [idx, items.length, aid, busy, inList]);
 
   return (

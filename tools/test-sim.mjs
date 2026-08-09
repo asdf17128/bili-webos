@@ -391,7 +391,37 @@ async function main() {
       homeMenu.some(x => x.includes('稍后再看')), homeMenu.join(' | '));
     const noPlay = await page.evaluate(() => !document.querySelector('.player-page'));
     check('长按不会误触发播放', noPlay);
-    await key('Escape'); await sleep(800);
+    await key('Escape'); await sleep(900);
+
+    // 保险:菜单是"按住 OK"弹出来的,手还按着;遥控器连发 keydown 不能把第一项
+    // 确认掉(owner 2026-08-09:「不能一直长按就可以点击吧,得再按一次」)。
+    // 实测过:没这道保险时,按住 2 秒就直接把视频加进了列表。
+    await page.evaluate(() => {
+      const c = document.querySelector('.video-card');
+      if (c) c.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+    });
+    await sleep(400);
+    await page.evaluate(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      for (let i = 0; i < 30; i++) {                       // 1.5s 连发,菜单 0.8s 时弹出
+        await new Promise(r => setTimeout(r, 50));
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, repeat: true }));
+      }
+    });
+    await sleep(500);
+    const held = await page.evaluate(() => ({
+      open: !!document.querySelector('.cardmenu'),
+      msg: (document.querySelector('.cardmenu-msg') || {}).textContent || null,
+    }));
+    check('按住不放:菜单弹出但不会自己确认', held.open && !held.msg, `open=${held.open} msg=${held.msg}`);
+    await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true })));
+    await sleep(900);
+    const afterUp = await page.evaluate(() => ({
+      open: !!document.querySelector('.cardmenu'),
+      msg: (document.querySelector('.cardmenu-msg') || {}).textContent || null,
+    }));
+    check('松手本身也不算确认', afterUp.open && !afterUp.msg, `open=${afterUp.open} msg=${afterUp.msg}`);
+    await key('Escape'); await sleep(800);   // 取消掉,别真加进列表
 
     console.log('\n[设置:看完移出稍后再看]');
     await gotoPage('设置');

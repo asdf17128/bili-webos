@@ -53,7 +53,10 @@ const PROBE = `JSON.stringify({
   chips: Array.from(document.querySelectorAll('.fav-chip')).map(function(e){return e.textContent.trim()}),
   cardTexts: Array.from(document.querySelectorAll('.video-card')).map(function(e){return (e.innerText||'').split(String.fromCharCode(10)).join(' ')}),
   holding: !!document.querySelector('.video-card.holding'),
-  focusedCard: ((document.querySelector('.video-card.focused')||{}).innerText||'').split(String.fromCharCode(10)).join(' ')
+  focusedCard: ((document.querySelector('.video-card.focused')||{}).innerText||'').split(String.fromCharCode(10)).join(' '),
+  menu: Array.from(document.querySelectorAll('.cardmenu-item')).map(function(e){return e.textContent.trim()}),
+  chipActive: (document.querySelector('.fav-chip-active')||{}).textContent||'',
+  chipFocused: (document.querySelector('.fav-chip.focused')||{}).textContent||''
 })`;
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -349,8 +352,23 @@ async function main(call) {
     check('按住时卡片出现长按进度条', mid.holding === true);
     await sleep(700);
     await call('Input.dispatchKeyEvent', { type: 'keyUp', key: m.key, windowsVirtualKeyCode: m.vk, nativeVirtualKeyCode: m.vk });
-    s = await waitFor(x => !(x.cardTexts || []).some(c => c.includes(title.slice(0, 8))), { timeout: 8000 });
-    check('长按 OK 从列表移除', !(s.cardTexts || []).some(c => c.includes(title.slice(0, 8))), `${(s.cardTexts || []).length} 张剩余`);
+    // 长按现在**弹菜单**,不再直接删(owner 2026-08-09)
+    s = await waitFor(x => (x.menu || []).length > 0, { timeout: 6000 });
+    check('长按弹出卡片菜单(不是直接删)', (s.menu || []).some(x => x.includes('移除')), (s.menu || []).join(' | '));
+    check('只开菜单不会动数据', (s.cardTexts || []).some(c => c.includes(key8)));
+    if (!(s.menu || []).some(x => x.includes('移除'))) return;
+    // 菜单里第一项就是「从稍后再看移除」,直接 OK
+    await key('ok');
+    s = await waitFor(x => !(x.cardTexts || []).some(c => c.includes(key8)), { timeout: 9000 });
+    check('菜单 → 移除,列表里没了', !(s.cardTexts || []).some(c => c.includes(key8)), `${(s.cardTexts || []).length} 张剩余`);
+
+    // 回归:进网格再上来,tab 不能被切回观看历史(owner 2026-08-09 报的 bug)
+    await key('down'); await sleep(600);
+    await key('up'); await sleep(900);
+    s = await probe();
+    check('从网格返回仍停在稍后再看(tab 不复位)', (s.chipActive || '').includes('稍后再看'),
+      `active=${s.chipActive} focus=${s.chipFocused}`);
+    check('返回时焦点落在当前 tab 的 chip 上', (s.chipFocused || '').includes('稍后再看'), s.chipFocused);
   }
 
   async function testBangumiPlayback() {

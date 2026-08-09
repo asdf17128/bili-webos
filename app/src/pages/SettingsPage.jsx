@@ -107,7 +107,14 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
       const aid = e.detail?.aid;
       if (!aid) return;
       if (e.detail.added) { loadToView(); flash(t('已加入稍后再看')); return; }
-      setToview(prev => (prev || []).filter(x => String(x.aid) !== String(aid)));
+      setToview(prev => {
+        const next = (prev || []).filter(x => String(x.aid) !== String(aid));
+        // 被移除的那张卡正是焦点所在,卸载后 currentFocusId 就指向一个不存在的
+        // 元素 —— 电视上表现为"遥控器突然没反应"。移完把焦点安置好:还有卡就落
+        // 第一张,空了就退回当前 tab 的 chip。等一帧,让 React 先把卡摘掉。
+        setTimeout(() => setFocus(next.length ? 'content-1-0' : `content-0-${tabRef.current}`), 60);
+        return next;
+      });
       flash(t('已从稍后再看移除'));
     };
     window.addEventListener('toview-changed', onChanged);

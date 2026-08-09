@@ -616,13 +616,12 @@ html, body, #root {
   transition: transform 0.12s ease;
 }
 .fav-chip-count { opacity: 0.7; margin-left: 6px; }
-/* 当前生效的 tab/收藏夹。原来只是"淡一层蓝",焦点走开后几乎看不出选了哪个
-   (owner 反馈"选中感不够明显")。改成实心粉底 + 左侧粉条,离焦也一眼可辨。 */
+/* 当前生效的 tab/收藏夹:**实心蓝**,和侧栏选中、播放器按钮是同一套语言
+   (owner:"就保持实心的蓝色按钮不行么")。半透明底色在焦点移开后辨识度太低。 */
 .fav-chip-active {
-  background: rgba(0, 161, 214, 0.30);
+  background: #00a1d6;
   color: #fff;
   font-weight: 600;
-  box-shadow: inset 3px 0 0 #00a1d6;
 }
 
 /* ── 卡片长按菜单 ─────────────────────────────────────────────
@@ -655,11 +654,13 @@ html, body, #root {
 .cardmenu-item.focused { background: rgba(0, 161, 214, 0.22); border-color: #fff; }
 .cardmenu-msg { font-size: 22px; color: #f0f0f0; padding: 22px 28px 16px; text-align: center; }
 /* Cursor/D-pad focus: bright, scaled, glowing — clearly distinct from active. */
+/* 焦点:同样是实心蓝(不换色),靠亮边 + 微放大表达"焦点在这儿" —— 选中和焦点
+   用同一个色,只在描边/尺寸上分层,避免同一行里出现两种蓝。 */
 .fav-chip.focused {
   background: #00a1d6;
   color: #fff;
   border-color: #8fe3ff;
-  transform: scale(1.09);
+  transform: scale(1.06);
   box-shadow: 0 0 14px rgba(0, 161, 214, 0.75);
 }
 

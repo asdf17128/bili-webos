@@ -172,11 +172,16 @@ async function main() {
 
     console.log('\n[Video playback + player UI]');
     await page.evaluate((bv) => window.__openVideo({ bvid: bv, progress: 10, resumeMode: 'at' }), FIXTURE);
-    await sleep(9000);
-    const vod = await page.evaluate(() => {
-      const v = document.querySelector('video');
-      return { playing: !!v && !v.paused && v.currentTime > 1, ct: v ? Math.round(v.currentTime) : null };
-    });
+    // 固定 sleep 会随网速漂移:2026-08-09 起播要 10-12s,9s 的等待连挂两轮,
+    // 排查半天发现视频其实在播,只是比断言晚。改成轮询,最多等 25s。
+    let vod = { playing: false, ct: null };
+    for (let i = 0; i < 25 && !vod.playing; i++) {
+      await sleep(1000);
+      vod = await page.evaluate(() => {
+        const v = document.querySelector('video');
+        return { playing: !!v && !v.paused && v.currentTime > 1, ct: v ? Math.round(v.currentTime) : null };
+      });
+    }
     check('Video plays', vod.playing, `t=${vod.ct}s`);
     for (let a = 0; a < 4; a++) { await key('ArrowUp'); await sleep(700); if (await focusedBtn()) break; }
     const controls = await page.evaluate(() => [...document.querySelectorAll('.player-btn')].map(b => b.textContent.trim()));
@@ -371,6 +376,20 @@ async function main() {
         activeTab.active && activeTab.active.includes('稍后再看'), `active=${activeTab.active} focus=${activeTab.focused}`);
       check('Returning focus lands on the active tab chip',
         activeTab.focused && activeTab.focused.includes('稍后再看'), `focus=${activeTab.focused}`);
+
+      // 焦点态必须写进 className:焦点系统是直接改 classList 的(零重渲染),
+      // 切 tab 会让 React 用新 className 重渲染 chip,把 .focused 覆盖掉 ——
+      // 表现就是 owner 说的"按右两下,第二个按钮颜色不一样"(2026-08-09)。
+      const chipColors = await page.evaluate(() => [...document.querySelectorAll('.fav-chip')].map(c => ({
+        txt: c.textContent.trim(),
+        active: c.classList.contains('fav-chip-active'),
+        focused: c.classList.contains('focused'),
+        bg: getComputedStyle(c).backgroundColor,
+      })));
+      const sel = chipColors.find(c => c.active);
+      check('选中的 tab 是实心蓝,且焦点态没被重渲染擦掉',
+        !!sel && sel.focused && sel.bg === 'rgb(0, 161, 214)',
+        chipColors.map(c => `${c.txt}[${c.active ? 'A' : ''}${c.focused ? 'F' : ''}]${c.bg}`).join(' '));
     }
 
     console.log('\n[卡片长按菜单 / Card menu]');

@@ -8,11 +8,17 @@ import { t } from '../i18n';
 // 「观看历史 / 稍后再看」切换。焦点落到 chip 上就切换(选中即切换),与收藏页
 // 的收藏夹 chip 行为一致;OK 只是把焦点送进网格。
 function TabChip({ label, idx, active, onSelect }) {
-  const { props } = useFocusable({
+  // isFocused 必须进 className:焦点系统是直接改 classList 加 .focused 的
+  // (零重渲染),而切 tab 会让 React 用新的 className 字符串重渲染这两个 chip,
+  // 把 .focused 覆盖掉 —— 表现就是"按右两下,第二个按钮颜色不一样"。
+  const { props, isFocused } = useFocusable({
     id: `content-0-${idx}`, row: 0, col: idx, group: 'content', onSelect,
   });
   return (
-    <div {...props} className={`fav-chip${active ? ' fav-chip-active' : ''}`}>{label}</div>
+    <div {...props}
+      className={`fav-chip${active ? ' fav-chip-active' : ''}${isFocused ? ' focused' : ''}`}>
+      {label}
+    </div>
   );
 }
 

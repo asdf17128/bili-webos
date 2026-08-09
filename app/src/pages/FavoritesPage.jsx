@@ -9,11 +9,14 @@ import { t } from '../i18n';
 // Styling lives in styles.css so the global `.focused` class gives the chip a
 // clear cursor highlight (the old inline background hid it) (#11).
 function FolderChip({ folder, idx, active, onSelect }) {
-  const { props } = useFocusable({
+  // 同 SettingsPage 的 TabChip:切收藏夹会重渲染,React 的 className 会把焦点
+  // 系统加的 .focused 覆盖掉,所以焦点态要一起进 className。
+  const { props, isFocused } = useFocusable({
     id: `content-0-${idx}`, row: 0, col: idx, group: 'content', onSelect,
   });
   return (
-    <div {...props} className={`fav-chip${active ? ' fav-chip-active' : ''}`}>
+    <div {...props}
+      className={`fav-chip${active ? ' fav-chip-active' : ''}${isFocused ? ' focused' : ''}`}>
       {folder.title}<span className="fav-chip-count">{folder.media_count}</span>
     </div>
   );

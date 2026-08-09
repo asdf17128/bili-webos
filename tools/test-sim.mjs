@@ -332,15 +332,72 @@ async function main() {
         });
         check('Remove target is the fixture video, not a real saved item', !!target && target.includes('弹幕'), target || '(none)');
         if (target && target.includes('弹幕')) {
+          // 长按现在**弹菜单**,不再直接删(owner 2026-08-09:"不要删除,而是弹出菜单")
           await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
           await sleep(1100);   // 长按阈值 800ms
           await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true })));
-          await sleep(2500);
+          await sleep(1800);
+          const menu = await page.evaluate(() => [...document.querySelectorAll('.cardmenu-item')].map(x => x.textContent.trim()));
+          check('Long-press opens the card menu (not an instant delete)',
+            menu.length > 0 && menu.some(x => x.includes('移除')), menu.join(' | '));
+          const stillThere = await page.evaluate(() => [...document.querySelectorAll('.video-card')].some(c => c.innerText.includes('弹幕')));
+          check('Nothing is deleted just by opening the menu', stillThere);
+          // 菜单里选「从稍后再看移除」
+          await page.evaluate(() => {
+            const it = [...document.querySelectorAll('.cardmenu-item')].find(x => x.textContent.includes('移除'));
+            if (it) it.click();
+          });
+          await sleep(3000);
           const left = await page.evaluate(() => [...document.querySelectorAll('.video-card')].map(c => c.innerText.replace(/\n/g, ' ')));
-          check('Long-press OK removes it from the list', !left.some(x => x.includes('弹幕')), `${left.length} cards left`);
+          check('Menu → 移除 takes it out of the list', !left.some(x => x.includes('弹幕')), `${left.length} cards left`);
         }
       }
+
+      // 回归:进「稍后再看」→ 按下进网格 → 再按上,不能跳回观看历史
+      // (owner 2026-08-09 报的 bug:上来时焦点落在第 0 列 = 观看历史,tab 被顺手切走)
+      await page.evaluate(() => {
+        const c = [...document.querySelectorAll('.fav-chip')].find(x => x.textContent.includes('稍后再看'));
+        if (c) c.click();
+      });
+      await sleep(2500);
+      await key('ArrowDown'); await sleep(700);
+      await key('ArrowUp'); await sleep(900);
+      const activeTab = await page.evaluate(() => {
+        const a = document.querySelector('.fav-chip-active');
+        const f = document.querySelector('.fav-chip.focused');
+        return { active: a ? a.textContent.trim() : null, focused: f ? f.textContent.trim() : null };
+      });
+      check('Back up from the grid stays on 稍后再看 (no tab reset)',
+        activeTab.active && activeTab.active.includes('稍后再看'), `active=${activeTab.active} focus=${activeTab.focused}`);
+      check('Returning focus lands on the active tab chip',
+        activeTab.focused && activeTab.focused.includes('稍后再看'), `focus=${activeTab.focused}`);
     }
+
+    console.log('\n[卡片长按菜单 / Card menu]');
+    // 任意列表页的卡片长按都该弹菜单(不只是稍后再看列表)
+    await gotoPage('推荐');
+    await sleep(2500);
+    await page.evaluate(() => {
+      const c = document.querySelector('.video-card');
+      if (c) c.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+    });
+    await sleep(400);
+    await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
+    await sleep(1100);
+    await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true })));
+    await sleep(2500);
+    const homeMenu = await page.evaluate(() => [...document.querySelectorAll('.cardmenu-item')].map(x => x.textContent.trim()));
+    check('首页卡片长按也弹菜单,含「加入稍后再看」',
+      homeMenu.some(x => x.includes('稍后再看')), homeMenu.join(' | '));
+    const noPlay = await page.evaluate(() => !document.querySelector('.player-page'));
+    check('长按不会误触发播放', noPlay);
+    await key('Escape'); await sleep(800);
+
+    console.log('\n[设置:看完移出稍后再看]');
+    await gotoPage('设置');
+    await sleep(1500);
+    const rows2 = await page.evaluate(() => [...document.querySelectorAll('.settings-row')].map(r => r.innerText.split('\n')[0].trim()));
+    check('设置里有「看完移出稍后再看」开关', rows2.some(r => r.includes('看完移出稍后再看')), rows2.join(' / '));
 
     console.log('\n[Runtime health]');
     check('No uncaught page errors', pageErrors.length === 0, pageErrors.slice(0, 2).join(' | '));

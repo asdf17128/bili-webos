@@ -29,15 +29,16 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
     onSelect?.(video);
   }, [video, onSelect]);
 
-  // 长按 OK 的动作(目前只有稍后再看用它做"移除")。没传就完全不启用,
-  // OK 键时序保持原样。
+  // 长按 OK:默认弹卡片菜单(加入/移出稍后再看)。页面可以传 onLongPress 覆盖。
+  // 菜单挂在根节点(App 接 'card-menu' 事件),不从这里穿 props 到 6 个页面。
   const handleLongPress = useCallback(() => {
-    onLongPress?.(video);
+    if (onLongPress) { onLongPress(video); return; }
+    window.dispatchEvent(new CustomEvent('card-menu', { detail: video }));
   }, [video, onLongPress]);
 
   const { props } = useFocusable({
     id: focusId, row, col, group, onSelect: handleSelect,
-    onLongPress: onLongPress ? handleLongPress : undefined,
+    onLongPress: handleLongPress,
   });
 
   // Non-zh UIs machine-translate card titles (no-op subscription on zh).

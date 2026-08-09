@@ -5,6 +5,7 @@ import { playPart, playAdvance } from './playIntent';
 import { formatDuration, formatTime, formatCount, QUALITY_MAP, cleanTitle, pickAigcText } from '../utils/format';
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
+import { tripleNextRel, tripleNextStat, mergeServerRel } from './tripleState';
 import DanmakuLayer from './DanmakuLayer';
 import SubtitleLayer from './SubtitleLayer';
 import { parseSubtitleBody, pickCueIndex, isAiLan, subtitleLanName, mtLanName, findZhTrack, matchTrackByLan, AI_LEAD } from './subtitles';
@@ -740,6 +741,14 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
       videoRef.current.addEventListener('ended', () => {
         castReportState({ playState: 'end' }).catch(() => {});
+        // 看完自动移出稍后再看(设置项,默认关)。只对**从稍后再看点开**的视频生效
+        // ——否则会对着从没进过队列的视频白发一个删除请求。
+        if (video?.fromToView && storage.getSettings().toviewAutoRemove) {
+          const aid = videoAidRef.current || video?.aid;
+          if (aid) delToView(aid).then(() => {
+            window.dispatchEvent(new CustomEvent('toview-changed', { detail: { aid, added: false } }));
+          }).catch(() => {});
+        }
         // Multi-part (分P) auto-advance: play the next part of THIS video before
         // anything else, so a 66-讲 series plays straight through (#11).
         // Order-play (收藏夹顺序播放, #11): a favorites playlist takes PRIORITY
@@ -751,7 +760,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         const idx = video?.playlistIndex;
         if (pl && Array.isArray(pl) && typeof idx === 'number' && idx + 1 < pl.length && onPlayNext) {
           const next = pl[idx + 1];
-          onPlayNext(playAdvance({ ...next, playlist: pl, playlistIndex: idx + 1 }));
+          onPlayNext(playAdvance({ ...next, playlist: pl, playlistIndex: idx + 1, fromToView: video?.fromToView }));
           return;
         }
         // Multi-part (分P/合集) auto-advance: play the next part of THIS video
@@ -1269,25 +1278,18 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       const res = await tripleVideo(aid);
       if (res && res.code === 0) {
         const d = res.data || {};
-        const coinsAdded = d.coin ? (d.multiply || 2) : 0;
-        setStat(p => ({
-          like: p.like + (r0.liked ? 0 : (d.like ? 1 : 0)),
-          coin: p.coin + coinsAdded,
-          favorite: p.favorite + (r0.faved ? 0 : (d.fav ? 1 : 0)),
-        }));
-        setRel(p => ({
-          liked: p.liked || !!d.like,
-          coined: Math.min(2, p.coined + coinsAdded),
-          faved: p.faved || !!d.fav,
-        }));
+        // 计数只加"这次真做了的";点亮状态则是"三项最终都成立" —— 两者语义不同,
+        // 混为一谈就会出现「只有收藏变色」(见 tripleState.js 的注释)。
+        setStat(p => tripleNextStat(p, r0, d));
+        setRel(p => tripleNextRel(p, d));
         setTriplePop(true);
         setTimeout(() => setTriplePop(false), 700);
         showPlayerToast(<>{t('三连成功')} 👍<CoinIcon />⭐</>);
         // True-up from the server — the local increments above are best-effort
         // (e.g. a triple fired past a failed relation fetch adds nothing new).
+        // 校准只能往上合并:直接覆盖会把刚写成功的状态按回去。
         getVideoRelation(aid).then(r => {
-          const rd = r?.data;
-          if (rd) setRel({ liked: !!(rd.like || rd.attitude > 0), coined: rd.coin || 0, faved: !!rd.favorite });
+          if (r?.data) setRel(p => mergeServerRel(p, r.data));
         }).catch(() => {});
       } else {
         showPlayerToast((res && res.message) || t('操作失败,请重试'));
@@ -1324,6 +1326,18 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     if (controlsTimer.current) clearTimeout(controlsTimer.current); // no auto-hide mid-hold
   }, [doTriple]);
 
+  // 相关推荐长按的计时器(短按播放 / 长按弹菜单)
+  const relHoldRef = useRef({ timer: null, fired: false });
+  const endRelHold = useCallback((playIt) => {
+    const h = relHoldRef.current;
+    if (!h.timer) return false;
+    clearTimeout(h.timer);
+    const fired = h.fired;
+    relHoldRef.current = { timer: null, fired: false };
+    if (!fired && playIt) playIt();
+    return true;
+  }, []);
+
   const endLikeHold = useCallback((cancel) => {
     const h = holdRef.current;
     if (!h.active) return;
@@ -1338,11 +1352,17 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   }, [doLike, hideControlsLater]);
 
   // OK-key release ends the hold (keydown lives in the main handler below).
+  // 相关推荐区的长按也在这里收尾:没到时长就是短按 → 播放那个视频。
+  const relPlayRef = useRef(null);   // 由 Enter 分支填:这次短按该播谁
   useEffect(() => {
-    const up = (e) => { if (e.key === 'Enter') endLikeHold(false); };
+    const up = (e) => {
+      if (e.key !== 'Enter') return;
+      if (endRelHold(relPlayRef.current)) return;   // 相关推荐的这次 OK 已消费
+      endLikeHold(false);
+    };
     window.addEventListener('keyup', up);
     return () => window.removeEventListener('keyup', up);
-  }, [endLikeHold]);
+  }, [endLikeHold, endRelHold]);
   useEffect(() => () => { if (holdRef.current.timer) clearTimeout(holdRef.current.timer); }, []);
 
   // One entry for a control-bar action — shared by D-pad OK and pointer click
@@ -1983,7 +2003,21 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           e.preventDefault();
           if (isComments) { pressComment(focusIdx); return true; } // 楼中楼 expand/page/collapse
           const rv = gridList[focusIdx];
-          if (rv && onPlayNext) onPlayNext(panelTab === 'parts' ? playPart(rv) : rv);
+          // 长按 = 弹卡片菜单(加入稍后再看),短按 = 播放。这块不走 useFocusable
+          // (播放器自管 focusArea/focusIdx),所以长按在这里手搓:keydown 起表,
+          // 到点就弹菜单并把这次 OK 标记为已消费,keyup 时不再当短按处理。
+          if (rv && panelTab !== 'parts' && !e.repeat && !relHoldRef.current.timer) {
+            relPlayRef.current = () => { if (onPlayNext) onPlayNext(rv); };
+            relHoldRef.current = {
+              fired: false,
+              timer: setTimeout(() => {
+                relHoldRef.current.fired = true;
+                window.dispatchEvent(new CustomEvent('card-menu', { detail: rv }));
+              }, 800),
+            };
+          } else if (rv && panelTab === 'parts' && onPlayNext) {
+            onPlayNext(playPart(rv));
+          }
           return true;
         }
         return false;

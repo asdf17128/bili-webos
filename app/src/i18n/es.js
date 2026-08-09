@@ -205,4 +205,10 @@ export default {
   "移除失败,请重试": "No se pudo eliminar, inténtalo de nuevo",
   "长按 OK 可从列表移除": "Mantén OK para quitarlo de la lista",
   "稍后再看是空的 · 在播放页按「稍后再看」加入": "Ver más tarde está vacío · añade vídeos con el botón durante la reproducción",
+  "加入稍后再看": "Añadir a Ver más tarde",
+  "从稍后再看移除": "Quitar de Ver más tarde",
+  "取消": "Cancelar",
+  "长按 OK 打开菜单": "Mantén OK para ver opciones",
+  "看完移出稍后再看": "Quitar tras verlo",
+  "已加入稍后再看": "Añadido a Ver más tarde",
 };

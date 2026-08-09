@@ -207,4 +207,10 @@ export default {
   "移除失败,请重试": "Could not remove, try again",
   "长按 OK 可从列表移除": "Hold OK to remove from the list",
   "稍后再看是空的 · 在播放页按「稍后再看」加入": "Watch Later is empty · add videos with the Watch Later button while playing",
+  "加入稍后再看": "Add to Watch Later",
+  "从稍后再看移除": "Remove from Watch Later",
+  "取消": "Cancel",
+  "长按 OK 打开菜单": "Hold OK for options",
+  "看完移出稍后再看": "Remove after watching",
+  "已加入稍后再看": "Added to Watch Later",
 };

@@ -616,8 +616,44 @@ html, body, #root {
   transition: transform 0.12s ease;
 }
 .fav-chip-count { opacity: 0.7; margin-left: 6px; }
-/* Currently-loaded folder: subtle blue tint so you can tell which is shown. */
-.fav-chip-active { background: rgba(0, 161, 214, 0.25); color: #fff; }
+/* 当前生效的 tab/收藏夹。原来只是"淡一层蓝",焦点走开后几乎看不出选了哪个
+   (owner 反馈"选中感不够明显")。改成实心粉底 + 左侧粉条,离焦也一眼可辨。 */
+.fav-chip-active {
+  background: rgba(251, 114, 153, 0.22);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 #fb7299;
+}
+
+/* ── 卡片长按菜单 ─────────────────────────────────────────────
+   浮层挂根节点(App),所以不会被页面容器的 overflow 裁掉。 */
+.cardmenu-mask {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 220;
+  background: rgba(0, 0, 0, 0.62);
+  display: flex; align-items: center; justify-content: center;
+}
+.cardmenu {
+  min-width: 560px; max-width: 720px;
+  background: #16171b;
+  border: 1px solid #2b2c33;
+  border-radius: 14px;
+  padding: 22px 0 12px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.75);
+}
+.cardmenu-title {
+  font-size: 20px; line-height: 1.4; color: #9aa0a8;
+  padding: 0 28px 18px; margin-bottom: 6px;
+  border-bottom: 1px solid #24252b;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.cardmenu-item {
+  font-size: 23px; color: #f0f0f0;
+  padding: 15px 28px; margin: 4px 12px;
+  border-radius: 10px;
+  border: 3px solid transparent;
+}
+.cardmenu-item.focused { background: rgba(251, 114, 153, 0.18); border-color: #fff; }
+.cardmenu-msg { font-size: 22px; color: #f0f0f0; padding: 22px 28px 16px; text-align: center; }
 /* Cursor/D-pad focus: bright, scaled, glowing — clearly distinct from active. */
 .fav-chip.focused {
   background: #00a1d6;

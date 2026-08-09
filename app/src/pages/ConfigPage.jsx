@@ -110,9 +110,22 @@ export default function ConfigPage({ onLogout, user }) {
     },
   });
 
+  // 看完自动移出稍后再看。默认关 —— 这是个破坏性动作(会改服务端列表),
+  // 默认不替用户做主;只对从稍后再看点开的视频生效(见 PlayerPage 的 ended)。
+  const [autoRm, setAutoRm] = useState(() => !!settings.toviewAutoRemove);
+  const { props: autoRmProps } = useFocusable({
+    id: 'content-1-0', row: 1, col: 0, group: 'content',
+    onSelect: () => {
+      const s = storage.getSettings();
+      const next = !s.toviewAutoRemove;
+      storage.setSettings({ ...s, toviewAutoRemove: next });
+      setAutoRm(next);
+    },
+  });
+
   // 每行视频数 — list picker.
   const { props: gridProps } = useFocusable({
-    id: 'content-1-0', row: 1, col: 0, group: 'content',
+    id: 'content-2-0', row: 2, col: 0, group: 'content',
     onSelect: () => openPicker(t('每行视频'), [2, 3, 4].map(n => ({ v: n, label: t('{n} 个', { n }) })), gridCols,
       (v) => { setGridCols(v); storage.setSettings({ ...storage.getSettings(), gridCols: v }); }),
   });
@@ -122,7 +135,7 @@ export default function ConfigPage({ onLogout, user }) {
     { v: 0.8, label: t('小') }, { v: 1, label: t('标准') }, { v: 1.3, label: t('大') }, { v: 1.6, label: t('特大') },
   ];
   const { props: danmakuScaleProps } = useFocusable({
-    id: 'content-2-0', row: 2, col: 0, group: 'content',
+    id: 'content-3-0', row: 3, col: 0, group: 'content',
     onSelect: () => openPicker(t('弹幕字号'), DM_SCALES, danmakuScale,
       (v) => { setDanmakuScale(v); storage.setSettings({ ...storage.getSettings(), danmakuScale: v }); }),
   });
@@ -133,7 +146,7 @@ export default function ConfigPage({ onLogout, user }) {
     { v: 0.85, label: t('小') }, { v: 1, label: t('标准') }, { v: 1.2, label: t('大') }, { v: 1.4, label: t('特大') },
   ];
   const { props: subtitleScaleProps } = useFocusable({
-    id: 'content-3-0', row: 3, col: 0, group: 'content',
+    id: 'content-4-0', row: 4, col: 0, group: 'content',
     onSelect: () => openPicker(t('字幕字号'), SUB_SCALES, subtitleScale,
       (v) => { setSubtitleScale(v); storage.setSettings({ ...storage.getSettings(), subtitleScale: v }); }),
   });
@@ -146,13 +159,13 @@ export default function ConfigPage({ onLogout, user }) {
     { v: 'akam', label: t('海外 Akamai') },
   ];
   const { props: cdnProps } = useFocusable({
-    id: 'content-4-0', row: 4, col: 0, group: 'content',
+    id: 'content-5-0', row: 5, col: 0, group: 'content',
     onSelect: () => openPicker(t('CDN 线路'), CDN_OPTS, cdnRoute,
       (v) => { setCdnRoute(v); storage.setSettings({ ...storage.getSettings(), cdnRoute: v }); }),
   });
 
   const { props: checkUpdateProps } = useFocusable({
-    id: 'content-5-0', row: 5, col: 0, group: 'content',
+    id: 'content-6-0', row: 6, col: 0, group: 'content',
     onSelect: () => {
       // Once an update is known, OK opens the Homebrew Channel to install it;
       // otherwise re-run the check manually.
@@ -165,7 +178,7 @@ export default function ConfigPage({ onLogout, user }) {
   // the whole test suite.
   const [showDiag, setShowDiag] = useState(false);
   const { props: diagProps } = useFocusable({
-    id: 'content-6-0', row: 6, col: 0, group: 'content',
+    id: 'content-7-0', row: 7, col: 0, group: 'content',
     onSelect: () => setShowDiag(v => !v),
   });
 
@@ -184,13 +197,13 @@ export default function ConfigPage({ onLogout, user }) {
     label: (LANG_LABELS[code] || code) + (code === 'auto' ? ` (${LANG_LABELS[getLocale()] || getLocale()})` : ''),
   }));
   const { props: langProps } = useFocusable({
-    id: 'content-7-0', row: 7, col: 0, group: 'content',
+    id: 'content-8-0', row: 8, col: 0, group: 'content',
     onSelect: () => openPicker(LANG_ROW_LABEL, LANG_OPTS, langPref,
       (v) => { if (v !== langPref) setLanguage(v); /* persists + reloads */ }),
   });
 
   const { props: logoutProps } = useFocusable({
-    id: 'content-8-0', row: 8, col: 0, group: 'content',
+    id: 'content-9-0', row: 9, col: 0, group: 'content',
     onSelect: () => { if (user) { storage.clearAuth(); onLogout(); } },
   });
 
@@ -206,6 +219,14 @@ export default function ConfigPage({ onLogout, user }) {
         <span className="settings-row-value" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {danmakuOn ? t('开') : t('关')}
           <span className={`settings-switch ${danmakuOn ? 'on' : ''}`}><span className="settings-switch-knob" /></span>
+        </span>
+      </div>
+
+      <div className="settings-row" {...autoRmProps}>
+        <span>{t('看完移出稍后再看')}</span>
+        <span className="settings-row-value" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {autoRm ? t('开') : t('关')}
+          <span className={`settings-switch ${autoRm ? 'on' : ''}`}><span className="settings-switch-knob" /></span>
         </span>
       </div>
 

@@ -163,6 +163,12 @@ danmaku 断言改为设置感知(测试前强开、测后还原用户偏好);徽
 
 | C-LATER-03 | **写操作的身份断言必须读"被聚焦的那个元素"**,不是列表第 0 个。真机套件加了 `focusedCard` 字段,长按前先把焦点走到目标卡上、回读焦点卡再断言;焦点走不到就直接放弃长按 | 🤖 `node tools/test-ui.mjs` 的 [稍后再看] 段(7 条);模拟器套件同步改成回读 `.video-card.focused` | **2026-08-06 真删了 owner 的收藏**:焦点在第 2 个 chip 上按「下」落到第 2 张卡(owner 的 UFC),而断言读的是第 1 张(测试刚加的),于是"身份核对通过"→ 长按打在别人身上。安全线写着"同步骤断言视频身份",漏的是"同一个元素"这半句 —— 已按 API 恢复原状并复核 |
 
+| C-TRI-02 | **三连后三项都要点亮**:三连接口返回的 `data.{like,coin,fav}` 是"这次做了什么",不是"最终什么状态"。之前已赞已投的视频只回 `fav:true`,老代码 OR 进去就只有收藏变色。纯函数 `app/src/player/tripleState.js` + 校准只许**往上合并**(不许把刚写成功的按回去) | 🤖 `node tools/test-triplestate.mjs`(10 条,已进 verify.sh)。**正对照**:旧逻辑跑同一场景得 `{liked:false,coined:0,faved:true}`,与 owner 描述逐字吻合 | owner 2026-08-09「一键三连之后,只有收藏的数字的颜色变了」。顺带实测排除了两个假设:relation 读写**立即一致**(不是服务端延迟);字段名是 `favorite`/`coin`(枚数)不是 `fav` |
+| C-MENU-01 | **卡片长按 = 弹菜单,不是直接执行**:任意列表页(首页/分区/搜索/收藏/稍后再看)+ 播放器底部相关推荐,长按 OK 都弹同一个菜单;菜单只打开不改数据;选「移除」才真删。菜单键盘走 **window 捕获阶段**,不抢 `setCustomKeyHandler`(单槽,播放器占着) | 🤖 test-sim.mjs:「Long-press opens the card menu (not an instant delete)」「Nothing is deleted just by opening the menu」「首页卡片长按也弹菜单」「长按不会误触发播放」 | owner 2026-08-09「长按有菜单 可以添加稍后」+「在稍后观看里,长按列表里视频不要删除,而是弹出菜单然后选择删除」 |
+| C-LATER-04 | **tab 不许被返回键顺手切走**:「我的」页进稍后再看 → 下进网格 → 上回来,tab 仍是稍后再看,且焦点落在**当前 tab 的 chip** 上;chip 选中态用粉底+左粉条,离焦也一眼可辨 | 🤖 test-sim.mjs 两条:no tab reset / focus lands on the active chip | owner 2026-08-09 报的 bug:网格第 0 列往上落到 `content-0-0` = 观看历史,"选中即切换"把 tab 切走了 |
+| C-LATER-05 | **稍后再看按列表连播**(对齐官方):从列表点开哪个就从哪个起播,播完自动下一个;设置项「看完移出稍后再看」默认关,只对**从稍后再看点开**的视频生效 | 🤖 test-sim.mjs:设置行存在;连播复用收藏夹 playlist 机制(C-PLAY 系列已覆盖) | owner 2026-08-09「官方app行为里,稍后观看会按照列表来一个一个播放吗?可以对齐」——查证官方确实连播 |
+| C-UI-08 | **禁 `inset` 简写**(Chrome 87+,电视是 68/79):写了它固定定位的遮罩会塌成 0 尺寸,看着像"菜单没有背景遮罩" | 🤖 verify.sh 静态门禁 `no inset shorthand` | 2026-08-09 卡片菜单遮罩就是这么写的,进真机前被门禁拦下;`App.jsx` 里原有的一处同样问题一并修 |
+
 ## 全量回归记录
 
 | 日期 | 范围 | 结果 |

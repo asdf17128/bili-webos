@@ -56,8 +56,18 @@ if grep -rnE "aspect-ratio[[:space:]]*:" app/src --include="*.css" | grep -v "/\
   echo "FAIL: aspect-ratio (CSS) found (unsupported on webOS 5/6)"; exit 1
 fi
 echo "OK: no aspect-ratio CSS"
+# C-UI-08: `inset` shorthand needs Chrome 87+; webOS 5/6 are 68/79 (the element
+# collapses to zero size — a fixed overlay silently stops covering anything).
+# 2026-08-09: 卡片菜单的遮罩就是这么写的,真机上会塌。
+if grep -rn "inset: 0\|inset:0" app/src --include="*.jsx" --include="*.css" | grep -v "box-shadow" | grep -v "spec-exempt"; then
+  echo "FAIL: \`inset\` shorthand found (needs Chrome 87+, webOS is 68/79)"; exit 1
+fi
+echo "OK: no inset shorthand"
 # C-PLAY-01: play-start policy (resume shipped broken twice before this suite)
 node tools/test-playintent.mjs || { echo "FAIL: play-intent policy"; exit 1; }
+# C-TRI-02: 三连后的点亮状态(app/src/player/tripleState.js)。owner 2026-08-09
+# 「只有收藏的数字变色」——接口回的是"这次做了什么",不是"最终什么状态"。
+node tools/test-triplestate.mjs || { echo "FAIL: triple-state policy"; exit 1; }
 # C-I18N-01: every t('…') key covered in every dictionary (missing = zh fallback leaks)
 node tools/test-i18n-coverage.mjs || { echo "FAIL: i18n coverage"; exit 1; }
 # C-I18N-04: locale-aware formatters (万/亿 vs K/M, relative time)

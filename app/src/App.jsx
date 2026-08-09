@@ -4,6 +4,7 @@ import { castAck, castSubscribe, castGetStatus, getNavInfo, pingVersionAsset } f
 import { normalizePlay, playAt } from './player/playIntent';
 import { storage } from './utils/storage';
 import SidebarItem from './components/SidebarItem';
+import CardMenu from './components/CardMenu';
 
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
@@ -336,6 +337,16 @@ export default function App() {
     return () => { delete window.__openVideo; delete window.__openLive; };
   }, [handlePlayVideo]);
 
+  // 卡片长按菜单:VideoCard 派 'card-menu' 事件,菜单挂在根节点(避免被
+  // 页面容器的 overflow 裁掉,DESIGN.md §4)。播放器打开时也照常工作 ——
+  // 菜单用捕获阶段监听键盘,不跟播放器抢 customKeyHandler。
+  const [menuVideo, setMenuVideo] = useState(null);
+  useEffect(() => {
+    const open = (e) => setMenuVideo(e.detail || null);
+    window.addEventListener('card-menu', open);
+    return () => window.removeEventListener('card-menu', open);
+  }, []);
+
   // Once-a-day countable version check (see client.pingVersionAsset). The date
   // stamps regardless of outcome so a missing asset doesn't retry all day.
   useEffect(() => {
@@ -385,11 +396,13 @@ export default function App() {
       </div>
 
       {(playerVideo || liveRoom) && (
-        <Suspense fallback={<div style={{ position: 'fixed', inset: 0, zIndex: 150, background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20 }}>{t('加载播放器…')}</div>}>
+        <Suspense fallback={<div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 150, background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20 }}>{t('加载播放器…')}</div>}>
           {playerVideo && <PlayerPage key={`${playerVideo.bvid || playerVideo.epid || playerVideo.aid || ''}-${playerVideo.cid || playerVideo.epid || ''}`} video={playerVideo} onBack={() => setPlayerVideo(null)} onPlayNext={(v) => setPlayerVideo(normalizePlay(v))} />}
           {liveRoom && <LivePlayerPage key={liveRoom.roomid} room={liveRoom} onBack={() => setLiveRoom(null)} />}
         </Suspense>
       )}
+
+      {menuVideo && <CardMenu video={menuVideo} onClose={() => setMenuVideo(null)} />}
 
       {showLogin && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: 1920, height: 1080, zIndex: 200, background: '#0d0d1a' }}>

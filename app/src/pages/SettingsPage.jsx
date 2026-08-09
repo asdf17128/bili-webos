@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { storage } from '../utils/storage';
-import { getHistory, getLiveRoomInfo, mediaProxyBase, getToView, delToView } from '../api/client';
+import { getHistory, getLiveRoomInfo, mediaProxyBase, getToView } from '../api/client';
 import VideoCard from '../components/VideoCard';
 import { useFocusable, setFocus, onFocusChange } from '../hooks/useFocus';
 import { t } from '../i18n';
@@ -72,32 +72,47 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
     setToviewLoading(false);
   }, [user]);
 
-  // 焦点落到 chip 行就切 tab;第一次切到稍后再看时才发请求。
+  // 焦点落到 chip 行就切 tab(选中即切换)。但**从网格往上回来**时不能这么算:
+  // 网格第 0 列往上落到 content-0-0 = 观看历史,tab 就被顺手切回去了 —— 这正是
+  // 「进稍后再看→按下进列表→再上来,直接跳回观看历史」的 bug。
+  // 修法:记住上一次焦点在哪一行,从 row>=1 回到 row 0 时,把焦点送回**当前 tab
+  // 对应的那个 chip**,不改 tab。
+  const lastRowRef = React.useRef(0);
+  const tabRef = React.useRef(0);
+  tabRef.current = tab;
   React.useEffect(() => {
     return onFocusChange((fid) => {
-      const m = fid && fid.match(/^content-0-(\d+)$/);
+      const m = fid && fid.match(/^content-(\d+)-(\d+)$/);
       if (!m) return;
-      const col = parseInt(m[1]);
+      const row = parseInt(m[1]);
+      const col = parseInt(m[2]);
+      const cameFromGrid = lastRowRef.current >= 1;
+      lastRowRef.current = row;
+      if (row !== 0) return;
       if (col > 1) return;
+      if (cameFromGrid) {
+        // 回到 chip 行:停在当前 tab 上,不切换
+        if (col !== tabRef.current) setFocus(`content-0-${tabRef.current}`);
+        return;
+      }
       setTab(col);
       if (col === 1 && toview === null && !toviewLoading) loadToView();
     });
   }, [toview, toviewLoading, loadToView]);
 
-  // 长按卡片 = 从稍后再看移除。先本地摘掉(手感即时),失败再放回去。
-  const removeFromToView = React.useCallback(async (v) => {
-    if (!v?.aid) return;
-    const before = toview || [];
-    setToview(before.filter(x => x.aid !== v.aid));
-    try {
-      const res = await delToView(v.aid);
-      if (res?.code !== 0) throw new Error(res?.message || 'failed');
+  // 长按卡片走统一的卡片菜单(CardMenu),不在这里直接删 —— 直接删太容易误触,
+  // 而且和其它页面的长按行为不一致。菜单删完派 'toview-changed',这里跟着摘卡。
+  React.useEffect(() => {
+    const onChanged = (e) => {
+      const aid = e.detail?.aid;
+      if (!aid) return;
+      if (e.detail.added) { loadToView(); flash(t('已加入稍后再看')); return; }
+      setToview(prev => (prev || []).filter(x => String(x.aid) !== String(aid)));
       flash(t('已从稍后再看移除'));
-    } catch {
-      setToview(before);
-      flash(t('移除失败,请重试'));
-    }
-  }, [toview, flash]);
+    };
+    window.addEventListener('toview-changed', onChanged);
+    return () => window.removeEventListener('toview-changed', onChanged);
+  }, [loadToView, flash]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -241,7 +256,7 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
           <>
             {tab === 1 && (
               <div style={{ fontSize: 18, color: '#8a8f98', marginBottom: 10 }}>
-                {t('长按 OK 可从列表移除')}
+                {t('长按 OK 打开菜单')}
               </div>
             )}
             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 20 }}>
@@ -255,8 +270,15 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
                     row={row}
                     col={i % cols}
                     group="content"
-                    onSelect={onPlayVideo}
-                    onLongPress={tab === 1 ? removeFromToView : undefined}
+                    onSelect={(vv) => {
+                      // 官方 app 的稍后再看是按列表连播的,这里对齐:点开哪个就从
+                      // 哪个开始,播完自动下一个(播放器已有 playlist 顺序播放机制)。
+                      if (tab === 1) {
+                        const list = toview || [];
+                        const i = list.findIndex(x => x.bvid === vv.bvid);
+                        onPlayVideo({ ...vv, playlist: list, playlistIndex: i < 0 ? 0 : i, fromToView: true });
+                      } else onPlayVideo(vv);
+                    }}
                   />
                 );
               })}

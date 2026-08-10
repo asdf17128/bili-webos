@@ -213,4 +213,7 @@ export default {
   "已加入稍后再看": "Added to Watch Later",
   "稍后再看是空的 · 在任意视频上长按 OK 即可加入,播放页也有「稍后再看」按钮": "Watch Later is empty · hold OK on any video to add it, or use the Watch Later button while playing",
   "长按 OK:加入/移出稍后再看": "Hold OK: add to / remove from Watch Later",
+  "code={c} 风控拦截 · 常见于海外 IP:试试登录、或在设置里换 CDN 线路": "code={c} risk-control block · common on overseas IPs: try signing in, or switch the CDN route in Settings",
+  "code=-10403 该内容在当前地区不可观看": "code=-10403 not available in your region",
+  "code=-404 稿件不存在或已失效": "code=-404 video not found or removed",
 };

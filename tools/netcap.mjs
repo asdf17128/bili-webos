@@ -4,10 +4,11 @@ import { Client } from 'ssh2';
 import { readFileSync } from 'fs';
 import http from 'http';
 import net from 'net';
+import { tvPassphrase } from './_tvpass.mjs';
 
 const TV = { host: '192.168.50.94', port: 9922, user: 'prisoner' };
 const KEY = process.env.HOME + '/.ssh/tv_webos';
-const PASSPHRASE = process.argv[2] || '4E7082';
+const PASSPHRASE = tvPassphrase(process.argv[2]);
 const DURATION_MS = (parseInt(process.argv[3]) || 70) * 1000;
 const LOCAL_PORT = 19995;
 

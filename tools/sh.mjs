@@ -2,11 +2,12 @@
 // Usage: node tools/sh.mjs "<command>" [passphrase]
 import { Client } from 'ssh2';
 import { readFileSync } from 'fs';
+import { tvPassphrase } from './_tvpass.mjs';
 
 const TV = { host: '192.168.50.94', port: 9922, user: 'prisoner' };
 const KEY = process.env.HOME + '/.ssh/tv_webos';
 const CMD = process.argv[2] || 'echo no-command';
-const PASSPHRASE = process.argv[3] || '4E7082';
+const PASSPHRASE = tvPassphrase(process.argv[3]);
 
 const conn = new Client();
 conn.on('ready', () => {

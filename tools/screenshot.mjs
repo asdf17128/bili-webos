@@ -4,9 +4,10 @@ import { readFileSync, writeFileSync } from 'fs';
 import http from 'http';
 import net from 'net';
 import { WebSocket } from 'ws';
+import { tvPassphrase } from './_tvpass.mjs';
 
 const TV = { host: '192.168.50.94', port: 9922 };
-const PASS = process.argv[2] || '4E7082';
+const PASS = tvPassphrase(process.argv[2]);
 const OUT = process.argv[3] || 'screenshot.png';
 
 const conn = new Client();

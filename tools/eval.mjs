@@ -6,10 +6,11 @@ import { readFileSync } from 'fs';
 import http from 'http';
 import net from 'net';
 import { WebSocket } from 'ws';
+import { tvPassphrase } from './_tvpass.mjs';
 
 const TV = { host: '192.168.50.94', port: 9922 };
 const EXPR = process.argv[2] || 'document.title';
-const PASS = process.argv[3] || '4E7082';
+const PASS = tvPassphrase(process.argv[3]);
 
 const conn = new Client();
 conn.on('ready', () => {

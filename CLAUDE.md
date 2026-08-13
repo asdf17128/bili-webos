@@ -12,7 +12,7 @@ cd app && npm run dev
 cd proxy && node server.js
 
 # Remote debug TV app
-node tools/debug.mjs "4E7082"
+node tools/debug.mjs        # 口令自动从 ~/.ssh/tv_webos.pass 读
 
 # Take screenshot from TV
 node tools/screenshot.mjs
@@ -81,7 +81,8 @@ In Dev: Web App ──HTTP──────▶ Mac Proxy (:9527) ──HTTPS─
 
 ## TV Connection
 - IP: 192.168.50.94, Port: 9922, User: prisoner
-- SSH key: ~/.ssh/tv_webos (passphrase: from Developer Mode app)
+- SSH key: ~/.ssh/tv_webos — 口令**不写进仓库**:`export TV_SSH_PASSPHRASE=…`
+  或放在 `~/.ssh/tv_webos.pass`(chmod 600)。口令来自电视上的 Developer Mode app
 - Debug port: 9998 (Chrome DevTools Protocol via SSH tunnel)
 - App ID: com.biliwebos.app, Service: com.biliwebos.app.service
 

@@ -5,6 +5,7 @@
 // Run: node tools/cases/c-focus-02-wheel-direction.mjs   (exit 0 = pass)
 import { Client } from 'ssh2'; import { readFileSync } from 'fs';
 import http from 'http'; import net from 'net'; import { WebSocket } from 'ws';
+import { tvPassphrase } from '../_tvpass.mjs';
 
 const c = new Client();
 c.on('ready', () => {
@@ -54,5 +55,5 @@ c.on('ready', () => {
     }).on('error', e => { console.log('err', e.message); process.exit(1); });
   });
 });
-c.connect({ host: '192.168.50.94', port: 9922, username: 'prisoner', privateKey: readFileSync(process.env.HOME + '/.ssh/tv_webos'), passphrase: '4E7082', algorithms: { serverHostKey: ['ssh-rsa'] } });
+c.connect({ host: '192.168.50.94', port: 9922, username: 'prisoner', privateKey: readFileSync(process.env.HOME + '/.ssh/tv_webos'), passphrase: tvPassphrase(), algorithms: { serverHostKey: ['ssh-rsa'] } });
 setTimeout(() => { console.log('TIMEOUT'); process.exit(1); }, 90000);

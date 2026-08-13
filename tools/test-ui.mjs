@@ -15,9 +15,10 @@ import { readFileSync } from 'fs';
 import http from 'http';
 import net from 'net';
 import { WebSocket } from 'ws';
+import { tvPassphrase } from './_tvpass.mjs';
 
 const TV = { host: '192.168.50.94', port: 9922 };
-const PASS = process.argv[2] || '4E7082';
+const PASS = tvPassphrase(process.argv[2]);
 const PER_KEY_MS = 320;
 
 const KEYMAP = {

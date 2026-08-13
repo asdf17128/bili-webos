@@ -17,11 +17,12 @@ import { readFileSync, writeFileSync } from 'fs';
 import http from 'http';
 import net from 'net';
 import { WebSocket } from 'ws';
+import { tvPassphrase } from './_tvpass.mjs';
 
 const TV = { host: '192.168.50.94', port: 9922 };
 const CMDS = (process.argv[2] || '').split(',').map(s => s.trim()).filter(Boolean);
 const OUT = process.argv[3] || 'point.png';
-const PASS = process.argv[4] || '4E7082';
+const PASS = tvPassphrase(process.argv[4]);
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 let px = 960, py = 540; // last pointer position

@@ -1,6 +1,7 @@
 // Launch an app on the TV via the PUBLIC luna bus (prisoner has no private-bus
 // access; luna-send is denied, luna-send-pub works). Usage: node tools/launch.mjs <appId>
 import { Client } from 'ssh2'; import { readFileSync } from 'fs';
+import { tvPassphrase } from './_tvpass.mjs';
 const appId = process.argv[2] || 'com.biliwebos.app';
 const c = new Client();
 c.on('ready', () => {
@@ -10,4 +11,4 @@ c.on('ready', () => {
     s.on('close', () => { console.log(o.trim()); c.end(); process.exit(0); });
   });
 });
-c.connect({ host: '192.168.50.94', port: 9922, username: 'prisoner', privateKey: readFileSync(process.env.HOME + '/.ssh/tv_webos'), passphrase: '4E7082', algorithms: { serverHostKey: ['ssh-rsa'] } });
+c.connect({ host: '192.168.50.94', port: 9922, username: 'prisoner', privateKey: readFileSync(process.env.HOME + '/.ssh/tv_webos'), passphrase: tvPassphrase(), algorithms: { serverHostKey: ['ssh-rsa'] } });

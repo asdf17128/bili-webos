@@ -3,6 +3,7 @@ import { Client } from 'ssh2';
 import { readFileSync } from 'fs';
 import http from 'http';
 import net from 'net';
+import { tvPassphrase } from './_tvpass.mjs';
 const c = new Client();
 c.on('ready', () => {
   const srv = net.createServer(s => c.forwardOut('127.0.0.1', 0, '127.0.0.1', 9998, (e, rs) => {
@@ -21,4 +22,4 @@ c.on('ready', () => {
   });
 }).on('error', () => { console.log('ERR'); process.exit(0); })
   .connect({ host: '192.168.50.94', port: 9922, username: 'prisoner',
-    privateKey: readFileSync(process.env.HOME + '/.ssh/tv_webos'), passphrase: '4E7082' });
+    privateKey: readFileSync(process.env.HOME + '/.ssh/tv_webos'), passphrase: tvPassphrase() });

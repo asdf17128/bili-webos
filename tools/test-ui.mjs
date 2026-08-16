@@ -67,7 +67,7 @@ const fail = (n, d) => { failed++; console.log(`  ❌ ${n}${d ? ': ' + d : ''}`)
 const warn = (n, d) => { warned++; console.log(`  ⚠️  ${n}${d ? ': ' + d : ''}`); };
 const check = (n, cond, d) => (cond ? ok(n, d) : fail(n, d));
 
-async function main(call) {
+async function main(call, relaunchApp) {
   await call('Runtime.enable');
   await call('Page.enable');
 
@@ -116,7 +116,25 @@ async function main(call) {
   // to the target (index resolved from the LIVE sidebar by icon), then OK to
   // enter the content.
   const goto = async (pageKey) => {
-    const s = await probe();
+    let s = await probe();
+    // 套件里的 Back 链有时会把 app 整个退出(播放器/直播间连按几下就退到桌面),
+    // 之后每个 goto 都报 "icon not in sidebar []" 连锁失败——看着像一堆功能回归,
+    // 其实只是没 app 了。侧栏空就先自愈一次:重新载入页面再看。
+    if (!(s.sidebar || []).length) {
+      await reload();
+      s = await probe();
+    }
+    // 页面重载救不回来 = app 进程真的退了(CDP 页面只剩个死壳)。
+    // 这时必须通过 luna 重新拉起,否则后面每个 goto 都连锁报
+    // "icon not in sidebar []"(2026-08-16 一轮 10 条全红,全是这个)。
+    if (!(s.sidebar || []).length && relaunchApp) {
+      console.log('  (app 已退出,重新拉起…)');
+      await relaunchApp();
+      for (let i = 0; i < 10 && !(s.sidebar || []).length; i++) {
+        await sleep(1500);
+        s = await probe();
+      }
+    }
     const idx = (s.sidebar || []).findIndex(t => t.indexOf(NAV_ICON[pageKey]) >= 0);
     if (idx < 0) throw new Error(`goto(${pageKey}): icon ${NAV_ICON[pageKey]} not in sidebar [${(s.sidebar || []).join(',')}]`);
     if (s.focus && s.focus.startsWith('content-')) await key('back'); // content → sidebar
@@ -217,9 +235,20 @@ async function main(call) {
     await reload();
     let s = await goto('live');
     check('Live list loads', s.cards > 0, `${s.cards} rooms`);
-    await key('ok'); // enter first live room
-    s = await waitFor(x => x.v && x.v.t > 0, { timeout: 22000, interval: 600 });
-    check('Live stream plays', !!(s.v && s.v.t > 0), s.v ? `t=${s.v.t}s ready=${s.v.ready}` : 'no <video>');
+    // 进第一个直播间;起不来就换下一个,最多试 3 个 —— 列表里混着轮播/刚下播/
+    // 付费房间,单个房间打不开是**内容问题**不是功能回归(2026-08-16 因此误报一次)。
+    let played = false, tried = 0;
+    for (; tried < 3 && !played; tried++) {
+      if (tried > 0) {                    // 退回列表,右移一个房间
+        for (let b = 0; b < 3; b++) { const st = await probe(); if (!st.v) break; await key('back'); await sleep(600); }
+        await key('right'); await sleep(400);
+      }
+      await key('ok');
+      s = await waitFor(x => x.v && x.v.t > 0, { timeout: 22000, interval: 600 });
+      played = !!(s.v && s.v.t > 0);
+    }
+    check('Live stream plays', played, played ? `t=${s.v.t}s ready=${s.v.ready} (第${tried}个房间)`
+      : `连试 ${tried} 个房间都没起播`);
     check('Danmaku layer mounted', s.danmakuBox);
     // Danmaku depends on a live, populated chat — give it a few seconds.
     s = await waitFor(x => x.danmakuItems > 0, { timeout: 9000, interval: 700 });
@@ -453,7 +482,7 @@ conn.on('ready', () => {
         });
         await new Promise(r => ws.on('open', r));
         let failedCount = 1;
-        try { failedCount = await main(call); }
+        try { failedCount = await main(call, launchApp); }
         catch (e) { console.error('Fatal:', e); }
         finally { ws.close(); server.close(); conn.end(); process.exit(failedCount > 0 ? 1 : 0); }
       })();

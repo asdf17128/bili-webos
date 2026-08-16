@@ -89,7 +89,7 @@ export default function LoginPage({ onLogin }) {
 
   return (
     <div className="login-page">
-      <h2 style={{ fontSize: 36, marginBottom: 30, color: '#00a1d6' }}>哔哩哔哩</h2>
+      <h2 style={{ fontSize: 'calc(36px * var(--ui-scale))', marginBottom: 30, color: '#00a1d6' }}>哔哩哔哩</h2>
       <div className="login-qr">
         <canvas ref={canvasRef} />
       </div>

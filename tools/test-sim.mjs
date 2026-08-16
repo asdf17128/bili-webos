@@ -442,6 +442,45 @@ async function main() {
     check('松手本身也不算确认', afterUp.open && !afterUp.msg, `open=${afterUp.open} msg=${afterUp.msg}`);
     await key('Escape'); await sleep(800);   // 取消掉,别真加进列表
 
+    console.log('\n[界面字号 / UI text scale]');
+    // issue #22。风险不在字变大,在**放大后网格滚动会不会裁切** —— 卡片变高,
+    // 而滚动读的是真实 offsetTop(2026-07 修过一次),这里就是守那条修复。
+    await gotoPage('设置');
+    await sleep(1500);
+    const rowsUi = await page.evaluate(() => [...document.querySelectorAll('.settings-row')].map(r => r.innerText.split('\n')[0].trim()));
+    check('设置里有「界面字号」', rowsUi.some(r => r.includes('界面字号')), rowsUi.join(' / '));
+
+    const scaled = await page.evaluate(() => {
+      document.documentElement.style.setProperty('--ui-scale', '1.25');
+      return true;
+    });
+    await gotoPage('推荐');
+    await sleep(2600);
+    const big = await page.evaluate(() => {
+      const t = document.querySelector('.video-card-title');
+      const s = document.querySelector('.sidebar-item');
+      return { title: getComputedStyle(t).fontSize, side: getComputedStyle(s).fontSize,
+               sideOverflow: s.scrollWidth > s.clientWidth + 1 };
+    });
+    check('特大档字号确实放大了', parseFloat(big.title) > 26, `标题 ${big.title} · 侧栏 ${big.side}`);
+    check('侧栏文字没有溢出', !big.sideOverflow);
+
+    // 放大后重跑网格滚动几何:深行可见 + 回到顶部不裁切
+    for (let i = 0; i < 3; i++) { await key('ArrowLeft'); await sleep(200); }
+    await key('ArrowRight'); await sleep(800);
+    for (let i = 0; i < 6; i++) { await key('ArrowDown'); await sleep(200); }
+    await sleep(900);
+    const deepBig = await cardRect();
+    check('特大档:深行卡片完整可见', !!deepBig && deepBig.top >= 0 && deepBig.bottom <= 1081,
+      deepBig && `top=${deepBig.top} bottom=${deepBig.bottom}`);
+    for (let i = 0; i < 6; i++) { await key('ArrowUp'); await sleep(200); }
+    await sleep(900);
+    const topBig = await cardRect();
+    check('特大档:回到顶部不裁切', !!topBig && topBig.top >= 0 && topBig.peek === null,
+      topBig && `top=${topBig.top}`);
+    await page.evaluate(() => document.documentElement.style.setProperty('--ui-scale', '1'));
+    await sleep(600);
+
     console.log('\n[设置:看完移出稍后再看]');
     await gotoPage('设置');
     await sleep(1500);

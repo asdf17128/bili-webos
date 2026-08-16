@@ -214,4 +214,5 @@ export default {
   "code={c} 风控拦截 · 常见于海外 IP:试试登录、或在设置里换 CDN 线路": "code={c} bloqueo de control de riesgo · común con IP en el extranjero: inicia sesión o cambia la ruta CDN en Ajustes",
   "code=-10403 该内容在当前地区不可观看": "code=-10403 no disponible en tu región",
   "code=-404 稿件不存在或已失效": "code=-404 vídeo no encontrado o eliminado",
+  "界面字号": "Tamaño del texto",
 };

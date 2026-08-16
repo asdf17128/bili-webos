@@ -1,3 +1,11 @@
+/* ===== 界面字号(issue #22)=====
+   一个全局倍数,乘在每一处 font-size 上。默认 1;设置页可选 大/特大。
+   只动字号不动布局:卡片会随文字变高,而网格滚动读的是真实 offsetTop
+   (2026-07 那次修复之后),所以行高变化能自适应。
+   弹幕/字幕不受影响 —— 它们的字号是组件内联设置的(内联优先),而且各自
+   已经有独立的字号选项。 */
+:root { --ui-scale: 1; }
+
 /* ===== Global Reset & TV Base ===== */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body, #root {
@@ -38,19 +46,19 @@ html, body, #root {
   margin-bottom: 12px;
 }
 .sidebar-logo h1 {
-  font-size: 28px;
+  font-size: calc(28px * var(--ui-scale));
   color: #00a1d6;
   font-weight: 700;
 }
 .sidebar-logo span {
-  font-size: 16px;
+  font-size: calc(16px * var(--ui-scale));
   color: #555;
 }
 .sidebar-item {
   padding: 11px 16px;
   margin: 2px 12px;
   border-radius: 10px;
-  font-size: 20px;
+  font-size: calc(20px * var(--ui-scale));
   color: #9a9ab0;
   cursor: pointer;
   display: flex;
@@ -58,7 +66,7 @@ html, body, #root {
   gap: 14px;
   transition: background 0.12s ease, color 0.12s ease;
 }
-.sidebar-item .sidebar-label { font-size: 20px; }
+.sidebar-item .sidebar-label { font-size: calc(20px * var(--ui-scale)); }
 /* Focused = a solid, unmistakable selection box (owner: hard to tell otherwise) */
 .sidebar-item.focused {
   background: #00a1d6;
@@ -86,8 +94,8 @@ html, body, #root {
   overflow: hidden;
 }
 .sidebar-user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.sidebar-user-name { font-size: 16px; color: #999; }
-.sidebar-user-login { font-size: 16px; color: #00a1d6; }
+.sidebar-user-name { font-size: calc(16px * var(--ui-scale)); color: #999; }
+.sidebar-user-login { font-size: calc(16px * var(--ui-scale)); color: #00a1d6; }
 
 /* ===== Main Content ===== */
 .main-content {
@@ -96,7 +104,7 @@ html, body, #root {
   overflow: hidden;
 }
 .page-title {
-  font-size: 30px;
+  font-size: calc(30px * var(--ui-scale));
   font-weight: 600;
   margin-bottom: 16px;
   color: #fff;
@@ -196,7 +204,7 @@ html, body, #root {
   right: 8px;
   background: rgba(0,0,0,0.8);
   color: #fff;
-  font-size: 16px;
+  font-size: calc(16px * var(--ui-scale));
   padding: 2px 8px;
   border-radius: 4px;
 }
@@ -204,7 +212,7 @@ html, body, #root {
   padding: 16px 10px 10px;
 }
 .video-card-title {
-  font-size: 28px;
+  font-size: calc(28px * var(--ui-scale));
   line-height: 1.35;
   color: #ddd;
   display: -webkit-box;
@@ -215,17 +223,17 @@ html, body, #root {
 }
 .video-card.focused .video-card-title { color: #fff; }
 .video-card-meta {
-  font-size: 22px;
+  font-size: calc(22px * var(--ui-scale));
   color: #6a6a8a;
 }
 .video-card-meta span { margin-right: 14px; }
 
 /* Denser grids (3/4 columns) → smaller cards, so scale text + padding down. */
-.video-grid.cols-3 .video-card-title { font-size: 22px; }
-.video-grid.cols-3 .video-card-meta { font-size: 18px; }
+.video-grid.cols-3 .video-card-title { font-size: calc(22px * var(--ui-scale)); }
+.video-grid.cols-3 .video-card-meta { font-size: calc(18px * var(--ui-scale)); }
 .video-grid.cols-3 .video-card-info { padding: 12px 9px 9px; }
-.video-grid.cols-4 .video-card-title { font-size: 20px; line-height: 1.3; }
-.video-grid.cols-4 .video-card-meta { font-size: 16px; }
+.video-grid.cols-4 .video-card-title { font-size: calc(20px * var(--ui-scale)); line-height: 1.3; }
+.video-grid.cols-4 .video-card-meta { font-size: calc(16px * var(--ui-scale)); }
 .video-grid.cols-4 .video-card-info { padding: 10px 8px 8px; }
 .video-grid.cols-4 .video-card-meta span { margin-right: 10px; }
 
@@ -235,7 +243,7 @@ html, body, #root {
   align-items: center;
   justify-content: center;
   height: 300px;
-  font-size: 22px;
+  font-size: calc(22px * var(--ui-scale));
   color: #6a6a8a;
 }
 .loading-spinner {
@@ -265,8 +273,8 @@ html, body, #root {
   margin-bottom: 24px;
 }
 .login-qr canvas { display: block; }
-.login-tip { font-size: 22px; color: #8888a0; text-align: center; }
-.login-status { font-size: 20px; color: #00a1d6; margin-top: 16px; }
+.login-tip { font-size: calc(22px * var(--ui-scale)); color: #8888a0; text-align: center; }
+.login-status { font-size: calc(20px * var(--ui-scale)); color: #00a1d6; margin-top: 16px; }
 
 /* ===== Search ===== */
 .search-container {
@@ -288,7 +296,7 @@ html, body, #root {
   border: 2px solid #2a2a4a;
   border-radius: 10px;
   color: #e1e1e6;
-  font-size: 20px;
+  font-size: calc(20px * var(--ui-scale));
   padding: 0 20px;
   outline: none;
 }
@@ -296,7 +304,7 @@ html, body, #root {
 
 /* YouTube-style recommendation list below the search box */
 .search-recs { max-width: 1000px; margin-top: 10px; padding-bottom: 40px; }
-.search-rec-section { font-size: 16px; color: #888; margin: 18px 6px 8px; }
+.search-rec-section { font-size: calc(16px * var(--ui-scale)); color: #888; margin: 18px 6px 8px; }
 .search-rec-item {
   display: flex;
   align-items: center;
@@ -305,10 +313,10 @@ html, body, #root {
   padding: 0 16px;
   border-radius: 10px;
   color: #e1e1e6;
-  font-size: 20px;
+  font-size: calc(20px * var(--ui-scale));
   cursor: pointer;
 }
-.search-rec-item .rec-ico { font-size: 17px; opacity: 0.7; width: 22px; text-align: center; flex-shrink: 0; }
+.search-rec-item .rec-ico { font-size: calc(17px * var(--ui-scale)); opacity: 0.7; width: 22px; text-align: center; flex-shrink: 0; }
 .search-rec-item .rec-label { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .search-rec-item.focused { background: #00a1d6; color: #fff; }
 .search-rec-item.focused .rec-ico { opacity: 1; }
@@ -324,7 +332,7 @@ html, body, #root {
   justify-content: center;
   background: #1e1e3a;
   border-radius: 6px;
-  font-size: 18px;
+  font-size: calc(18px * var(--ui-scale));
   color: #ccc;
   cursor: pointer;
   transition: transform 0.1s ease, background 0.1s ease;
@@ -344,7 +352,7 @@ html, body, #root {
   gap: 10px;
   margin-bottom: 14px;
 }
-.search-chips-label { font-size: 16px; color: #888; margin-right: 2px; }
+.search-chips-label { font-size: calc(16px * var(--ui-scale)); color: #888; margin-right: 2px; }
 .search-chip {
   display: inline-flex;
   align-items: center;
@@ -356,14 +364,14 @@ html, body, #root {
   border: 1px solid #2a2a4a;
   border-radius: 20px;
   color: #cfcfe0;
-  font-size: 17px;
+  font-size: calc(17px * var(--ui-scale));
   cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   transition: transform 0.1s ease, background 0.1s ease, border-color 0.1s ease;
 }
-.search-chip .chip-ico { font-size: 16px; opacity: 0.55; }
+.search-chip .chip-ico { font-size: calc(16px * var(--ui-scale)); opacity: 0.55; }
 .search-chip.focused {
   background: #00a1d6;
   border-color: #00a1d6;
@@ -372,7 +380,7 @@ html, body, #root {
 }
 .search-chip.chip-clear { color: #ff9a9a; }
 .search-chip.chip-clear.focused { background: #b23b3b; border-color: #b23b3b; color: #fff; }
-.search-hint { font-size: 16px; color: #666; margin: 0 4px 14px; }
+.search-hint { font-size: calc(16px * var(--ui-scale)); color: #666; margin: 0 4px 14px; }
 
 /* ===== Player Page ===== */
 .player-page {
@@ -397,7 +405,7 @@ html, body, #root {
   transition: opacity 0.3s ease;
 }
 .player-controls.hidden { opacity: 0; pointer-events: none; }
-.player-title { font-size: 28px; color: #fff; font-weight: 600; }
+.player-title { font-size: calc(28px * var(--ui-scale)); color: #fff; font-weight: 600; }
 .player-progress-bar {
   width: 100%; height: 6px;
   background: rgba(255,255,255,0.2);
@@ -418,7 +426,7 @@ html, body, #root {
   border: none;
   border-radius: 8px;
   color: #fff;
-  font-size: 18px;
+  font-size: calc(18px * var(--ui-scale));
   cursor: pointer;
   transition: transform 0.15s ease, background 0.15s ease;
 }
@@ -458,7 +466,7 @@ html, body, #root {
   100% { transform: scale(1); }
 }
 .player-btn.focused.triple-pop { animation: none; } /* focused already scales */
-.player-time { font-size: 20px; color: #ccc; margin-left: auto; }
+.player-time { font-size: calc(20px * var(--ui-scale)); color: #ccc; margin-left: auto; }
 
 /* ===== Danmaku ===== */
 .danmaku-container {
@@ -475,7 +483,7 @@ html, body, #root {
 .danmaku-item {
   position: absolute;
   white-space: nowrap;
-  font-size: 28px;
+  font-size: calc(28px * var(--ui-scale));
   color: #fff;
   text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
   will-change: transform;
@@ -518,7 +526,7 @@ html, body, #root {
 .subtitle-text {
   display: inline-block;
   max-width: 76%;
-  font-size: 34px;
+  font-size: calc(34px * var(--ui-scale));
   font-weight: 500;
   line-height: 1.45;
   color: #fff;
@@ -561,7 +569,7 @@ html, body, #root {
   transform: translateX(-50%);
   background: rgba(0,0,0,0.85);
   color: #fff;
-  font-size: 22px;
+  font-size: calc(22px * var(--ui-scale));
   padding: 12px 30px;
   border-radius: 999px;
   z-index: 60;
@@ -570,12 +578,12 @@ html, body, #root {
 }
 .quality-panel-title {
   padding: 4px 20px 10px;
-  font-size: 17px;
+  font-size: calc(17px * var(--ui-scale));
   color: #9aa0a8;
 }
 .quality-option {
   padding: 12px 20px;
-  font-size: 20px;
+  font-size: calc(20px * var(--ui-scale));
   color: #aaa;
   border-radius: 8px;
   cursor: pointer;
@@ -592,7 +600,7 @@ html, body, #root {
 .tabs { display: flex; gap: 8px; margin-bottom: 20px; padding: 0 60px; }
 .tab {
   padding: 8px 20px;
-  font-size: 17px;
+  font-size: calc(17px * var(--ui-scale));
   color: #8888a0;
   background: transparent;
   border-radius: 6px;
@@ -608,7 +616,7 @@ html, body, #root {
   padding: 8px 18px;
   margin: 0 12px 10px 0;
   border-radius: 20px;
-  font-size: 16px;
+  font-size: calc(16px * var(--ui-scale));
   white-space: nowrap;
   background: rgba(255, 255, 255, 0.08);
   color: #bbb;
@@ -640,19 +648,19 @@ html, body, #root {
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.75);
 }
 .cardmenu-title {
-  font-size: 20px; line-height: 1.4; color: #9aa0a8;
+  font-size: calc(20px * var(--ui-scale)); line-height: 1.4; color: #9aa0a8;
   padding: 0 28px 18px; margin-bottom: 6px;
   border-bottom: 1px solid #24252b;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .cardmenu-item {
-  font-size: 23px; color: #f0f0f0;
+  font-size: calc(23px * var(--ui-scale)); color: #f0f0f0;
   padding: 15px 28px; margin: 4px 12px;
   border-radius: 10px;
   border: 3px solid transparent;
 }
 .cardmenu-item.focused { background: rgba(0, 161, 214, 0.22); border-color: #fff; }
-.cardmenu-msg { font-size: 22px; color: #f0f0f0; padding: 22px 28px 16px; text-align: center; }
+.cardmenu-msg { font-size: calc(22px * var(--ui-scale)); color: #f0f0f0; padding: 22px 28px 16px; text-align: center; }
 /* Cursor/D-pad focus: bright, scaled, glowing — clearly distinct from active. */
 /* 焦点:同样是实心蓝(不换色),靠亮边 + 微放大表达"焦点在这儿" —— 选中和焦点
    用同一个色,只在描边/尺寸上分层,避免同一行里出现两种蓝。 */
@@ -672,7 +680,7 @@ html, body, #root {
   justify-content: center;
   height: 300px;
   color: #6a6a8a;
-  font-size: 22px;
+  font-size: calc(22px * var(--ui-scale));
 }
 
 /* ===== Toast ===== */
@@ -684,7 +692,7 @@ html, body, #root {
   color: #fff;
   padding: 12px 32px;
   border-radius: 8px;
-  font-size: 20px;
+  font-size: calc(20px * var(--ui-scale));
   z-index: 999;
   animation: toast-in 0.3s ease;
 }
@@ -700,7 +708,7 @@ html, body, #root {
   color: #fff;
   border: none;
   border-radius: 8px;
-  font-size: 18px;
+  font-size: calc(18px * var(--ui-scale));
   cursor: pointer;
   transition: transform 0.15s ease;
 }
@@ -717,10 +725,10 @@ html, body, #root {
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 10px;
-  font-size: 18px; color: #ddd; cursor: pointer;
+  font-size: calc(18px * var(--ui-scale)); color: #ddd; cursor: pointer;
   transition: background 0.15s ease, box-shadow 0.15s ease;
 }
-.settings-row-value { color: #9aa0a8; font-size: 20px; }
+.settings-row-value { color: #9aa0a8; font-size: calc(20px * var(--ui-scale)); }
 .settings-row.focused {
   background: rgba(0,161,214,0.18);
   box-shadow: 0 0 0 2px #00a1d6;
@@ -735,7 +743,7 @@ html, body, #root {
 /* VIP-only quality tier tag in the quality popup */
 .vip-tag {
   margin-left: 8px;
-  font-size: 16px;
+  font-size: calc(16px * var(--ui-scale));
   color: #fb7299;
   border: 1px solid #fb7299;
   border-radius: 4px;

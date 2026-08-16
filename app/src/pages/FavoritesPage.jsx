@@ -114,7 +114,7 @@ export default function FavoritesPage({ userMid, onPlayVideo }) {
       {/* Folder selector (focus row 0). Selecting a chip switches folder. */}
       <div style={{ padding: '20px 40px 6px', whiteSpace: 'nowrap', overflow: 'hidden' }}>
         {folders.length === 0
-          ? <span style={{ color: '#888', fontSize: 16 }}>{loading ? t('加载收藏夹…') : t('暂无收藏夹')}</span>
+          ? <span style={{ color: '#888', fontSize: 'calc(16px * var(--ui-scale))' }}>{loading ? t('加载收藏夹…') : t('暂无收藏夹')}</span>
           : folders.map((f, i) => (
             <FolderChip key={f.id} folder={f} idx={i} active={i === activeFolder}
               // Focus already switched the folder; OK just drops into the grid.

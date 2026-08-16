@@ -8,6 +8,12 @@ import { t, getLocale, setLanguage, availableLanguages } from '../i18n';
 
 const CONTACT_EMAIL = 'asdf17128@gmail.com';
 
+const UI_SCALES = [
+  { v: 1, label: '标准' },
+  { v: 1.12, label: '大' },
+  { v: 1.25, label: '特大' },
+];
+
 export default function ConfigPage({ onLogout, user }) {
   const [proxyUrl] = useState(storage.getProxyUrl());
   const [updateMsg, setUpdateMsg] = useState('');
@@ -146,9 +152,21 @@ export default function ConfigPage({ onLogout, user }) {
     { v: 0.85, label: t('小') }, { v: 1, label: t('标准') }, { v: 1.2, label: t('大') }, { v: 1.4, label: t('特大') },
   ];
   const { props: subtitleScaleProps } = useFocusable({
-    id: 'content-4-0', row: 4, col: 0, group: 'content',
+    id: 'content-5-0', row: 5, col: 0, group: 'content',
     onSelect: () => openPicker(t('字幕字号'), SUB_SCALES, subtitleScale,
       (v) => { setSubtitleScale(v); storage.setSettings({ ...storage.getSettings(), subtitleScale: v }); }),
+  });
+
+  // 界面字号(issue #22)。一个全局倍数,写进 <html> 的 --ui-scale;
+  // 所有 font-size 都是 calc(基准 * var(--ui-scale))。只动字号不动布局。
+  const [uiScale, setUiScale] = useState(() => storage.getSettings().uiScale || 1);
+  const { props: uiScaleProps } = useFocusable({
+    id: 'content-4-0', row: 4, col: 0, group: 'content',
+    onSelect: () => openPicker(t('界面字号'), UI_SCALES.map(s => ({ v: s.v, label: t(s.label) })), uiScale, (v) => {
+      setUiScale(v);
+      storage.setSettings({ ...storage.getSettings(), uiScale: v });
+      document.documentElement.style.setProperty('--ui-scale', String(v));
+    }),
   });
 
   // CDN线路 — list picker. Forces the video CDN onto that mirror when the
@@ -159,13 +177,13 @@ export default function ConfigPage({ onLogout, user }) {
     { v: 'akam', label: t('海外 Akamai') },
   ];
   const { props: cdnProps } = useFocusable({
-    id: 'content-5-0', row: 5, col: 0, group: 'content',
+    id: 'content-6-0', row: 6, col: 0, group: 'content',
     onSelect: () => openPicker(t('CDN 线路'), CDN_OPTS, cdnRoute,
       (v) => { setCdnRoute(v); storage.setSettings({ ...storage.getSettings(), cdnRoute: v }); }),
   });
 
   const { props: checkUpdateProps } = useFocusable({
-    id: 'content-6-0', row: 6, col: 0, group: 'content',
+    id: 'content-7-0', row: 7, col: 0, group: 'content',
     onSelect: () => {
       // Once an update is known, OK opens the Homebrew Channel to install it;
       // otherwise re-run the check manually.
@@ -178,7 +196,7 @@ export default function ConfigPage({ onLogout, user }) {
   // the whole test suite.
   const [showDiag, setShowDiag] = useState(false);
   const { props: diagProps } = useFocusable({
-    id: 'content-7-0', row: 7, col: 0, group: 'content',
+    id: 'content-8-0', row: 8, col: 0, group: 'content',
     onSelect: () => setShowDiag(v => !v),
   });
 
@@ -197,13 +215,13 @@ export default function ConfigPage({ onLogout, user }) {
     label: (LANG_LABELS[code] || code) + (code === 'auto' ? ` (${LANG_LABELS[getLocale()] || getLocale()})` : ''),
   }));
   const { props: langProps } = useFocusable({
-    id: 'content-8-0', row: 8, col: 0, group: 'content',
+    id: 'content-9-0', row: 9, col: 0, group: 'content',
     onSelect: () => openPicker(LANG_ROW_LABEL, LANG_OPTS, langPref,
       (v) => { if (v !== langPref) setLanguage(v); /* persists + reloads */ }),
   });
 
   const { props: logoutProps } = useFocusable({
-    id: 'content-9-0', row: 9, col: 0, group: 'content',
+    id: 'content-10-0', row: 10, col: 0, group: 'content',
     onSelect: () => { if (user) { storage.clearAuth(); onLogout(); } },
   });
 
@@ -212,7 +230,7 @@ export default function ConfigPage({ onLogout, user }) {
 
   return (
     <div style={{ padding: '28px 40px', height: '100%', overflowY: 'auto', maxWidth: 720 }}>
-      <div style={{ fontSize: 26, fontWeight: 600, color: '#fff', marginBottom: 24 }}>{t('设置')}</div>
+      <div style={{ fontSize: 'calc(26px * var(--ui-scale))', fontWeight: 600, color: '#fff', marginBottom: 24 }}>{t('设置')}</div>
 
       <div className="settings-row" {...danmakuProps}>
         <span>{t('弹幕')}</span>
@@ -243,6 +261,11 @@ export default function ConfigPage({ onLogout, user }) {
       <div className="settings-row" {...subtitleScaleProps}>
         <span>{t('字幕字号')}</span>
         <span className="settings-row-value">{(SUB_SCALES.find(s => s.v === subtitleScale) || SUB_SCALES[0]).label}</span>
+      </div>
+
+      <div className="settings-row" {...uiScaleProps}>
+        <span>{t('界面字号')}</span>
+        <span className="settings-row-value">{t((UI_SCALES.find(s => s.v === uiScale) || UI_SCALES[0]).label)}</span>
       </div>
 
       <div className="settings-row" {...cdnProps}>
@@ -277,10 +300,10 @@ export default function ConfigPage({ onLogout, user }) {
           <div style={{ background: 'rgba(24,26,44,0.98)', borderRadius: 12, padding: '18px 0', minWidth: 360,
             boxShadow: '0 18px 60px rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.08)' }}
             onClick={(e) => e.stopPropagation()}>
-            <div style={{ fontSize: 20, color: '#9aa0a8', padding: '0 26px 12px' }}>{picker.title}</div>
+            <div style={{ fontSize: 'calc(20px * var(--ui-scale))', color: '#9aa0a8', padding: '0 26px 12px' }}>{picker.title}</div>
             {picker.options.map((o, i) => (
               <div key={String(o.v)} style={{
-                padding: '12px 26px', fontSize: 22, display: 'flex', justifyContent: 'space-between', gap: 48,
+                padding: '12px 26px', fontSize: 'calc(22px * var(--ui-scale))', display: 'flex', justifyContent: 'space-between', gap: 48,
                 cursor: 'pointer',
                 color: i === pickerIdx ? '#fff' : '#c6cad2',
                 background: i === pickerIdx ? '#00a1d6' : 'transparent',
@@ -302,12 +325,12 @@ export default function ConfigPage({ onLogout, user }) {
         </div>
       )}
 
-      <div style={{ marginTop: 28, color: '#888', fontSize: 18, lineHeight: 2 }}>
-        <div style={{ fontSize: 20, color: '#aaa', marginBottom: 6 }}>{t('关于')}</div>
+      <div style={{ marginTop: 28, color: '#888', fontSize: 'calc(18px * var(--ui-scale))', lineHeight: 2 }}>
+        <div style={{ fontSize: 'calc(20px * var(--ui-scale))', color: '#aaa', marginBottom: 6 }}>{t('关于')}</div>
         <div>{t('哔哩哔哩 webOS · 版本 v{v}', { v: APP_VERSION })}</div>
         <div>{t('联系 / 反馈：')}{CONTACT_EMAIL}</div>
         <div>{t('项目主页：')}github.com/asdf17128/bili-webos</div>
-        <div style={{ fontSize: 16, color: '#667', marginTop: 8 }}>{t('代理: ')}{proxyUrl}</div>
+        <div style={{ fontSize: 'calc(16px * var(--ui-scale))', color: '#667', marginTop: 8 }}>{t('代理: ')}{proxyUrl}</div>
       </div>
     </div>
   );

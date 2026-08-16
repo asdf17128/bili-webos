@@ -228,15 +228,15 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
           width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
           background: 'linear-gradient(135deg, #00a1d6, #2a2a4a)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 30, color: '#fff', border: '2px solid rgba(0,161,214,0.5)',
+          fontSize: 'calc(30px * var(--ui-scale))', color: '#fff', border: '2px solid rgba(0,161,214,0.5)',
         }}>
           {avatar
             ? <img src={avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             : (user?.uname || '游')[0]}
         </div>
         <div>
-          <div style={{ fontSize: 26, fontWeight: 600, color: '#fff' }}>{user ? user.uname : t('未登录')}</div>
-          <div style={{ fontSize: 18, color: '#8a8a9c', marginTop: 4 }}>{t('哔哩哔哩 webOS')}</div>
+          <div style={{ fontSize: 'calc(26px * var(--ui-scale))', fontWeight: 600, color: '#fff' }}>{user ? user.uname : t('未登录')}</div>
+          <div style={{ fontSize: 'calc(18px * var(--ui-scale))', color: '#8a8a9c', marginTop: 4 }}>{t('哔哩哔哩 webOS')}</div>
         </div>
       </div>
 
@@ -250,14 +250,14 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
           <TabChip label={t('稍后再看')} idx={1} active={tab === 1} onSelect={() => setFocus('content-1-0')} />
         </div>
       )}
-      {!user && <div style={{ fontSize: 20, color: '#aaa', margin: '18px 0 14px' }}>{t('最近观看')}</div>}
+      {!user && <div style={{ fontSize: 'calc(20px * var(--ui-scale))', color: '#aaa', margin: '18px 0 14px' }}>{t('最近观看')}</div>}
 
       {(() => {
         const list = tab === 1 ? (toview || []) : items;
         const busy = tab === 1 ? (toviewLoading || toview === null) : loading;
         if (list.length === 0) {
           return (
-            <div style={{ color: '#666', fontSize: 16 }}>
+            <div style={{ color: '#666', fontSize: 'calc(16px * var(--ui-scale))' }}>
               {busy ? t('加载中…')
                 : !user ? t('登录后可查看视频历史')
                 : tab === 1 ? t('稍后再看是空的 · 在任意视频上长按 OK 即可加入,播放页也有「稍后再看」按钮')
@@ -268,7 +268,7 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
         return (
           <>
             {tab === 1 && (
-              <div style={{ fontSize: 18, color: '#8a8f98', marginBottom: 10 }}>
+              <div style={{ fontSize: 'calc(18px * var(--ui-scale))', color: '#8a8f98', marginBottom: 10 }}>
                 {t('长按 OK:加入/移出稍后再看')}
               </div>
             )}
@@ -304,7 +304,7 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
         <div style={{
           position: 'fixed', left: '50%', bottom: 70, transform: 'translateX(-50%)',
           background: 'rgba(13,16,32,0.94)', border: '1px solid #2b2c33', borderRadius: 12,
-          padding: '12px 22px', fontSize: 20, color: '#f0f0f0', zIndex: 60,
+          padding: '12px 22px', fontSize: 'calc(20px * var(--ui-scale))', color: '#f0f0f0', zIndex: 60,
         }}>{toast}</div>
       )}
     </div>

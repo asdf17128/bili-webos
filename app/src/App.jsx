@@ -337,6 +337,12 @@ export default function App() {
     return () => { delete window.__openVideo; delete window.__openLive; };
   }, [handlePlayVideo]);
 
+  // 界面字号:开机就把保存的倍数写进 <html>,否则重启后设置丢失(issue #22)。
+  useEffect(() => {
+    const s = storage.getSettings().uiScale;
+    if (s && s !== 1) document.documentElement.style.setProperty('--ui-scale', String(s));
+  }, []);
+
   // 卡片长按菜单:VideoCard 派 'card-menu' 事件,菜单挂在根节点(避免被
   // 页面容器的 overflow 裁掉,DESIGN.md §4)。播放器打开时也照常工作 ——
   // 菜单用捕获阶段监听键盘,不跟播放器抢 customKeyHandler。

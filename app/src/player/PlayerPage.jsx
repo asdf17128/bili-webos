@@ -6,6 +6,7 @@ import { formatDuration, formatTime, formatCount, QUALITY_MAP, cleanTitle, pickA
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
 import { tripleNextRel, tripleNextStat, mergeServerRel } from './tripleState';
+import { apiErrorHint } from '../utils/apiHint';
 import DanmakuLayer from './DanmakuLayer';
 import SubtitleLayer from './SubtitleLayer';
 import { parseSubtitleBody, pickCueIndex, isAiLan, subtitleLanName, mtLanName, findZhTrack, matchTrackByLan, AI_LEAD } from './subtitles';
@@ -678,6 +679,18 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               // Pass the whole `video` so a cast-initiated, aid-only payload
               // still resolves via getPlayUrl's object overload.
               const res = await getPlayUrl(video, cid, fallbackQn || settings.quality || 80);
+              // 取流被拒时,把**能照着做的话**摆到用户面前(issue #20/#23:
+              // 两位用户都只看到一句"视频加载失败",不知道是风控、更不知道
+              // 登录通常就能解决)。
+              if (res && res.code !== 0) {
+                const hint = apiErrorHint(res.code);
+                if (hint) {
+                  setLoading(false);
+                  setErrorMsg(hint);
+                  setLoadError(true);
+                  return;
+                }
+              }
               meta = res?.data;
               dash = meta?.dash;
               if (!dash) throw new Error('No DASH stream in playurl (DRM/bangumi?)');

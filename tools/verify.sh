@@ -68,6 +68,8 @@ node tools/test-playintent.mjs || { echo "FAIL: play-intent policy"; exit 1; }
 # C-TRI-02: 三连后的点亮状态(app/src/player/tripleState.js)。owner 2026-08-09
 # 「只有收藏的数字变色」——接口回的是"这次做了什么",不是"最终什么状态"。
 node tools/test-triplestate.mjs || { echo "FAIL: triple-state policy"; exit 1; }
+# C-ERR-01: 接口错误码 → 用户提示(issue #20/#23:用户只看到 code=-351)
+node tools/test-apihint.mjs || { echo "FAIL: api error hints"; exit 1; }
 # C-I18N-01: every t('…') key covered in every dictionary (missing = zh fallback leaks)
 node tools/test-i18n-coverage.mjs || { echo "FAIL: i18n coverage"; exit 1; }
 # C-I18N-04: locale-aware formatters (万/亿 vs K/M, relative time)

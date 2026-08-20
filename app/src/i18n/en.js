@@ -213,8 +213,9 @@ export default {
   "已加入稍后再看": "Added to Watch Later",
   "稍后再看是空的 · 在任意视频上长按 OK 即可加入,播放页也有「稍后再看」按钮": "Watch Later is empty · hold OK on any video to add it, or use the Watch Later button while playing",
   "长按 OK:加入/移出稍后再看": "Hold OK: add to / remove from Watch Later",
-  "code={c} 风控拦截 · 常见于海外 IP:试试登录、或在设置里换 CDN 线路": "code={c} risk-control block · common on overseas IPs: try signing in, or switch the CDN route in Settings",
-  "code=-10403 该内容在当前地区不可观看": "code=-10403 not available in your region",
-  "code=-404 稿件不存在或已失效": "code=-404 video not found or removed",
   "界面字号": "UI text size",
+  "B站 风控拦截了取流请求 · 登录后通常可解决(设置 → 扫码登录);海外网络可在设置里换 CDN 线路": "Bilibili risk control blocked the stream request · signing in usually fixes it (Settings → QR sign-in); on overseas networks try switching the CDN route in Settings",
+  "该内容在当前地区不可观看": "Not available in your region",
+  "稿件不存在、已失效或未公开": "Video not found, removed or private",
+  "没有权限观看(可能需要大会员或充电专属)": "No access (may require VIP or a creator subscription)",
 };

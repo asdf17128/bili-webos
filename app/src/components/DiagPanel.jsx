@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import qrcode from 'qrcode-generator';
 import { apiFetch, wbiFetch, getRecommend, getServiceDiagnostics } from '../api/client';
 import { getErrors } from '../utils/errlog';
+import { apiErrorHint } from '../utils/apiHint';
 import { APP_VERSION } from '../version';
 import { t } from '../i18n';
 
@@ -12,17 +13,6 @@ import { t } from '../i18n';
 // with a phone and taps submit. Zero servers, nothing uploads by itself.
 
 const REPO_ISSUE_URL = 'https://github.com/asdf17128/bili-webos/issues/new';
-
-// 风控类错误码翻成人话 —— 只丢一个 code=-351 出去,用户看不懂也没法自救。
-// -351/-352 都是 B站 的风控拦截:常见于海外/机房 IP、设备指纹缺失、请求过频。
-function riskHint(code) {
-  if (code === -351 || code === -352) {
-    return t('code={c} 风控拦截 · 常见于海外 IP:试试登录、或在设置里换 CDN 线路', { c: code });
-  }
-  if (code === -10403) return t('code=-10403 该内容在当前地区不可观看');
-  if (code === -404) return t('code=-404 稿件不存在或已失效');
-  return 'playurl code=' + code;
-}
 
 // A well-known stable video for the playurl probe (B站 first video, av2).
 const PROBE_BVID = 'BV1xx411c7mD';
@@ -93,7 +83,7 @@ export default function DiagPanel() {
         const cid = v.data.cid;
         const p = await wbiFetch('/x/player/playurl', { bvid: PROBE_BVID, cid, qn: 16, fnval: 16 });
         if (p && p.code === 0) push('取流 playurl', 'ok', 'code=0');
-        else push('取流 playurl', 'fail', riskHint(p && p.code));
+        else push('取流 playurl', 'fail', apiErrorHint(p && p.code) || ('playurl code=' + (p && p.code)));
       } catch (e) { push('取流 playurl', 'fail', e.message); }
 
       // 5. Local image proxy (:7654) — thumbnails/segments path.

@@ -211,8 +211,9 @@ export default {
   "已加入稍后再看": "Añadido a Ver más tarde",
   "稍后再看是空的 · 在任意视频上长按 OK 即可加入,播放页也有「稍后再看」按钮": "Ver más tarde está vacío · mantén OK en cualquier vídeo para añadirlo, o usa el botón durante la reproducción",
   "长按 OK:加入/移出稍后再看": "Mantén OK: añadir o quitar de Ver más tarde",
-  "code={c} 风控拦截 · 常见于海外 IP:试试登录、或在设置里换 CDN 线路": "code={c} bloqueo de control de riesgo · común con IP en el extranjero: inicia sesión o cambia la ruta CDN en Ajustes",
-  "code=-10403 该内容在当前地区不可观看": "code=-10403 no disponible en tu región",
-  "code=-404 稿件不存在或已失效": "code=-404 vídeo no encontrado o eliminado",
   "界面字号": "Tamaño del texto",
+  "B站 风控拦截了取流请求 · 登录后通常可解决(设置 → 扫码登录);海外网络可在设置里换 CDN 线路": "El control de riesgo de Bilibili bloqueó la petición · iniciar sesión suele resolverlo (Ajustes → código QR); en redes del extranjero prueba a cambiar la ruta CDN",
+  "该内容在当前地区不可观看": "No disponible en tu región",
+  "稿件不存在、已失效或未公开": "Vídeo no encontrado, eliminado o privado",
+  "没有权限观看(可能需要大会员或充电专属)": "Sin acceso (puede requerir VIP o suscripción)",
 };

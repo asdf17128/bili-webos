@@ -495,4 +495,6 @@ conn.connect({
   privateKey: readFileSync(process.env.HOME + '/.ssh/tv_webos'),
   passphrase: PASS, algorithms: { serverHostKey: ['ssh-rsa'] },
 });
-setTimeout(() => { console.error('overall timeout'); process.exit(1); }, 300000);
+// 总超时 10 分钟:直播段最多重试 3 个房间(3×22s)+ 稍后再看端到端之后,
+// 原来的 5 分钟不够用了,会在跑到一半时把整轮判成失败(2026-08-21)。
+setTimeout(() => { console.error('overall timeout'); process.exit(1); }, 600000);

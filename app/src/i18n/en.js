@@ -214,8 +214,11 @@ export default {
   "稍后再看是空的 · 在任意视频上长按 OK 即可加入,播放页也有「稍后再看」按钮": "Watch Later is empty · hold OK on any video to add it, or use the Watch Later button while playing",
   "长按 OK:加入/移出稍后再看": "Hold OK: add to / remove from Watch Later",
   "界面字号": "UI text size",
-  "B站 风控拦截了取流请求 · 登录后通常可解决(设置 → 扫码登录);海外网络可在设置里换 CDN 线路": "Bilibili risk control blocked the stream request · signing in usually fixes it (Settings → QR sign-in); on overseas networks try switching the CDN route in Settings",
   "该内容在当前地区不可观看": "Not available in your region",
   "稿件不存在、已失效或未公开": "Video not found, removed or private",
   "没有权限观看(可能需要大会员或充电专属)": "No access (may require VIP or a creator subscription)",
+  "B站 风控拦截 · 多半是当前账号被风控:换个账号登录即可验证;也可在设置里换 CDN 线路": "Blocked by Bilibili risk control · most likely this account is flagged: signing in with another account confirms it quickly; you can also switch the CDN route in Settings",
+  "B站 风控拦截 · 先试试登录(设置 → 扫码登录);海外网络可在设置里换 CDN 线路": "Blocked by Bilibili risk control · try signing in first (Settings → QR sign-in); on overseas networks try switching the CDN route",
+  "去网络诊断": "Run network check",
+  "OK 打开网络诊断 · 返回键退出": "OK to run the network check · Back to exit",
 };

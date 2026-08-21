@@ -337,6 +337,20 @@ export default function App() {
     return () => { delete window.__openVideo; delete window.__openLive; };
   }, [handlePlayVideo]);
 
+  // 播放失败页上的「去网络诊断」:退出播放器 → 切到设置 → 诊断面板自动展开。
+  // 出错时给用户一条能按下去的出路,而不是只让他"按返回键"(owner 2026-08-21)。
+  useEffect(() => {
+    const go = () => {
+      setPlayerVideo(null);
+      setLiveRoom(null);
+      setPage('config');
+      window.__autoOpenDiag = true;
+      setTimeout(() => focusFirstContent(), 300);
+    };
+    window.addEventListener('goto-diag', go);
+    return () => window.removeEventListener('goto-diag', go);
+  }, []);
+
   // 界面字号:开机就把保存的倍数写进 <html>,否则重启后设置丢失(issue #22)。
   useEffect(() => {
     const s = storage.getSettings().uiScale;

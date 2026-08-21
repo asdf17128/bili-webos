@@ -3,6 +3,7 @@ import qrcode from 'qrcode-generator';
 import { apiFetch, wbiFetch, getRecommend, getServiceDiagnostics } from '../api/client';
 import { getErrors } from '../utils/errlog';
 import { apiErrorHint } from '../utils/apiHint';
+import { storage } from '../utils/storage';
 import { APP_VERSION } from '../version';
 import { t } from '../i18n';
 
@@ -83,7 +84,7 @@ export default function DiagPanel() {
         const cid = v.data.cid;
         const p = await wbiFetch('/x/player/playurl', { bvid: PROBE_BVID, cid, qn: 16, fnval: 16 });
         if (p && p.code === 0) push('取流 playurl', 'ok', 'code=0');
-        else push('取流 playurl', 'fail', apiErrorHint(p && p.code) || ('playurl code=' + (p && p.code)));
+        else push('取流 playurl', 'fail', apiErrorHint(p && p.code, { loggedIn: !!storage.getAuth()?.SESSDATA }) || ('playurl code=' + (p && p.code)));
       } catch (e) { push('取流 playurl', 'fail', e.message); }
 
       // 5. Local image proxy (:7654) — thumbnails/segments path.

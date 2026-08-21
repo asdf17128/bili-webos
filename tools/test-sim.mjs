@@ -442,6 +442,38 @@ async function main() {
     check('松手本身也不算确认', afterUp.open && !afterUp.msg, `open=${afterUp.open} msg=${afterUp.msg}`);
     await key('Escape'); await sleep(800);   // 取消掉,别真加进列表
 
+    console.log('\n[取流失败 → 直达网络诊断]');
+    // issue #23:用户被风控拦住时,原来只看到一句"视频加载失败"。现在要给
+    // ① 说得清的原因(按登录状态分流:已登录还被拦 = 多半是账号被风控)
+    // ② 一个能按下去的出路(OK 直达网络诊断)
+    await page.route('**/luna/fetch', async route => {
+      const body = route.request().postData() || '';
+      if (body.includes('player/playurl')) {
+        return route.fulfill({ status: 200, contentType: 'application/json',
+          body: JSON.stringify({ returnValue: true, statusCode: 200,
+            body: JSON.stringify({ code: -351, message: '风控校验失败', data: null }) }) });
+      }
+      return route.continue();
+    });
+    await page.evaluate((bv) => window.__openVideo({ bvid: bv }), FIXTURE);
+    await sleep(10000);
+    const errScreen = await page.evaluate(() => ({
+      hint: (document.body.innerText || '').split('\n').find(l => l.includes('风控')) || '',
+      btn: !!([...document.querySelectorAll('.player-btn')].find(b => b.textContent.includes('诊断'))),
+    }));
+    check('取流被拒时给出风控提示(不是泛泛的加载失败)', !!errScreen.hint, errScreen.hint.slice(0, 46));
+    check('已登录时提示指向"账号被风控"而不是"去登录"',
+      errScreen.hint.includes('账号'), errScreen.hint.slice(0, 46));
+    check('错误页有「去网络诊断」按钮', errScreen.btn);
+    await key('Enter'); await sleep(5000);
+    const landed = await page.evaluate(() => ({
+      player: !!document.querySelector('.player-page'),
+      diag: (document.body.innerText || '').includes('后台服务'),
+    }));
+    check('OK 直达网络诊断(退出播放器 + 面板自动展开)', !landed.player && landed.diag,
+      `player=${landed.player} diag=${landed.diag}`);
+    await page.unroute('**/luna/fetch');
+
     console.log('\n[界面字号 / UI text scale]');
     // issue #22。风险不在字变大,在**放大后网格滚动会不会裁切** —— 卡片变高,
     // 而滚动读的是真实 offsetTop(2026-07 修过一次),这里就是守那条修复。

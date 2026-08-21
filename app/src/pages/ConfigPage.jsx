@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { storage } from '../utils/storage';
-import { useFocusable, setCustomKeyHandler } from '../hooks/useFocus';
+import { useFocusable, setCustomKeyHandler, setFocus } from '../hooks/useFocus';
 import { getLatestVersion } from '../api/client';
 import { APP_VERSION, compareVersions } from '../version';
 import DiagPanel from '../components/DiagPanel';
@@ -194,7 +194,12 @@ export default function ConfigPage({ onLogout, user }) {
 
   // 网络诊断 (#10/#13) — OK toggles the inline panel; remounting it re-runs
   // the whole test suite.
-  const [showDiag, setShowDiag] = useState(false);
+  // 从播放失败页跳进来时自动展开诊断(App 设的一次性标记)。
+  const [showDiag, setShowDiag] = useState(() => {
+    if (typeof window !== 'undefined' && window.__autoOpenDiag) { window.__autoOpenDiag = false; return true; }
+    return false;
+  });
+  useEffect(() => { if (showDiag) setFocus('content-8-0'); }, []);
   const { props: diagProps } = useFocusable({
     id: 'content-8-0', row: 8, col: 0, group: 'content',
     onSelect: () => setShowDiag(v => !v),

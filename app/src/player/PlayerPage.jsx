@@ -99,6 +99,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const [aigcMsg, setAigcMsg] = useState('');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const loadErrorRef = useRef(false);
+  loadErrorRef.current = loadError;
   const [errorMsg, setErrorMsg] = useState('');
   const [ended, setEnded] = useState(false);
   const [relatedVideos, setRelatedVideos] = useState([]);
@@ -683,7 +685,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               // 两位用户都只看到一句"视频加载失败",不知道是风控、更不知道
               // 登录通常就能解决)。
               if (res && res.code !== 0) {
-                const hint = apiErrorHint(res.code);
+                const hint = apiErrorHint(res.code, { loggedIn: !!storage.getAuth()?.SESSDATA });
                 if (hint) {
                   setLoading(false);
                   setErrorMsg(hint);
@@ -1721,6 +1723,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // ========== Keyboard handler ==========
   useEffect(() => {
     const handler = (e) => {
+      // 加载失败页优先于所有分支:此时整屏只剩一个动作(去网络诊断)。
+      // 放后面会被 focusArea==='none' 的"OK 呼出控制条"先吃掉(2026-08-21 实测)。
+      if (loadErrorRef.current && e.key === 'Enter') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('goto-diag'));
+        return true;
+      }
       // End-screen countdown: OK plays the up-next video immediately; any
       // other key cancels autoplay and continues as normal navigation.
       if (ended && endNextIn != null) {
@@ -2180,9 +2189,17 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           gap: 16, background: 'rgba(0,0,0,0.85)', zIndex: 50 }}>
-          <div style={{ fontSize: 26, color: '#fff' }}>{errorMsg || t('视频加载失败')}</div>
+          <div style={{ fontSize: 26, color: '#fff', maxWidth: 1100, textAlign: 'center', lineHeight: 1.5 }}>
+            {errorMsg || t('视频加载失败')}
+          </div>
+          {/* 出错时给一条**能按下去的出路**,而不是只让用户"按返回键"。
+              OK = 直接跳到 设置 → 网络诊断 并自动展开(owner 2026-08-21)。 */}
+          <button className="player-btn focused" style={{ marginTop: 6 }}
+            onClick={() => { window.dispatchEvent(new CustomEvent('goto-diag')); }}>
+            {t('去网络诊断')}
+          </button>
           <div style={{ fontSize: 18, color: '#aaa' }}>
-            {errorMsg ? t('请按返回键退出') : t('该视频源节点异常,请按返回键重试或换一个视频')}
+            {errorMsg ? t('OK 打开网络诊断 · 返回键退出') : t('该视频源节点异常,请按返回键重试或换一个视频')}
           </div>
         </div>
       )}

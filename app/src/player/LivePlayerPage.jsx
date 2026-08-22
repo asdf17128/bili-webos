@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getLiveStreamUrl, getLiveQualities, getRoomInit, getDanmuInfo, getBuvid3, danmakuSubscribe, danmakuStop, castReportState, castReportProgress, mediaProxyBase } from '../api/client';
+import { getLiveStreamUrl, getLiveQualities, getRoomInit, getDanmuInfo, getBuvid3, getLiveHistory, danmakuSubscribe, danmakuStop, castReportState, castReportProgress, mediaProxyBase } from '../api/client';
 import { formatCount } from '../utils/format';
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
+import { shouldStepDown, nextQn } from './liveQnLadder';
 import { rewriteCastUrl } from '../utils/casturl';
 import LiveDanmakuLayer from './LiveDanmakuLayer';
 import { t } from '../i18n';
@@ -23,6 +24,7 @@ export default function LivePlayerPage({ room, onBack }) {
   const [qualities, setQualities] = useState([]);
   const [curQn, setCurQn] = useState(() => storage.getSettings().liveQn || 0);
   const qnRef = useRef(curQn);
+  const qnLadderRef = useRef([]);   // 解码失败时按这个顺序往下退
   const [showQuality, setShowQuality] = useState(false);
   // Control bar: 弹幕 · 画质 · 互动 (owner: 直播没有控制台)
   const CONTROLS = ['danmaku', 'quality', 'interact'];
@@ -170,6 +172,20 @@ export default function LivePlayerPage({ room, onBack }) {
     const onError = () => {
       const e = v && v.error;
       note('media-error', e ? { code: e.code, msg: e.message } : {});
+      // B站 直播:解码失败(code 3)= 这台电视吃不下当前这档规格,重试同一档
+      // 只会一直黑屏。variant 阶梯只对投屏的 directUrl 生效,B站 房间原本**没有
+      // 任何降档**——2026-08-22 实测:原画解不了 → connect/media-error 死循环。
+      // 所以这里主动往下退一档,退到能播为止。
+      if (shouldStepDown({ isCast: !!room.directUrl, errorCode: e && e.code })) {
+        const next = nextQn(qnLadderRef.current, qnRef.current);
+        if (next != null) {
+          note('qn-stepdown', { from: qnRef.current, to: next });
+          qnRef.current = next;
+          setCurQn(next);
+          // 不写进设置:这是"这台电视/这个房间放不了"的临时退让,
+          // 不该变成用户的长期偏好。
+        }
+      }
       scheduleRetry('media-error');
     };
     const onEnded = () => { note('ended'); scheduleRetry('ended'); }; // live never "ends" on purpose
@@ -264,6 +280,18 @@ export default function LivePlayerPage({ room, onBack }) {
         console.warn('[live danmaku] failed:', e?.message || e);
       }
     }
+    // 先把最近的聊天记录铺上,再接实时流 —— 否则聊天栏永远从空白开始。
+    (async () => {
+      try {
+        const realId = room.roomid;
+        const h = await getLiveHistory(realId);
+        const rows = (h?.data?.room) || [];
+        if (!active || !rows.length) return;
+        setFeed(prev => (prev.length ? prev : rows.slice(-20).map(m => ({
+          id: ++feedSeq.current, t: 'dm', user: m.nickname, text: m.text, history: true,
+        }))));
+      } catch (e) { /* 历史拿不到就照常走实时流 */ }
+    })();
     startDm();
     return () => { active = false; if (cancel) cancel(); danmakuStop().catch(() => {}); };
   }, [room.roomid]);
@@ -297,6 +325,8 @@ export default function LivePlayerPage({ room, onBack }) {
     getLiveQualities(room.roomid).then(q => {
       if (!active || !q || !q.accept.length) return;
       setQualities(q.accept);
+      // 降档用的阶梯:从高到低。accept 已是 B站 给的顺序,这里只取 qn。
+      qnLadderRef.current = q.accept.map(o => o.qn);
       // No saved preference (or it isn't offered here) → whatever B站 served.
       const saved = storage.getSettings().liveQn;
       const usable = saved && q.accept.some(o => o.qn === saved) ? saved : q.qn;
@@ -429,8 +459,9 @@ export default function LivePlayerPage({ room, onBack }) {
         }
         return false;
       }
-      // === No overlay: Up summons the控制条, OK still toggles danmaku ===
-      if (e.key === 'ArrowUp') {
+      // === 无浮层:上/下**都**呼出控制条,和点播页一致 ===
+      // 原来只有上键能呼出,下键只是刷新信息条,按了像没反应(owner 2026-08-22)。
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
         e.preventDefault();
         setShowControls(true);
         setCtrlIdx(0);
@@ -438,7 +469,6 @@ export default function LivePlayerPage({ room, onBack }) {
         return true;
       }
       if (e.key === 'Enter') { e.preventDefault(); toggleDanmaku(); bumpInfo(); return true; }
-      if (e.key === 'ArrowDown') { e.preventDefault(); bumpInfo(); return true; }
       return false;
     };
     setCustomKeyHandler(handler);

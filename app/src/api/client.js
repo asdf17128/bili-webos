@@ -611,6 +611,13 @@ export async function getDanmuInfo(realRoomId) {
 
 // Live stream ladder: accept_qn + the names B站 uses (原画/蓝光/超清…).
 // Returns { qn, accept: [{qn,label}] } — accept is ordered best-first.
+// 直播间最近的聊天记录(约 10 条)。进房时先铺上,不然聊天栏永远从空白开始 ——
+// 冷清的房间里等半天一条都没有,用户以为坏了(owner 2026-08-22:"每次都是实时清屏")。
+export async function getLiveHistory(roomId) {
+  return apiFetch('/xlive/web-room/v1/dM/gethistory', { roomid: roomId },
+    { host: 'api.live.bilibili.com' });
+}
+
 export async function getLiveQualities(roomId) {
   var res = await smartFetch('api.live.bilibili.com',
     '/xlive/web-room/v2/index/getRoomPlayInfo?room_id=' + roomId + '&protocol=0,1&format=0,1,2&codec=0,1,2&platform=web&ptype=8');

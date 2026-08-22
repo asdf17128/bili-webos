@@ -257,6 +257,13 @@ async function main() {
       liveCtrls.join(' | '));
     check('Chat rail defaults to off', liveCtrls.some(c => c.includes('聊天 关')));
 
+    // 下键也要能呼出控制栏 —— 点播是上/下都行,直播原来只有上键,按下去像没反应
+    // (owner 2026-08-22:"跟普通视频体验不一样")
+    await key('Escape'); await sleep(800);          // 先收起控制栏
+    await key('ArrowDown'); await sleep(1200);
+    const byDown = await page.evaluate(() => [...document.querySelectorAll('.player-btn')].map(b => b.textContent.trim()));
+    check('直播:按「下」也能呼出控制栏(与点播一致)', liveRoom.stale || byDown.length >= 2, byDown.join(' | '));
+
     let lf = '';
     for (let i = 0; i < 5; i++) { lf = await focusedBtn(); if (!lf.includes('弹幕') && !lf.includes('聊天')) break; await key('ArrowRight'); await sleep(250); }
     await key('Enter'); await sleep(900);
@@ -270,6 +277,14 @@ async function main() {
     await key('Enter'); await sleep(1500);
     const railOn = await page.evaluate(() => !![...document.querySelectorAll('div')].find(d => d.style && d.style.width === '420px'));
     check('Chat rail opens from the control bar', liveRoom.stale || railOn);
+    // 进房就该有内容:只订阅实时流的话,冷清房间半天不出一条,像坏了
+    // (owner 2026-08-22:"每次都是实时清屏相当于")
+    const chatLines = await page.evaluate(() => {
+      const rail = [...document.querySelectorAll('div')].find(d => d.style && d.style.width === '420px');
+      if (!rail) return 0;
+      return (rail.innerText || '').split('\n').filter(x => x.trim()).length;
+    });
+    check('聊天栏打开即有历史消息(不是空屏等实时)', liveRoom.stale || chatLines >= 5, `${chatLines} 行`);
     await key('Escape'); await sleep(700);   // controls
     await key('Escape'); await sleep(900);   // rail
     const afterRail = await page.evaluate(() => ({

@@ -149,8 +149,20 @@ async function main(call, relaunchApp) {
       return m ? parseInt(m[1]) : null;
     };
     let cur = await row();
-    for (let guard = 0; cur !== idx && guard < (s.sidebar || []).length + 2; guard++) {
-      if (cur == null) { await key('left'); cur = await row(); continue; }
+    for (let guard = 0; cur !== idx && guard < (s.sidebar || []).length + 4; guard++) {
+      if (cur == null) {
+        // 焦点是 null(上一个页面卸载时焦点元素随之消失)。方向键在没有焦点时
+        // 会被按键处理器直接 return —— 按左键救不回来,得先重新锚定:
+        // Back 会让 App 把焦点送回侧栏;还不行就直接点一下第一个侧栏项。
+        await key('back');
+        cur = await row();
+        if (cur == null) {
+          await evalJSON(`(function(){var it=document.querySelector('.sidebar-item'); if(it) it.click(); return '""'})()`);
+          await sleep(500);
+          cur = await row();
+        }
+        continue;
+      }
       await key(cur > idx ? 'up' : 'down');
       cur = await row();
     }

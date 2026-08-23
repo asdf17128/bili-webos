@@ -264,6 +264,18 @@ async function main() {
     const byDown = await page.evaluate(() => [...document.querySelectorAll('.player-btn')].map(b => b.textContent.trim()));
     check('直播:按「下」也能呼出控制栏(与点播一致)', liveRoom.stale || byDown.length >= 2, byDown.join(' | '));
 
+    // 开得对称,关也要对称:控制栏开着时上、下都该收起(owner 2026-08-22)
+    await key('ArrowUp'); await sleep(1000);
+    const closedByUp = await page.evaluate(() => document.querySelectorAll('.player-btn').length === 0);
+    check('直播:控制栏开着时按「上」能收起', liveRoom.stale || closedByUp);
+    await key('ArrowDown'); await sleep(1000);
+    const reopened = await page.evaluate(() => document.querySelectorAll('.player-btn').length > 0);
+    await key('ArrowDown'); await sleep(900);
+    const closedByDown = await page.evaluate(() => document.querySelectorAll('.player-btn').length === 0);
+    check('直播:按「下」同样能收起(开关对称)', liveRoom.stale || (reopened && closedByDown),
+      `重开=${reopened} 下键关=${closedByDown}`);
+    await key('ArrowUp'); await sleep(900);   // 复原:后面的断言需要控制栏是开着的
+
     let lf = '';
     for (let i = 0; i < 5; i++) { lf = await focusedBtn(); if (!lf.includes('弹幕') && !lf.includes('聊天')) break; await key('ArrowRight'); await sleep(250); }
     await key('Enter'); await sleep(900);

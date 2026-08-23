@@ -448,7 +448,11 @@ export default function LivePlayerPage({ room, onBack }) {
           setCtrlIdx(i => Math.min(CONTROLS.length - 1, Math.max(0, i + (e.key === 'ArrowRight' ? 1 : -1))));
           return true;
         }
-        if (e.key === 'ArrowDown') { e.preventDefault(); setShowControls(false); return true; }
+        // 上/下都能关 —— 和"上/下都能开"对称。点播的上=关、下=进相关推荐面板,
+        // 直播没有下层面板,再让上键无反应就纯粹是手感不一致(owner 2026-08-22)。
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+          e.preventDefault(); setShowControls(false); return true;
+        }
         if (e.key === 'Enter') {
           e.preventDefault();
           const btn = CONTROLS[ctrlIdx];

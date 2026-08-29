@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useRef } from 'react';
+import { mark, markAfterPaint } from '../utils/perf';
 
 // ======================================================
 // Zero-React-render focus system
@@ -258,6 +259,9 @@ export function initKeyboardNav() {
     if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'].includes(key)) return;
     e.preventDefault();
     lastFocusFromPointer = false; // this focus move is from the D-pad
+    // 跟手 = 按下到焦点**画出来**的时间。起点必须是按键进来的第一行,
+    // 终点是绘制后(双 rAF),中间的 setState/滚动/重排都算进去。
+    const keyT0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
 
     if (key === 'Enter') {
       if (!currentFocusId) return;
@@ -279,7 +283,7 @@ export function initKeyboardNav() {
 
     if (dir === 'up' || dir === 'down') {
       const next = navigateGrid(currentFocusId, dir);
-      if (next) setFocus(next);
+      if (next) { setFocus(next); markAfterPaint('focus-move', keyT0); }
       return;
     }
 
@@ -295,7 +299,7 @@ export function initKeyboardNav() {
         if (!focusRegistry.has(next)) next = findInGroup('content', 0);
       }
     }
-    if (next) setFocus(next);
+    if (next) { setFocus(next); markAfterPaint('focus-move', keyT0); }
   };
   window.addEventListener('keydown', keyHandler);
 

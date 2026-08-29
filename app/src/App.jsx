@@ -3,6 +3,8 @@ import { initKeyboardNav, setFocus, onFocusChange, getCurrentFocusId, focusFirst
 import { castAck, castSubscribe, castGetStatus, getNavInfo, pingVersionAsset } from './api/client';
 import { normalizePlay, playAt } from './player/playIntent';
 import { storage } from './utils/storage';
+import { markAfterPaint } from './utils/perf';
+import { perfFlag, canPrefetch } from './utils/perfFlags';
 import SidebarItem from './components/SidebarItem';
 import CardMenu from './components/CardMenu';
 
@@ -337,6 +339,27 @@ export default function App() {
     return () => { delete window.__openVideo; delete window.__openLive; };
   }, [handlePlayVideo]);
 
+  // 预热播放引擎。实测拆解(6× 降速,2026-08-30):首帧 1531ms 里有 288ms
+  // 花在打开播放器那一刻才 import 768KB 的 shaka —— 这笔解析/编译完全可以
+  // 挪到用户浏览列表的空闲时段。
+  // 三条约束:①只做一次;②必须真的空闲(过预取闸门 + requestIdleCallback);
+  // ③停留 2 秒后才做 —— 说明用户在浏览而不是路过,避免为"开机即退出"的人
+  // 白付 2-3MB 常驻内存(owner:性能和硬件消耗要平衡)。
+  useEffect(() => {
+    if (!perfFlag('warmPlayer')) return;
+    let done = false;
+    const warm = () => {
+      if (done || !canPrefetch()) return;
+      done = true;
+      import('shaka-player').catch(() => { done = false; });
+    };
+    const timer = setTimeout(() => {
+      if (typeof requestIdleCallback === 'function') requestIdleCallback(warm, { timeout: 3000 });
+      else setTimeout(warm, 0);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
   // 播放失败页上的「去网络诊断」:退出播放器 → 切到设置 → 诊断面板自动展开。
   // 出错时给用户一条能按下去的出路,而不是只让他"按返回键"(owner 2026-08-21)。
   useEffect(() => {
@@ -385,7 +408,10 @@ export default function App() {
 
   // OK/click on a sidebar item commits: switch (or refresh if already active)
   // and move focus into the content so the user doesn't need a second key.
+  // 页面切换:从按下侧栏到内容画出来。用户在这一步等的是"白屏/旧内容"。
   const selectPage = useCallback((key) => {
+    const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    setTimeout(() => markAfterPaint('page-switch', t0), 0);
     if ((key === 'follow' || key === 'favorites') && !loggedIn) { setShowLogin(true); return; }
     if (key === page) setRefreshKey(n => n + 1);
     else setPage(key);

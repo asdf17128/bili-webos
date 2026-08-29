@@ -7,6 +7,9 @@ import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
 import { tripleNextRel, tripleNextStat, mergeServerRel } from './tripleState';
 import { apiErrorHint } from '../utils/apiHint';
+import { mark, markAfterPaint } from '../utils/perf';
+import { holdPrefetch } from '../utils/perfFlags';
+const perfNow = () => ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now());
 import DanmakuLayer from './DanmakuLayer';
 import SubtitleLayer from './SubtitleLayer';
 import { parseSubtitleBody, pickCueIndex, isAiLan, subtitleLanName, mtLanName, findZhTrack, matchTrackByLan, AI_LEAD } from './subtitles';
@@ -98,6 +101,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // AI 生成声明 (player/v2 arc_aigc) — separate field from argue_info.
   const [aigcMsg, setAigcMsg] = useState('');
   const [loading, setLoading] = useState(true);
+  // 播放器是前台重活:开着期间一律不许后台预取来抢主线程和带宽
+  // (实测:不关闸时首帧 1850→4185ms)。
+  useEffect(() => holdPrefetch(), []);
+
+  const openT = useRef((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now());
   const [loadError, setLoadError] = useState(false);
   const loadErrorRef = useRef(false);
   loadErrorRef.current = loadError;
@@ -416,7 +424,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   useEffect(() => {
     let mounted = true;
     async function init() {
+      const _tShakaImp = perfNow();
       const shaka = await import('shaka-player');
+      mark('po-shaka-import', perfNow() - _tShakaImp);
       shaka.polyfill.installAll();
       if (!shaka.Player.isBrowserSupported()) {
         // Older webOS engines may lack MSE/EME — surface it instead of a
@@ -514,7 +524,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       let ugcPages = [];
       let ugcSeason = null;
       if (!isBangumi) {
+        const _tInfo = perfNow();
         const info = await getVideoInfo(video);
+        mark('po-info', perfNow() - _tInfo);
         const d = info?.data || {};
         ugcPages = d.pages || [];
         ugcSeason = d.ugc_season || null; // UGC 合集 (multi-video series)
@@ -680,7 +692,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             } else {
               // Pass the whole `video` so a cast-initiated, aid-only payload
               // still resolves via getPlayUrl's object overload.
+              const _tPu = perfNow();
               const res = await getPlayUrl(video, cid, fallbackQn || settings.quality || 80);
+              mark('po-playurl', perfNow() - _tPu);
               // 取流被拒时,把**能照着做的话**摆到用户面前(issue #20/#23:
               // 两位用户都只看到一句"视频加载失败",不知道是风控、更不知道
               // 登录通常就能解决)。
@@ -716,7 +730,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             }
             setCurrentQuality(servedQn || 80);
 
+            const _tMpd = perfNow();
             const mpd = buildMPD(dash, wantQn);
+            mark('po-mpd', perfNow() - _tMpd);
             const blob = new Blob([mpd], { type: 'application/dash+xml' });
             const mpdUrl = URL.createObjectURL(blob);
             // Resume directly at the saved position via load()'s startTime — don't
@@ -725,7 +741,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             const resumeAt = (resumeProgress > 0 && resumeProgress < (dash.duration || 9999) - 10)
               ? resumeProgress : 0;
             try {
+              const _tLoad = perfNow();
               await player.load(mpdUrl, resumeAt || undefined);
+              mark('po-shaka', perfNow() - _tLoad);
             } finally {
               URL.revokeObjectURL(mpdUrl);
             }
@@ -754,6 +772,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       setLoading(false);
       castReportState({ playState: 'playing' }).catch(() => {});
 
+      // 打开播放器 → 真正出画面(loadeddata)。这是用户按下 OK 之后盯着黑屏的时间。
+      videoRef.current.addEventListener('loadeddata', () => {
+        mark('player-first-frame', ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()) - openT.current);
+      }, { once: true });
       videoRef.current.addEventListener('ended', () => {
         castReportState({ playState: 'end' }).catch(() => {});
         // 看完自动移出稍后再看(设置项,默认关)。只对**从稍后再看点开**的视频生效
@@ -811,7 +833,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             title: e.long_title ? t('第{n}话', { n: e.title }) + ' ' + e.long_title : (e.share_copy || t('第{n}话', { n: e.title })),
             pic: e.cover, owner: { name: result.season_title || '' },
           }));
-          setRelatedVideos(eps.slice(0, 60));
+          setRelatedVideos(eps.slice(0, 60));   // 番剧选集是全量的,没有"加载更多",不预取
         } catch {}
       } else {
         // UGC. Build the 选集 (分P or 合集) if present, kept SEPARATE from 相关推荐
@@ -841,7 +863,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         // Always fetch 相关推荐 too (its own tab).
         try {
           const rel = await getRelated(video.bvid);
-          setRelatedVideos((rel?.data || []).slice(0, 12));
+          const firstBatch = (rel?.data || []).slice(0, 12);
+          setRelatedVideos(firstBatch);
+          // 首批一到就在空闲时备下一批 —— 用户往下翻时不再等请求
+          if (firstBatch.length) prefetchRelatedRef.current?.(firstBatch[firstBatch.length - 1].bvid);
         } catch {}
       }
     } catch (err) {
@@ -1455,6 +1480,26 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // Load more related videos
   const loadingRelatedRef = useRef(false);
   const relatedSeenRef = useRef(new Set());
+  // 播放器底部推荐的"向下加载更多"。和首页翻页同一个毛病:等用户翻到底才发
+  // 请求,那一下必然空白(owner:"控制台向下刷新"也要不卡)。
+  // 同样的解法:命中预取就直接贴,顺手再备下一批;只备**一批**,不递归。
+  const prefetchRelatedRef = useRef(null);
+  const relPrefetchRef = useRef(null);
+  const relPrefetchingRef = useRef(false);
+  const prefetchRelated = useCallback((fromBvid) => {
+    if (!fromBvid || relPrefetchingRef.current || relPrefetchRef.current) return;
+    relPrefetchingRef.current = true;
+    const run = () => {
+      getRelated(fromBvid).then(rel => {
+        relPrefetchRef.current = { from: fromBvid, items: (rel?.data || []) };
+      }).catch(() => {}).then(() => { relPrefetchingRef.current = false; });
+    };
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 1500 });
+    else setTimeout(run, 500);
+  }, []);
+
+  prefetchRelatedRef.current = prefetchRelated;
+
   const loadMoreRelated = useCallback(async () => {
     if (loadingRelatedRef.current || relatedVideos.length === 0) return;
     loadingRelatedRef.current = true;
@@ -1462,7 +1507,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       // Use last video's bvid to get its related
       const lastBvid = relatedVideos[relatedVideos.length - 1]?.bvid;
       if (lastBvid) {
-        const rel = await getRelated(lastBvid);
+        const cached = relPrefetchRef.current;
+        const rel = (cached && cached.from === lastBvid)
+          ? { data: cached.items }
+          : await getRelated(lastBvid);
+        if (cached && cached.from === lastBvid) relPrefetchRef.current = null;
         const newItems = (rel?.data || []).filter(v => {
           if (relatedSeenRef.current.has(v.bvid)) return false;
           relatedSeenRef.current.add(v.bvid);
@@ -1470,6 +1519,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }).slice(0, 8);
         if (newItems.length > 0) {
           setRelatedVideos(prev => [...prev, ...newItems]);
+          prefetchRelated(newItems[newItems.length - 1].bvid);   // 再备一批
         }
       }
     } catch {}
@@ -1522,6 +1572,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // Load the video's comments (hot-sorted). reset=true starts fresh; otherwise
   // appends the next page. oid = the video's aid (backfilled from the view API).
   const loadComments = useCallback(async (reset) => {
+    const cT0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
     if (commentLoadingRef.current) return;
     if (!reset && commentDoneRef.current) return;
     const oid = videoAidRef.current || video?.aid;
@@ -1550,6 +1601,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       }));
       if (reset && data.page) setCommentCount(data.page.count || 0);
       setComments(prev => reset ? mapped : [...prev, ...mapped]);
+      // 只量"首屏评论"(reset):这是用户按下评论后盯着空栏的时间;
+      // 往下翻页的追加不算,那是后台补充。
+      if (reset) markAfterPaint('comments-open', cT0, mapped.length);
       if (replies.length === 0) commentDoneRef.current = true;
       commentPnRef.current += 1;
     } catch (e) {

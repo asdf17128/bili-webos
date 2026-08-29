@@ -1,28 +1,17 @@
-import React, { useCallback, useEffect, useReducer } from 'react';
+import React, { useCallback, useEffect, useReducer, useRef } from 'react';
 import { useFocusable } from '../hooks/useFocus';
 import { formatCount, formatDuration, formatTime, cleanTitle } from '../utils/format';
-import { mediaProxyBase } from '../api/client';
+import { thumbUrl } from '../utils/thumb';
 import { storage } from '../utils/storage';
 import { t } from '../i18n';
+import { mark } from '../utils/perf';
 import { titleMT, useTitlesMT } from '../utils/titlemt';
 
 function getProxyBase() {
   return mediaProxyBase();
 }
 
-function proxyImg(url) {
-  if (!url) return '';
-  let u = url.startsWith('//') ? 'https:' + url : url;
-  if (u.includes('hdslb.com') && !u.includes('@')) {
-    u += '@672w_420h_1c.webp';
-  }
-  try {
-    const parsed = new URL(u);
-    return `${getProxyBase()}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
-  } catch {
-    return u;
-  }
-}
+
 
 export default React.memo(function VideoCard({ video, focusId, row, col, group, onSelect, onLongPress, followed = false }) {
   const handleSelect = useCallback(() => {
@@ -41,6 +30,13 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
     onLongPress: handleLongPress,
   });
 
+  // 缩略图按当前列数取尺寸(每行几个 = 卡片多宽)。
+  const cols = Math.min(4, Math.max(2, storage.getSettings().gridCols || 3));
+
+  // 图片:从卡片挂载到缩略图 onload。占位灰块停留多久,用户是直接看得见的。
+  const mountT = useRef((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now());
+  const imgRef = useRef(null);
+
   // Non-zh UIs machine-translate card titles (no-op subscription on zh).
   useTitlesMT();
 
@@ -48,12 +44,15 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
   const [, bumpProgress] = useReducer(x => x + 1, 0);
   useEffect(() => storage.onProgressChange(bumpProgress), []);
 
-  const thumbUrl = proxyImg(video.pic || video.cover || '');
+  const thumb = thumbUrl(video.pic || video.cover || '', cols);
 
   return (
     <div {...props} className="video-card">
       <div className="video-card-thumb">
-        {thumbUrl && <img src={thumbUrl} alt="" loading="lazy" decoding="async" />}
+        {thumb && <img src={thumb} alt="" loading="lazy" decoding="async"
+          ref={imgRef}
+          onLoad={() => mark('img', ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()) - mountT.current)}
+          onError={() => mark('img-fail', 0)} />}
         {video.duration != null && (
           <span className="video-card-duration">
             {typeof video.duration === 'number' ? formatDuration(video.duration) : video.duration}

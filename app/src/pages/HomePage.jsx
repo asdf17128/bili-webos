@@ -5,6 +5,8 @@ import { getCurrentFocusId, setFocus, onFocusChange, isHoverDriven } from '../ho
 import { storage } from '../utils/storage';
 import { loadFollowedMids } from '../utils/follow';
 import { t } from '../i18n';
+import { mark, markAfterPaint } from '../utils/perf';
+import { perfFlag, canPrefetch, trackPrefetch } from '../utils/perfFlags';
 
 const FETCH_SIZE = 20;
 
@@ -58,7 +60,8 @@ async function fetchByMode(mode, pn, offset, rid) {
 export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend', rid }) {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [focusRow, setFocusRow] = useState(0);
+  const [focusRow, setFocusRow] = useState(0);   // 仅用于重置到顶部,不随按键变化
+  const rowRef = useRef(0);
   const [followedMids, setFollowedMids] = useState(null);
   const pageRef = useRef(1);
   const offsetRef = useRef('');
@@ -76,7 +79,8 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend', 
     offsetRef.current = '';
     setLoading(true);
     setVideos([]);
-    setFocusRow(0);
+    setFocusRow(0); rowRef.current = 0;
+    nextPageRef.current = null; prefetchingRef.current = false;
 
     fetchByMode(mode, 1, '', rid).then(({ items, offset }) => {
       if (cancelled) return;
@@ -91,6 +95,7 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend', 
           setFocus('content-0-0');
         }
       }, 50);
+      schedulePrefetch();          // 首屏一出来就在空闲时备好第二页
     }).catch(() => { if (!cancelled) setLoading(false); });
 
     return () => { cancelled = true; };
@@ -102,6 +107,25 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend', 
       loadFollowedMids().then(set => { if (set && set.size) setFollowedMids(set); });
     }
   }, []);
+
+  // 空闲时预取下一页。只预取**一页**、不递归 —— 无限预取会在 2GB 的机器上
+  // 把内存和带宽都吃掉(owner:性能和硬件消耗要平衡)。
+  const nextPageRef = useRef(null);
+  const prefetchingRef = useRef(false);
+  const schedulePrefetch = React.useCallback(() => {
+    if (!perfFlag('prefetchPage')) return;
+    if (prefetchingRef.current || nextPageRef.current) return;
+    if (!canPrefetch()) return;              // 前台有重活 / 已有预取在飞 → 让路
+    prefetchingRef.current = true;
+    const run = () => {
+      trackPrefetch(fetchByMode(mode, pageRef.current, offsetRef.current, rid)
+        .then(r => { nextPageRef.current = r; })
+        .catch(() => {})
+        .then(() => { prefetchingRef.current = false; }));
+    };
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 1200 });
+    else setTimeout(run, 400);
+  }, [mode, rid]);
 
   function dedupe(items) {
     return items.filter(v => {
@@ -121,18 +145,39 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend', 
       // Pointer hover only highlights — don't scroll the grid (edge loop, #11).
       if (isHoverDriven()) return;
       const row = parseInt(m[1]);
-      setFocusRow(row);
+      // 不再每次按键都 setState:滚动已由 VideoGrid 直接写 transform(零 React
+      // 渲染)。这里只需知道到第几行来决定要不要翻页,用 ref 记住即可——
+      // 原来每按一下都要把 100+ 张卡片重渲染一遍。
+      rowRef.current = row;
 
-      // Load more when near bottom
+      // 翻页。实测(C4 真机):从触发到新卡片画出 p50 396ms —— 用户往下翻会
+      // 结结实实撞上这段空白。所以**不是"更早触发",而是提前把下一页备好**:
+      // 每次追加完就在空闲时预取下一页放进 nextPageRef,真正需要时直接贴上,
+      // 那 396ms 就整个消失了(预取没跑完才退回现取)。
+      // 代价:内存里多存一页(约 20 条卡片元数据,几十 KB),不缓存图片本身。
       const totalRows = Math.ceil(videos.length / cols);
       if (row >= totalRows - 2 && !fetchingRef.current) {
+        const pageT0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        const ready = nextPageRef.current;
+        if (ready && ready.items) {
+          nextPageRef.current = null;
+          const unique = dedupe(ready.items);
+          if (unique.length > 0) setVideos(prev => [...prev, ...unique]);
+          markAfterPaint('grid-page-prefetched', pageT0, unique.length);
+          pageRef.current++;
+          if (ready.offset) offsetRef.current = ready.offset;
+          schedulePrefetch();
+          return;
+        }
         fetchingRef.current = true;
         fetchByMode(mode, pageRef.current, offsetRef.current, rid).then(({ items, offset }) => {
           const unique = dedupe(items);
           if (unique.length > 0) setVideos(prev => [...prev, ...unique]);
+          markAfterPaint('grid-page', pageT0, unique.length);
           pageRef.current++;
           if (offset) offsetRef.current = offset;
           fetchingRef.current = false;
+          schedulePrefetch();
         }).catch(() => { fetchingRef.current = false; });
       }
     });

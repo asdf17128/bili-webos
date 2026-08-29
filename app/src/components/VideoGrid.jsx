@@ -1,4 +1,7 @@
-import React, { useMemo, useRef, useState, useLayoutEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
+import { thumbUrl } from '../utils/thumb';
+import { perfFlag, canPrefetch } from '../utils/perfFlags';
+import { onFocusChange } from '../hooks/useFocus';
 import VideoCard from './VideoCard';
 import { t } from '../i18n';
 
@@ -16,18 +19,24 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
   // the real pitch from two adjacent rows instead and fall back to the formula
   // only before the first measurement.
   const gridRef = useRef(null);
-  const [scrollY, setScrollY] = useState(0);
+  // 滚动**不进 React**:焦点系统早就做成零渲染了(直接改 classList),
+  // 滚动却还留在 state 里 —— 每按一次方向键要把 100+ 张卡片渲染两遍
+  // (setFocusRow 一次 + setScrollY 一次)。实测跟手 p50 29ms / p95 92ms。
+  // 现在由 VideoGrid 自己监听焦点变化,算完直接写 transform。
+  const scrollRef = useRef(0);
   // Scroll to the focused row's ACTUAL position instead of row×rowHeight.
   // Rows are not uniform — a 2-line card title makes that row taller — so any
   // single pitch (the old 620/cols+110 formula, or a measured one) accumulates
   // error and eventually clips the focused card (owner 2026-07-30: "滚动到最上
   // 面的时候会丢一小部分内容"). Reading the row's own offsetTop is exact, and
   // it also clamps naturally at the end of the list.
-  useLayoutEffect(() => {
+  // 把"滚到第 N 行"这件事抽成纯 DOM 操作(几何算法与之前逐字一致:读真实
+  // offsetTop、留 46px peek、按 scrollHeight-1080 夹住)。
+  const scrollToRow = useCallback((gridRow) => {
     const el = gridRef.current;
     if (!el || !el.children.length) return;
     const first = el.children[0];
-    const target = el.children[Math.min(focusRow * cols, el.children.length - 1)];
+    const target = el.children[Math.min(gridRow * cols, el.children.length - 1)];
     if (!target) return;
     // Leave a sliver of the previous row on screen whenever we're not at the
     // very top, so "there is more above" is visible instead of implied (owner
@@ -35,12 +44,61 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
     // itself is the signal. The bottom needs no counterpart: the focused row
     // sits near the top, so following rows are always in view, and the
     // maxScroll clamp makes the last row land flush at the end.
-    const PEEK = focusRow > 0 ? 46 : 0;
+    const PEEK = gridRow > 0 ? 46 : 0;
     const want = Math.max(0, target.offsetTop - first.offsetTop - PEEK);
     const maxScroll = Math.max(0, el.scrollHeight - 1080);
     const next = Math.min(want, maxScroll);
-    setScrollY(prev => (Math.abs(prev - next) > 1 ? next : prev));
-  }, [focusRow, cols, videos.length]);
+    if (Math.abs(scrollRef.current - next) <= 1) return;
+    scrollRef.current = next;
+    el.style.transform = `translateY(-${next}px)`;
+  }, [cols]);
+
+  // 焦点落到本网格的某一行 → 直接滚过去,不经过 React。
+  useEffect(() => onFocusChange((fid) => {
+    if (!fid) return;
+    const m = fid.match(/^(.+)-(\d+)-(\d+)$/);
+    if (!m || m[1] !== group) return;
+    const gridRow = parseInt(m[2]) - startRow;
+    if (gridRow < 0) return;
+    lastRowRef.current = gridRow;
+    scrollToRow(gridRow);
+  }), [group, startRow, scrollToRow]);
+
+  // 列表增删/首次渲染后按当前行复位(翻页追加、切换分区都会走这里)
+  const lastRowRef = useRef(0);
+  useLayoutEffect(() => { scrollToRow(lastRowRef.current); }, [videos.length, cols, scrollToRow]);
+
+  // 外部显式指定行(收藏页切夹子后回到顶部)时跟随
+  useLayoutEffect(() => { lastRowRef.current = focusRow; scrollToRow(focusRow); }, [focusRow, scrollToRow]);
+
+  // 预取:焦点行往下两行的缩略图提前开始下载。
+  // 实测(C4 真机 2026-08-29):"卡片挂载→图片显示" p50 638ms,而请求本身只要
+  // 254ms —— 差的 ~384ms 是浏览器的懒加载在等元素接近视口。往下两行提前发,
+  // 用户翻到时图基本已经在了。
+  // **有界**:每次最多 2 行(6-8 张),用完即弃,不做长期缓存 —— 在
+  // deviceMemory=2GB 的电视上,"缓存一切"是拿内存换卡顿(owner 的平衡要求)。
+  const prefetched = useRef(new Set());
+  useEffect(() => {
+    if (typeof Image === 'undefined' || !perfFlag('prefetchThumbs')) return;
+    if (!canPrefetch()) return;          // 播放器开着等重活时不抢带宽
+    const from = (lastRowRef.current + 1) * cols;
+    const to = Math.min(videos.length, from + cols);   // 只预取**下一行**:两行在慢机上会抢当前可见图片的带宽
+    const idle = (fn) => (typeof requestIdleCallback === 'function'
+      ? requestIdleCallback(fn, { timeout: 300 }) : setTimeout(fn, 0));
+    idle(() => {
+      for (let i = from; i < to; i++) {
+        const v = videos[i];
+        const src = v && thumbUrl(v.pic || v.cover || '', cols);
+        if (!src || prefetched.current.has(src)) continue;
+        prefetched.current.add(src);
+        const im = new Image();
+        im.decoding = 'async';
+        im.src = src;                      // 只是让它进 HTTP 缓存,不持有引用
+      }
+      // 集合本身也别无限长:超过 400 条就清掉(URL 字符串,几十 KB 量级)
+      if (prefetched.current.size > 400) prefetched.current.clear();
+    });
+  }, [cols, videos]);
 
   return (
     <div style={{
@@ -53,7 +111,7 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
         gridTemplateColumns: `repeat(${cols}, 1fr)`,
         gap: '24px',
         padding: '24px 40px',
-        transform: `translateY(-${scrollY}px)`,
+        transform: 'translateY(0px)',
         transition: 'transform 0.2s ease',
         willChange: 'transform',
       }}>

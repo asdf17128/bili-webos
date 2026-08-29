@@ -4,6 +4,8 @@ import VideoGrid from '../components/VideoGrid';
 import { storage } from '../utils/storage';
 import { useFocusable, getCurrentFocusId, setFocus, onFocusChange, isHoverDriven } from '../hooks/useFocus';
 import { t } from '../i18n';
+import { markAfterPaint } from '../utils/perf';
+import { perfFlag, canPrefetch, trackPrefetch } from '../utils/perfFlags';
 
 // A single folder chip in the top selector row (focus group 'content', row 0).
 // Styling lives in styles.css so the global `.focused` class gives the chip a
@@ -33,6 +35,21 @@ export default function FavoritesPage({ userMid, onPlayVideo }) {
   const seenRef = useRef(new Set());
   const cols = Math.min(4, Math.max(2, storage.getSettings().gridCols || 3));
 
+  // 空闲预取下一页(过闸门:播放器开着或已有预取在飞就让路)
+  const nextPageRef = useRef(null);
+  const prefetchNext = React.useCallback(() => {
+    if (!perfFlag('prefetchPage') || !canPrefetch() || nextPageRef.current) return;
+    const folder = foldersRef.current[activeFolderRef.current];
+    if (!folder) return;
+    const run = () => trackPrefetch(getFavList(folder.id, pageRef.current, 36)
+      .then(res => { nextPageRef.current = (res?.data?.medias || []).map(mapMedia); })
+      .catch(() => {}));
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 1200 });
+    else setTimeout(run, 400);
+  }, []);
+  const foldersRef = useRef([]);
+  const activeFolderRef = useRef(0);
+
   // Map a fav "media" into the card/player shape used across the app.
   const mapMedia = (m) => ({
     bvid: m.bvid, cid: m.ugc?.first_cid, title: m.title, pic: m.cover, duration: m.duration,
@@ -58,6 +75,8 @@ export default function FavoritesPage({ userMid, onPlayVideo }) {
     setLoading(true);
     setVideos([]);
     setFocusRow(0);
+    nextPageRef.current = null;
+    foldersRef.current = folders; activeFolderRef.current = activeFolder;
     getFavList(folder.id, 1, 36).then(res => {
       if (cancelled) return;
       const medias = (res?.data?.medias || []).map(mapMedia);
@@ -65,6 +84,8 @@ export default function FavoritesPage({ userMid, onPlayVideo }) {
       setVideos(medias);
       setLoading(false);
       pageRef.current = 2;
+      foldersRef.current = folders; activeFolderRef.current = activeFolder;
+      prefetchNext();          // 首屏一出来就在空闲时备好下一页
       // Don't steal focus on folder switch — the chip stays focused so the user
       // can keep arrowing across folders (选中即切换). Initial focus is handled by
       // App's focusFirstContent landing on the first chip (content-0-0).
@@ -94,14 +115,29 @@ export default function FavoritesPage({ userMid, onPlayVideo }) {
       if (row >= totalRows && !fetchingRef.current) {
         const folder = folders[activeFolder];
         if (!folder) return;
+        // 和首页同一套:命中预取直接贴,再在空闲时备下一页(见 HomePage 注释)
+        const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        const ready = nextPageRef.current;
+        if (ready) {
+          nextPageRef.current = null;
+          const more = ready.filter(v => v.bvid && !seenRef.current.has(v.bvid));
+          more.forEach(v => seenRef.current.add(v.bvid));
+          if (more.length) setVideos(prev => [...prev, ...more]);
+          pageRef.current++;
+          markAfterPaint('grid-page-prefetched', t0, more.length);
+          prefetchNext();
+          return;
+        }
         fetchingRef.current = true;
         getFavList(folder.id, pageRef.current, 36).then(res => {
           const more = (res?.data?.medias || []).map(mapMedia)
             .filter(v => v.bvid && !seenRef.current.has(v.bvid));
           more.forEach(v => seenRef.current.add(v.bvid));
           if (more.length) setVideos(prev => [...prev, ...more]);
+          markAfterPaint('grid-page', t0, more.length);
           pageRef.current++;
           fetchingRef.current = false;
+          prefetchNext();
         }).catch(() => { fetchingRef.current = false; });
       }
     });

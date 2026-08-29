@@ -82,7 +82,10 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
     if (typeof Image === 'undefined' || !perfFlag('prefetchThumbs')) return;
     if (!canPrefetch()) return;          // 播放器开着等重活时不抢带宽
     const from = (lastRowRef.current + 1) * cols;
-    const to = Math.min(videos.length, from + cols);   // 只预取**下一行**:两行在慢机上会抢当前可见图片的带宽
+    // 预取行数:早先"两行"会抢带宽(那时既没有闸门、没有防抖,代理也不给缓存头)。
+    // 三者都补上之后重新试两行 —— 用 prefetchRows 开关做 A/B。
+    const rows = perfFlag('prefetch2Rows') ? 2 : 1;   // 实测两行无增益,默认一行(省带宽/内存)
+    const to = Math.min(videos.length, from + cols * rows);
     // **停稳才预取**:连续按方向键时不要在按键那一刻做任何额外工作。
     // 真机实测(2026-08-31):不做防抖时跟手 p50 从 24.5 退到 30.2ms ——
     // 预取抢了按键→绘制这条关键路径。停 200ms 说明用户在看这一行了,

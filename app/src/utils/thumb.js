@@ -8,13 +8,18 @@
 import { mediaProxyBase } from '../api/client';
 import { perfFlag } from './perfFlags';
 
+// 两档尺寸,用开关对照:真机 CPU 采样显示主线程 66% 空闲、我们的 JS 只占 ~250ms,
+// 而引擎内部(布局/绘制/**图片解码**)占了 2169ms —— 继续优化 JS 没意义,
+// 减少解码量才是杠杆。small 档按显示宽的 0.86× 取图(3 米外看不出差别)。
 const THUMB_W = { 2: 720, 3: 540, 4: 420 };
+const THUMB_W_SMALL = { 2: 600, 3: 450, 4: 336 };
 
 export function thumbUrl(pic, cols) {
   if (!pic) return '';
   let u = pic.startsWith('//') ? 'https:' + pic : pic;
   if (u.includes('hdslb.com') && !u.includes('@')) {
-    const w = perfFlag('thumbRightsize') ? (THUMB_W[cols] || 540) : 672;
+    const table = perfFlag('thumbSmall') ? THUMB_W_SMALL : THUMB_W;
+    const w = perfFlag('thumbRightsize') ? (table[cols] || 540) : 672;
     u += `@${w}w_${Math.round(w / 1.6)}h_1c.webp`;
   }
   try {

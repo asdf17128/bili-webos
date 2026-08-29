@@ -70,13 +70,19 @@ if (typeof window !== 'undefined') {
         PerformanceObserver.supportedEntryTypes &&
         PerformanceObserver.supportedEntryTypes.indexOf('longtask') >= 0) {
       const lt = [];
+      const attr = Object.create(null);     // 归因:哪类容器贡献了多少毫秒
       new PerformanceObserver((list) => {
         for (const e of list.getEntries()) {
           lt.push(Math.round(e.duration));
           if (lt.length > 100) lt.shift();
+          // Chrome 120 会给 attribution(老引擎没有,拿不到就算 unknown)。
+          const a = (e.attribution && e.attribution[0]) || null;
+          const kkey = a ? (a.containerType || 'window') + ':' + (a.containerName || a.containerSrc || '-') : 'unknown';
+          attr[kkey] = (attr[kkey] || 0) + Math.round(e.duration);
         }
       }).observe({ entryTypes: ['longtask'] });
       window.__perf.longTasks = () => lt.slice();
+      window.__perf.longTaskAttribution = () => Object.assign({}, attr);
     }
   } catch (e) { /* 老引擎:保持 null */ }
 }

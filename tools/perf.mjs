@@ -61,6 +61,10 @@ conn.on('ready', () => {
       await call('Page.reload', {});
       await sleep(12000);
     }
+    // 每轮开始前清 HTTP 缓存。代理开始透传 max-age 之后,先跑的那一轮会把图
+    // 缓存住,后跑的从零下载 —— 两档缩略图的对照就这么被串过一次(2026-08-31)。
+    // 冷缓存也更贴近用户第一次进来的感受。
+    try { await call('Network.enable'); await call('Network.clearBrowserCache'); } catch (e) { /* 老引擎可能没有 */ }
     console.log(`\n=== 性能观测 [${LABEL}] ===`);
     const memBefore = await evalJS('JSON.stringify(window.__perf.memory())');
     await evalJS('window.__perf.clear()');
@@ -115,6 +119,8 @@ conn.on('ready', () => {
     console.log(`页面切换(按下→内容画出): ${fmt(sw)}`);
     console.log(`播放器首帧(打开→出画面): ${fmt(first)}`);
     console.log(`评论竖栏(打开→列表画出): ${fmt(cmt)}`);
+    const attr = await evalJS('window.__perf.longTaskAttribution ? JSON.stringify(window.__perf.longTaskAttribution()) : "null"');
+    if (attr && attr !== 'null') console.log(`长任务归因: ${attr}`);
     console.log(`图片失败: ${by('img-fail').length} 次`);
 
     appendFileSync('tools/.perf-runs.jsonl', JSON.stringify({

@@ -564,11 +564,26 @@ var localServer = http.createServer(function (req, res) {
 
     var responseHeaders = {
       'Access-Control-Allow-Origin': '*',
+      // 允许页面读到细分计时(排队/连接/TTFB/下载)。没有这一行时
+      // PerformanceResourceTiming 只给一个 duration,定位不了瓶颈在哪一段。
+      'Timing-Allow-Origin': '*',
       'Content-Type': proxyRes.headers['content-type'] || 'application/octet-stream',
     };
     if (proxyRes.headers['content-range']) responseHeaders['Content-Range'] = proxyRes.headers['content-range'];
     if (proxyRes.headers['content-length']) responseHeaders['Content-Length'] = proxyRes.headers['content-length'];
     if (proxyRes.headers['accept-ranges']) responseHeaders['Accept-Ranges'] = proxyRes.headers['accept-ranges'];
+
+    // 缓存头必须透传。之前这里把上游的 cache-control/etag/last-modified 全丢了,
+    // 浏览器于是**一次都不缓存** —— 往回滚重下、预取下来的图真正要显示时再下
+    // 一遍(等于预取白做)。2026-08-31 真机实测缩略图 p50 462ms,大头就在这。
+    // 封面/图片是按 URL 内容寻址的(@420w_263h_1c.webp),内容不会变,可以放心
+    // 长缓存;上游没给策略时兜底一天。
+    var ct = proxyRes.headers['content-type'] || '';
+    if (proxyRes.headers['cache-control']) responseHeaders['Cache-Control'] = proxyRes.headers['cache-control'];
+    else if (ct.indexOf('image/') === 0) responseHeaders['Cache-Control'] = 'public, max-age=86400';
+    if (proxyRes.headers['etag']) responseHeaders['ETag'] = proxyRes.headers['etag'];
+    if (proxyRes.headers['last-modified']) responseHeaders['Last-Modified'] = proxyRes.headers['last-modified'];
+    if (proxyRes.headers['expires']) responseHeaders['Expires'] = proxyRes.headers['expires'];
 
     res.writeHead(proxyRes.statusCode, responseHeaders);
     proxyRes.pipe(res);

@@ -44,18 +44,41 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
   const [eager, setEager] = useState(false);
   const holderRef = useRef(null);
   useEffect(() => {
-    if (!perfFlag('eagerImages')) { setEager(true); return; }   // 关掉开关=回退到浏览器 lazy
-    if (typeof IntersectionObserver !== 'function') { setEager(true); return; }
+    if (!perfFlag('eagerImages')) { eagerT.current = mountT.current; setEager(true); return; }
+    if (typeof IntersectionObserver !== 'function') { eagerT.current = mountT.current; setEager(true); return; }
     const el = holderRef.current;
     if (!el) return;
+    // 双向:进视口前一屏加载,离开视口两屏之外**卸掉**。
+    // 依据:真机 CPU 采样(2026-08-31)显示主线程 66% 空闲、我们的 JS 只占 ~250ms,
+    // 而引擎内部(布局/绘制/解码)占 2169ms —— 100+ 张卡片的位图全程常驻是
+    // 引擎侧的主要负担(每张解码后约 0.44MB)。卡片框不动,只释放 <img>,
+    // 所以滚动几何完全不受影响(那块历史上出过 bug,不碰)。
     const io = new IntersectionObserver((entries) => {
-      if (entries.some(e => e.isIntersecting)) { setEager(true); io.disconnect(); }
-    }, { rootMargin: '1080px 0px' });     // 提前一屏
+      const e = entries[entries.length - 1];
+      if (!e) return;
+      if (e.isIntersecting) {
+        eagerT.current = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        setEager(true);
+        // 加载过就不用再盯着了 —— 100+ 个 observer 一直活着,会在每次滚动时
+        // 都参与计算,吃掉按键→绘制这条关键路径(实测跟手 p50 24.2→29.5ms)。
+        // 只有开了"离屏卸载"才需要继续观察。
+        if (!perfFlag('unloadOffscreen')) io.disconnect();
+      }
+      else if (perfFlag('unloadOffscreen')) {
+        // rootMargin 只有一个,所以用交叉比例 + 距离判断:完全离开且远离才卸
+        const r = e.boundingClientRect;
+        if (r.bottom < -1080 || r.top > 1080 * 2) setEager(false);
+      }
+    }, { rootMargin: '1080px 0px' });
     io.observe(el);
     return () => io.disconnect();
   }, []);
 
   // 图片:从卡片挂载到缩略图 onload。占位灰块停留多久,用户是直接看得见的。
+  // 用户实际盯着灰块的时间 = 从**决定加载**到图片出现,而不是从卡片挂载算起
+  // ——卡片是一次性全挂载的,深处的行挂载后要等滚到才加载,把那段等待算进来
+  // 会把指标撑大好几倍,还会掩盖真正的问题(2026-08-31 发现)。
+  const eagerT = useRef(0);
   const mountT = useRef((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now());
   const imgRef = useRef(null);
 
@@ -73,7 +96,7 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
       <div className="video-card-thumb" ref={holderRef}>
         {thumb && eager && <img src={thumb} alt="" decoding="async"
           ref={imgRef}
-          onLoad={() => mark('img', ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()) - mountT.current)}
+          onLoad={() => mark('img', ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()) - (eagerT.current || mountT.current))}
           onError={() => mark('img-fail', 0)} />}
         {video.duration != null && (
           <span className="video-card-duration">

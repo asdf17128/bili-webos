@@ -12,6 +12,9 @@ export function perfFlag(name) {
     flags = {};
     try { flags = JSON.parse(localStorage.getItem('bili_perfopt') || '{}') || {}; } catch (e) { flags = {}; }
   }
+  // prefetch2Rows 默认**关**:实测两行相对一行没有增益(358.7 vs 360.1ms),
+  // 白多占带宽和解码内存。其余开关默认开。
+  if (name === 'prefetch2Rows' || name === 'thumbSmall' || name === 'unloadOffscreen') return flags[name] === true;   // 默认关,待 A/B 定夺
   return flags[name] !== false;   // 只有显式 false 才关
 }
 

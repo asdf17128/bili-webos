@@ -123,8 +123,11 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend', 
         .catch(() => {})
         .then(() => { prefetchingRef.current = false; }));
     };
-    if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 1200 });
-    else setTimeout(run, 400);
+    // 同样停稳 250ms 再发,避免和连续按键抢主线程(见 VideoGrid 的注释)
+    setTimeout(() => {
+      if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 1200 });
+      else setTimeout(run, 400);
+    }, 250);
   }, [mode, rid]);
 
   function dedupe(items) {
@@ -149,6 +152,7 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend', 
       // 渲染)。这里只需知道到第几行来决定要不要翻页,用 ref 记住即可——
       // 原来每按一下都要把 100+ 张卡片重渲染一遍。
       rowRef.current = row;
+      if (!perfFlag('scrollDirect')) setFocusRow(row);   // 关掉直连滚动时回到原来的 state 驱动
 
       // 翻页。实测(C4 真机):从触发到新卡片画出 p50 396ms —— 用户往下翻会
       // 结结实实撞上这段空白。所以**不是"更早触发",而是提前把下一页备好**:

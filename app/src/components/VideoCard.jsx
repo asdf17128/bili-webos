@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useReducer, useRef } from 'react';
+import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { useFocusable } from '../hooks/useFocus';
 import { formatCount, formatDuration, formatTime, cleanTitle } from '../utils/format';
 import { thumbUrl } from '../utils/thumb';
+import { perfFlag } from '../utils/perfFlags';
 import { storage } from '../utils/storage';
 import { t } from '../i18n';
 import { mark } from '../utils/perf';
@@ -33,6 +34,27 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
   // 缩略图按当前列数取尺寸(每行几个 = 卡片多宽)。
   const cols = Math.min(4, Math.max(2, storage.getSettings().gridCols || 3));
 
+  // 浏览器内置的 loading=lazy 触发时机不可控:真机实测"卡片挂载→图片显示"
+  // p50 638ms,而请求本身只要 254ms —— 中间 ~384ms 是它在等元素"足够接近视口"。
+  // 电视是整屏滚动、行距固定,我们比浏览器更清楚什么时候该开始加载,所以改成
+  // 自己用 IntersectionObserver 判定,提前一屏(rootMargin)就开始。
+  // 边界:只提前**一屏**,不是全部预载 —— 一次性把 100+ 张图解码出来,
+  // 在 deviceMemory=2GB 的机器上是灾难(每张解码后 0.44MB)。
+  // IntersectionObserver 从 Chrome 51 起就有,webOS 5(Chrome 68)也支持。
+  const [eager, setEager] = useState(false);
+  const holderRef = useRef(null);
+  useEffect(() => {
+    if (!perfFlag('eagerImages')) { setEager(true); return; }   // 关掉开关=回退到浏览器 lazy
+    if (typeof IntersectionObserver !== 'function') { setEager(true); return; }
+    const el = holderRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some(e => e.isIntersecting)) { setEager(true); io.disconnect(); }
+    }, { rootMargin: '1080px 0px' });     // 提前一屏
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   // 图片:从卡片挂载到缩略图 onload。占位灰块停留多久,用户是直接看得见的。
   const mountT = useRef((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now());
   const imgRef = useRef(null);
@@ -48,8 +70,8 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
 
   return (
     <div {...props} className="video-card">
-      <div className="video-card-thumb">
-        {thumb && <img src={thumb} alt="" loading="lazy" decoding="async"
+      <div className="video-card-thumb" ref={holderRef}>
+        {thumb && eager && <img src={thumb} alt="" decoding="async"
           ref={imgRef}
           onLoad={() => mark('img', ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()) - mountT.current)}
           onError={() => mark('img-fail', 0)} />}

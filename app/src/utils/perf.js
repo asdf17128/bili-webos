@@ -11,29 +11,28 @@
 //
 // 读法:CDP 里 window.__perf.dump() → 工具侧算分位数(tools/perf.mjs)。
 
-const CAP = 200;
-const buf = new Array(CAP);
-let head = 0;
-let n = 0;
+// 按**指标分桶**存,每桶各自定长。
+// 教训(2026-08-31 真机):原来是一个 200 条的大环形数组,结果一屏 173 张图片
+// 的打点把翻页记录整个挤掉了,报告里显示"无样本"——观测工具自己把数据吃了。
+const CAP_PER_KIND = 60;
+const buckets = Object.create(null);
 
 const now = () => (typeof performance !== 'undefined' && performance.now
   ? performance.now() : Date.now());
 
-// 记一条:kind = 指标名,ms = 耗时,extra = 一个数字(可选,比如条数)
 export function mark(kind, ms, extra) {
-  buf[head] = { k: kind, ms: Math.round(ms * 10) / 10, x: extra == null ? 0 : extra, t: Math.round(now()) };
-  head = (head + 1) % CAP;
-  if (n < CAP) n++;
+  let b = buckets[kind];
+  if (!b) b = buckets[kind] = { arr: new Array(CAP_PER_KIND), head: 0, n: 0 };
+  b.arr[b.head] = { k: kind, ms: Math.round(ms * 10) / 10, x: extra == null ? 0 : extra };
+  b.head = (b.head + 1) % CAP_PER_KIND;
+  if (b.n < CAP_PER_KIND) b.n++;
 }
 
-// 计时器:t = start('grid-page'); …; t()  —— 闭包比全局 Map 便宜,也不会泄漏
 export function start(kind) {
   const t0 = now();
   return (extra) => { mark(kind, now() - t0, extra); };
 }
 
-// 下一帧真正画完之后再记 —— 这才是"用户看到"的时刻。
-// 单个 rAF 只保证"下一帧开始前",双 rAF 才跨过这一帧的绘制。
 export function markAfterPaint(kind, t0, extra) {
   if (typeof requestAnimationFrame !== 'function') { mark(kind, now() - t0, extra); return; }
   requestAnimationFrame(() => {
@@ -43,7 +42,10 @@ export function markAfterPaint(kind, t0, extra) {
 
 function dump() {
   const out = [];
-  for (let i = 0; i < n; i++) out.push(buf[(head - n + i + CAP) % CAP]);
+  for (const k in buckets) {
+    const b = buckets[k];
+    for (let i = 0; i < b.n; i++) out.push(b.arr[(b.head - b.n + i + CAP_PER_KIND) % CAP_PER_KIND]);
+  }
   return out;
 }
 
@@ -58,7 +60,7 @@ function memory() {
 if (typeof window !== 'undefined') {
   window.__perf = {
     dump, memory, mark,
-    clear() { head = 0; n = 0; },
+    clear() { for (const k in buckets) delete buckets[k]; },
     // 长任务(>50ms 主线程阻塞)= 卡顿的直接证据。老引擎没有这个 API,
     // 拿不到就返回 null,报告里如实标注"该机型无法观测",不假装有数据。
     longTasks: null,

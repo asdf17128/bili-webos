@@ -54,7 +54,7 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
   }, [cols]);
 
   // 焦点落到本网格的某一行 → 直接滚过去,不经过 React。
-  useEffect(() => onFocusChange((fid) => {
+  useEffect(() => (perfFlag('scrollDirect') ? onFocusChange((fid) => {
     if (!fid) return;
     const m = fid.match(/^(.+)-(\d+)-(\d+)$/);
     if (!m || m[1] !== group) return;
@@ -62,7 +62,7 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
     if (gridRow < 0) return;
     lastRowRef.current = gridRow;
     scrollToRow(gridRow);
-  }), [group, startRow, scrollToRow]);
+  }) : undefined), [group, startRow, scrollToRow]);
 
   // 列表增删/首次渲染后按当前行复位(翻页追加、切换分区都会走这里)
   const lastRowRef = useRef(0);
@@ -83,9 +83,13 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
     if (!canPrefetch()) return;          // 播放器开着等重活时不抢带宽
     const from = (lastRowRef.current + 1) * cols;
     const to = Math.min(videos.length, from + cols);   // 只预取**下一行**:两行在慢机上会抢当前可见图片的带宽
+    // **停稳才预取**:连续按方向键时不要在按键那一刻做任何额外工作。
+    // 真机实测(2026-08-31):不做防抖时跟手 p50 从 24.5 退到 30.2ms ——
+    // 预取抢了按键→绘制这条关键路径。停 200ms 说明用户在看这一行了,
+    // 这时候再去取下一行的图,既不抢手感又赶得上。
     const idle = (fn) => (typeof requestIdleCallback === 'function'
       ? requestIdleCallback(fn, { timeout: 300 }) : setTimeout(fn, 0));
-    idle(() => {
+    const settle = setTimeout(() => idle(() => {
       for (let i = from; i < to; i++) {
         const v = videos[i];
         const src = v && thumbUrl(v.pic || v.cover || '', cols);
@@ -97,7 +101,8 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
       }
       // 集合本身也别无限长:超过 400 条就清掉(URL 字符串,几十 KB 量级)
       if (prefetched.current.size > 400) prefetched.current.clear();
-    });
+    }), 200);
+    return () => clearTimeout(settle);
   }, [cols, videos]);
 
   return (

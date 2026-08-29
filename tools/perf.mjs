@@ -56,6 +56,11 @@ conn.on('ready', () => {
     await new Promise(r => ws.on('open', r));
     await call('Runtime.enable');
 
+    if (process.env.FLAGS) {
+      await evalJS(`localStorage.setItem('bili_perfopt', ${JSON.stringify(process.env.FLAGS)})`);
+      await call('Page.reload', {});
+      await sleep(12000);
+    }
     console.log(`\n=== 性能观测 [${LABEL}] ===`);
     const memBefore = await evalJS('JSON.stringify(window.__perf.memory())');
     await evalJS('window.__perf.clear()');
@@ -96,13 +101,14 @@ conn.on('ready', () => {
     const entries = JSON.parse(raw || '[]');
     const by = (k) => entries.filter(e => e.k === k).map(e => e.ms);
 
-    const focus = by('focus-move'), page = by('grid-page'), img = by('img');
+    const focus = by('focus-move'), page = by('grid-page').concat(by('grid-page-prefetched')), img = by('img');
+    const pre = by('grid-page-prefetched');
     const sw = by('page-switch'), first = by('player-first-frame'), cmt = by('comments-open');
     const longs = lt === 'null' ? null : JSON.parse(lt);
     const mb = JSON.parse(memBefore || 'null'), ma = JSON.parse(memAfter || 'null');
 
     console.log(`跟手(按键→焦点画出): ${fmt(focus)}`);
-    console.log(`翻页(触发→新卡片画出): ${fmt(page)}`);
+    console.log(`翻页(触发→新卡片画出): ${fmt(page)}  [其中命中预取 ${pre.length} 次]`);
     console.log(`图片(挂载→缩略图可见): ${fmt(img)}`);
     console.log(`长任务(>50ms 阻塞主线程): ${longs ? `${longs.length} 次 · 最长 ${Math.max(0, ...longs)}ms · 合计 ${longs.reduce((a, b) => a + b, 0)}ms` : '(该机型无法观测)'}`);
     console.log(`内存: ${mb ? mb.used : '?'}MB → ${ma ? ma.used : '?'}MB (堆总量 ${ma ? ma.total : '?'}MB)`);

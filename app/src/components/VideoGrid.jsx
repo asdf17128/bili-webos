@@ -136,7 +136,7 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
               col={col}
               group={group}
               onSelect={onSelect}
-              followed={!!(followedMids && video.owner?.mid && followedMids.has(video.owner.mid))}
+              followed={!!(followedMids && video.owner?.mid && followedMids.has(Number(video.owner.mid)))}
             />
           );
         })}

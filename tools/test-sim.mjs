@@ -296,7 +296,19 @@ async function main() {
       if (!rail) return 0;
       return (rail.innerText || '').split('\n').filter(x => x.trim()).length;
     });
-    check('聊天栏打开即有历史消息(不是空屏等实时)', liveRoom.stale || chatLines >= 5, `${chatLines} 行`);
+    // 冷清的房间本身就没几条历史 —— 那是内容事实,不是功能坏。先问接口这个房间
+    // 到底有多少条,再决定该不该要求聊天栏有内容(同 C-SIM-01 的思路)。
+    const histCount = await page.evaluate(async (rid) => {
+      try {
+        const r = await fetch('http://127.0.0.1:9528/luna/fetch', { method: 'POST',
+          body: JSON.stringify({ url: `https://api.live.bilibili.com/xlive/web-room/v1/dM/gethistory?roomid=${rid}` }) });
+        const j = JSON.parse(await r.text());
+        return ((JSON.parse(j.body || '{}').data || {}).room || []).length;
+      } catch (e) { return -1; }
+    }, liveRoom.id);
+    check('聊天栏打开即有历史消息(不是空屏等实时)',
+      liveRoom.stale || histCount <= 2 || chatLines >= 5,
+      `栏内 ${chatLines} 行 · 该房间历史 ${histCount} 条`);
     await key('Escape'); await sleep(700);   // controls
     await key('Escape'); await sleep(900);   // rail
     const afterRail = await page.evaluate(() => ({
@@ -468,6 +480,22 @@ async function main() {
     }));
     check('松手本身也不算确认', afterUp.open && !afterUp.msg, `open=${afterUp.open} msg=${afterUp.msg}`);
     await key('Escape'); await sleep(800);   // 取消掉,别真加进列表
+
+    console.log('\n[已关注标]');
+    // 判据必然为真:「关注」页里的 UP 按定义全部已关注,所以每张卡都该有标。
+    // 原来只拉 5 页关注列表(250 个)就停,第 251 个之后的 UP 永远没标 ——
+    // 表现就是 owner 说的"有的有 有的没有"(2026-08-31)。
+    await gotoPage('关注');
+    await sleep(3500);
+    const fol = await page.evaluate(() => {
+      const cards = [...document.querySelectorAll('.video-card')];
+      const badged = cards.filter(c => c.innerText.includes('已关注')).length;
+      let cached = null;
+      try { cached = (JSON.parse(localStorage.getItem('bili_followed') || 'null') || {}).mids?.length ?? null; } catch (e) {}
+      return { n: cards.length, badged, cached };
+    });
+    check('关注页每张卡都有「已关注」标', fol.n > 0 && fol.badged === fol.n,
+      `${fol.badged}/${fol.n} 有标 · 本地关注缓存 ${fol.cached} 个`);
 
     console.log('\n[取流失败 → 直达网络诊断]');
     // issue #23:用户被风控拦住时,原来只看到一句"视频加载失败"。现在要给

@@ -187,6 +187,21 @@ async function main() {
     const controls = await page.evaluate(() => [...document.querySelectorAll('.player-btn')].map(b => b.textContent.trim()));
     check('Control bar has the expected buttons', controls.some(c => c.includes('弹幕')) && controls.some(c => c.includes('倍速')) && controls.some(c => c.includes('评论')),
       controls.join(' | '));
+    // 评论数在**打开评论之前**就该显示 —— 视频信息里本来就带 stat.reply,
+    // 原来清零后非要等评论加载完才显示(owner 2026-08-31:"不够友好")。
+    check('评论按钮打开前就带数量', controls.some(c => /评论\s*·/.test(c)),
+      controls.filter(c => c.includes('评论')).join(''));
+
+    // 控制栏首尾循环:第一个按左 → 最后一个;最后一个按右 → 第一个
+    const wrapSeq = [];
+    const curBtn = () => page.evaluate(() => ((document.querySelector('.player-btn.focused') || {}).textContent || '').trim());
+    wrapSeq.push(await curBtn());
+    await key('ArrowLeft'); await sleep(600); wrapSeq.push(await curBtn());
+    await key('ArrowRight'); await sleep(600); wrapSeq.push(await curBtn());
+    check('控制栏首尾循环(暂停 ←→ 评论)',
+      wrapSeq[0].includes('暂停') && wrapSeq[1].includes('评论') && wrapSeq[2].includes('暂停'),
+      wrapSeq.join(' → '));
+
     const loggedIn = await page.evaluate(() => !!(JSON.parse(localStorage.getItem('bili_auth') || '{}').SESSDATA));
     if (loggedIn) {
       check('Logged in: 赞/币/藏 present in the control bar',

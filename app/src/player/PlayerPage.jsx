@@ -500,6 +500,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       let epid = video.epid;
       let seasonId = video.seasonId;
       let ownerMid = video.owner?.mid || null;
+      let replyCount = video.stat?.reply || 0;   // 评论数打底(见下面的 setCommentCount)
       let ownerName = video.owner?.name || '';
 
       if (isBangumi) {
@@ -560,6 +561,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         if (d.title) setVideoTitle(d.title);
         if (d.owner) {
           ownerMid = ownerMid || d.owner.mid;
+          replyCount = (d.stat && d.stat.reply) || replyCount;
           ownerName = ownerName || d.owner.name;
           if (d.owner.name) setMetaOwner(d.owner.name);
         }
@@ -657,7 +659,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       commentPnRef.current = 1;
       commentDoneRef.current = false;
       setComments([]);
-      setCommentCount(0);
+      // 评论数用视频信息里的 stat.reply 打底 —— 这份数据打开播放器时就拿到了,
+      // 原来清零后非要等用户点开评论、加载完第一页才显示,按钮上一直是光秃秃的
+      // 「评论」(owner 2026-08-31:"不够友好")。评论接口回来后再以 page.count
+      // 为准(两者偶有出入)。
+      setCommentCount(replyCount);
       setCommentsLoading(false);
       setPanelTab('related');
 
@@ -1882,13 +1888,17 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       if (focusArea === 'controls') {
         if (e.key === 'ArrowLeft') {
           e.preventDefault();
-          setFocusIdx(prev => Math.max(0, prev - 1));
+          // 首尾循环:在第一个(暂停)上按左 → 跳到最后一个(评论)。
+          // 和侧栏的上下循环一致;控制栏一行十个按钮,从头走到尾要按九下,
+          // 循环之后一下就到(owner 2026-08-31)。
+          setFocusIdx(prev => (prev <= 0 ? controlsRef.current.length - 1 : prev - 1));
           hideControlsLater();
           return true;
         }
         if (e.key === 'ArrowRight') {
           e.preventDefault();
-          setFocusIdx(prev => Math.min(CONTROLS.length - 1, prev + 1));
+          // 反向同理:最后一个上按右 → 回到第一个
+          setFocusIdx(prev => (prev >= controlsRef.current.length - 1 ? 0 : prev + 1));
           hideControlsLater();
           return true;
         }

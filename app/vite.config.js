@@ -43,7 +43,12 @@ function webosCompat() {
   };
 }
 
-export default defineConfig({
+// 观测代码(utils/perf.js 的打点、longtask observer、window.__perf)只在
+// **测量构建**里保留:`PERF=1 bash build.sh`。发布构建里 __PERF__ 编译成 false,
+// 打点函数体被 esbuild 当死代码整段删掉 —— 用户机器上不跑观测,也没有
+// PerformanceObserver 常驻(owner 2026-08-31:"线上剥离测试方案")。
+// 开发服务器(command==='serve')默认开着,tools/perf-sim.mjs 才有数据可读。
+export default defineConfig(({ command }) => ({
   plugins: [
     react(),
     // Emit a classic SystemJS bundle for EVERY browser (renderModernChunks:false
@@ -57,6 +62,9 @@ export default defineConfig({
     }),
     webosCompat(),
   ],
+  define: {
+    __PERF__: JSON.stringify(command === 'serve' || process.env.PERF === '1'),
+  },
   base: './',
   build: {
     outDir: 'dist',
@@ -85,4 +93,4 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
   }
-});
+}));

@@ -14,6 +14,11 @@
 // 按**指标分桶**存,每桶各自定长。
 // 教训(2026-08-31 真机):原来是一个 200 条的大环形数组,结果一屏 173 张图片
 // 的打点把翻页记录整个挤掉了,报告里显示"无样本"——观测工具自己把数据吃了。
+// __PERF__ 由 vite define 在编译期替换成字面量。发布构建里是 false,
+// 下面每个函数的函数体都成了死代码,被 esbuild 整段删掉 —— 调用点还在,
+// 但调用的是空函数,不再有 rAF、不再有对象分配、不再挂 PerformanceObserver。
+const ON = typeof __PERF__ !== 'undefined' ? __PERF__ : false;
+
 const CAP_PER_KIND = 60;
 const buckets = Object.create(null);
 
@@ -21,6 +26,7 @@ const now = () => (typeof performance !== 'undefined' && performance.now
   ? performance.now() : Date.now());
 
 export function mark(kind, ms, extra) {
+  if (!ON) return;
   let b = buckets[kind];
   if (!b) b = buckets[kind] = { arr: new Array(CAP_PER_KIND), head: 0, n: 0 };
   b.arr[b.head] = { k: kind, ms: Math.round(ms * 10) / 10, x: extra == null ? 0 : extra };
@@ -29,11 +35,13 @@ export function mark(kind, ms, extra) {
 }
 
 export function start(kind) {
+  if (!ON) return function () {};
   const t0 = now();
   return (extra) => { mark(kind, now() - t0, extra); };
 }
 
 export function markAfterPaint(kind, t0, extra) {
+  if (!ON) return;
   if (typeof requestAnimationFrame !== 'function') { mark(kind, now() - t0, extra); return; }
   requestAnimationFrame(() => {
     requestAnimationFrame(() => { mark(kind, now() - t0, extra); });
@@ -57,7 +65,7 @@ function memory() {
   return { used: Math.round(m.usedJSHeapSize / 1048576), total: Math.round(m.totalJSHeapSize / 1048576) };
 }
 
-if (typeof window !== 'undefined') {
+if (ON && typeof window !== 'undefined') {
   window.__perf = {
     dump, memory, mark,
     clear() { for (const k in buckets) delete buckets[k]; },

@@ -25,6 +25,10 @@ node tools/test-ui.mjs
 
 # FULL verification pipeline (run before every release; --no-tv / --full)
 bash tools/verify.sh
+
+# 发版:打包 + 三件资产 + 发完从外面验一遍(不要手搓 gh release create)
+node tools/release.mjs v1.7.1 --notes-file notes.md
+node tools/release.mjs --check          # 只体检线上 latest,随时可跑
 ```
 
 Testing methodology lives in the `tv-test` skill (.claude/skills/tv-test/SKILL.md).

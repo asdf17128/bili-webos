@@ -73,3 +73,24 @@ bash tools/verify.sh --full     # 六层:语法→静态规范/逻辑→真Node8
 | docs/DESIGN.md | 10-foot 设计规范(字号/颜色/焦点/兼容底线) |
 | tools/verify.sh | 门禁执行入口(自动层) |
 | .claude/skills/tv-test | 测试方法论 + 工具箱 + 坑(每踩新坑必追加) |
+
+
+## 发版(不要手搓 `gh release create`)
+
+```bash
+node tools/release.mjs v1.7.1 --notes-file notes.md
+```
+
+release 必须挂**三件**资产,少一件都会静默出事:
+
+| 资产 | 谁在用 | 少了会怎样 |
+|---|---|---|
+| `com.biliwebos.app_X.Y.Z_all.ipk` | 用户安装 | 装不了(唯一看得见的故障) |
+| `version.json` | app 查更新 + **我们的 DAU 计数** | 全部电视查更新 404;DAU 计数器冻死,报表却平静地显示 "+0" |
+| `com.biliwebos.app.manifest.json` | webOS Homebrew 目录(`manifestUrl` 指向 `latest/download/`) | 目录侧看不到新版本,更新根本铺不出去 |
+
+后两个的 URL 都是 `releases/latest/download/…`,所以**只要发了新 release 却没带上它们,上一版的链接也一起失效** —— 不是"新版没上",是整个通道断掉。
+
+2026-08-31 就这么翻过一次:v1.7.0 只挂了 ipk,15 小时里更新通道和 DAU 计数全断,而 GitHub 的 release 页面看着完全正常。
+
+`tools/release.mjs` 因此在发完之后**以外人身份**把三个 URL 都请求一遍,并核对 manifest 里的 sha256 与 ipk 一致;`--check` 可以随时单独体检线上。`tools/verify.sh` 的第 7 步也会跑它。

@@ -175,4 +175,9 @@ if [ -n "$FULL" ]; then
 fi
 
 echo ""
+echo "=== [7/7] 线上发布物体检 ==="
+# 只读检查,不改任何东西:latest 的 version.json / manifest / ipk 是不是都取得到。
+# 上一次发版就是漏挂资产,而本地一切正常 —— 这类问题只有从外面看才看得见。
+node tools/release.mjs --check || echo "  (发版前跑到这里失败是正常的:此时 latest 还是上一版)"
+
 echo "=== Verification complete ==="

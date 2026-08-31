@@ -74,6 +74,21 @@ const interpolated = spanH < 24;
 
 console.log('=== DAU ===');
 console.log(`累计 ping (version.json): ${total}`);
+
+// 计数卡死检测。2026-08-31:v1.7.0 漏挂 version.json 资产,全部电视查更新
+// 404,这个计数器整整 15 小时纹丝不动 —— 而报告只是平静地写着 "+0",
+// 看上去像"今天没人开电视"。零增长和管道断了必须能区分开。
+{
+  const flat = snaps.filter(s => s.v === total);
+  if (flat.length >= 4) {
+    const hours = (Date.now() - flat[0].t) / 3600000;
+    if (hours >= 4) {
+      console.log('');
+      console.log(`⚠️  计数器已 ${hours.toFixed(1)} 小时没动过 —— 这不像是"没人用",更像是链路断了。`);
+      console.log('   先查:node tools/release.mjs --check(latest 的 version.json 还在不在)');
+    }
+  }
+}
 if (prev) {
   const dh = round((now - prev.t) / H);
   console.log(`较上次快照: +${total - prev.v}  (间隔 ${dh}h, ${prev.ts})`);

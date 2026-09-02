@@ -426,13 +426,33 @@ export async function getRanking(rid, type) {
 }
 
 export async function getVideoInfo(video) {
-  if (typeof video === 'string') {
-    return wbiFetch('/x/web-interface/view', { bvid: video });
+  var params = null;
+  if (typeof video === 'string') params = { bvid: video };
+  else if (video && video.bvid) params = { bvid: video.bvid };
+  else if (video && video.aid) params = { aid: video.aid };
+  if (!params) throw new Error('Missing video identifier');
+
+  let info = await wbiFetch('/x/web-interface/view', params);
+  // 测试钩子(同 window.__openVideo 一路):国内网络复现不了海外风控,
+  // 置 localStorage.bili_test_view412 可强制走下面的兜底分支。
+  if (typeof localStorage !== 'undefined' && localStorage.getItem('bili_test_view412')) {
+    info = { code: -412 };
   }
-  video = video || {};
-  if (video.bvid) return wbiFetch('/x/web-interface/view', { bvid: video.bvid });
-  if (video.aid) return wbiFetch('/x/web-interface/view', { aid: video.aid });
-  throw new Error('Missing video identifier');
+  // 2026-09-02(issue #25):B站 对海外匿名请求拦掉了 view(HTTP 412 / code=-412),
+  // 但 pagelist 和 playurl **都还是通的** —— VPS 实测 pagelist 拿 cid 再取流
+  // code=0 有流。view 只是我们取 cid 的路径,不该让它挡死一个能播的视频:
+  // 被拦时用 pagelist 补出 cid + 分P,标题/UP 主用卡片带来的数据顶上。
+  if (info && (info.code === -412 || info.status === 412)) {
+    try {
+      const pl = await apiFetch('/x/player/pagelist', params);
+      if (pl && pl.code === 0 && pl.data && pl.data.length) {
+        return { code: 0, viewBlocked: true, data: {
+          cid: pl.data[0].cid, pages: pl.data, bvid: params.bvid,
+        } };
+      }
+    } catch (e) { /* 兜底也挂了就报原始错误 */ }
+  }
+  return info;
 }
 
 // Player meta incl. resume position: last_play_cid (which part) + last_play_time

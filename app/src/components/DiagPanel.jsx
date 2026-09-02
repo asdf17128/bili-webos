@@ -21,7 +21,7 @@ const PROBE_BVID = 'BV1xx411c7mD';
 function ago(ts) { return t('{n}s前', { n: Math.round((Date.now() - ts) / 1000) }); }
 
 export default function DiagPanel() {
-  const [rows, setRows] = useState([]);   // {name, status: 'run'|'ok'|'fail'|'skip', detail}
+  const [rows, setRows] = useState([]);   // {name, status: 'run'|'ok'|'fail'|'skip'|'warn', detail}
   const [svcInfo, setSvcInfo] = useState(null);
   const [reportUrl, setReportUrl] = useState('');
 
@@ -77,12 +77,29 @@ export default function DiagPanel() {
       // 之前这里用的是不签名的 apiFetch —— 在被风控盯上的网络里,不签名的请求
       // 比真实取流更容易被拦,于是诊断报红而视频其实能放(issue #20)。
       // 探针比生产链路脆弱 = 假警报,和测试夹具必须贴合生产是同一个道理。
+      // view 单列一行 —— 以前它的失败被记成 `playurl view code=…`,看着像取流
+      // 挂了,其实取流根本没跑(issue #25 就是这样误导了排查方向)。
+      // 走 wbiFetch 和播放器同路径;失败时和播放器一样试 pagelist 兜底。
+      push('视频信息 view', 'run', '');
+      let probeCid = null;
+      try {
+        const v = await wbiFetch('/x/web-interface/view', { bvid: PROBE_BVID });
+        if (v && v.code === 0) { probeCid = v.data.cid; push('视频信息 view', 'ok', 'code=0'); }
+        else {
+          const pl = await apiFetch('/x/player/pagelist', { bvid: PROBE_BVID });
+          if (pl && pl.code === 0 && pl.data && pl.data.length) {
+            probeCid = pl.data[0].cid;
+            push('视频信息 view', 'warn', 'code=' + (v && v.code) + ' ' + t('(已用 pagelist 兜底,可正常播放)'));
+          } else {
+            push('视频信息 view', 'fail', apiErrorHint(v && v.code, { loggedIn: !!storage.getAuth()?.SESSDATA }) || ('view code=' + (v && v.code)));
+          }
+        }
+      } catch (e) { push('视频信息 view', 'fail', e.message); }
+
       push('取流 playurl', 'run', '');
       try {
-        const v = await apiFetch('/x/web-interface/view', { bvid: PROBE_BVID });
-        if (!v || v.code !== 0) throw new Error('view code=' + (v && v.code));
-        const cid = v.data.cid;
-        const p = await wbiFetch('/x/player/playurl', { bvid: PROBE_BVID, cid, qn: 16, fnval: 16 });
+        if (!probeCid) throw new Error(t('前置 view/pagelist 都失败,拿不到 cid'));
+        const p = await wbiFetch('/x/player/playurl', { bvid: PROBE_BVID, cid: probeCid, qn: 16, fnval: 16 });
         if (p && p.code === 0) push('取流 playurl', 'ok', 'code=0');
         else push('取流 playurl', 'fail', apiErrorHint(p && p.code, { loggedIn: !!storage.getAuth()?.SESSDATA }) || ('playurl code=' + (p && p.code)));
       } catch (e) { push('取流 playurl', 'fail', e.message); }
@@ -104,7 +121,7 @@ export default function DiagPanel() {
       // the QR too dense to scan off a TV screen. Error strings from Node /
       // Luna / HTTP are ASCII anyway; anything else gets stripped.
       const ascii = s => String(s).replace(/[^\x20-\x7e]/g, '').trim();
-      const KEY = { '后台服务': 'svc', 'API 连通': 'api', '推荐流(风控)': 'rcmd', '取流 playurl': 'playurl', '图片代理': 'imgproxy' };
+      const KEY = { '后台服务': 'svc', 'API 连通': 'api', '推荐流(风控)': 'rcmd', '视频信息 view': 'view', '取流 playurl': 'playurl', '图片代理': 'imgproxy' };
       const lines = [];
       lines.push('app v' + APP_VERSION);
       const ua = navigator.userAgent.match(/Chrom\w+\/[\d.]+/);
@@ -134,7 +151,7 @@ export default function DiagPanel() {
     } catch (e) { /* URL too long for QR — text fallback below */ }
   }
 
-  const ICON = { ok: '✅', fail: '❌', run: '⏳', skip: '⏭️' };
+  const ICON = { ok: '✅', fail: '❌', run: '⏳', skip: '⏭️', warn: '⚠️' };
   return (
     <div style={{ marginTop: 18, padding: '16px 20px', background: 'rgba(255,255,255,0.05)', borderRadius: 10 }}>
       <div style={{ display: 'flex', gap: 24 }}>

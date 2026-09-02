@@ -244,6 +244,26 @@ async function main() {
     check('Back closes the rail first, focus returns', afterBack.videoW === 1920 && afterBack.focused.includes('评论'),
       `video=${afterBack.videoW} focus=${afterBack.focused}`);
 
+    // C-ERR-03:view 被风控拦(-412)时用 pagelist 兜底,视频照样能播。
+    // 国内网络复现不了海外 412,用 client.js 里的测试钩子强制走兜底分支。
+    // 背景:issue #25,B站 对海外匿名把 view 拦了,但 pagelist/playurl 都通 ——
+    // view 只是我们取 cid 的路径,不该挡死一个能播的视频。
+    // 放在点播段末尾:开一个独立的播放器实例,测完由下面的离场循环统一清掉。
+    for (let i = 0; i < 5; i++) {
+      if (!(await page.evaluate(() => !!document.querySelector('.player-page')))) break;
+      await key('Escape'); await sleep(800);
+    }
+    await page.evaluate(() => { localStorage.setItem('bili_test_view412', '1'); });
+    await page.evaluate(() => window.__openVideo({ bvid: 'BV1xx411c7Xg', title: '兜底标题', owner: { name: '兜底UP' } }));
+    await sleep(12000);
+    const fb = await page.evaluate(() => {
+      const v = document.querySelector('video');
+      return { playing: !!(v && v.currentTime > 1 && !v.paused), ct: v ? Math.round(v.currentTime) : -1,
+               err: (document.body.textContent || '').includes('去网络诊断') };
+    });
+    check('view 被拦时 pagelist 兜底照样播 (C-ERR-03)', fb.playing && !fb.err, `t=${fb.ct}s errScreen=${fb.err}`);
+    await page.evaluate(() => { localStorage.removeItem('bili_test_view412'); });
+
     console.log('\n[Live: playback, controls, quality, chat rail, back layering]');
     const liveRoom = (await pickLiveRoom()) || { id: LIVE_ROOM_FALLBACK, title: '(fallback)', stale: true };
     if (liveRoom.stale) warn('No live room is streaming right now', 'live assertions skipped (environment, not code)');
@@ -352,8 +372,14 @@ async function main() {
       while (hops < 10 && !cur.includes('稍后再看')) { await key('ArrowRight'); await sleep(250); cur = await focusedBtn(); hops++; }
       let added = false;
       if (cur.includes('稍后再看')) {
-        await key('Enter'); await sleep(2200);
-        const after = await focusedBtn();
+        await key('Enter');
+        // 轮询而不是死等:加入接口偶发要 3s+,2.2s 死等会把套件搞抖(2026-09-02 一次假红)
+        let after = '';
+        for (let w = 0; w < 10; w++) {
+          await sleep(500);
+          after = await focusedBtn();
+          if (after.includes('已稍后再看')) break;
+        }
         added = after.includes('已稍后再看');
         check('OK adds it and the button flips to 已稍后再看', added, after);
       } else {

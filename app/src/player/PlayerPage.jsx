@@ -529,6 +529,12 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         const info = await getVideoInfo(video);
         mark('po-info', perfNow() - _tInfo);
         const d = info?.data || {};
+        // view 挂了且兜底也没补出 cid(client.js 里有 pagelist 兜底)——
+        // 用对症提示立刻报错,别拖到 playurl 那里报一个 cid 缺失的怪错。
+        if (info && info.code !== 0 && !d.cid && !cid) {
+          throw new Error(apiErrorHint(info.code, { loggedIn: !!storage.getAuth()?.SESSDATA })
+            || ('view code=' + info.code));
+        }
         ugcPages = d.pages || [];
         ugcSeason = d.ugc_season || null; // UGC 合集 (multi-video series)
         videoAidRef.current = d.aid || null;

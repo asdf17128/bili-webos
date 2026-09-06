@@ -1,186 +1,122 @@
 <div align="center">
 
-<img src="docs/screenshots/icon.png" width="96" alt="BiliTV icon" />
+<img src="docs/screenshots/icon.png" width="80" alt="BiliTV" />
 
 # BiliTV for webOS
 
-**Watch Bilibili (哔哩哔哩) natively on your LG webOS TV — up to 8K/HDR, danmaku, live & bangumi, search, in-video comments, even EN/ES subtitle translation — all driven by the remote.**
+### Your Bilibili. A bigger screen.
 
-LG webOS 智能电视的第三方哔哩哔哩客户端 · 弹幕 · 番剧 · 直播 · 搜索 · 评论 · 分区 · 字幕翻译,全程遥控器操作。
+把喜欢的 B 站，搬到客厅。
 
-![Platform](https://img.shields.io/badge/platform-LG%20webOS%20TV-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Release](https://img.shields.io/github/v/release/asdf17128/bili-webos)
-![Stars](https://img.shields.io/github/stars/asdf17128/bili-webos?style=social)
+Videos, live streams, danmaku and your favorite creators — comfortably on your LG TV.
 
-<img src="docs/screenshots/demo.gif" width="600" alt="BiliTV demo" />
+[**Get BiliTV**](https://github.com/asdf17128/bili-webos/releases/latest) · [**Homebrew Channel**](https://repo.webosbrew.org/apps/com.biliwebos.app/) · [English](#english) · [中文](#中文)
+
+![Release](https://img.shields.io/github/v/release/asdf17128/bili-webos?color=fb7299) ![Platform](https://img.shields.io/badge/LG%20webOS-5.0%2B-34363e) ![License](https://img.shields.io/badge/license-MIT-34363e)
+
+<img src="docs/screenshots/v2/home.jpg" width="1200" alt="BiliTV 2.0: continue watching above a compact four-column video grid" />
+
+**BiliTV 2.0 — more room for what you want to watch.**
+
+更大的内容空间，更顺手的遥控体验。
 
 </div>
 
----
-
 ## English
 
-A free, open-source Bilibili client for LG webOS TVs. It runs entirely on the TV — a React app talking to a built-in JS service that proxies Bilibili's API and media (no external server or PC required). Everything is operated with the TV remote (D-pad focus navigation built from scratch).
+BiliTV is a free, open-source Bilibili client made for LG webOS TVs. Pick up the remote, find something you love, and settle in. The app runs on your TV; you don't need to leave a computer running.
 
-> ⚠️ **Region notice:** Bilibili's APIs and especially its **video CDN are geo-restricted to mainland China**. Outside mainland China the content feed may be empty and playback will likely fail — you need a network route into mainland China. The app talks to Bilibili directly and has **no built-in proxy/VPN** for this.
+### Made for the sofa
 
-### Features
+| | What you can do |
+|---|---|
+| **Pick up where you left off** | Continue watching from the home screen, or find a video in your watch history. Save something for later with a long press. |
+| **Browse without losing your place** | A slim sidebar opens when you need it. Return from the sidebar or player to the card you were browsing. |
+| **Make the screen yours** | Choose **2, 3 or 4 videos per row**. Adjust the interface, subtitle and danmaku text sizes separately. |
+| **Find your next favorite** | Recommendations, trending videos, followed creators, favorites and six category shortcuts. Search with trending topics, suggestions and recent searches. |
+| **Enjoy the whole video** | Up to **4K / 8K, HDR and Dolby Vision**, playback speed controls, chapter markers and thumbnail previews while seeking. |
+| **Stay part of the conversation** | Watch with danmaku and subtitles, read comments and replies alongside the video, or drop into a live stream with chat. |
 
-**Playback**
-- DASH adaptive streaming up to **4K / 8K**, with **HDR & Dolby Vision** — picks the real quality tier, not just the top bitrate
-- Real-time **danmaku** (弹幕) overlay and **CC subtitles**, both with adjustable size
-- **Chapters** marked on the progress bar, a **thumbnail scrub preview**, YouTube-style timeline seek, and an autoplay **"Up Next"** end screen
-- **In-video comments** — avatars, likes and reply counts, right inside the player
+Also included: **bangumi and episode lists**, favorites and Watch Later playlists, **QR-code login**, Magic Remote pointer and wheel support, and **DLNA casting** from compatible phone apps.
 
-**Browse**
-- Feeds for **recommendations, trending, live, following, and favorites** (favorites play through in order)
-- **6 one-tap category shortcuts** in the sidebar (Games · Anime · Music · Knowledge · Entertainment · Kichiku), each showing that category's *current* hot ranking
-- **Search** with the on-screen keyboard: trending searches, autocomplete suggestions, and search history
-- **Bangumi (番剧)** with full episode lists, and **live streams** with real-time danmaku
-- **Watch history & resume**, with a progress bar on every thumbnail
+Use BiliTV in **English, Español or 中文**. English and Spanish interfaces also offer automatic translation of video titles, subtitles, chapters and danmaku.
 
-**And more**
-- On-the-fly **machine translation** of subtitles, titles, chapters and danmaku when the UI language is English/Español
-- Trilingual UI — **English · Español · 中文**
-- **DLNA cast receiver** — send a video from the Huya / Bilibili phone app straight to the TV
-- Full **Magic Remote pointer** support (hover + click) alongside the D-pad
-- **QR-code login**, **auto-updates** via Homebrew Channel, and it runs **entirely on the TV** — no PC or external server
+*Video quality and availability depend on the source, your Bilibili account, your TV and your region.*
+
+### A closer look
+
+| Find something worth watching | Settle into your own layout |
+|---|---|
+| ![Search with trending topics and recent searches](docs/screenshots/v2/search.png) | ![Separate controls for grid columns and text sizes](docs/screenshots/v2/settings.png) |
+
+<details>
+<summary><strong>A sidebar that gives the screen back to your videos</strong></summary>
+
+![Expanded navigation drawer in BiliTV 2.0](docs/screenshots/v2/navigation.jpg)
+
+Press **Back** to open the sidebar without resetting the list. Press **Right** to return to the same card. Press **OK** on the current section when you want a fresh list.
+
+</details>
+
+*Screenshots show the actual 2.0.0 interface in Chinese, with public sample videos and a demo account. / 截图为 2.0.0 实际界面，使用公开示例视频与演示账号。*
+
+### Get watching
+
+**Already have Homebrew Channel?** Open it on your TV, find **BiliTV**, and choose Install or Update. [View the listing →](https://repo.webosbrew.org/apps/com.biliwebos.app/)
+
+**Prefer to install the package yourself?** Download the `.ipk` from the [latest release](https://github.com/asdf17128/bili-webos/releases/latest), then install it using [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop). See the [Developer Mode guide](https://www.webosbrew.org/devmode/) to connect your TV. No source build is needed.
+
+Homebrew's catalog can take time to catch up with a new release. The latest package is always available from GitHub Releases.
+
+Requires **webOS 5.0 or later**. Scan the login QR code with the Bilibili mobile app to access your subscriptions, favorites and history.
 
 ## 中文
 
-免费、开源的 LG webOS 电视哔哩哔哩客户端。**完全在电视上运行**——React 前端 + 内置 JS 服务代理 B站 接口与媒体，不需要额外的代理服务器或电脑常开。全程遥控器操作（从零实现的 D-pad 焦点导航）。
+BiliTV 是为 LG webOS 电视打造的免费、开源哔哩哔哩客户端。从一场现场演出，到一集番剧，再到喜欢的 UP 主更新，拿起遥控器就能接着看。安装后直接在电视上运行，不需要电脑常开。
 
-> ⚠️ **地区限制：** B站 接口、尤其是**视频 CDN 仅对中国大陆开放**。在大陆以外内容可能为空、播放大概率失败，需要走大陆网络。本 app 直连 B站，**不内置代理/VPN**。
+### 2.0，让大屏看 B 站更舒服
 
-### 特色
+- **打开就能接着看。** 首页「继续观看」带你回到上次进度；想留到周末看的视频，长按卡片加入稍后再看。
+- **来回切换，不丢位置。** 精简侧栏按需展开，顶部和卡片更紧凑。返回侧栏、退出播放后，继续浏览刚才那张卡片。
+- **按你的习惯排版。** 每行 **2／3／4 个视频**自由选择；界面、字幕、弹幕分别调字号，让沙发上的距离也刚刚好。
+- **总能找到想看的。** 推荐、热门、关注、收藏，搭配游戏、动画、音乐、知识、娱乐、鬼畜六个分区；搜索支持热搜、联想和历史记录。
+- **好好享受一段视频。** 最高支持 **4K／8K、HDR／杜比视界**，配有倍速、章节和快进缩略图预览；番剧选集、收藏夹与稍后再看支持连续观看。
+- **大屏也有一起看的热闹。** 弹幕和字幕照常显示，播放时能展开评论与回复；看直播，也能打开聊天栏。
 
-**播放**
-- DASH 自适应,最高 **4K / 8K**,支持 **HDR / 杜比视界** —— 按真实清晰度选流,不是只挑最高码率
-- 实时**弹幕**与 **CC 字幕**,均可调字号
-- 进度条**章节刻痕** + 拖动**缩略图预览** + YouTube 式时间线快进 + **「接下来播放」**结束页
-- **播放中看评论** —— 头像、点赞、回复数,就在播放器里
+还有 **扫码登录、Magic Remote 指针与滚轮、兼容手机应用的 DLNA 投屏**。界面支持中、英、西三语，英／西语界面可自动翻译标题、字幕、章节和弹幕。
 
-**浏览**
-- **推荐 / 热门 / 直播 / 关注 / 收藏** 多种内容流(收藏夹可顺序连播)
-- 侧栏 **6 个一键分区**(游戏 · 动画 · 音乐 · 知识 · 娱乐 · 鬼畜),各自进入该区**当前**热门榜
-- **搜索**(屏幕键盘):热门搜索 + 输入联想 + 搜索历史
-- **番剧**(整季剧集列表)与**直播**(带实时弹幕)
-- **观看历史与续播**,每张封面都带进度条
+*可用画质和内容以视频源、账号权限、电视能力及所在地区为准。*
 
-**更多**
-- 界面为英/西语时,**字幕 / 标题 / 章节 / 弹幕自动机翻**
-- 三语界面 —— **English · Español · 中文**
-- **DLNA 投屏接收** —— 从虎牙 / B站手机端直接投到电视
-- **Magic Remote 指针**全面支持(悬停 + 点击),与方向键并存
-- **扫码登录**、Homebrew **自动更新**,且**完全在电视上运行** —— 无需电脑或外部服务器
+### 安装与更新
 
-## Screenshots / 截图
+**电视已装 Homebrew Channel：** 打开商店，搜索 **BiliTV**，选择安装或更新。[查看商店页面 →](https://repo.webosbrew.org/apps/com.biliwebos.app/)
 
-| Home / 首页 | Player + Danmaku / 播放 + 弹幕 |
+**直接安装最新版：** 在 [发布页](https://github.com/asdf17128/bili-webos/releases/latest) 下载 `.ipk`，按照 [Developer Mode 指南](https://www.webosbrew.org/devmode/)连接电视，再用 [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop) 安装，无需编译。
+
+Homebrew 目录更新可能晚于 GitHub 发布；想立即体验新版，可以直接下载发布页的安装包。需要 **webOS 5.0 或更新版本**，登录后可同步关注、收藏与观看历史。
+
+### 几个顺手的操作
+
+| 操作 | 会发生什么 |
 |---|---|
-| ![home](docs/screenshots/home.png) | ![player](docs/screenshots/player.png) |
-| **Search** — trending · suggest · history / 搜索 | **In-video comments** / 播放中看评论 |
-| ![search](docs/screenshots/search.png) | ![comments](docs/screenshots/comments.png) |
-| **Category shortcuts** / 分区导航 | Following / 关注 |
-| ![partition](docs/screenshots/partition.png) | ![following](docs/screenshots/following.png) |
-
-## Install / 安装
-
-### Option A — Homebrew Channel (recommended / 推荐)
-
-Requires the [webOS Homebrew Channel](https://www.webosbrew.org/) on your TV (see [rootmy.tv](https://rootmy.tv/)). Then:
-
-1. Open **Homebrew Channel** on the TV.
-2. Search for **BiliTV** and install.
-
-需要电视已装 [webOS Homebrew Channel](https://www.webosbrew.org/)；打开后搜索 **BiliTV** 安装即可。
-（新版本上架后，商店索引刷新有几小时延迟。）
-
-### Option B — Build from source (developers / 开发者)
-
-**Prerequisites / 前置：** LG webOS TV (2020+)；TV [Developer Mode](https://webostv.developer.lge.com/develop/getting-started/developer-mode-app) on；Node.js 18+.
-
-```bash
-# 1. clone
-git clone https://github.com/asdf17128/bili-webos.git
-cd bili-webos
-
-# 2. install deps
-npm install
-cd app && npm install && cd ..
-
-# 3. webOS CLI (if needed)
-npm install -g @webosose/ares-cli
-
-# 4. set your TV's IP/passphrase in tools/deploy.mjs
-
-# 5. build + deploy
-bash build.sh
-```
-
-Dev mode (browser preview):
-
-```bash
-cd proxy && node server.js &   # Mac proxy for browser dev
-cd app && npm run dev          # http://localhost:5173
-```
-
-## Architecture / 架构
-
-```
-┌──────────────────────────────────────────┐
-│               LG webOS TV                 │
-│   Web App (React)  ◀──Luna──▶  JS Service │
-│        │                Bus     Node.js    │
-│        └──── HTTP :7654 ──────────┘        │
-└───────────────────────┬───────────────────┘
-                         │ HTTPS
-                         ▼          Bilibili API / CDN
-```
-
-- **Web App** — React + Shaka Player (DASH). Build target Chromium 68 for older-webOS compatibility.
-- **JS Service** — on-TV Node.js service: API requests (bypasses CORS), cookie management, video/image proxy.
-- **Self-contained** — one ipk, no external proxy server.
-
-## Remote controls / 遥控器操作
-
-| Key / 按键 | Home / 首页 | Player / 播放器 |
-|---|---|---|
-| D-pad / 方向键 | move focus / 移动焦点 | ←→ seek 10s / 快进退 · ↑↓ controls / 控制栏 |
-| Enter / 确认 | open / select / 选择 | play-pause / 暂停播放 |
-| Back / 返回 | sidebar → home / 回侧栏→首页 | exit / close panel / 退出·关面板 |
-
-## Project structure / 项目结构
-
-```
-bili-webos/
-├── app/        # React frontend + webos-meta (appinfo, icons)
-├── service/    # on-TV JS service (API + local HTTP proxy)
-├── proxy/      # dev-only Mac proxy
-├── tools/      # deploy / debug / screenshot / test
-├── build.sh    # one-command build + deploy
-└── CLAUDE.md   # developer guide
-```
-
-## Tech stack / 技术栈
-
-React 18 · Vite 6 · Shaka Player (DASH) · native HLS (live) · webOS JS Service (Node.js v16) · CDP-over-SSH tooling.
+| 方向键／指针／滚轮 | 选择内容、浏览列表 |
+| 卡片上短按 OK | 开始播放 |
+| 卡片上长按 OK | 打开稍后再看菜单 |
+| 列表里按返回 | 回侧栏，保留列表位置；按右回到原卡片 |
+| 当前栏目侧栏按 OK | 主动刷新，看看新内容 |
+| 播放时按左右 | 预览快进／快退位置；OK 确认，返回取消 |
+| 播放时按上下 | 呼出控制栏；返回逐层关闭弹层、控件，再退出播放 |
 
 ## Privacy / 隐私
 
-The app makes exactly one non-Bilibili request: an update check against this
-repo's GitHub Releases (once per day, and when you press "Check for Updates"
-in Settings). It carries no identifier of any kind. The maintainer reads the
-release asset's public download counter as an approximate active-device count.
-Subtitle/title machine translation (only when the UI language is not Chinese)
-sends the text being translated to Google's public translate endpoint — also
-without any identifier.
+Login information is stored on your TV and used to access your Bilibili account. Update checks contact GitHub without an app-specific device identifier; public download counts provide a rough measure of usage. Translation sends the text to Google's translation service when used.
 
-应用只有一类非 B 站请求:对本仓库 GitHub Releases 的更新检查(每日一次 +
-设置页手动触发),不携带任何标识;维护者以该资产的公开下载计数估算活跃设备量。
-界面为非中文时,字幕/标题机翻会把待翻译文本发送到 Google 公共翻译端点,同样不含任何标识。
+登录信息保存在电视上，用于访问你的 B 站账号。更新检查访问 GitHub，不携带应用自建的设备标识；公开下载计数用于粗略了解使用量。使用翻译时，待翻译文字会发送到 Google 翻译服务。
 
-## License
+## Feedback & development / 反馈与开发
 
-MIT. Unofficial, fan-made client for personal use; not affiliated with or endorsed by Bilibili.
+[Report an issue / 反馈问题](https://github.com/asdf17128/bili-webos/issues) · [What's new / 更新记录](https://github.com/asdf17128/bili-webos/releases) · [Development guide / 开发文档](docs/DEVELOPMENT.md) · [2.0.0 test report / 测试报告](docs/RELEASE-2.0.0.md)
+
+MIT licensed. An independent community project, not affiliated with Bilibili or LG.
+
+MIT 开源项目，由社区独立开发，与哔哩哔哩及 LG 无隶属关系。

@@ -8,13 +8,7 @@ import { t } from '../i18n';
 import { mark } from '../utils/perf';
 import { titleMT, useTitlesMT } from '../utils/titlemt';
 
-function getProxyBase() {
-  return mediaProxyBase();
-}
-
-
-
-export default React.memo(function VideoCard({ video, focusId, row, col, group, onSelect, onLongPress, followed = false }) {
+export default React.memo(function VideoCard({ video, focusId, row, col, group, onSelect, onLongPress, onNavigate, followed = false }) {
   const handleSelect = useCallback(() => {
     onSelect?.(video);
   }, [video, onSelect]);
@@ -26,9 +20,10 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
     window.dispatchEvent(new CustomEvent('card-menu', { detail: video }));
   }, [video, onLongPress]);
 
-  const { props } = useFocusable({
+  const { props, isFocused } = useFocusable({
     id: focusId, row, col, group, onSelect: handleSelect,
     onLongPress: handleLongPress,
+    onNavigate,
   });
 
   // 缩略图按当前列数取尺寸(每行几个 = 卡片多宽)。
@@ -92,12 +87,15 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
   const thumb = thumbUrl(video.pic || video.cover || '', cols);
 
   return (
-    <div {...props} className="video-card">
+    <div {...props} className={`video-card${isFocused ? ' focused' : ''}`} role="button" aria-label={cleanTitle(video.title)}>
       <div className="video-card-thumb" ref={holderRef}>
+        <span className="video-card-placeholder" aria-hidden="true">{t('封面暂不可用')}</span>
         {thumb && eager && <img src={thumb} alt="" decoding="async"
           ref={imgRef}
-          onLoad={() => mark('img', ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()) - (eagerT.current || mountT.current))}
-          onError={() => mark('img-fail', 0)} />}
+          onLoad={e => { e.currentTarget.classList.add('image-ready'); mark('img', ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()) - (eagerT.current || mountT.current)); }}
+          onError={e => { e.currentTarget.style.visibility = 'hidden'; holderRef.current?.classList.add('image-failed'); mark('img-fail', 0); }} />}
+        {!thumb && <span className="video-card-missing">{t('封面暂不可用')}</span>}
+        {video.isLive && <span className="video-card-live">{t('直播')}</span>}
         {video.duration != null && (
           <span className="video-card-duration">
             {typeof video.duration === 'number' ? formatDuration(video.duration) : video.duration}
@@ -125,7 +123,7 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
               background: 'rgba(255,255,255,0.25)',
             }}>
               <div style={{
-                height: '100%', background: '#00a1d6',
+                height: '100%', background: 'var(--tv-accent)',
                 width: `${Math.min(100, p * 100)}%`,
               }} />
             </div>
@@ -135,11 +133,13 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
       <div className="video-card-info">
         <div className="video-card-title">{titleMT(cleanTitle(video.title))}</div>
         <div className="video-card-meta">
-          {video.owner?.name && <span>{cleanTitle(video.owner.name)}</span>}
-          {followed && <span style={{ color: '#00a1d6', fontWeight: 600 }}>{t('已关注')}</span>}
-          {video.stat?.view != null && <span>{formatCount(video.stat.view)}{t('播放')}</span>}
+          <div className="video-card-author">{video.owner?.name && <span>{cleanTitle(video.owner.name)}</span>}
+          {followed && <span className="followed-badge">{t('已关注')}</span>}</div>
+          <div className="video-card-stats">
+          {video.stat?.view != null && <span>{formatCount(video.stat.view)}{video.isLive ? t('人气') : t('播放')}</span>}
           {video.play != null && <span>{formatCount(video.play)}{t('播放')}</span>}
           {video.pubdate && <span>{formatTime(video.pubdate)}</span>}
+          </div>
         </div>
       </div>
     </div>

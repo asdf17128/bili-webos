@@ -1,6 +1,6 @@
 #!/bin/bash
 # Build, package (app + service), and deploy to TV
-set -e
+set -eo pipefail
 cd "$(dirname "$0")"
 # 口令不进仓库(PR #21):环境变量 → ~/.ssh/tv_webos.pass → 报错退出。
 PASS="${1:-${TV_SSH_PASSPHRASE:-$(cat "$HOME/.ssh/tv_webos.pass" 2>/dev/null)}}"

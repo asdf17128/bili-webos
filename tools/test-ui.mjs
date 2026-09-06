@@ -26,11 +26,11 @@ const KEYMAP = {
   left: { key: 'ArrowLeft', vk: 37 }, right: { key: 'ArrowRight', vk: 39 },
   ok: { key: 'Enter', vk: 13 }, back: { key: 'Backspace', vk: 8 },
 };
-// Sidebar targets are located AT RUNTIME by their icon (locale-independent) —
+// Sidebar targets are located AT RUNTIME by their label (suite forces zh) —
 // a hardcoded index table silently drifted when 收藏 was inserted (2026-07-10:
 // 'settings:6' landed on 搜索, four "flaky" failures + one false-positive pass
 // all traced to this one stale map).
-const NAV_ICON = { search: '🔍', recommend: '🏠', hot: '🔥', live: '📡', follow: '👤', favorites: '⭐', game: '🎮', settings: '🕘', config: '⚙️' };
+const NAV_ICON = { search: '搜索', recommend: '推荐', hot: '热门', live: '直播', follow: '关注', favorites: '收藏', game: '游戏', settings: '我的', config: '设置' };
 
 // One probe reads every field the tests assert on, in a single round-trip.
 const PROBE = `JSON.stringify({

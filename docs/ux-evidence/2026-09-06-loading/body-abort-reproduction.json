@@ -1,0 +1,6 @@
+{
+  "normalResponseCallbacks": 1,
+  "truncatedResponseCallbacks": 0,
+  "truncatedResponseDestroyed": true,
+  "method": "Loaded the unchanged decompressResponse function from service.js into a VM and passed Node PassThrough streams; normal JSON ended successfully, truncated JSON stream was destroyed after partial body."
+}

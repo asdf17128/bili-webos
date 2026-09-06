@@ -1,0 +1,122 @@
+{
+  "commit": "0ee48bd",
+  "note": "Visual geometry rerun uses the grid parent instead of a CSS class introduced in the new build; these three cases pass in both builds. Baseline failures include newly introduced recovery UI, not 20 independent defects.",
+  "results": [
+    {
+      "name": "loading retains a usable sidebar focus",
+      "pass": false,
+      "error": "The input did not match the regular expression /^sidebar-/. Input:\n\n''\n"
+    },
+    {
+      "name": "pointer hover does not scroll the grid",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'translateY(-3006px)'\n- 'translateY(0px)'\n              ^\n"
+    },
+    {
+      "name": "sidebar keeps scroll; Right restores the same card",
+      "pass": false,
+      "error": "return to last card\n+ actual - expected\n\n+ 'content-0-0'\n- 'content-1-1'\n           ^\n"
+    },
+    {
+      "name": "OK intentionally refreshes the current sidebar section",
+      "pass": true
+    },
+    {
+      "name": "passing follow in sidebar never opens login",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n1 !== 0\n"
+    },
+    {
+      "name": "native search editing keeps Backspace and caret arrows",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n'abc' !== 'ab'\n"
+    },
+    {
+      "name": "feed failure offers a focusable retry",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n0 !== 1\n"
+    },
+    {
+      "name": "retry recovers a failed feed",
+      "pass": false,
+      "error": "locator.waitFor: Timeout 6500ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('重试', { exact: true }) to be visible\u001b[22m\n"
+    },
+    {
+      "name": "rapid sidebar traversal commits only the settled section",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n1 !== 0\n"
+    },
+    {
+      "name": "switching sections restores the cached feed and scroll",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'translateY(0px)'\n- 'translateY(-1173px)'\n              ^\n"
+    },
+    {
+      "name": "slow content never steals focus after navigating away",
+      "pass": false,
+      "error": "The expression evaluated to a falsy value:\n\n  assert.ok((await page.locator('.video-card').first().innerText()).includes('热门'))\n"
+    },
+    {
+      "name": "latest search wins even if an older response arrives last",
+      "pass": false,
+      "error": "The expression evaluated to a falsy value:\n\n  assert.ok((await page.locator('.video-card-title').first().innerText()).startsWith('新搜索'))\n"
+    },
+    {
+      "name": "search network failures have their own retry state",
+      "pass": false,
+      "error": "locator.waitFor: Timeout 6500ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('搜索暂时不可用', { exact: true }) to be visible\u001b[22m\n"
+    },
+    {
+      "name": "login isolates navigation and provides retry / cancel",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'sidebar-5-0'\n- 'sidebar-4-0'\n           ^\n"
+    },
+    {
+      "name": "favorites empty response resolves loading",
+      "pass": false,
+      "error": "locator.waitFor: Timeout 6500ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('暂无收藏夹', { exact: true }) to be visible\u001b[22m\n"
+    },
+    {
+      "name": "favorites failures can be retried",
+      "pass": false,
+      "error": "locator.waitFor: Timeout 6500ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('重试', { exact: true }) to be visible\u001b[22m\n"
+    },
+    {
+      "name": "favorites return to the selected folder and fit the viewport",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'content-0-0'\n- 'content-0-1'\n             ^\n"
+    },
+    {
+      "name": "late favorite-folder responses never replace the current folder",
+      "pass": false,
+      "error": "The expression evaluated to a falsy value:\n\n  assert.ok(titles.length && titles.every(title => title.startsWith('收藏2')))\n"
+    },
+    {
+      "name": "loading player can be cancelled without moving background focus",
+      "pass": false,
+      "error": "locator.waitFor: Timeout 6500ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.player-placeholder') to be visible\u001b[22m\n"
+    },
+    {
+      "name": "visual / deep scrolling / large text (zh)",
+      "pass": true
+    },
+    {
+      "name": "visual / deep scrolling / large text (en)",
+      "pass": true
+    },
+    {
+      "name": "visual / deep scrolling / large text (es)",
+      "pass": true
+    },
+    {
+      "name": "wheel still moves a row that the pointer already highlights",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'content-0-0'\n- 'content-1-0'\n           ^\n"
+    },
+    {
+      "name": "favorites last row accounts for the folder header height",
+      "pass": false,
+      "error": "{\"x\":234.12001037597656,\"y\":795.407470703125,\"width\":403.75999450683594,\"height\":349.68505859375}"
+    }
+  ]
+}

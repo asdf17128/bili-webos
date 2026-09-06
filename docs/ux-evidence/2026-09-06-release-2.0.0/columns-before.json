@@ -1,0 +1,12 @@
+[
+  {
+    "name": "settings matrix: 2 columns, scale 1, applies and persists",
+    "pass": false,
+    "error": ".search-results-grid: columns\n\n4 !== 2\n"
+  },
+  {
+    "name": "settings matrix: 3 columns, scale 1, applies and persists",
+    "pass": false,
+    "error": ".search-results-grid: columns\n\n4 !== 3\n"
+  }
+]

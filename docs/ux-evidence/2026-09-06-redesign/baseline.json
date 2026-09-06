@@ -1,0 +1,17 @@
+[
+  {
+    "name": "design: drawer overlays without shifting content or losing the card",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\nnull !== 'false'\n"
+  },
+  {
+    "name": "design: resume shelf uses unfinished history and supports remote navigation",
+    "pass": false,
+    "error": "locator.waitFor: Timeout 6500ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.resume-card').first() to be visible\u001b[22m\n"
+  },
+  {
+    "name": "design: search has connected trending and recent columns",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'content-1-0'\n- 'content-1-1'\n             ^\n"
+  }
+]

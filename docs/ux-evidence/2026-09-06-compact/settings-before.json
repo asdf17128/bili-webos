@@ -1,0 +1,12 @@
+[
+  {
+    "name": "settings font rows follow visual order in both directions",
+    "pass": false,
+    "error": "Down follows the displayed setting order\n\n'界面字号' !== '字幕字号'\n"
+  },
+  {
+    "name": "font pickers update their own setting and resume at the same row",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n'界面字号' !== '字幕字号'\n"
+  }
+]

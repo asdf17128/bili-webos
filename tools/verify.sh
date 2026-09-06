@@ -1,6 +1,6 @@
 #!/bin/bash
 # Full verification pipeline. Run before every release.
-# Usage: bash tools/verify.sh [--no-tv] [--sim] [--full]
+# Usage: bash tools/verify.sh [--no-tv] [--sim] [--full] [--ux]
 #   --no-tv  skip the on-device layers (syntax/node8/build only)
 #   --sim    run the SIMULATOR functional suite instead of the TV (test-sim.mjs)
 #            — same coverage as the TV smoke minus what only hardware can show
@@ -8,6 +8,7 @@
 #            the real service via tools/dev-service.mjs so dev and TV share one
 #            code path, plus vite; both are stopped again afterwards.
 #   --full   also run the on-device UI smoke suite (test-ui.mjs, ~3 min)
+#   --ux     run deterministic browser remote UX regressions (no real account)
 #
 # Layers (fail-fast top to bottom):
 #   1. syntax   service files must parse as ES2017 (webOS 5 = Node 8)
@@ -22,18 +23,18 @@
 #      (+ test-ui.mjs full smoke with --full)
 #
 # Case registry with evidence per gate: docs/TESTCASES.md
-set -e
+set -eo pipefail
 cd "$(dirname "$0")/.."
-NO_TV=""; FULL=""; SIM=""
+NO_TV=""; FULL=""; SIM=""; UX=""
 for a in "$@"; do
   [ "$a" = "--no-tv" ] && NO_TV=1
   [ "$a" = "--sim" ] && SIM=1
   [ "$a" = "--full" ] && FULL=1
+  [ "$a" = "--ux" ] && UX=1
 done
 
 echo "=== [1/6] Service syntax (ES2017 / Node 8) ==="
-for f in service/com.biliwebos.app.service/service.js \
-         service/com.biliwebos.app.service/danmaku.js \
+for f in service/com.biliwebos.app.service/*.js \
          service/com.biliwebos.app.service/cast/*.js; do
   npx --yes acorn --ecma2017 --silent "$f" || { echo "SYNTAX-FAIL $f (too new for Node 8)"; exit 1; }
 done
@@ -88,6 +89,7 @@ node tools/test-aigc.mjs || { echo "FAIL: aigc extraction"; exit 1; }
 node tools/test-casturl.mjs || { echo "FAIL: cast url rewrite"; exit 1; }
 # C-SRCH-02: search-history dedup/cap
 node tools/test-searchhistory.mjs || { echo "FAIL: search history"; exit 1; }
+npm test || { echo "FAIL: service unit tests"; exit 1; }
 
 echo ""
 # Version drift gate: appinfo.json (what webOS installs) and src/version.js
@@ -111,6 +113,25 @@ fi
 echo ""
 echo "=== [4/6] App build ==="
 (cd app && npx vite build 2>&1 | tail -1)
+
+# Deterministic remote UX regressions (C-UX-01 through C-UX-08).
+# --no-tv --ux includes this layer without starting the real account/service.
+if [ -n "$UX" ]; then
+  echo "=== [UX] Browser interaction regressions ==="
+  UX_VITE_PID=""
+  if ! curl -s --max-time 2 http://127.0.0.1:5173 >/dev/null 2>&1; then
+    (cd app && exec node node_modules/vite/bin/vite.js --host 127.0.0.1 --strictPort > /tmp/bili-ux-vite.log 2>&1) &
+    UX_VITE_PID=$!
+    trap '[ -z "$UX_VITE_PID" ] || kill "$UX_VITE_PID" 2>/dev/null || true' EXIT
+    for i in $(seq 1 20); do
+      curl -s --max-time 2 http://127.0.0.1:5173 >/dev/null 2>&1 && break
+      sleep 1
+    done
+  fi
+  node tools/test-tv-ux.mjs
+  node tools/test-player-loading.mjs
+  if [ -n "$UX_VITE_PID" ]; then kill "$UX_VITE_PID"; trap - EXIT; fi
+fi
 
 if [ -n "$SIM" ]; then
   echo ""

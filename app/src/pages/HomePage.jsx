@@ -1,23 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getPopular, getRecommend, getRanking, getFollowFeed, getLiveList } from '../api/client';
 import VideoGrid from '../components/VideoGrid';
-import { getCurrentFocusId, setFocus, onFocusChange, isHoverDriven } from '../hooks/useFocus';
+import PageState, { GridSkeleton, FocusButton } from '../components/PageState';
+import { onFocusChange, isHoverDriven, focusSidebar, resetContentMemory, focusFirstContent } from '../hooks/useFocus';
 import { storage } from '../utils/storage';
 import { loadFollowedMids } from '../utils/follow';
 import { t } from '../i18n';
-import { mark, markAfterPaint } from '../utils/perf';
+import { markAfterPaint } from '../utils/perf';
 import { perfFlag, canPrefetch, trackPrefetch } from '../utils/perfFlags';
+import ContinueWatching, { useContinueWatching } from '../components/ContinueWatching';
 
 const FETCH_SIZE = 20;
+const feedCache = new Map(); // At most four recent sections; metadata only, never image objects.
+
+function checked(res) {
+  if (res?.code && res.code !== 0) throw new Error(res.message || String(res.code));
+  return res;
+}
 
 // Returns { items, offset } — offset is the follow-feed cursor (undefined for
 // other modes, which paginate by page number).
 async function fetchByMode(mode, pn, offset, rid) {
   if (mode === 'hot') {
-    const res = await getPopular(pn, FETCH_SIZE);
-    return { items: res?.data?.list || [] };
+    const res = checked(await getPopular(pn, FETCH_SIZE));
+    return { items: res?.data?.list || [], hasMore: !res?.data?.no_more };
   } else if (mode === 'live') {
-    const res = await getLiveList(pn, FETCH_SIZE);
+    const res = checked(await getLiveList(pn, FETCH_SIZE));
     const items = res?.data?.list || res?.data?.recommend_room_list || [];
     return { items: items.map(item => ({
       bvid: `live-${item.roomid || item.room_id}`,
@@ -35,10 +43,10 @@ async function fetchByMode(mode, pn, offset, rid) {
     // The old region rankings are frozen at the 2024 reform (~2025-03 videos,
     // owner: "都是去年的"); ranking/v2 on the new pid returns today's top ~100.
     // Not paginated — load-more just no-ops via dedupe.
-    const res = await getRanking(rid || 1008, 'all');
-    return { items: res?.data?.list || [] };
+    const res = checked(await getRanking(rid || 1008, 'all'));
+    return { items: res?.data?.list || [], hasMore: false };
   } else if (mode === 'follow') {
-    const res = await getFollowFeed(pn, offset);
+    const res = checked(await getFollowFeed(pn, offset));
     const items = (res?.data?.items || []).map(item => {
       const archive = item.modules?.module_dynamic?.major?.archive;
       if (!archive) return null;
@@ -50,156 +58,155 @@ async function fetchByMode(mode, pn, offset, rid) {
       };
     }).filter(Boolean);
     items.sort((a, b) => (b.pubdate || 0) - (a.pubdate || 0)); // newest first
-    return { items, offset: res?.data?.offset };
+    return { items, offset: res?.data?.offset, hasMore: res?.data?.has_more !== false && res?.data?.has_more !== 0 };
   } else {
-    const res = await getRecommend(4, FETCH_SIZE);
+    const res = checked(await getRecommend(4, FETCH_SIZE));
     return { items: res?.data?.item || [] };
   }
 }
 
-export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend', rid }) {
+export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend', rid, title }) {
+  const cacheKey = `${mode}:${rid || ''}:${storage.getAuth()?.DedeUserID || (storage.getAuth()?.SESSDATA ? 'member' : 'guest')}`;
+  const firstLoad = useRef(true);
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [focusRow, setFocusRow] = useState(0);   // 仅用于重置到顶部,不随按键变化
-  const rowRef = useRef(0);
+  const [error, setError] = useState(false);
+  const [moreState, setMoreState] = useState('');
+  const [retry, setRetry] = useState(0);
+  const [focusRow, setFocusRow] = useState(0);
   const [followedMids, setFollowedMids] = useState(null);
-  const pageRef = useRef(1);
-  const offsetRef = useRef('');
-  const seenRef = useRef(new Set());
-  const fetchingRef = useRef(false);
-  // Per-row video count (设置 → 每行视频). Read once per mount; navigating back
-  // from 设置 remounts this page, so a change applies on return.
+  const rowRef = useRef(0);
+  const snapshot = useRef(null);
+  const loadMoreRef = useRef(null);
+  const retryFocusRef = useRef(false);
   const cols = Math.min(4, Math.max(2, storage.getSettings().gridCols || 3));
+  const resumeItems = useContinueWatching(mode === 'recommend');
+  const reload = () => {
+    focusSidebar(); resetContentMemory();
+    retryFocusRef.current = true; setRetry(n => n + 1);
+  };
 
-  // Load
   useEffect(() => {
-    let cancelled = false;
-    seenRef.current = new Set();
-    pageRef.current = 1;
-    offsetRef.current = '';
-    setLoading(true);
-    setVideos([]);
-    setFocusRow(0); rowRef.current = 0;
-    nextPageRef.current = null; prefetchingRef.current = false;
+    // Only request entry after the skeleton commits and the old cells are gone.
+    if (loading && retryFocusRef.current) { retryFocusRef.current = false; focusFirstContent(); }
+  }, [loading]);
 
-    fetchByMode(mode, 1, '', rid).then(({ items, offset }) => {
-      if (cancelled) return;
-      setVideos(dedupe(items));
-      setLoading(false);
-      pageRef.current = 2;
-      offsetRef.current = offset || '';
-      // Only focus content if not currently in sidebar
-      setTimeout(() => {
-        const cur = getCurrentFocusId();
-        if (!cur || !cur.startsWith('sidebar-')) {
-          setFocus('content-0-0');
-        }
-      }, 50);
-      schedulePrefetch();          // 首屏一出来就在空闲时备好第二页
-    }).catch(() => { if (!cancelled) setLoading(false); });
-
-    return () => { cancelled = true; };
-  }, [refreshKey, mode, rid]);
-
-  // Load followed UP mids once (logged-in only) to badge "已关注" on cards
   useEffect(() => {
-    if (storage.getAuth()?.SESSDATA) {
-      loadFollowedMids().then(set => { if (set && set.size) setFollowedMids(set); });
+    let alive = true, timer = null, flight = null, ready = null, busy = false, failedPage = false;
+    let page = 1, offset = '', hasMore = true, list = [], seen = new Set();
+    const cached = firstLoad.current ? feedCache.get(cacheKey) : null;
+    firstLoad.current = false;
+    const validCache = cached && cached.refreshKey === refreshKey && Date.now() - cached.at < 5 * 60 * 1000 && cached.cols === cols;
+    setError(false); setMoreState('');
+    rowRef.current = validCache ? cached.row : 0;
+    setFocusRow(rowRef.current);
+
+    const saveSnapshot = () => {
+      snapshot.current = { videos: list, page, offset, hasMore, cols, refreshKey, at: Date.now() };
+    };
+    const append = result => {
+      const unique = result.items.filter(v => {
+        const id = v.bvid || v.bv_id;
+        if (!id || seen.has(id)) return false;
+        seen.add(id); return true;
+      });
+      list = list.concat(unique);
+      hasMore = result.hasMore !== false && unique.length > 0;
+      page++; offset = result.offset || offset;
+      setVideos(list); setMoreState(hasMore ? '' : 'end'); saveSnapshot();
+      return unique.length;
+    };
+    const request = () => {
+      if (!flight) {
+        flight = fetchByMode(mode, page, offset, rid);
+        // The foreground can consume the exact same in-flight prefetch.
+        const current = flight;
+        current.then(() => { if (flight === current) flight = null; }, () => { if (flight === current) flight = null; });
+      }
+      return flight;
+    };
+    const schedule = () => {
+      clearTimeout(timer);
+      if (!perfFlag('prefetchPage') || !hasMore || failedPage || ready || flight) return;
+      timer = setTimeout(() => {
+        if (!alive || busy || !hasMore || ready || !canPrefetch()) return;
+        trackPrefetch(request()).then(result => {
+          if (alive && !busy) ready = result;
+        }).catch(() => {});
+      }, 250);
+    };
+    const loadMore = async () => {
+      if (!alive || busy || !hasMore || !list.length) return;
+      busy = true; failedPage = false; setMoreState('loading');
+      const start = performance.now();
+      const prefetched = !!ready;
+      try {
+        const result = ready || await request();
+        if (!alive) return;
+        ready = null;
+        const count = append(result);
+        markAfterPaint(prefetched ? 'grid-page-prefetched' : 'grid-page', start, count);
+      } catch (e) { if (alive) { failedPage = true; setMoreState('error'); } }
+      finally { busy = false; if (alive) schedule(); }
+    };
+    loadMoreRef.current = loadMore;
+
+    if (validCache) {
+      list = cached.videos; page = cached.page; offset = cached.offset; hasMore = cached.hasMore;
+      seen = new Set(list.map(v => v.bvid || v.bv_id));
+      setVideos(list); setLoading(false); setMoreState(hasMore ? '' : 'end');
+      saveSnapshot(); schedule();
+    } else {
+      setLoading(true); setVideos([]); snapshot.current = null;
+      request().then(result => {
+        if (!alive) return;
+        append(result); setLoading(false); schedule();
+      }).catch(() => { if (alive) { setError(true); setLoading(false); } });
     }
+
+    const unsubscribe = onFocusChange(fid => {
+      if (isHoverDriven()) return;
+      const match = fid?.match(/^content-(\d+)-/);
+      if (!match) return;
+      rowRef.current = Number(match[1]);
+      if (!perfFlag('scrollDirect')) setFocusRow(rowRef.current);
+      // A failed page waits for an explicit retry; moving sideways is not a retry loop.
+      if (!failedPage && rowRef.current >= Math.ceil(list.length / cols) - 2) loadMore();
+      else schedule();
+    });
+    return () => {
+      alive = false; clearTimeout(timer); unsubscribe();
+      const snap = snapshot.current;
+      // Avoid retaining very long feeds on a 2 GB TV. Mounted pages own their data.
+      if (snap?.videos.length && snap.videos.length <= 200) {
+        feedCache.delete(cacheKey);
+        feedCache.set(cacheKey, { ...snap, row: rowRef.current });
+        if (feedCache.size > 4) feedCache.delete(feedCache.keys().next().value);
+      } else feedCache.delete(cacheKey);
+    };
+  }, [cacheKey, mode, rid, refreshKey, retry, cols]);
+
+  useEffect(() => {
+    let alive = true;
+    if (storage.getAuth()?.SESSDATA) loadFollowedMids().then(set => { if (alive && set?.size) setFollowedMids(set); });
+    return () => { alive = false; };
   }, []);
 
-  // 空闲时预取下一页。只预取**一页**、不递归 —— 无限预取会在 2GB 的机器上
-  // 把内存和带宽都吃掉(owner:性能和硬件消耗要平衡)。
-  const nextPageRef = useRef(null);
-  const prefetchingRef = useRef(false);
-  const schedulePrefetch = React.useCallback(() => {
-    if (!perfFlag('prefetchPage')) return;
-    if (prefetchingRef.current || nextPageRef.current) return;
-    if (!canPrefetch()) return;              // 前台有重活 / 已有预取在飞 → 让路
-    prefetchingRef.current = true;
-    const run = () => {
-      trackPrefetch(fetchByMode(mode, pageRef.current, offsetRef.current, rid)
-        .then(r => { nextPageRef.current = r; })
-        .catch(() => {})
-        .then(() => { prefetchingRef.current = false; }));
-    };
-    // 同样停稳 250ms 再发,避免和连续按键抢主线程(见 VideoGrid 的注释)
-    setTimeout(() => {
-      if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 1200 });
-      else setTimeout(run, 400);
-    }, 250);
-  }, [mode, rid]);
-
-  function dedupe(items) {
-    return items.filter(v => {
-      const id = v.bvid || v.bv_id;
-      if (!id || seenRef.current.has(id)) return false;
-      seenRef.current.add(id);
-      return true;
-    });
-  }
-
-  // Track focus row for transform scroll + load more
-  useEffect(() => {
-    return onFocusChange((fid) => {
-      if (!fid) return;
-      const m = fid.match(/^content-(\d+)-/);
-      if (!m) return;
-      // Pointer hover only highlights — don't scroll the grid (edge loop, #11).
-      if (isHoverDriven()) return;
-      const row = parseInt(m[1]);
-      // 不再每次按键都 setState:滚动已由 VideoGrid 直接写 transform(零 React
-      // 渲染)。这里只需知道到第几行来决定要不要翻页,用 ref 记住即可——
-      // 原来每按一下都要把 100+ 张卡片重渲染一遍。
-      rowRef.current = row;
-      if (!perfFlag('scrollDirect')) setFocusRow(row);   // 关掉直连滚动时回到原来的 state 驱动
-
-      // 翻页。实测(C4 真机):从触发到新卡片画出 p50 396ms —— 用户往下翻会
-      // 结结实实撞上这段空白。所以**不是"更早触发",而是提前把下一页备好**:
-      // 每次追加完就在空闲时预取下一页放进 nextPageRef,真正需要时直接贴上,
-      // 那 396ms 就整个消失了(预取没跑完才退回现取)。
-      // 代价:内存里多存一页(约 20 条卡片元数据,几十 KB),不缓存图片本身。
-      const totalRows = Math.ceil(videos.length / cols);
-      if (row >= totalRows - 2 && !fetchingRef.current) {
-        const pageT0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-        const ready = nextPageRef.current;
-        if (ready && ready.items) {
-          nextPageRef.current = null;
-          const unique = dedupe(ready.items);
-          if (unique.length > 0) setVideos(prev => [...prev, ...unique]);
-          markAfterPaint('grid-page-prefetched', pageT0, unique.length);
-          pageRef.current++;
-          if (ready.offset) offsetRef.current = ready.offset;
-          schedulePrefetch();
-          return;
-        }
-        fetchingRef.current = true;
-        fetchByMode(mode, pageRef.current, offsetRef.current, rid).then(({ items, offset }) => {
-          const unique = dedupe(items);
-          if (unique.length > 0) setVideos(prev => [...prev, ...unique]);
-          markAfterPaint('grid-page', pageT0, unique.length);
-          pageRef.current++;
-          if (offset) offsetRef.current = offset;
-          fetchingRef.current = false;
-          schedulePrefetch();
-        }).catch(() => { fetchingRef.current = false; });
-      }
-    });
-  }, [videos.length, mode, rid]);
-
-  if (loading) {
-    return <div className="loading"><div className="loading-spinner" />{t('加载中...')}</div>;
-  }
-
-  return (
-    <VideoGrid
-      videos={videos}
-      group="content"
-      startRow={0}
-      cols={cols}
-      onSelect={onPlayVideo}
-      focusRow={focusRow}
-      followedMids={followedMids}
-    />
-  );
+  return <section className="browse-page">
+    <header className="browse-header">
+      <h1>{title || t('推荐')}</h1>
+    </header>
+    <div className="browse-body" aria-busy={loading}>
+      {loading ? <GridSkeleton cols={cols} /> : error ?
+        <PageState title={t('内容加载失败')} description={t('请检查网络连接后重试')} action={t('重试')} onAction={reload} /> : !videos.length ?
+        <PageState title={t('这里暂时没有内容')} description={t('稍后刷新，或到其他栏目看看')} action={t('刷新')} onAction={reload} /> :
+        <VideoGrid videos={videos} group="content" startRow={0} cols={cols} onSelect={onPlayVideo} focusRow={focusRow} followedMids={followedMids}
+          header={resumeItems.length ? <ContinueWatching items={resumeItems} onSelect={onPlayVideo} /> : null}
+          footer={moreState === 'error' ? <FocusButton row={Math.ceil(videos.length / cols)} id={`content-${Math.ceil(videos.length / cols)}-0`} onSelect={() => loadMoreRef.current?.()}>{t('加载失败，按确认重试')}</FocusButton> : null} />}
+    </div>
+    <footer className="browse-footer">
+      <span><kbd>OK</kbd>{t('开始播放')}<span className="hint-separator">·</span>{t('长按打开菜单')}</span>
+      <span role="status">{moreState === 'loading' ? t('正在加载更多…') : moreState === 'end' ? t('已显示全部内容') : t('返回键回到侧栏')}</span>
+    </footer>
+  </section>;
 }

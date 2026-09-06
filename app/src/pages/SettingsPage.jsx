@@ -222,23 +222,13 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
   const avatar = proxyImg(user?.face);
 
   return (
-    <div style={{ padding: '28px 40px', height: '100%', overflowY: 'auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 18 }}>
-        <div style={{
-          width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
-          background: 'linear-gradient(135deg, #00a1d6, #2a2a4a)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 'calc(30px * var(--ui-scale))', color: '#fff', border: '2px solid rgba(0,161,214,0.5)',
-        }}>
-          {avatar
-            ? <img src={avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            : (user?.uname || '游')[0]}
+    <div className="library-page">
+      <header className="library-header">
+        <div className="page-heading"><h1>{t('我的')}</h1></div>
+        <div className="profile-identity"><div className="profile-avatar">{avatar ? <img src={avatar} alt="" /> : (user?.uname || 'B')[0]}</div>
+          <h2>{user ? user.uname : t('未登录')}</h2>
         </div>
-        <div>
-          <div style={{ fontSize: 'calc(26px * var(--ui-scale))', fontWeight: 600, color: '#fff' }}>{user ? user.uname : t('未登录')}</div>
-          <div style={{ fontSize: 'calc(18px * var(--ui-scale))', color: '#8a8a9c', marginTop: 4 }}>{t('哔哩哔哩 webOS')}</div>
-        </div>
-      </div>
+      </header>
 
       {!user && <LoginButton onRequestLogin={onRequestLogin} />}
 
@@ -257,7 +247,7 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
         const busy = tab === 1 ? (toviewLoading || toview === null) : loading;
         if (list.length === 0) {
           return (
-            <div style={{ color: '#666', fontSize: 'calc(16px * var(--ui-scale))' }}>
+            <div style={{ color: 'var(--tv-secondary)', fontSize: 'calc(20px * var(--ui-scale))', padding: '44px 0' }}>
               {busy ? t('加载中…')
                 : !user ? t('登录后可查看视频历史')
                 : tab === 1 ? t('稍后再看是空的 · 在任意视频上长按 OK 即可加入,播放页也有「稍后再看」按钮')
@@ -272,7 +262,7 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
                 {t('长按 OK:加入/移出稍后再看')}
               </div>
             )}
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 20 }}>
+            <div className={`video-grid cols-${cols}`} style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 24 }}>
               {list.map((v, i) => {
                 const row = Math.floor(i / cols) + 1;
                 return (

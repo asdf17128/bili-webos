@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import React, { useState, useEffect, useRef } from 'react';
 import { getLiveStreamUrl, getLiveQualities, getRoomInit, getDanmuInfo, getBuvid3, getLiveHistory, danmakuSubscribe, danmakuStop, castReportState, castReportProgress, mediaProxyBase } from '../api/client';
 import { formatCount } from '../utils/format';
@@ -599,7 +600,7 @@ export default function LivePlayerPage({ room, onBack }) {
           <div style={{ display: 'flex', gap: 14, padding: '18px 60px', alignItems: 'center' }}>
             {CONTROLS.map((btn, i) => (
               <button key={btn}
-                className={`player-btn ${ctrlIdx === i ? 'focused' : ''}`}
+                className={`player-btn player-control ${ctrlIdx === i ? 'focused' : ''}`}
                 onMouseEnter={() => setCtrlIdx(i)}
                 onClick={() => {
                   setCtrlIdx(i);
@@ -607,9 +608,10 @@ export default function LivePlayerPage({ room, onBack }) {
                   else if (btn === 'interact') toggleInteract();
                   else if (btn === 'quality' && qualities.length) setShowQuality(true);
                 }}>
-                {btn === 'danmaku' ? (danmakuEnabled ? t('弹幕 开') : t('弹幕 关'))
+                <Icon name={btn === 'interact' ? 'comments' : btn} size={26} />
+                <span className="player-control-label">{btn === 'danmaku' ? (danmakuEnabled ? t('弹幕 开') : t('弹幕 关'))
                   : btn === 'interact' ? (interactOn ? t('聊天 开') : t('聊天 关'))
-                    : ((qualities.find(q => q.qn === curQn) || {}).label || t('画质'))}
+                    : ((qualities.find(q => q.qn === curQn) || {}).label || t('画质'))}</span>
               </button>
             ))}
             <span style={{ marginLeft: 'auto', color: '#aaa', fontSize: 18, display: 'flex', gap: 20 }}>

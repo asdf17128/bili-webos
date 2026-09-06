@@ -1,0 +1,37 @@
+[
+  {
+    "name": "new TV build renders with visible focus",
+    "pass": true,
+    "detail": "content-0-0"
+  },
+  {
+    "name": "Back to sidebar preserves exact scroll offset",
+    "pass": true,
+    "detail": "translateY(-999px) -> translateY(-999px)"
+  },
+  {
+    "name": "Right restores the exact card",
+    "pass": true,
+    "detail": "content-3-1"
+  },
+  {
+    "name": "OK explicitly refreshes and resets to row zero",
+    "pass": true,
+    "detail": "content-0-0"
+  },
+  {
+    "name": "deep grid card stays fully inside its real viewport",
+    "pass": true,
+    "detail": "content-10-0"
+  },
+  {
+    "name": "real video starts",
+    "pass": true,
+    "detail": "t=1.0s ready=4"
+  },
+  {
+    "name": "leaving playback restores card and scroll",
+    "pass": true,
+    "detail": "content-10-0"
+  }
+]

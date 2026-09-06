@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useRef } from 'react';
-import { mark, markAfterPaint } from '../utils/perf';
+import { markAfterPaint } from '../utils/perf';
 
 // ======================================================
 // Zero-React-render focus system
@@ -9,6 +9,41 @@ import { mark, markAfterPaint } from '../utils/perf';
 
 const focusRegistry = new Map(); // id -> { ref, row, col, group, onSelect }
 let currentFocusId = null;
+let contentContext = 'recommend';
+const contentMemory = new Map();
+let pendingContentFocus = null;
+let contentFocusTimer = null;
+
+export function cancelContentFocus() {
+  pendingContentFocus = null;
+  clearTimeout(contentFocusTimer);
+}
+
+export function setContentContext(key) {
+  if (contentContext === key) return;
+  cancelContentFocus();
+  contentContext = key;
+  lastAnchor = null;
+}
+
+export function resetContentMemory() { contentMemory.delete(contentContext); }
+
+function rememberedContent() {
+  const id = contentMemory.get(contentContext);
+  if (id && focusRegistry.has(id)) return id;
+  if (focusRegistry.has('content-0-0')) return 'content-0-0';
+  for (const [key, data] of focusRegistry) {
+    if (data.group === 'content' && data.row >= 0) return key;
+  }
+  return null;
+}
+
+function resolveContentFocus() {
+  const request = pendingContentFocus;
+  if (!request || request.context !== contentContext || Date.now() > request.until) return;
+  const id = rememberedContent();
+  if (id) { cancelContentFocus(); setFocus(id); }
+}
 
 // Pointer hover (Magic Remote) always moves the focus, so the highlighted item
 // follows the pointer and highlight == pointer == click target (fixes the #11
@@ -32,10 +67,9 @@ export function isPointerFocus() { return lastFocusFromPointer; }
 // scroll paths (applyFocus's scrollIntoView here, and HomePage/FavoritesPage's
 // focus-row) consult it.
 //
-// NOTE: an earlier attempt (v1.1.24) also gated hover on "did the pointer really
-// move" via coordinate/timestamp checks — that was fragile and actually blocked
-// legit hovers (killed highlight-follows-pointer). Removed: the no-scroll rule
-// is the correct and sufficient loop fix, so hover can always move the focus.
+// D-pad navigation owns focus until the pointer actually moves again.
+// Scrolling content beneath a stationary cursor must not steal that focus.
+let pointerEnabled = true;
 let hoverDriven = false;
 export function isHoverDriven() { return hoverDriven; }
 
@@ -54,6 +88,7 @@ let lastAnchor = null; // { group, row, col }
 function applyFocus(newId) {
   const prevId = currentFocusId;
   currentFocusId = newId;
+  if (newId?.startsWith('content-')) contentMemory.set(contentContext, newId);
 
   // Remember sidebar position
   if (newId?.startsWith('sidebar-')) lastSidebarFocus = newId;
@@ -80,8 +115,10 @@ function applyFocus(newId) {
       // Test by ANCESTRY, not by id prefix: 设置/搜索/我的 rows are also
       // 'content-N-0' but live in real overflow:auto containers and DO need
       // scrollIntoView (gating them by prefix broke 4 smoke assertions).
-      const selfScrolled = !!(newEl.closest && newEl.closest('.video-grid'));
-      if (!hoverDriven && !selfScrolled) newEl.scrollIntoView({ block: 'nearest' });
+      const selfScrolled = !!(newEl.closest && newEl.closest('.video-grid-viewport'));
+      // Native library cards also enlarge on focus. Center their row so the
+      // finished scale animation cannot push the bottom edge out of view.
+      if (!hoverDriven && !selfScrolled) newEl.scrollIntoView({ block: newEl.classList.contains('video-card') ? 'center' : 'nearest' });
       if (selfScrolled) {                    // undo any stray wrapper scroll
         let p = newEl.parentElement;
         while (p && p !== document.body) {
@@ -98,6 +135,12 @@ function applyFocus(newId) {
 
 export function registerFocusable(id, data) {
   focusRegistry.set(id, data);
+  // Wait until all cells in this React commit have registered, then resolve the
+  // user's pending entry. A slow network must not need a second OK press.
+  if (pendingContentFocus && data.group === 'content') {
+    clearTimeout(contentFocusTimer);
+    contentFocusTimer = setTimeout(resolveContentFocus, 0);
+  }
 }
 
 export function unregisterFocusable(id) {
@@ -106,24 +149,23 @@ export function unregisterFocusable(id) {
 }
 
 export function setFocus(id) {
-  if (!focusRegistry.has(id) || id === currentFocusId) return;
+  const entry = focusRegistry.get(id);
+  if (!entry) return;
+  // The pointer may already highlight the wheel's target row without scrolling
+  // to it. A deliberate wheel/D-pad entry must still anchor that same cell.
+  if (id === currentFocusId && (hoverDriven || (lastAnchor?.group === entry.group && lastAnchor.row === entry.row && lastAnchor.col === entry.col))) return;
+  cancelContentFocus();
   applyFocus(id);
 }
 
 export function getCurrentFocusId() { return currentFocusId; }
 
 // Move focus into the page's content area (used when "entering" a section via
-// OK). The content may still be loading, so retry briefly until a card has
-// registered. Aborts if the user has already navigated into content.
-export function focusFirstContent(maxMs = 1500) {
-  const start = Date.now();
-  const attempt = () => {
-    if (currentFocusId && currentFocusId.startsWith('content-')) return; // already inside
-    const id = focusRegistry.has('content-0-0') ? 'content-0-0' : findInGroup('content', 0);
-    if (id) { setFocus(id); return; }
-    if (Date.now() - start < maxMs) setTimeout(attempt, 60);
-  };
-  setTimeout(attempt, 30);
+// OK/Right). Resolve when cells register; later navigation cancels the request.
+export function focusFirstContent(maxMs = 15000) {
+  cancelContentFocus();
+  pendingContentFocus = { context: contentContext, until: Date.now() + maxMs };
+  contentFocusTimer = setTimeout(resolveContentFocus, 0);
 }
 
 // Return focus to the sidebar — the last item the user was on, else the first.
@@ -150,6 +192,8 @@ export function onFocusChange(fn) {
 function navigateGrid(fromId, direction) {
   const from = focusRegistry.get(fromId);
   if (!from) return null;
+  const override = from.onNavigate?.(direction);
+  if (override && focusRegistry.has(override)) return override;
   const { row, col, group } = from;
 
   let tr = row, tc = col;
@@ -244,20 +288,33 @@ export function initKeyboardNav() {
   window.addEventListener('keyup', (e) => {
     if (e.key === 'Enter') endHold();
   });
+  window.addEventListener('blur', clearHold);
   // 焦点被移走(方向键/指针)时中断长按,否则松手会误触发到别的卡片上
   onFocusChange(() => { if (hold.id && hold.id !== currentFocusId) clearHold(); });
   keyHandler = (e) => {
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Backspace', 'Escape', 'GoBack'].includes(e.key) || e.keyCode === 461) pointerEnabled = false;
     if (customKeyHandler && customKeyHandler(e)) return;
     const key = e.key;
+    const editable = e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable);
+    if (editable) {
+      // Leave typing, deletion and caret movement to the system keyboard.
+      if (e.keyCode === 461 || key === 'GoBack' || key === 'Escape') {
+        e.preventDefault(); e.target.blur();
+      }
+      return;
+    }
 
-    if (e.keyCode === 461 || key === 'Backspace' || key === 'GoBack') {
+    if (e.keyCode === 461 || key === 'Backspace' || key === 'GoBack' || key === 'Escape') {
       e.preventDefault(); e.stopPropagation();
+      cancelContentFocus(); clearHold();
+      if (e.repeat) return;
       window.dispatchEvent(new CustomEvent('tv-back'));
       return;
     }
 
     if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'].includes(key)) return;
     e.preventDefault();
+    cancelContentFocus();
     lastFocusFromPointer = false; // this focus move is from the D-pad
     // 跟手 = 按下到焦点**画出来**的时间。起点必须是按键进来的第一行,
     // 终点是绘制后(双 rAF),中间的 setState/滚动/重排都算进去。
@@ -270,12 +327,12 @@ export function initKeyboardNav() {
       // Items WITHOUT a long-press action keep the old behaviour exactly: fire on
       // keydown. Only items that opt in wait for the release, so nothing else in
       // the app changes timing (the player runs its own hold machinery).
-      if (!entry.onLongPress) { entry.onSelect?.(); return; }
+      if (!entry.onLongPress) { if (!e.repeat) entry.onSelect?.(); return; }
       if (!e.repeat) startHold(currentFocusId);
       return;
     }
 
-    if (!currentFocusId) return;
+    if (!currentFocusId) { focusSidebar(); return; }
     const from = focusRegistry.get(currentFocusId);
     if (!from) return;
 
@@ -294,9 +351,9 @@ export function initKeyboardNav() {
         next = lastSidebarFocus || 'sidebar-0-0';
         if (!focusRegistry.has(next)) next = findInGroup('sidebar', 0);
       } else if (dir === 'right' && from.group === 'sidebar') {
-        // Always go to first content item
-        next = 'content-0-0';
-        if (!focusRegistry.has(next)) next = findInGroup('content', 0);
+        // Commit the focused section, including a pending sidebar preview.
+        window.dispatchEvent(new CustomEvent('tv-enter-content', { detail: currentFocusId }));
+        return;
       }
     }
     if (next) { setFocus(next); markAfterPaint('focus-move', keyT0); }
@@ -310,7 +367,17 @@ export function initKeyboardNav() {
   // the focused card is again the one at the pointer, keeping them in sync.
   let pointerX = 960, pointerY = 540;
   window.addEventListener('mousemove', (e) => {
+    const moved = pointerX !== e.clientX || pointerY !== e.clientY;
     pointerX = e.clientX; pointerY = e.clientY;
+    if (moved && !pointerEnabled) {
+      pointerEnabled = true;
+      const item = e.target.closest?.('[data-focus-id]');
+      if (item && !customKeyHandler) {
+        lastFocusFromPointer = true; hoverDriven = true;
+        setFocus(item.dataset.focusId);
+        hoverDriven = false;
+      }
+    }
   }, { passive: true });
   // Step one row per ~140px of ACCUMULATED wheel delta, not per event. webOS
   // auto-fires a continuous stream of small wheel events while the Magic-Remote
@@ -338,6 +405,7 @@ export function initKeyboardNav() {
     if (wheelDiag.length > 200) wheelDiag.shift();
   };
   window.addEventListener('wheel', (e) => {
+    pointerEnabled = true;
     if (customKeyHandler) { diag(e.deltaY, 'custom-handler-owns-input'); return; }
     const now = Date.now();
     if (now - lastWheelTs > 600) wheelAcc = 0; // stale stream reset
@@ -394,11 +462,13 @@ export function initKeyboardNav() {
 }
 
 // Hook: registers element, NO re-renders on focus change
-export function useFocusable({ id, row = 0, col = 0, group = 'content', onSelect, onLongPress }) {
+export function useFocusable({ id, row = 0, col = 0, group = 'content', onSelect, onLongPress, onNavigate }) {
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
   const onLongPressRef = useRef(onLongPress);
   onLongPressRef.current = onLongPress;
+  const onNavigateRef = useRef(onNavigate);
+  onNavigateRef.current = onNavigate;
   // 只有"这一项是否支持长按"会改变 OK 键的时序,所以它进依赖数组;
   // 回调本身走 ref,重渲染不会重新注册。
   const hasLongPress = !!onLongPress;
@@ -408,17 +478,23 @@ export function useFocusable({ id, row = 0, col = 0, group = 'content', onSelect
       row, col, group,
       onSelect: () => onSelectRef.current?.(),
       onLongPress: hasLongPress ? () => onLongPressRef.current?.() : undefined,
+      onNavigate: direction => onNavigateRef.current?.(direction),
     });
     return () => unregisterFocusable(id);
   }, [id, row, col, group, hasLongPress]);
 
   const handleClick = useCallback((e) => {
     e.preventDefault();
+    pointerEnabled = true;
+    cancelContentFocus();
+    lastFocusFromPointer = true;
     setFocus(id);
     onSelectRef.current?.();
   }, [id]);
 
   const handleMouseEnter = useCallback(() => {
+    if (!pointerEnabled || customKeyHandler) return;
+    cancelContentFocus();
     lastFocusFromPointer = true; // pointer moved the focus → sidebar won't switch pages
     hoverDriven = true;          // highlight only, no scroll (breaks the edge loop)
     setFocus(id);

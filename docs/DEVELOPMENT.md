@@ -72,13 +72,18 @@ bash tools/verify.sh --full     # 六层:语法→静态规范/逻辑→真Node8
 | docs/TESTCASES.md | 回归 case 登记簿(带佐证,发布前照单回归) |
 | docs/DESIGN.md | 10-foot 设计规范(字号/颜色/焦点/兼容底线) |
 | tools/verify.sh | 门禁执行入口(自动层) |
+| docs/TV-UX.md | 侧栏刷新/位置恢复规则、2026-09-06 UX 改动与实测边界 |
+| tools/test-tv-ux.mjs | 隔离夹具下的遥控器/指针/慢请求回归；`verify.sh --no-tv --ux` |
+| tools/test-tv-ux-device.mjs | 真机单会话导航、刷新、深列表、暂停、快进快退、弹层和播放返回检查 |
+| tools/test-tv-settings.mjs | 真机通过选择器设置 2/3/4 列与大字号，重启验证并恢复用户偏好 |
+| tools/test-player-loading.mjs | 取消、重试、Luna 超时及弹幕/字幕实际 DOM 字号；`verify.sh --ux` |
 | .claude/skills/tv-test | 测试方法论 + 工具箱 + 坑(每踩新坑必追加) |
 
 
 ## 发版(不要手搓 `gh release create`)
 
 ```bash
-node tools/release.mjs v1.7.1 --notes-file notes.md
+node tools/release.mjs v2.0.0 --notes-file notes.md
 ```
 
 release 必须挂**三件**资产,少一件都会静默出事:

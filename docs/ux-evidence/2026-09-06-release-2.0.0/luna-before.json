@@ -1,0 +1,7 @@
+[
+  {
+    "name": "Luna requests time out, cancel their bridge and ignore late success",
+    "pass": false,
+    "error": "The input did not match the regular expression /timeout/i. Input:\n\n''\n"
+  }
+]

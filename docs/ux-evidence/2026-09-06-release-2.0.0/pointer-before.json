@@ -1,0 +1,44 @@
+[
+  {
+    "name": "settings matrix: 2 columns, scale 1, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 2 columns, scale 1.12, applies and persists",
+    "pass": false,
+    "error": "{\"rect\":{\"x\":157.55670166015625,\"y\":-488.8671875,\"width\":856.8865966796875,\"height\":608.34375},\"vp\":{\"x\":112,\"y\":66.3125,\"width\":1808,\"height\":942.6875}}"
+  },
+  {
+    "name": "settings matrix: 2 columns, scale 1.25, applies and persists",
+    "pass": false,
+    "error": "{\"rect\":{\"x\":157.55670166015625,\"y\":-494.546875,\"width\":856.8865966796875,\"height\":619.21826171875},\"vp\":{\"x\":112,\"y\":71,\"width\":1808,\"height\":935}}"
+  },
+  {
+    "name": "settings matrix: 3 columns, scale 1, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 3 columns, scale 1.12, applies and persists",
+    "pass": false,
+    "error": "{\"rect\":{\"x\":161.13339233398438,\"y\":-365.231201171875,\"width\":563.0613098144531,\"height\":443.05615234375},\"vp\":{\"x\":112,\"y\":66.3125,\"width\":1808,\"height\":942.6875}}"
+  },
+  {
+    "name": "settings matrix: 3 columns, scale 1.25, applies and persists",
+    "pass": false,
+    "error": "{\"rect\":{\"x\":161.13339233398438,\"y\":-400.52001953125,\"width\":563.0613098144531,\"height\":453.930908203125},\"vp\":{\"x\":112,\"y\":71,\"width\":1808,\"height\":935}}"
+  },
+  {
+    "name": "settings matrix: 4 columns, scale 1, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 4 columns, scale 1.12, applies and persists",
+    "pass": false,
+    "error": "{\"rect\":{\"x\":162.9282989501953,\"y\":-113.717041015625,\"width\":416.14341735839844,\"height\":357.55908203125},\"vp\":{\"x\":112,\"y\":66.3125,\"width\":1808,\"height\":942.6875}}"
+  },
+  {
+    "name": "settings matrix: 4 columns, scale 1.25, applies and persists",
+    "pass": false,
+    "error": "{\"rect\":{\"x\":162.92759704589844,\"y\":-147.86181640625,\"width\":416.14479064941406,\"height\":368.0986328125},\"vp\":{\"x\":112,\"y\":71,\"width\":1808,\"height\":935}}"
+  }
+]

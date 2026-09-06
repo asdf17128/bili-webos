@@ -79,21 +79,37 @@ function lunaFetch(url, options) {
     if (options.contentType) params.contentType = options.contentType;
     if (options.range) params.range = options.range;
 
-    window.webOS.service.request(SERVICE_URI, {
-      method: 'fetch',
-      parameters: params,
-      onSuccess: function(res) {
-        if (res.newCookies) {
-          var auth = storage.getAuth() || {};
-          storage.setAuth(Object.assign({}, auth, res.newCookies));
-        }
-        resolve(res);
-      },
-      onFailure: function(err) {
-        logErr('luna', (err.errorText || err.error || 'Luna fetch failed').slice(0, 120));
-        reject(new Error(err.errorText || err.error || 'Luna fetch failed'));
-      }
-    });
+    var settled = false, request;
+    var timer = setTimeout(function () {
+      if (settled) return;
+      settled = true;
+      try { if (request && request.cancel) request.cancel(); } catch (e) { /* already closed */ }
+      logErr('luna-timeout', url.split('?')[0]);
+      reject(new Error('Request timeout (20s)'));
+    }, 20000);
+    function fail(err) {
+      if (settled) return;
+      settled = true; clearTimeout(timer);
+      var message = String(err.errorText || err.error || err.message || 'Luna fetch failed');
+      logErr('luna', message.slice(0, 120));
+      reject(new Error(message));
+    }
+    try {
+      request = window.webOS.service.request(SERVICE_URI, {
+        method: 'fetch',
+        parameters: params,
+        onSuccess: function(res) {
+          if (settled) return;
+          settled = true; clearTimeout(timer);
+          if (res.newCookies) {
+            var auth = storage.getAuth() || {};
+            storage.setAuth(Object.assign({}, auth, res.newCookies));
+          }
+          resolve(res);
+        },
+        onFailure: fail
+      });
+    } catch (err) { fail(err); }
   });
 }
 

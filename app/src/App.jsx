@@ -1,12 +1,16 @@
-import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
-import { initKeyboardNav, setFocus, onFocusChange, getCurrentFocusId, focusFirstContent, setLastSidebarFocus, isPointerFocus } from './hooks/useFocus';
+import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, lazy, Suspense } from 'react';
+import { initKeyboardNav, setFocus, onFocusChange, getCurrentFocusId, focusFirstContent, setLastSidebarFocus, isPointerFocus, isHoverDriven, setContentContext, cancelContentFocus, resetContentMemory } from './hooks/useFocus';
 import { castAck, castSubscribe, castGetStatus, getNavInfo, pingVersionAsset } from './api/client';
+import { thumbUrl } from './utils/thumb';
 import { normalizePlay, playAt } from './player/playIntent';
 import { storage } from './utils/storage';
 import { markAfterPaint } from './utils/perf';
 import { perfFlag, canPrefetch } from './utils/perfFlags';
 import SidebarItem from './components/SidebarItem';
+import Icon from './components/Icon';
 import CardMenu from './components/CardMenu';
+import PageState from './components/PageState';
+import PlayerBoundary, { PlayerPlaceholder } from './components/PlayerBoundary';
 
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
@@ -14,7 +18,7 @@ import SearchPage from './pages/SearchPage';
 import SettingsPage from './pages/SettingsPage';
 import FavoritesPage from './pages/FavoritesPage';
 import ConfigPage from './pages/ConfigPage';
-import { t } from './i18n';
+import { t, getLocale } from './i18n';
 // Lazy-loaded so the video engine (Shaka Player) is NOT pulled into the startup
 // bundle. On older webOS (6.x / Chromium 79) Shaka's module init throws at load
 // and blanked the entire app — even the home screen (issue #10). Deferring it
@@ -29,27 +33,27 @@ const LivePlayerPage = lazy(() => import('./player/LivePlayerPage'));
 // is B站's NEW partition id (pid_v2) — ranking/v2 on these returns the current
 // hot ranking (~top 100). Easily swappable.
 const PARTITIONS = [
-  { key: 'p-1008', label: () => t('游戏'), icon: '🎮', rid: 1008 },
-  { key: 'p-1005', label: () => t('动画'), icon: '📺', rid: 1005 },
-  { key: 'p-1003', label: () => t('音乐'), icon: '🎵', rid: 1003 },
-  { key: 'p-1010', label: () => t('知识'), icon: '📚', rid: 1010 },
-  { key: 'p-1002', label: () => t('娱乐'), icon: '🎭', rid: 1002 },
-  { key: 'p-1007', label: () => t('鬼畜'), icon: '😜', rid: 1007 },
+  { key: 'p-1008', label: () => t('游戏'), icon: 'game', rid: 1008 },
+  { key: 'p-1005', label: () => t('动画'), icon: 'tv', rid: 1005 },
+  { key: 'p-1003', label: () => t('音乐'), icon: 'music', rid: 1003 },
+  { key: 'p-1010', label: () => t('知识'), icon: 'book', rid: 1010 },
+  { key: 'p-1002', label: () => t('娱乐'), icon: 'smile', rid: 1002 },
+  { key: 'p-1007', label: () => t('鬼畜'), icon: 'remix', rid: 1007 },
 ];
 
 // Sidebar: main feeds · [divider] partitions · [divider] utilities — regular
 // partitions grouped apart from the rest (owner).
 // 搜索置顶(像 YouTube),但默认落地页仍是推荐;Back 回到推荐按钮(不落搜索)。
 const NAV_ITEMS = [
-  { key: 'search', label: () => t('搜索'), icon: '🔍' },
-  { key: 'recommend', label: () => t('推荐'), icon: '🏠', dividerBefore: true },
-  { key: 'hot', label: () => t('热门'), icon: '🔥' },
-  { key: 'live', label: () => t('直播'), icon: '📡' },
-  { key: 'follow', label: () => t('关注'), icon: '👤' },
-  { key: 'favorites', label: () => t('收藏'), icon: '⭐' },
+  { key: 'search', label: () => t('搜索'), icon: 'search' },
+  { key: 'recommend', label: () => t('推荐'), icon: 'home', dividerBefore: true },
+  { key: 'hot', label: () => t('热门'), icon: 'hot' },
+  { key: 'live', label: () => t('直播'), icon: 'live' },
+  { key: 'follow', label: () => t('关注'), icon: 'follow' },
+  { key: 'favorites', label: () => t('收藏'), icon: 'star' },
   ...PARTITIONS.map((p, i) => (i === 0 ? { ...p, dividerBefore: true } : p)),
-  { key: 'settings', label: () => t('我的'), icon: '🕘', dividerBefore: true },
-  { key: 'config', label: () => t('设置'), icon: '⚙️' },
+  { key: 'settings', label: () => t('我的'), icon: 'history', dividerBefore: true },
+  { key: 'config', label: () => t('设置'), icon: 'settings' },
 ];
 
 const PARTITION_KEYS = PARTITIONS.reduce((m, p) => { m[p.key] = p.rid; return m; }, {});
@@ -79,28 +83,42 @@ function detectBangumi(v) {
 }
 
 function Sidebar({ activePage, onPreview, onSelect, user }) {
+  const railRef = useRef(null);
+  useEffect(() => onFocusChange(fid => {
+    const rail = railRef.current, expanded = !!fid?.startsWith('sidebar-');
+    if (!rail) return;
+    rail.dataset.expanded = String(expanded);
+    // Expanded help takes space at the bottom. Recheck after that geometry
+    // changes; applyFocus's earlier scroll used the collapsed viewport.
+    if (expanded && !isHoverDriven()) rail.querySelector(`[data-focus-id="${fid}"]`)?.scrollIntoView({ block: 'nearest' });
+  }), []);
   // Arrowing onto a sidebar item previews that page (no refresh). Pointer hover
   // only highlights — it does NOT switch pages — so the Magic Remote cursor
   // drifting over the menu no longer rapid-switches pages (#11). Click still
   // selects via onSelect.
   useEffect(() => {
-    return onFocusChange((fid) => {
+    let previewTimer;
+    const unsubscribe = onFocusChange((fid) => {
+      clearTimeout(previewTimer);
       if (!fid?.startsWith('sidebar-')) return;
       if (isPointerFocus()) return;
       const match = fid.match(/^sidebar-(\d+)-/);
       if (!match) return;
       const idx = parseInt(match[1]);
-      if (idx < NAV_ITEMS.length) onPreview(NAV_ITEMS[idx].key);
+      if (idx < NAV_ITEMS.length) previewTimer = setTimeout(() => onPreview(NAV_ITEMS[idx].key), 180);
     });
+    return () => { clearTimeout(previewTimer); unsubscribe(); };
   }, [onPreview]);
 
   return (
-    <div className="sidebar">
+    <div className="sidebar" ref={railRef} data-expanded={String(!!getCurrentFocusId()?.startsWith('sidebar-'))}
+      onMouseEnter={() => { if (railRef.current) railRef.current.dataset.expanded = 'true'; }}
+      onMouseLeave={() => { if (railRef.current) railRef.current.dataset.expanded = String(!!getCurrentFocusId()?.startsWith('sidebar-')); }}>
       <div className="sidebar-logo">
-        <h1>B站</h1>
-        <span>webOS</span>
+        <Icon name="tv" size={34} /><div className="sidebar-wordmark">bili<span>webOS</span></div>
       </div>
 
+      <nav className="sidebar-nav" aria-label={t('导航')}>
       {NAV_ITEMS.map((item, i) => (
         <React.Fragment key={item.key}>
           {item.dividerBefore && <div className="sidebar-divider" />}
@@ -114,17 +132,19 @@ function Sidebar({ activePage, onPreview, onSelect, user }) {
           />
         </React.Fragment>
       ))}
+      </nav>
 
       <div className="sidebar-user">
+        <div className="sidebar-help"><span>→ {t('继续浏览')}</span><span>OK {t('刷新当前栏目')}</span></div>
         {user ? (
           <>
             <div className="sidebar-user-avatar">
-              {user.face && <img src={user.face} alt="" />}
+              {user.face && <img src={thumbUrl(user.face, 4)} alt="" />}
             </div>
             <div className="sidebar-user-name">{user.uname}</div>
           </>
         ) : (
-          <div className="sidebar-user-login">{t('未登录')}</div>
+          <><div className="sidebar-user-avatar"><Icon name="follow" /></div><div className="sidebar-user-login">{t('未登录')}</div></>
         )}
       </div>
     </div>
@@ -139,8 +159,22 @@ export default function App() {
   const [liveRoom, setLiveRoom] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
   const [toast, setToast] = useState('');
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshKeys, setRefreshKeys] = useState({});
+  const refreshKey = refreshKeys[page] || 0;
   const pendingCastAckRef = useRef(null);
+  const enterPageRef = useRef(null);
+  const toastTimerRef = useRef(null);
+  const closePlayer = useCallback(() => { setPlayerVideo(null); setLiveRoom(null); }, []);
+
+  useEffect(() => { if (playerVideo || liveRoom) cancelContentFocus(); }, [playerVideo, liveRoom]);
+
+  useLayoutEffect(() => { setContentContext(page); }, [page]);
+  useEffect(() => {
+    if (enterPageRef.current === page) {
+      enterPageRef.current = null;
+      focusFirstContent();
+    }
+  }, [page, refreshKey]);
 
   useEffect(() => {
     initKeyboardNav();
@@ -150,7 +184,9 @@ export default function App() {
       setLoggedIn(true);
       loadUserInfo();
     }
-    setTimeout(() => setFocus('content-0-0'), 500);
+    setFocus(sidebarIdForPage('recommend'));
+    focusFirstContent();
+    return () => { cancelContentFocus(); clearTimeout(toastTimerRef.current); };
   }, []);
 
   useEffect(() => {
@@ -268,7 +304,7 @@ export default function App() {
     };
     window.addEventListener('tv-back', handleBack);
     return () => window.removeEventListener('tv-back', handleBack);
-  }, [playerVideo, showLogin, page]);
+  }, [playerVideo, liveRoom, showLogin, page]);
 
   const loadUserInfo = useCallback(async () => {
     try {
@@ -402,57 +438,76 @@ export default function App() {
   // Arrowing onto a sidebar item just previews its page — no refresh, no
   // jumping into the content.
   const previewPage = useCallback((key) => {
-    if ((key === 'follow' || key === 'favorites') && !loggedIn) { setShowLogin(true); return; }
     if (key !== page) setPage(key);
-  }, [loggedIn, page]);
+  }, [page]);
 
   // OK/click on a sidebar item commits: switch (or refresh if already active)
   // and move focus into the content so the user doesn't need a second key.
   // 页面切换:从按下侧栏到内容画出来。用户在这一步等的是"白屏/旧内容"。
-  const selectPage = useCallback((key) => {
+  const selectPage = useCallback((key, refresh = true) => {
     const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
     setTimeout(() => markAfterPaint('page-switch', t0), 0);
     if ((key === 'follow' || key === 'favorites') && !loggedIn) { setShowLogin(true); return; }
-    if (key === page) setRefreshKey(n => n + 1);
-    else setPage(key);
-    focusFirstContent();
+    if (key === page) {
+      if (refresh) {
+        resetContentMemory(); enterPageRef.current = key;
+        setRefreshKeys(keys => ({ ...keys, [key]: (keys[key] || 0) + 1 }));
+      }
+      // Refresh first, then request entry after the old cards unmount.
+      else focusFirstContent();
+    }
+    else { enterPageRef.current = key; setPage(key); }
   }, [loggedIn, page]);
+
+  useEffect(() => {
+    const enter = (event) => {
+      const index = Number((event.detail || '').split('-')[1]);
+      if (NAV_ITEMS[index]) selectPage(NAV_ITEMS[index].key, false);
+    };
+    window.addEventListener('tv-enter-content', enter);
+    return () => window.removeEventListener('tv-enter-content', enter);
+  }, [selectPage]);
 
   const showToastMsg = useCallback((msg) => {
     setToast(msg);
-    setTimeout(() => setToast(''), 2500);
+    clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToast(''), 3000);
   }, []);
 
   return (
     <>
-      <div className="app-container" style={{ display: (playerVideo || liveRoom) ? 'none' : 'flex' }}>
+      <div className="app-container" data-language={getLocale()} style={{ display: (playerVideo || liveRoom) ? 'none' : 'flex' }}>
         <Sidebar activePage={page} onPreview={previewPage} onSelect={selectPage} user={user} />
         <div className="main-content">
-          {page === 'recommend' && <HomePage onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="recommend" />}
-          {page === 'hot' && <HomePage onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="hot" />}
-          {page === 'live' && <HomePage onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="live" />}
-          {PARTITION_KEYS[page] != null && <HomePage key={page} onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="partition" rid={PARTITION_KEYS[page]} />}
-          {page === 'follow' && <HomePage onPlayVideo={handlePlayVideo} refreshKey={refreshKey} mode="follow" />}
+          {['recommend', 'hot', 'live', 'follow'].includes(page) || PARTITION_KEYS[page] != null ? (
+            page === 'follow' && !loggedIn ? <PageState title={t('关注的精彩，登录后继续')} description={t('扫码登录，同步你的关注与收藏')} action={t('扫码登录')} onAction={() => setShowLogin(true)} /> :
+            <HomePage key={`${page}:${refreshKey}`} onPlayVideo={handlePlayVideo} refreshKey={refreshKey}
+              mode={PARTITION_KEYS[page] != null ? 'partition' : page} rid={PARTITION_KEYS[page]}
+              title={NAV_ITEMS.find(n => n.key === page)?.label()} />
+          ) : null}
           {page === 'search' && <SearchPage onPlayVideo={handlePlayVideo} />}
-          {page === 'favorites' && <FavoritesPage userMid={user?.mid} onPlayVideo={handlePlayVideo} />}
+          {page === 'favorites' && (loggedIn ? <FavoritesPage userMid={user?.mid} onPlayVideo={handlePlayVideo} /> :
+            <PageState title={t('收藏的好内容，在电视上看')} description={t('扫码登录，同步你的关注与收藏')} action={t('扫码登录')} onAction={() => setShowLogin(true)} />)}
           {page === 'settings' && <SettingsPage user={user} onPlayVideo={handlePlayVideo} onRequestLogin={() => setShowLogin(true)} />}
           {page === 'config' && <ConfigPage onLogout={handleLogout} user={user} />}
         </div>
-        {toast && <div className="toast">{toast}</div>}
+        {toast && <div className="toast" role="status">{toast}</div>}
       </div>
 
       {(playerVideo || liveRoom) && (
-        <Suspense fallback={<div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 150, background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20 }}>{t('加载播放器…')}</div>}>
+        <PlayerBoundary title={(playerVideo || liveRoom).title} onBack={closePlayer}>
+        <Suspense fallback={<PlayerPlaceholder title={(playerVideo || liveRoom).title} onBack={closePlayer} />}>
           {playerVideo && <PlayerPage key={`${playerVideo.bvid || playerVideo.epid || playerVideo.aid || ''}-${playerVideo.cid || playerVideo.epid || ''}`} video={playerVideo} onBack={() => setPlayerVideo(null)} onPlayNext={(v) => setPlayerVideo(normalizePlay(v))} />}
           {liveRoom && <LivePlayerPage key={liveRoom.roomid} room={liveRoom} onBack={() => setLiveRoom(null)} />}
         </Suspense>
+        </PlayerBoundary>
       )}
 
       {menuVideo && <CardMenu video={menuVideo} onClose={() => setMenuVideo(null)} />}
 
       {showLogin && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: 1920, height: 1080, zIndex: 200, background: '#0d0d1a' }}>
-          <LoginPage onLogin={handleLogin} />
+          <LoginPage onLogin={handleLogin} onClose={() => setShowLogin(false)} />
         </div>
       )}
     </>

@@ -1,0 +1,37 @@
+{
+  "source": "LG C4 CDP, final installed build",
+  "infoHeights": [
+    111,
+    111,
+    111,
+    111,
+    111,
+    111,
+    111,
+    111,
+    111,
+    111,
+    111,
+    111
+  ],
+  "metadataOffsets": [
+    75,
+    75,
+    75,
+    75,
+    75,
+    75,
+    75,
+    75,
+    75,
+    75,
+    75,
+    75
+  ],
+  "resumePositions": [
+    191.84375,
+    191.84375,
+    191.84375
+  ],
+  "visibleImagesReady": 8
+}

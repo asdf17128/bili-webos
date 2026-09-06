@@ -1,0 +1,460 @@
+{
+  "browser": [
+    {
+      "name": "dev-service bridge up (same code path as the TV)",
+      "pass": true
+    },
+    {
+      "name": "Home renders cards",
+      "pass": true
+    },
+    {
+      "name": "Sidebar present",
+      "pass": true
+    },
+    {
+      "name": "No broken thumbnails",
+      "pass": true
+    },
+    {
+      "name": "Row 0",
+      "pass": true
+    },
+    {
+      "name": "Deep row",
+      "pass": true
+    },
+    {
+      "name": "Back to top",
+      "pass": true
+    },
+    {
+      "name": "Top ↑ wraps to the last item",
+      "pass": true
+    },
+    {
+      "name": "分区(游戏) loads content",
+      "pass": true
+    },
+    {
+      "name": "Search page shows an input + recommendations",
+      "pass": true
+    },
+    {
+      "name": "Settings rows render",
+      "pass": true
+    },
+    {
+      "name": "No 音量均衡 row (feature parked)",
+      "pass": true
+    },
+    {
+      "name": "Video plays",
+      "pass": true
+    },
+    {
+      "name": "Control bar has the expected buttons",
+      "pass": true
+    },
+    {
+      "name": "评论按钮打开前就带数量",
+      "pass": true
+    },
+    {
+      "name": "控制栏首尾循环(暂停 ←→ 评论)",
+      "pass": true
+    },
+    {
+      "name": "Logged in",
+      "pass": true
+    },
+    {
+      "name": "Comment rail",
+      "pass": true
+    },
+    {
+      "name": "Comment rail loads comments",
+      "pass": true
+    },
+    {
+      "name": "Metadata strip fills the letterbox",
+      "pass": true
+    },
+    {
+      "name": "楼中楼 expands on OK",
+      "pass": true
+    },
+    {
+      "name": "Back closes the rail first, focus returns",
+      "pass": true
+    },
+    {
+      "name": "view 被拦时 pagelist 兜底照样播 (C-ERR-03)",
+      "pass": true
+    },
+    {
+      "name": "Left the VOD player before live",
+      "pass": true
+    },
+    {
+      "name": "Live stream plays",
+      "pass": true
+    },
+    {
+      "name": "Live control bar",
+      "pass": true
+    },
+    {
+      "name": "Chat rail defaults to off",
+      "pass": true
+    },
+    {
+      "name": "直播:按「下」也能呼出控制栏(与点播一致)",
+      "pass": true
+    },
+    {
+      "name": "直播:控制栏开着时按「上」能收起",
+      "pass": true
+    },
+    {
+      "name": "直播:按「下」同样能收起(开关对称)",
+      "pass": true
+    },
+    {
+      "name": "Live quality ladder opens",
+      "pass": true
+    },
+    {
+      "name": "Chat rail opens from the control bar",
+      "pass": true
+    },
+    {
+      "name": "聊天栏打开即有历史消息(不是空屏等实时)",
+      "pass": true
+    },
+    {
+      "name": "Back closes the chat rail, stays in the room",
+      "pass": true
+    },
+    {
+      "name": "Back again leaves the live room",
+      "pass": true
+    },
+    {
+      "name": "Player has a 稍后再看 button",
+      "pass": true
+    },
+    {
+      "name": "OK adds it and the button flips to 已稍后再看",
+      "pass": true
+    },
+    {
+      "name": "「我的」has 观看历史 / 稍后再看 tabs",
+      "pass": true
+    },
+    {
+      "name": "The added video shows up in 稍后再看",
+      "pass": true
+    },
+    {
+      "name": "Remove target is the fixture video, not a real saved item",
+      "pass": true
+    },
+    {
+      "name": "Long-press opens the card menu (not an instant delete)",
+      "pass": true
+    },
+    {
+      "name": "Nothing is deleted just by opening the menu",
+      "pass": true
+    },
+    {
+      "name": "Menu → 移除 takes it out of the list",
+      "pass": true
+    },
+    {
+      "name": "Back up from the grid stays on 稍后再看 (no tab reset)",
+      "pass": true
+    },
+    {
+      "name": "Returning focus lands on the active tab chip",
+      "pass": true
+    },
+    {
+      "name": "选中的 tab 保持焦点样式,且焦点态没被重渲染擦掉",
+      "pass": true
+    },
+    {
+      "name": "首页卡片长按也弹菜单,含「加入稍后再看」",
+      "pass": true
+    },
+    {
+      "name": "长按不会误触发播放",
+      "pass": true
+    },
+    {
+      "name": "按住不放:菜单弹出但不会自己确认",
+      "pass": true
+    },
+    {
+      "name": "松手本身也不算确认",
+      "pass": true
+    },
+    {
+      "name": "关注页每张卡都有「已关注」标",
+      "pass": true
+    },
+    {
+      "name": "取流被拒时给出风控提示(不是泛泛的加载失败)",
+      "pass": true
+    },
+    {
+      "name": "已登录时提示指向\"账号被风控\"而不是\"去登录\"",
+      "pass": true
+    },
+    {
+      "name": "错误页有「去网络诊断」按钮",
+      "pass": true
+    },
+    {
+      "name": "OK 直达网络诊断(退出播放器 + 面板自动展开)",
+      "pass": true
+    },
+    {
+      "name": "设置里有「界面字号」",
+      "pass": true
+    },
+    {
+      "name": "特大档字号确实放大了",
+      "pass": true
+    },
+    {
+      "name": "侧栏文字没有溢出",
+      "pass": true
+    },
+    {
+      "name": "特大档:深行卡片完整可见",
+      "pass": true
+    },
+    {
+      "name": "特大档:回到顶部不裁切",
+      "pass": true
+    },
+    {
+      "name": "设置里有「看完移出稍后再看」开关",
+      "pass": true
+    },
+    {
+      "name": "No uncaught page errors",
+      "pass": true
+    }
+  ],
+  "tv-ui": [
+    {
+      "name": "Home loads video cards",
+      "pass": true
+    },
+    {
+      "name": "No broken thumbnails",
+      "pass": true
+    },
+    {
+      "name": "OK entered content (focus in grid)",
+      "pass": true
+    },
+    {
+      "name": "Back returns focus to sidebar",
+      "pass": true
+    },
+    {
+      "name": "Video starts playing",
+      "pass": true
+    },
+    {
+      "name": "Playback advances (no immediate freeze)",
+      "pass": true
+    },
+    {
+      "name": "Player tab row visible",
+      "pass": true
+    },
+    {
+      "name": "相关推荐 + UP主投稿 tabs present",
+      "pass": true
+    },
+    {
+      "name": "相关推荐 has cards (recommended w/ upload time)",
+      "pass": true
+    },
+    {
+      "name": "UP主投稿 tab loads videos",
+      "pass": true
+    },
+    {
+      "name": "Season info loads (episode list)",
+      "pass": true
+    },
+    {
+      "name": "PGC playurl returns DASH (bangumi playable)",
+      "pass": true
+    },
+    {
+      "name": "HDR/Dolby rep present + selectable by id",
+      "pass": true
+    },
+    {
+      "name": "Live list loads",
+      "pass": true
+    },
+    {
+      "name": "Live stream plays",
+      "pass": true
+    },
+    {
+      "name": "Danmaku layer mounted",
+      "pass": true
+    },
+    {
+      "name": "Danmaku rendering",
+      "pass": true
+    },
+    {
+      "name": "Live room recorded to recentLive",
+      "pass": true
+    },
+    {
+      "name": "Live shows in 我的 → 最近观看 with 直播 badge",
+      "pass": true
+    },
+    {
+      "name": "Search recommendations render (热门/历史)",
+      "pass": true
+    },
+    {
+      "name": "Search returns a results grid",
+      "pass": true
+    },
+    {
+      "name": "Follow list loads",
+      "pass": true
+    },
+    {
+      "name": "Pagination loads more",
+      "pass": true
+    },
+    {
+      "name": "Auto update-check populated",
+      "pass": true
+    },
+    {
+      "name": "Update-check resolved (latest/new/version)",
+      "pass": true
+    },
+    {
+      "name": "热门 loads content",
+      "pass": true
+    },
+    {
+      "name": "分区(游戏) loads content",
+      "pass": true
+    },
+    {
+      "name": "播放器控制栏有「稍后再看」",
+      "pass": true
+    },
+    {
+      "name": "OK 加入后按钮翻成「已稍后再看」",
+      "pass": true
+    },
+    {
+      "name": "「我的」页有 观看历史 / 稍后再看 两个 tab",
+      "pass": true
+    },
+    {
+      "name": "刚加入的视频出现在稍后再看里",
+      "pass": true
+    },
+    {
+      "name": "待移除的是刚加的那个,不是 owner 原有条目(读的是被聚焦的卡)",
+      "pass": true
+    },
+    {
+      "name": "按住时卡片出现长按进度条",
+      "pass": true
+    },
+    {
+      "name": "长按弹出卡片菜单(不是直接删)",
+      "pass": true
+    },
+    {
+      "name": "只开菜单不会动数据",
+      "pass": true
+    },
+    {
+      "name": "菜单 → 移除,列表里没了",
+      "pass": true
+    },
+    {
+      "name": "从网格返回仍停在稍后再看(tab 不复位)",
+      "pass": true
+    },
+    {
+      "name": "返回时焦点落在当前 tab 的 chip 上",
+      "pass": true
+    },
+    {
+      "name": "线上体检通过:latest = 1.7.1 · manifest 1.7.1 · ipk 可下载",
+      "pass": true
+    }
+  ],
+  "api": [
+    {
+      "name": "Health check",
+      "pass": true
+    },
+    {
+      "name": "WBI keys",
+      "pass": true
+    },
+    {
+      "name": "QR generate",
+      "pass": true
+    },
+    {
+      "name": "Popular videos",
+      "pass": true
+    },
+    {
+      "name": "Recommend",
+      "pass": true
+    },
+    {
+      "name": "Search",
+      "pass": true
+    },
+    {
+      "name": "Video info",
+      "pass": true
+    },
+    {
+      "name": "Play URL (DASH)",
+      "pass": true
+    },
+    {
+      "name": "Danmaku",
+      "pass": true
+    },
+    {
+      "name": "Related videos",
+      "pass": true
+    },
+    {
+      "name": "Ranking",
+      "pass": true
+    },
+    {
+      "name": "Video segment proxy",
+      "pass": true
+    }
+  ]
+}

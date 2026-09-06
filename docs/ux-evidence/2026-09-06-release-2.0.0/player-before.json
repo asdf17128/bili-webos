@@ -1,0 +1,37 @@
+[
+  {
+    "name": "cancelled load stops retries and releases the player",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n2 !== 1\n"
+  },
+  {
+    "name": "leaving while video information is pending prevents later streaming",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n1 !== 0\n"
+  },
+  {
+    "name": "network failure stops after two outer attempts instead of trying every quality",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n4 !== 2\n"
+  },
+  {
+    "name": "transient network failure can recover on the second attempt",
+    "pass": true
+  },
+  {
+    "name": "actual danmaku and subtitle font sizes: small",
+    "pass": true
+  },
+  {
+    "name": "actual danmaku and subtitle font sizes: normal",
+    "pass": true
+  },
+  {
+    "name": "actual danmaku and subtitle font sizes: large",
+    "pass": true
+  },
+  {
+    "name": "actual danmaku and subtitle font sizes: largest",
+    "pass": true
+  }
+]

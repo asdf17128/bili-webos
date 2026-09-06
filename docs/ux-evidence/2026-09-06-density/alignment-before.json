@@ -1,0 +1,12 @@
+[
+  {
+    "name": "late title height changes keep a deep focused card in place",
+    "pass": false,
+    "error": "translated titles must retain their reserved tracks\n\n1363 !== 1277\n"
+  },
+  {
+    "name": "design: mixed title lengths keep card and resume metadata aligned",
+    "pass": false,
+    "error": ".video-card meta: [{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":303.375,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":303.375,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":303.375,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":303.375,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":303.375,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":303.375,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":303.375,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":303.375,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":303.375,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375},{\"title\":240.375,\"meta\":303.375,\"height\":339.375},{\"title\":240.375,\"meta\":275.875,\"height\":339.375}]"
+  }
+]

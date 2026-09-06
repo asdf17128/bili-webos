@@ -1,37 +1,43 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { searchVideo, searchSuggest, getHotSearches } from '../api/client';
 import { storage } from '../utils/storage';
-import { useFocusable, setFocus, registerFocusable, unregisterFocusable } from '../hooks/useFocus';
+import { useFocusable, setFocus, getCurrentFocusId, registerFocusable, unregisterFocusable } from '../hooks/useFocus';
 import VideoCard from '../components/VideoCard';
+import Icon from '../components/Icon';
+import PageState, { GridSkeleton } from '../components/PageState';
 import { t } from '../i18n';
 
 // YouTube-style search: the box is a real <input> — selecting it raises the
 // webOS system keyboard (typing + its built-in mic). Below the box is a
 // recommendation list: autocomplete suggestions while typing, and 搜索历史 +
 // 热门搜索 when idle. No custom on-screen keyboard.
-const RESULT_COLS = 4;
 
 // A focusable full-width recommendation row (suggestion / history / trending).
-const RecItem = React.memo(function RecItem({ id, row, icon, label, onPress }) {
+const RecItem = React.memo(function RecItem({ id, row, col = 0, icon, rank, label, onPress }) {
   const handleSelect = useCallback(() => { onPress?.(); }, [onPress]);
-  const { props } = useFocusable({ id, row, col: 0, group: 'content', onSelect: handleSelect });
+  const { props, isFocused } = useFocusable({ id, row, col, group: 'content', onSelect: handleSelect });
   return (
-    <div {...props} className="search-rec-item">
-      <span className="rec-ico">{icon}</span>
-      <span className="rec-label">{label}</span>
+    <div {...props} role="button" className={`search-rec-item${isFocused ? ' focused' : ''}`}>
+      <span className={`rec-ico${rank && rank < 4 ? ' rec-top' : ''}`}>{rank ? String(rank).padStart(2, '0') : <Icon name={icon} size={22} />}</span>
+      <span className="rec-label">{label}</span><Icon name="arrow" className="rec-arrow" size={20} />
     </div>
   );
 });
 
 export default function SearchPage({ onPlayVideo }) {
+  const RESULT_COLS = Math.min(4, Math.max(2, storage.getSettings().gridCols || 3));
   const [keyword, setKeyword] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const [mode, setMode] = useState('browse'); // 'browse' (recs) | 'results'
   const [suggestions, setSuggestions] = useState([]);
   const [history, setHistory] = useState(() => storage.getSearchHistory());
   const [trending, setTrending] = useState([]);
   const inputRef = useRef(null);
+  const requestRef = useRef(0);
+  const resultFocusRef = useRef(false);
+  useEffect(() => () => { requestRef.current++; }, []);
 
   const keywordRef = useRef('');
   keywordRef.current = keyword;
@@ -60,17 +66,22 @@ export default function SearchPage({ onPlayVideo }) {
   const doSearch = useCallback(async (term) => {
     const q = (term != null ? term : keywordRef.current).trim();
     if (!q) return;
+    const requestId = ++requestRef.current;
     lastSearchedRef.current = q;
     setKeyword(q);
     setLoading(true);
+    setError(false); setResults([]);
     setMode('results');
     setSuggestions([]);
     storage.addSearchHistory(q);
     setHistory(storage.getSearchHistory());
     if (inputRef.current) { try { inputRef.current.blur(); } catch (e) { /* ignore */ } }
+    setFocus('content-0-0');
     let items = [];
     try {
       const res = await searchVideo(q);
+      if (requestId !== requestRef.current) return;
+      if (res?.code && res.code !== 0) throw new Error(res.message || String(res.code));
       items = (res?.data?.result || []).map(item => ({
         ...item,
         title: item.title?.replace(/<[^>]+>/g, '') || '',
@@ -82,12 +93,20 @@ export default function SearchPage({ onPlayVideo }) {
       }));
       setResults(items);
     } catch (err) {
+      if (requestId !== requestRef.current) return;
       console.error('Search error:', err);
       setResults([]);
+      setError(true);
     }
+    resultFocusRef.current = getCurrentFocusId() === 'content-0-0';
     setLoading(false);
-    setTimeout(() => setFocus(items.length ? 'content-1-0' : 'content-0-0'), 60);
   }, []);
+
+  useEffect(() => {
+    if (loading || mode !== 'results' || !resultFocusRef.current) return;
+    resultFocusRef.current = false;
+    if (getCurrentFocusId() === 'content-0-0') setFocus(results.length || error ? 'content-1-0' : 'content-0-0');
+  }, [loading, mode, results, error]);
 
   // Debounced autocomplete as the user types / dictates.
   const suggestTimer = useRef(null);
@@ -104,14 +123,18 @@ export default function SearchPage({ onPlayVideo }) {
   }, [keyword]);
 
   const onInputChange = useCallback((e) => {
+    requestRef.current++; // An older search must never replace this newer edit.
+    setLoading(false); setError(false); resultFocusRef.current = false;
     setKeyword(e.target.value);
     setMode('browse'); // editing → show recommendations again
   }, []);
 
   const onInputKeyDown = useCallback((e) => {
     if (e.key === 'Enter') {
+      if (e.nativeEvent.isComposing || e.keyCode === 229) return;
       e.preventDefault();
       e.nativeEvent.stopImmediatePropagation?.();
+      if (e.repeat || e.nativeEvent.repeat) return;
       doSearch();
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -127,51 +150,40 @@ export default function SearchPage({ onPlayVideo }) {
     setFocus('content-0-0');
   }, []);
 
-  // Build the browse list (with section headers). Only non-header rows are
-  // focusable; row index counts focusable rows starting at 1.
   const kw = keyword.trim();
-  const browse = [];
-  if (kw.length > 0) {
-    suggestions.forEach(s => browse.push({ key: 's:' + s, icon: '🔍', label: s, onPress: () => doSearch(s) }));
-  } else {
-    if (history.length) {
-      browse.push({ header: t('搜索历史') });
-      history.forEach(h => browse.push({ key: 'h:' + h, icon: '🕘', label: h, onPress: () => doSearch(h) }));
-      browse.push({ key: 'clear', icon: '🗑', label: t('清除历史'), onPress: clearHistory });
-    }
-    if (trending.length) {
-      browse.push({ header: t('热门搜索') });
-      trending.forEach((h, i) => browse.push({ key: 't:' + h, icon: i < 3 ? '🔥' : '·', label: h, onPress: () => doSearch(h) }));
-    }
-  }
-
-  let fidx = 0;
+  const historyItems = history.map(h => ({ key: h, icon: 'history', label: h, onPress: () => doSearch(h) }));
+  if (history.length) historyItems.push({ key: 'clear', icon: 'trash', label: t('清除历史'), onPress: clearHistory });
+  const columns = kw ? [{ title: t('搜索建议'), items: suggestions.map(s => ({ key: s, icon: 'search', label: s, onPress: () => doSearch(s) })) }]
+    : [{ title: t('热门搜索'), items: trending.map((h, i) => ({ key: h, rank: i + 1, label: h, onPress: () => doSearch(h) })) },
+      { title: t('搜索历史'), items: historyItems }];
 
   return (
     <div className="search-container" style={{ overflowY: 'auto' }}>
-      <div className="page-title" style={{ padding: 0 }}>{t('搜索')}</div>
+      <header className="page-heading"><h1>{t('搜索')}</h1></header>
 
-      <div className="search-bar">
+      <div className="search-bar"><Icon name="search" size={30} />
         <input
           ref={inputRef}
           type="text"
           className="search-input"
           data-focus-id="content-0-0"
           value={keyword}
-          placeholder={t('搜索')}
+          placeholder={t('搜索视频、UP 主')}
+          aria-label={t('搜索视频、UP 主')}
           onChange={onInputChange}
           onKeyDown={onInputKeyDown}
-          onFocus={() => { setMode('browse'); setFocus('content-0-0'); }}
+          onFocus={() => { requestRef.current++; setLoading(false); setMode('browse'); setFocus('content-0-0'); }}
         />
       </div>
+      <p className="search-help">{t('按确认输入，支持系统键盘与语音输入')}</p>
 
       {loading ? (
-        <div className="loading" style={{ marginTop: 30 }}><div className="loading-spinner" />{t('搜索中...')}</div>
+        <GridSkeleton cols={RESULT_COLS} />
       ) : mode === 'results' ? (
-        results.length > 0 ? (
+        error ? <PageState row={1} title={t('搜索暂时不可用')} description={t('请检查网络连接后重试')} action={t('重试')} onAction={() => doSearch(lastSearchedRef.current)} /> : results.length > 0 ? (
           <div style={{ marginTop: 18 }}>
             <div style={{ fontSize: 'calc(18px * var(--ui-scale))', color: '#aaa', margin: '0 4px 14px' }}>{t('搜索结果')}</div>
-            <div style={{
+            <div className="search-results-grid" style={{
               display: 'grid',
               gridTemplateColumns: `repeat(${RESULT_COLS}, 1fr)`,
               gap: '18px 16px',
@@ -194,14 +206,13 @@ export default function SearchPage({ onPlayVideo }) {
           <div className="empty-state">{t('未找到相关视频')}</div>
         )
       ) : (
-        <div className="search-recs">
-          {browse.map((it) => {
-            if (it.header) return <div key={'H:' + it.header} className="search-rec-section">{it.header}</div>;
-            const row = 1 + fidx; fidx++;
-            return (
-              <RecItem key={it.key} id={`content-${row}-0`} row={row} icon={it.icon} label={it.label} onPress={it.onPress} />
-            );
-          })}
+        <div className="search-discovery">
+          {columns.map((section, col) => <section className="search-recs" key={section.title}>
+            <h2 className="search-rec-section">{section.title}</h2>
+            {section.items.length ? section.items.map((it, i) => <RecItem key={it.key} id={`content-${i + 1}-${col}`}
+              row={i + 1} col={col} icon={it.icon} rank={it.rank} label={it.label} onPress={it.onPress} />)
+              : <p className="search-empty">{kw ? t('输入关键词，按确认搜索') : col ? t('搜过的内容会出现在这里') : t('输入关键词，发现更多内容')}</p>}
+          </section>)}
         </div>
       )}
     </div>

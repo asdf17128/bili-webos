@@ -1,16 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useLayoutEffect } from 'react';
 import { thumbUrl } from '../utils/thumb';
 import { perfFlag, canPrefetch } from '../utils/perfFlags';
-import { onFocusChange } from '../hooks/useFocus';
+import { onFocusChange, isHoverDriven } from '../hooks/useFocus';
 import VideoCard from './VideoCard';
 import { t } from '../i18n';
 
 // Use transform:translateY for scrolling instead of overflow:scroll
 // This pushes scroll to GPU compositor, avoiding layout recalculation
-export default React.memo(function VideoGrid({ videos, group = 'content', startRow = 0, cols = 2, onSelect, focusRow = 0, followedMids = null }) {
-  if (!videos || videos.length === 0) {
-    return <div className="empty-state">{t('暂无内容')}</div>;
-  }
+export default React.memo(function VideoGrid({ videos = [], group = 'content', startRow = 0, cols = 2, onSelect, focusRow = 0, followedMids = null, footer = null, upTarget = null, header = null }) {
 
   // Scroll offset for the focused row. The row pitch used to be a FORMULA
   // (620/cols + 110), which is off by a few px against the real layout — the
@@ -19,6 +16,7 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
   // the real pitch from two adjacent rows instead and fall back to the formula
   // only before the first measurement.
   const gridRef = useRef(null);
+  const viewportRef = useRef(null);
   // 滚动**不进 React**:焦点系统早就做成零渲染了(直接改 classList),
   // 滚动却还留在 state 里 —— 每按一次方向键要把 100+ 张卡片渲染两遍
   // (setFocusRow 一次 + setScrollY 一次)。实测跟手 p50 29ms / p95 92ms。
@@ -34,9 +32,10 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
   // offsetTop、留 46px peek、按 scrollHeight-1080 夹住)。
   const scrollToRow = useCallback((gridRow) => {
     const el = gridRef.current;
-    if (!el || !el.children.length) return;
-    const first = el.children[0];
-    const target = el.children[Math.min(gridRow * cols, el.children.length - 1)];
+    const viewportHeight = viewportRef.current?.clientHeight;
+    if (!el || !el.children.length || !viewportHeight) return;
+    const first = el.querySelector('.video-card');
+    const target = gridRow < 0 ? el.firstElementChild : el.querySelector(`[data-focus-id="${group}-${startRow + gridRow}-0"]`) || el.lastElementChild;
     if (!target) return;
     // Leave a sliver of the previous row on screen whenever we're not at the
     // very top, so "there is more above" is visible instead of implied (owner
@@ -45,31 +44,43 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
     // sits near the top, so following rows are always in view, and the
     // maxScroll clamp makes the last row land flush at the end.
     const PEEK = gridRow > 0 ? 46 : 0;
-    const want = Math.max(0, target.offsetTop - first.offsetTop - PEEK);
-    const maxScroll = Math.max(0, el.scrollHeight - 1080);
+    // A resume shelf is part of this scroll surface. Inserting it after a slow
+    // history response must keep a deep focused card at the same screen Y.
+    const want = gridRow < 0 ? 0 : gridRow === 0
+      ? Math.max(0, target.offsetTop + target.offsetHeight + 16 - viewportHeight)
+      : Math.max(0, target.offsetTop - (header ? 24 : first.offsetTop) - PEEK);
+    const maxScroll = Math.max(0, el.scrollHeight - viewportHeight);
     const next = Math.min(want, maxScroll);
     if (Math.abs(scrollRef.current - next) <= 1) return;
     scrollRef.current = next;
     el.style.transform = `translateY(-${next}px)`;
-  }, [cols]);
+  }, [cols, group, startRow, !!header]);
 
   // 焦点落到本网格的某一行 → 直接滚过去,不经过 React。
   useEffect(() => (perfFlag('scrollDirect') ? onFocusChange((fid) => {
-    if (!fid) return;
-    const m = fid.match(/^(.+)-(\d+)-(\d+)$/);
+    if (!fid || isHoverDriven()) return;
+    const m = fid.match(/^(.+?)-(-?\d+)-(\d+)$/);
     if (!m || m[1] !== group) return;
     const gridRow = parseInt(m[2]) - startRow;
-    if (gridRow < 0) return;
+    if (gridRow < 0 && !(header && gridRow === -1)) return;
     lastRowRef.current = gridRow;
     scrollToRow(gridRow);
-  }) : undefined), [group, startRow, scrollToRow]);
+  }) : undefined), [group, startRow, scrollToRow, !!header]);
 
   // 列表增删/首次渲染后按当前行复位(翻页追加、切换分区都会走这里)
   const lastRowRef = useRef(0);
   useLayoutEffect(() => { scrollToRow(lastRowRef.current); }, [videos.length, cols, scrollToRow]);
 
   // 外部显式指定行(收藏页切夹子后回到顶部)时跟随
-  useLayoutEffect(() => { lastRowRef.current = focusRow; scrollToRow(focusRow); }, [focusRow, scrollToRow]);
+  useLayoutEffect(() => { lastRowRef.current = focusRow; scrollToRow(focusRow); }, [focusRow]);
+
+  useEffect(() => {
+    const update = () => scrollToRow(lastRowRef.current);
+    window.addEventListener('resize', update);
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(update) : null;
+    if (observer && viewportRef.current) observer.observe(viewportRef.current);
+    return () => { window.removeEventListener('resize', update); observer?.disconnect(); };
+  }, [scrollToRow]);
 
   // 预取:焦点行往下两行的缩略图提前开始下载。
   // 实测(C4 真机 2026-08-29):"卡片挂载→图片显示" p50 638ms,而请求本身只要
@@ -92,7 +103,9 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
     // 这时候再去取下一行的图,既不抢手感又赶得上。
     const idle = (fn) => (typeof requestIdleCallback === 'function'
       ? requestIdleCallback(fn, { timeout: 300 }) : setTimeout(fn, 0));
+    let cancelled = false;
     const settle = setTimeout(() => idle(() => {
+      if (cancelled || !canPrefetch()) return;
       for (let i = from; i < to; i++) {
         const v = videos[i];
         const src = v && thumbUrl(v.pic || v.cover || '', cols);
@@ -105,12 +118,12 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
       // 集合本身也别无限长:超过 400 条就清掉(URL 字符串,几十 KB 量级)
       if (prefetched.current.size > 400) prefetched.current.clear();
     }), 200);
-    return () => clearTimeout(settle);
+    return () => { cancelled = true; clearTimeout(settle); };
   }, [cols, videos]);
 
   return (
-    <div style={{
-      height: '1080px',
+    <div ref={viewportRef} className="video-grid-viewport" style={{
+      height: '100%', minHeight: 0, flex: 1,
       overflow: 'hidden',
       position: 'relative',
     }}>
@@ -123,6 +136,7 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
         transition: 'transform 0.2s ease',
         willChange: 'transform',
       }}>
+        {header && <div className="grid-header" style={{ gridColumn: '1 / -1' }}>{header}</div>}
         {videos.map((video, idx) => {
           const row = startRow + Math.floor(idx / cols);
           const col = idx % cols;
@@ -136,10 +150,13 @@ export default React.memo(function VideoGrid({ videos, group = 'content', startR
               col={col}
               group={group}
               onSelect={onSelect}
+              onNavigate={upTarget && row === startRow ? direction => direction === 'up' ? upTarget : null : undefined}
               followed={!!(followedMids && video.owner?.mid && followedMids.has(Number(video.owner.mid)))}
             />
           );
         })}
+        {footer && <div className="grid-footer" style={{ gridColumn: '1 / -1' }}>{footer}</div>}
+        {!videos.length && <div className="empty-state">{t('暂无内容')}</div>}
       </div>
     </div>
   );

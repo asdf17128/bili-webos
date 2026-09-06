@@ -1,0 +1,142 @@
+[
+  {
+    "name": "loading retains a usable sidebar focus",
+    "pass": true
+  },
+  {
+    "name": "pointer hover does not scroll the grid",
+    "pass": true
+  },
+  {
+    "name": "wheel still moves a row that the pointer already highlights",
+    "pass": true
+  },
+  {
+    "name": "sidebar keeps scroll; Right restores the same card",
+    "pass": true
+  },
+  {
+    "name": "OK intentionally refreshes the current sidebar section",
+    "pass": true
+  },
+  {
+    "name": "passing follow in sidebar never opens login",
+    "pass": true
+  },
+  {
+    "name": "native search editing keeps Backspace and caret arrows",
+    "pass": true
+  },
+  {
+    "name": "feed failure offers a focusable retry",
+    "pass": true
+  },
+  {
+    "name": "retry recovers a failed feed",
+    "pass": true
+  },
+  {
+    "name": "rapid sidebar traversal commits only the settled section",
+    "pass": true
+  },
+  {
+    "name": "switching sections restores the cached feed and scroll",
+    "pass": true
+  },
+  {
+    "name": "slow content never steals focus after navigating away",
+    "pass": true
+  },
+  {
+    "name": "latest search wins even if an older response arrives last",
+    "pass": true
+  },
+  {
+    "name": "search network failures have their own retry state",
+    "pass": true
+  },
+  {
+    "name": "login isolates navigation and provides retry / cancel",
+    "pass": true
+  },
+  {
+    "name": "favorites empty response resolves loading",
+    "pass": true
+  },
+  {
+    "name": "favorites failures can be retried",
+    "pass": true
+  },
+  {
+    "name": "favorites return to the selected folder and fit the viewport",
+    "pass": true
+  },
+  {
+    "name": "late favorite-folder responses never replace the current folder",
+    "pass": true
+  },
+  {
+    "name": "favorites last row accounts for the folder header height",
+    "pass": true
+  },
+  {
+    "name": "loading player can be cancelled without moving background focus",
+    "pass": true
+  },
+  {
+    "name": "visual / deep scrolling / large text (zh)",
+    "pass": true
+  },
+  {
+    "name": "visual / deep scrolling / large text (en)",
+    "pass": true
+  },
+  {
+    "name": "visual / deep scrolling / large text (es)",
+    "pass": true
+  },
+  {
+    "name": "design: drawer overlays without shifting content or losing the card",
+    "pass": true
+  },
+  {
+    "name": "design: reopening navigation keeps the bottom item visible",
+    "pass": true
+  },
+  {
+    "name": "design: resume shelf uses unfinished history and supports remote navigation",
+    "pass": true
+  },
+  {
+    "name": "design: late history preserves a deep card position",
+    "pass": true
+  },
+  {
+    "name": "design: history failure leaves discovery usable",
+    "pass": true
+  },
+  {
+    "name": "design: search has connected trending and recent columns",
+    "pass": true
+  },
+  {
+    "name": "design: card metadata remains inside a stable text slot",
+    "pass": true
+  },
+  {
+    "name": "design: settings remain readable with large text (zh)",
+    "pass": true
+  },
+  {
+    "name": "design: settings remain readable with large text (en)",
+    "pass": true
+  },
+  {
+    "name": "design: settings remain readable with large text (es)",
+    "pass": true
+  },
+  {
+    "name": "design: resume and a two-column large-text feed share a safe viewport",
+    "pass": true
+  }
+]

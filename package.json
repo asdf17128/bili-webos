@@ -6,7 +6,11 @@
   "scripts": {
     "test": "node --test service/com.biliwebos.app.service/test/*.test.js",
     "test:api": "node tools/test-e2e.mjs",
-    "test:ui": "node tools/test-ui.mjs"
+    "test:ui": "node tools/test-ui.mjs",
+    "test:ux": "node tools/test-tv-ux.mjs",
+    "test:ux:tv": "node tools/test-tv-ux-device.mjs",
+    "test:loading": "node tools/test-player-loading.mjs",
+    "test:settings:tv": "node tools/test-tv-settings.mjs"
   },
   "devDependencies": {
     "playwright": "^1.62.1"

@@ -1,0 +1,7 @@
+[
+  {
+    "name": "library native scrolling keeps the last large card visible",
+    "pass": false,
+    "error": "{\"x\":157.55001831054688,\"y\":1427.698486328125,\"width\":856.8999328613281,\"height\":619.22802734375}"
+  }
+]

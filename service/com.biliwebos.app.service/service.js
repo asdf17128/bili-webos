@@ -6,7 +6,6 @@
 var Service = require('webos-service');
 var https = require('https');
 var http = require('http');
-var zlib = require('zlib');
 var fs = require('fs');
 var path = require('path');
 var os = require('os');
@@ -218,25 +217,8 @@ function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity,
   req.end();
 }
 
-// Decompress response
-function decompressResponse(res, callback) {
-  var chunks = [];
-  res.on('data', function (c) { chunks.push(c); });
-  res.on('end', function () {
-    var buf = Buffer.concat(chunks);
-    var encoding = res.headers['content-encoding'];
-    if (encoding === 'gzip') {
-      zlib.gunzip(buf, function (err, r) { callback(err ? buf : r); });
-    } else if (encoding === 'deflate') {
-      zlib.inflate(buf, function (err, r) {
-        if (!err) { callback(r); return; }
-        zlib.inflateRaw(buf, function (err2, r2) { callback(err2 ? buf : r2); });
-      });
-    } else {
-      callback(buf);
-    }
-  });
-}
+// API response reader handles successful completion and truncated bodies.
+var decompressResponse = require('./httpBody');
 
 function getLanIp() {
   var nets = os.networkInterfaces();
@@ -365,7 +347,12 @@ service.register('fetch', function (message) {
     message.payload.contentType, message.payload.range, 0, function (err, res) {
       if (err) { message.respond({ returnValue: false, error: err.message }); return; }
 
-      decompressResponse(res, function (data) {
+      decompressResponse(res, function (bodyError, data) {
+        if (bodyError) {
+          logSvcErr('body:' + parsed.hostname, bodyError.message);
+          message.respond({ returnValue: false, error: bodyError.message });
+          return;
+        }
         var ct = res.headers['content-type'] || '';
         if (ct.indexOf('json') >= 0 || ct.indexOf('text') >= 0 || ct.indexOf('xml') >= 0) {
           message.respond({

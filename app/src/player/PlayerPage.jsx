@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies, getReplyReplies, tripleVideo, likeVideo, coinVideo, favVideo, getFavFoldersFor, getVideoRelation, getHtml5PlayUrl, mediaProxyBase, addToView, delToView } from '../api/client';
 import { playPart, playAdvance } from './playIntent';
@@ -422,10 +423,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
   // Initialize Shaka Player
   useEffect(() => {
-    let mounted = true;
+    let mounted = true, player = null;
     async function init() {
       const _tShakaImp = perfNow();
       const shaka = await import('shaka-player');
+      if (!mounted) return;
       mark('po-shaka-import', perfNow() - _tShakaImp);
       shaka.polyfill.installAll();
       if (!shaka.Player.isBrowserSupported()) {
@@ -436,8 +438,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         setLoadError(true);
         return;
       }
-      const player = new shaka.Player();
+      player = new shaka.Player();
       await player.attach(videoRef.current);
+      if (!mounted) return;
       shakaRef.current = player;
       if (typeof window !== 'undefined') window.__shakaPlayer = player; // test hook (speed diag)
 
@@ -479,13 +482,27 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }
       });
 
-      if (mounted) loadVideo(player);
+      if (mounted) loadVideo(player, () => mounted);
     }
-    init();
-    return () => { mounted = false; shakaRef.current?.destroy(); };
+    init().catch(err => {
+      if (!mounted) return;
+      console.error('Player initialization failed:', err?.message || err);
+      setLoading(false); setLoadError(true);
+    });
+    return () => {
+      mounted = false;
+      player?.destroy();
+      if (window.__shakaPlayer === player) delete window.__shakaPlayer;
+    };
   }, []);
 
-  const loadVideo = useCallback(async (player) => {
+  const loadVideo = useCallback(async (player, isActive) => {
+    const cancelled = err => !isActive() || err?.code === 7000 || err?.code === 7001;
+    const activeResult = async promise => {
+      const result = await promise;
+      if (!isActive()) throw Object.assign(new Error('Load cancelled'), { code: 7000 });
+      return result;
+    };
     const isBangumi = !!(video?.isBangumi || video?.epid || video?.seasonId);
     if (!video?.bvid && !video?.aid && !isBangumi) return;
     setLoading(true);
@@ -508,7 +525,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         // the season listing when the history/feed item didn't carry them.
         if (!cid || !epid) {
           try {
-            const info = await getBangumiInfo({ epid, seasonId });
+            const info = await activeResult(getBangumiInfo({ epid, seasonId }));
             const result = info?.result || info?.data || {};
             const eps = result.episodes || [];
             let ep = epid ? eps.find(e => String(e.id) === String(epid)) : null;
@@ -526,7 +543,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       let ugcSeason = null;
       if (!isBangumi) {
         const _tInfo = perfNow();
-        const info = await getVideoInfo(video);
+        const info = await activeResult(getVideoInfo(video));
         mark('po-info', perfNow() - _tInfo);
         const d = info?.data || {};
         // view 挂了且兜底也没补出 cid(client.js 里有 pagelist 兜底)——
@@ -552,7 +569,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           // One retry: if this silently fails, the 已三连 guard can't see the
           // truth and a long-press re-fires triple (harmless server-side — B站
           // caps coins at 2/video — but the toast then lies "成功").
-          const fetchRel = (attempt) => getVideoRelation(d.aid).then(r => {
+          const fetchRel = (attempt) => isActive() && getVideoRelation(d.aid).then(r => {
+            if (!isActive()) return;
             const rd = r?.data;
             if (rd) {
               setRel({
@@ -583,7 +601,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         // 'at' (history/cast) already carries progress; 'none' (选集/连播) starts at 0.
         if (video.resumeMode === 'auto' && d.aid && cid) {
           try {
-            const pv = await getPlayerV2(d.aid, cid);
+            const pv = await activeResult(getPlayerV2(d.aid, cid));
             const lc = pv?.data?.last_play_cid;
             const lt = pv?.data?.last_play_time; // ms
             if (lc && ugcPages.some(p => p.cid === lc)) {
@@ -594,6 +612,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }
       }
       if (!isBangumi && !cid) throw new Error('No cid for video');
+      if (!isActive()) return;
       cidRef.current = cid;
       // Chapters (view_points) for the FINAL cid — best effort. (The resume
       // lookup above may fetch player/v2 for the pre-jump cid, whose chapter
@@ -604,6 +623,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       subBodyCacheRef.current = new Map(); // bodies are per-cid
       if (!isBangumi && videoAidRef.current) {
         getPlayerV2(videoAidRef.current, cid).then(pv => {
+          if (!isActive()) return;
           const vp = pv?.data?.view_points;
           if (Array.isArray(vp)) {
             const ch = vp
@@ -644,6 +664,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       setVideoshot(null);
       if (!isBangumi && (video.bvid || video.aid)) {
         getVideoshot(video.bvid, cid).then(r => {
+          if (!isActive()) return;
           const d2 = r?.data;
           if (d2 && Array.isArray(d2.image) && d2.image.length > 0) {
             setVideoshot({
@@ -691,11 +712,12 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         const fallbackQn = qualityLadder[rung];
         for (let attempt = 0; attempt < 2 && !loaded; attempt++) {
           try {
+            if (!isActive()) return;
             let dash, meta, wantQn;
             if (isBangumi) {
               // Request the full ladder so HDR/4K reps are present; pick the
               // top rep by default, or the forced fallback quality.
-              const res = await getBangumiPlayUrl({ epid, cid }, 127);
+              const res = await activeResult(getBangumiPlayUrl({ epid, cid }, 127));
               meta = res?.result || res?.data;
               dash = meta?.dash;
               if (!dash) throw new Error('No DASH stream (bangumi — region/VIP locked?)');
@@ -705,7 +727,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               // Pass the whole `video` so a cast-initiated, aid-only payload
               // still resolves via getPlayUrl's object overload.
               const _tPu = perfNow();
-              const res = await getPlayUrl(video, cid, fallbackQn || settings.quality || 80);
+              const res = await activeResult(getPlayUrl(video, cid, fallbackQn || settings.quality || 80));
               mark('po-playurl', perfNow() - _tPu);
               // 取流被拒时,把**能照着做的话**摆到用户面前(issue #20/#23:
               // 两位用户都只看到一句"视频加载失败",不知道是风控、更不知道
@@ -754,7 +776,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               ? resumeProgress : 0;
             try {
               const _tLoad = perfNow();
-              await player.load(mpdUrl, resumeAt || undefined);
+              await activeResult(player.load(mpdUrl, resumeAt || undefined));
               mark('po-shaka', perfNow() - _tLoad);
             } finally {
               URL.revokeObjectURL(mpdUrl);
@@ -762,6 +784,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             if (rung > 0) console.warn('[loadVideo] fell back to qn=' + fallbackQn + ' (top rep failed to load/decode)');
             loaded = true;
           } catch (e) {
+            if (cancelled(e)) return;
+            // CDN failures have already used Shaka's segment retries. Changing
+            // quality cannot repair a disconnected network.
+            if (attempt === 1 && e?.category !== 3 && e?.category !== 4) throw e;
             lastErr = e;
             console.warn('[loadVideo] rung ' + rung + ' attempt ' + (attempt + 1) + ' failed:', e?.message || e);
             const isLast = rung === qualityLadder.length - 1 && attempt === 1;
@@ -834,11 +860,12 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         if (relatedRef.current.length > 0) setEndNextIn(10); // YouTube-style autoplay next
       });
 
-      try { setDanmakus(await getDanmaku(cid)); } catch {}
+      try { setDanmakus(await activeResult(getDanmaku(cid))); } catch {}
+      if (!isActive()) return;
       if (isBangumi) {
         // "相关推荐" → the season's episode list; each plays via the PGC path.
         try {
-          const info = await getBangumiInfo({ epid, seasonId });
+          const info = await activeResult(getBangumiInfo({ epid, seasonId }));
           const result = info?.result || info?.data || {};
           const eps = (result.episodes || []).map(e => ({
             isBangumi: true, epid: e.id, cid: e.cid,
@@ -874,7 +901,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         if (parts.length > 0) setPanelTab('parts');
         // Always fetch 相关推荐 too (its own tab).
         try {
-          const rel = await getRelated(video.bvid);
+          const rel = await activeResult(getRelated(video.bvid));
           const firstBatch = (rel?.data || []).slice(0, 12);
           setRelatedVideos(firstBatch);
           // 首批一到就在空闲时备下一批 —— 用户往下翻时不再等请求
@@ -882,6 +909,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         } catch {}
       }
     } catch (err) {
+      if (cancelled(err)) return;
       console.error('Load video error:', err?.message || err);
       // Order-play: a 失效 (taken-down) video in a favorites folder throws here —
       // don't dead-end on the error screen, just skip to the next item (#11).
@@ -2194,7 +2222,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                       style={{
                         display: 'flex', gap: 14, padding: '14px 12px', borderRadius: 8,
                         background: focusArea === 'commentRail' && focusIdx === i ? 'rgba(0,161,214,0.16)' : 'transparent',
-                        outline: focusArea === 'commentRail' && focusIdx === i ? '3px solid #00a1d6' : 'none',
+                        outline: focusArea === 'commentRail' && focusIdx === i ? '3px solid var(--tv-focus)' : 'none',
                       }}>
                       <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#1a1a2e', flexShrink: 0, overflow: 'hidden' }}>
                         {av && <img src={av} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
@@ -2439,11 +2467,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             const isStatBtn = btn === 'like' || btn === 'coin' || btn === 'fav';
             const lit = (btn === 'like' && rel.liked) || (btn === 'coin' && rel.coined > 0) || (btn === 'fav' && rel.faved);
             const label =
-              btn === 'play' ? (ended ? t('🔁 重播') : playing ? t('⏸ 暂停') : t('▶ 播放')) :
-                btn === 'like' ? `👍 ${formatCount(stat.like)}` :
+              btn === 'play' ? (ended ? t('重播') : playing ? t('暂停') : t('播放')) :
+                btn === 'like' ? formatCount(stat.like) :
                   // B站同款金币(金圆盘+B字)——emoji 的 🪙 像块石头(owner)。
-                  btn === 'coin' ? <><CoinIcon /> {formatCount(stat.coin)}</> :
-                    btn === 'fav' ? `⭐ ${formatCount(stat.favorite)}` :
+                  btn === 'coin' ? formatCount(stat.coin) :
+                    btn === 'fav' ? formatCount(stat.favorite) :
                       btn === 'later' ? (inToView ? t('已稍后再看') : t('稍后再看')) :
                       btn === 'danmaku' ? (danmakuEnabled ? t('弹幕 开') : t('弹幕 关')) :
                         btn === 'subtitle' ? (subLan == null ? t('字幕 关')
@@ -2465,11 +2493,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             return (
               <button key={btn}
                 ref={el => { btnRefs.current[btn] = el; }}
-                className={`player-btn ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''} ${lit ? 'lit' : ''} ${isStatBtn && triplePop ? 'triple-pop' : ''}`}
+                aria-label={btn === 'like' ? t('点赞') : btn === 'coin' ? t('投币') : btn === 'fav' ? t('收藏') : undefined}
+                className={`player-btn player-control ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''} ${lit ? 'lit' : ''} ${isStatBtn && triplePop ? 'triple-pop' : ''}`}
                 onMouseEnter={() => { setFocusArea('controls'); setFocusIdx(i); hideControlsLater(); }}
                 {...handlers}>
-                {label}
-                {btn === 'like' && likeRing && (
+                {btn === 'coin' ? <CoinIcon /> : <Icon size={26} name={btn === 'play' ? (ended ? 'refresh' : playing ? 'pause' : 'play') : btn === 'fav' ? 'star' : btn} />}
+                <span className="player-control-label">{label}</span>
+                {btn === 'like'  && likeRing && (
                   <svg className="like-ring" width={likeRing.w + 8} height={likeRing.h + 8}
                     style={{ left: -7, top: -7 }}>
                     <rect className="like-ring-track" x="4" y="4" width={likeRing.w} height={likeRing.h} rx={likeRing.rx} />
@@ -2500,7 +2530,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                 <div key={key} style={{
                   padding: '6px 18px', fontSize: 18, borderRadius: 6, cursor: 'pointer',
                   color: panelTab === key ? '#fff' : '#aaa',
-                  background: panelTab === key ? '#00a1d6' : 'rgba(255,255,255,0.08)',
+                  background: panelTab === key ? '#3b3d46' : 'rgba(255,255,255,0.08)',
                   outline: focusArea === 'tabs' && panelTab === key ? '3px solid #fff' : 'none',
                 }}
                   onMouseEnter={() => { setFocusArea('tabs'); if (controlsTimer.current) clearTimeout(controlsTimer.current); }}
@@ -2532,18 +2562,18 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                         }}
                         style={{
                           cursor: 'pointer',
-                          outline: focusArea === 'related' && focusIdx === i ? '4px solid #00a1d6'
-                            : (nowPlaying ? '3px solid #00a1d6' : 'none'),
+                          outline: focusArea === 'related' && focusIdx === i ? '4px solid var(--tv-focus)'
+                            : (nowPlaying ? '3px solid var(--tv-focus)' : 'none'),
                           borderRadius: 6, overflow: 'hidden',
                         }}>
                         <div style={{ width: '100%', height: 0, paddingTop: '56.25%', background: '#1a1a2e', borderRadius: 6, overflow: 'hidden', position: 'relative' }}>
                           {thumb && <img src={thumb} alt="" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
-                          {nowPlaying && <div style={{ position: 'absolute', top: 6, left: 6, background: '#00a1d6', color: '#fff', fontSize: 16, padding: '2px 9px', borderRadius: 4 }}>{t('▶ 播放中')}</div>}
+                          {nowPlaying && <div style={{ position: 'absolute', top: 6, left: 6, background: 'var(--tv-accent)', color: '#191a1e', fontSize: 16, padding: '2px 9px', borderRadius: 4 }}>{t('▶ 播放中')}</div>}
                           {rv.duration != null && <div style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: 16, padding: '1px 7px', borderRadius: 3 }}>
                             {typeof rv.duration === 'number' ? formatDuration(rv.duration) : rv.duration}
                           </div>}
                         </div>
-                        <div style={{ padding: '6px 4px 0', fontSize: 18, color: nowPlaying ? '#00a1d6' : '#ccc', lineHeight: 1.3,
+                        <div style={{ padding: '6px 4px 0', fontSize: 18, color: nowPlaying ? 'var(--tv-accent)' : '#ccc', lineHeight: 1.3,
                           overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
                           {titleMT(cleanTitle(rv.title))}
                         </div>

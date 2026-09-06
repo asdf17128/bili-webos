@@ -152,7 +152,8 @@ export default function ConfigPage({ onLogout, user }) {
     { v: 0.85, label: t('小') }, { v: 1, label: t('标准') }, { v: 1.2, label: t('大') }, { v: 1.4, label: t('特大') },
   ];
   const { props: subtitleScaleProps } = useFocusable({
-    id: 'content-5-0', row: 5, col: 0, group: 'content',
+    // Match the visible order: danmaku size -> subtitle size -> UI size.
+    id: 'content-4-0', row: 4, col: 0, group: 'content',
     onSelect: () => openPicker(t('字幕字号'), SUB_SCALES, subtitleScale,
       (v) => { setSubtitleScale(v); storage.setSettings({ ...storage.getSettings(), subtitleScale: v }); }),
   });
@@ -161,7 +162,7 @@ export default function ConfigPage({ onLogout, user }) {
   // 所有 font-size 都是 calc(基准 * var(--ui-scale))。只动字号不动布局。
   const [uiScale, setUiScale] = useState(() => storage.getSettings().uiScale || 1);
   const { props: uiScaleProps } = useFocusable({
-    id: 'content-4-0', row: 4, col: 0, group: 'content',
+    id: 'content-5-0', row: 5, col: 0, group: 'content',
     onSelect: () => openPicker(t('界面字号'), UI_SCALES.map(s => ({ v: s.v, label: t(s.label) })), uiScale, (v) => {
       setUiScale(v);
       storage.setSettings({ ...storage.getSettings(), uiScale: v });
@@ -234,8 +235,9 @@ export default function ConfigPage({ onLogout, user }) {
   const cdnLabel = (CDN_OPTS.find(o => o.v === cdnRoute) || CDN_OPTS[0]).label;
 
   return (
-    <div style={{ padding: '28px 40px', height: '100%', overflowY: 'auto', maxWidth: 720 }}>
-      <div style={{ fontSize: 'calc(26px * var(--ui-scale))', fontWeight: 600, color: '#fff', marginBottom: 24 }}>{t('设置')}</div>
+    <div className="config-page">
+      <header className="config-intro page-heading"><div className="page-eyebrow">PREFERENCES</div><h1>{t('设置')}</h1><p>{t('把观看体验，调成你喜欢的样子')}</p><div className="config-preview" aria-hidden="true"><span /><span /><span /><i /><i /><i /></div></header>
+      <div className="config-options"><h2 className="config-section-title">{t('播放与显示')}</h2>
 
       <div className="settings-row" {...danmakuProps}>
         <span>{t('弹幕')}</span>
@@ -273,6 +275,7 @@ export default function ConfigPage({ onLogout, user }) {
         <span className="settings-row-value">{t((UI_SCALES.find(s => s.v === uiScale) || UI_SCALES[0]).label)}</span>
       </div>
 
+      <h2 className="config-section-title">{t('应用与账户')}</h2>
       <div className="settings-row" {...cdnProps}>
         <span>{t('CDN 线路')}</span>
         <span className="settings-row-value">{cdnLabel}</span>
@@ -302,7 +305,7 @@ export default function ConfigPage({ onLogout, user }) {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)',
           zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           onClick={() => setPicker(null)}>
-          <div style={{ background: 'rgba(24,26,44,0.98)', borderRadius: 12, padding: '18px 0', minWidth: 360,
+          <div className="settings-picker" style={{ background: 'var(--tv-surface)', borderRadius: 12, padding: '18px 0', minWidth: 360,
             boxShadow: '0 18px 60px rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.08)' }}
             onClick={(e) => e.stopPropagation()}>
             <div style={{ fontSize: 'calc(20px * var(--ui-scale))', color: '#9aa0a8', padding: '0 26px 12px' }}>{picker.title}</div>
@@ -310,8 +313,8 @@ export default function ConfigPage({ onLogout, user }) {
               <div key={String(o.v)} style={{
                 padding: '12px 26px', fontSize: 'calc(22px * var(--ui-scale))', display: 'flex', justifyContent: 'space-between', gap: 48,
                 cursor: 'pointer',
-                color: i === pickerIdx ? '#fff' : '#c6cad2',
-                background: i === pickerIdx ? '#00a1d6' : 'transparent',
+                color: i === pickerIdx ? '#17181b' : '#c6cad2',
+                background: i === pickerIdx ? '#f4f4f6' : 'transparent',
               }}
                 onMouseEnter={() => setPickerIdx(i)}
                 onClick={() => { setPicker(null); picker.onPick(o.v); }}>
@@ -335,7 +338,8 @@ export default function ConfigPage({ onLogout, user }) {
         <div>{t('哔哩哔哩 webOS · 版本 v{v}', { v: APP_VERSION })}</div>
         <div>{t('联系 / 反馈：')}{CONTACT_EMAIL}</div>
         <div>{t('项目主页：')}github.com/asdf17128/bili-webos</div>
-        <div style={{ fontSize: 'calc(16px * var(--ui-scale))', color: '#667', marginTop: 8 }}>{t('代理: ')}{proxyUrl}</div>
+        <div style={{ fontSize: 'calc(16px * var(--ui-scale))', color: '#9b9da7', marginTop: 8 }}>{t('代理: ')}{proxyUrl}</div>
+      </div>
       </div>
     </div>
   );

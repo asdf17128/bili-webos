@@ -77,10 +77,7 @@ async function main() {
   const pageErrors = [];
   page.on('pageerror', e => pageErrors.push(String(e).slice(0, 120)));
 
-  const key = (k) => page.evaluate((kk) => {
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: kk, bubbles: true }));
-    if (kk === 'Enter') window.dispatchEvent(new KeyboardEvent('keyup', { key: kk, bubbles: true }));
-  }, k);
+  const key = (k) => page.keyboard.press(k);
   const focusedBtn = () => page.evaluate(() => (document.querySelector('.player-btn.focused') || {}).textContent || '');
   const cardRect = () => page.evaluate(() => {
     const f = document.querySelector('.video-card.focused');
@@ -205,8 +202,10 @@ async function main() {
     const loggedIn = await page.evaluate(() => !!(JSON.parse(localStorage.getItem('bili_auth') || '{}').SESSDATA));
     if (loggedIn) {
       check('Logged in: 赞/币/藏 present in the control bar',
-        controls.some(c => c.includes('👍')) && controls.some(c => c.includes('⭐')),
-        controls.filter(c => /👍|B |⭐/.test(c)).join(' '));
+        await page.locator('.player-btn[aria-label="点赞"]').count() === 1 &&
+        await page.locator('.player-btn[aria-label="投币"]').count() === 1 &&
+        await page.locator('.player-btn[aria-label="收藏"]').count() === 1,
+        'named like / coin / favorite controls');
     } else {
       warn('Not logged in', 'like/coin/fav surface skipped — start tools/dev-service.mjs to seed cookies');
     }
@@ -406,10 +405,7 @@ async function main() {
         // 悬停把焦点移到目标卡上,然后**回读 .video-card.focused** 再断言身份 ——
         // 长按打在哪张卡由焦点决定,断言就必须读焦点那张。真机套件里正是因为
         // 断言读了列表第一张、长按落在第二张,误删了 owner 真存的视频(2026-08-06)。
-        await page.evaluate(() => {
-          const c = [...document.querySelectorAll('.video-card')].find(x => x.innerText.includes('弹幕'));
-          if (c) c.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
-        });
+        await page.locator('.video-card').filter({ hasText: '弹幕' }).first().hover();
         await sleep(400);
         const target = await page.evaluate(() => {
           const f = document.querySelector('.video-card.focused');
@@ -418,9 +414,9 @@ async function main() {
         check('Remove target is the fixture video, not a real saved item', !!target && target.includes('弹幕'), target || '(none)');
         if (target && target.includes('弹幕')) {
           // 长按现在**弹菜单**,不再直接删(owner 2026-08-09:"不要删除,而是弹出菜单")
-          await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
+          await page.keyboard.down('Enter');
           await sleep(1100);   // 长按阈值 800ms
-          await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true })));
+          await page.keyboard.up('Enter');
           await sleep(1800);
           const menu = await page.evaluate(() => [...document.querySelectorAll('.cardmenu-item')].map(x => x.textContent.trim()));
           check('Long-press opens the card menu (not an instant delete)',
@@ -467,8 +463,8 @@ async function main() {
         bg: getComputedStyle(c).backgroundColor,
       })));
       const sel = chipColors.find(c => c.active);
-      check('选中的 tab 是实心蓝,且焦点态没被重渲染擦掉',
-        !!sel && sel.focused && sel.bg === 'rgb(0, 161, 214)',
+      check('选中的 tab 保持焦点样式,且焦点态没被重渲染擦掉',
+        !!sel && sel.focused && sel.bg === 'rgb(247, 247, 249)',
         chipColors.map(c => `${c.txt}[${c.active ? 'A' : ''}${c.focused ? 'F' : ''}]${c.bg}`).join(' '));
     }
 
@@ -476,14 +472,11 @@ async function main() {
     // 任意列表页的卡片长按都该弹菜单(不只是稍后再看列表)
     await gotoPage('推荐');
     await sleep(2500);
-    await page.evaluate(() => {
-      const c = document.querySelector('.video-card');
-      if (c) c.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
-    });
+    await page.locator('.video-card').first().hover();
     await sleep(400);
-    await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
+    await page.keyboard.down('Enter');
     await sleep(1100);
-    await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true })));
+    await page.keyboard.up('Enter');
     await sleep(2500);
     const homeMenu = await page.evaluate(() => [...document.querySelectorAll('.cardmenu-item')].map(x => x.textContent.trim()));
     check('首页卡片长按也弹菜单,含「加入稍后再看」',
@@ -495,25 +488,20 @@ async function main() {
     // 保险:菜单是"按住 OK"弹出来的,手还按着;遥控器连发 keydown 不能把第一项
     // 确认掉(owner 2026-08-09:「不能一直长按就可以点击吧,得再按一次」)。
     // 实测过:没这道保险时,按住 2 秒就直接把视频加进了列表。
-    await page.evaluate(() => {
-      const c = document.querySelector('.video-card');
-      if (c) c.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
-    });
+    await page.locator('.video-card').first().hover();
     await sleep(400);
-    await page.evaluate(async () => {
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-      for (let i = 0; i < 30; i++) {                       // 1.5s 连发,菜单 0.8s 时弹出
-        await new Promise(r => setTimeout(r, 50));
-        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, repeat: true }));
-      }
-    });
+    await page.keyboard.down('Enter');
+    for (let i = 0; i < 30; i++) {                       // Real held-key repeats, including capture/bubble routing.
+      await sleep(50);
+      await page.keyboard.down('Enter');
+    }
     await sleep(500);
     const held = await page.evaluate(() => ({
       open: !!document.querySelector('.cardmenu'),
       msg: (document.querySelector('.cardmenu-msg') || {}).textContent || null,
     }));
     check('按住不放:菜单弹出但不会自己确认', held.open && !held.msg, `open=${held.open} msg=${held.msg}`);
-    await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true })));
+    await page.keyboard.up('Enter');
     await sleep(900);
     const afterUp = await page.evaluate(() => ({
       open: !!document.querySelector('.cardmenu'),

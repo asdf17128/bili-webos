@@ -857,7 +857,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         setPanelTab('related');
         setFocusArea('related');
         setFocusIdx(0);
-        if (relatedRef.current.length > 0) setEndNextIn(10); // YouTube-style autoplay next
+        // YouTube-style autoplay next — 可在设置里关 (#27):关了就停在推荐列表等手动选。
+        if (relatedRef.current.length > 0 && storage.getSettings().autoplayNext !== false) setEndNextIn(10);
       });
 
       try { setDanmakus(await activeResult(getDanmaku(cid))); } catch {}

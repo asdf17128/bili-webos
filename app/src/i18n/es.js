@@ -261,6 +261,7 @@ export default {
   "从稍后再看移除": "Quitar de Ver más tarde",
   "取消": "Cancelar",
   "看完移出稍后再看": "Quitar tras verlo",
+  "播完自动播放下一个": "Reproducir siguiente automáticamente",
   "已加入稍后再看": "Añadido a Ver más tarde",
   "稍后再看是空的 · 在任意视频上长按 OK 即可加入,播放页也有「稍后再看」按钮": "Ver más tarde está vacío · mantén OK en cualquier vídeo para añadirlo, o usa el botón durante la reproducción",
   "长按 OK:加入/移出稍后再看": "Mantén OK: añadir o quitar de Ver más tarde",

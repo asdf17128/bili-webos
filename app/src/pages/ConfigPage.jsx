@@ -129,9 +129,22 @@ export default function ConfigPage({ onLogout, user }) {
     },
   });
 
+  // 播完自动播放下一个 (#27)。默认开(维持现状);关了片尾不启动倒计时,
+  // 人不在电视前也不会被带去别的视频。
+  const [autoplayNext, setAutoplayNext] = useState(() => settings.autoplayNext !== false);
+  const { props: autoplayNextProps } = useFocusable({
+    id: 'content-2-0', row: 2, col: 0, group: 'content',
+    onSelect: () => {
+      const s = storage.getSettings();
+      const next = !(s.autoplayNext !== false);
+      storage.setSettings({ ...s, autoplayNext: next });
+      setAutoplayNext(next);
+    },
+  });
+
   // 每行视频数 — list picker.
   const { props: gridProps } = useFocusable({
-    id: 'content-2-0', row: 2, col: 0, group: 'content',
+    id: 'content-3-0', row: 3, col: 0, group: 'content',
     onSelect: () => openPicker(t('每行视频'), [2, 3, 4].map(n => ({ v: n, label: t('{n} 个', { n }) })), gridCols,
       (v) => { setGridCols(v); storage.setSettings({ ...storage.getSettings(), gridCols: v }); }),
   });
@@ -141,7 +154,7 @@ export default function ConfigPage({ onLogout, user }) {
     { v: 0.8, label: t('小') }, { v: 1, label: t('标准') }, { v: 1.3, label: t('大') }, { v: 1.6, label: t('特大') },
   ];
   const { props: danmakuScaleProps } = useFocusable({
-    id: 'content-3-0', row: 3, col: 0, group: 'content',
+    id: 'content-4-0', row: 4, col: 0, group: 'content',
     onSelect: () => openPicker(t('弹幕字号'), DM_SCALES, danmakuScale,
       (v) => { setDanmakuScale(v); storage.setSettings({ ...storage.getSettings(), danmakuScale: v }); }),
   });
@@ -153,7 +166,7 @@ export default function ConfigPage({ onLogout, user }) {
   ];
   const { props: subtitleScaleProps } = useFocusable({
     // Match the visible order: danmaku size -> subtitle size -> UI size.
-    id: 'content-4-0', row: 4, col: 0, group: 'content',
+    id: 'content-5-0', row: 5, col: 0, group: 'content',
     onSelect: () => openPicker(t('字幕字号'), SUB_SCALES, subtitleScale,
       (v) => { setSubtitleScale(v); storage.setSettings({ ...storage.getSettings(), subtitleScale: v }); }),
   });
@@ -162,7 +175,7 @@ export default function ConfigPage({ onLogout, user }) {
   // 所有 font-size 都是 calc(基准 * var(--ui-scale))。只动字号不动布局。
   const [uiScale, setUiScale] = useState(() => storage.getSettings().uiScale || 1);
   const { props: uiScaleProps } = useFocusable({
-    id: 'content-5-0', row: 5, col: 0, group: 'content',
+    id: 'content-6-0', row: 6, col: 0, group: 'content',
     onSelect: () => openPicker(t('界面字号'), UI_SCALES.map(s => ({ v: s.v, label: t(s.label) })), uiScale, (v) => {
       setUiScale(v);
       storage.setSettings({ ...storage.getSettings(), uiScale: v });
@@ -178,13 +191,13 @@ export default function ConfigPage({ onLogout, user }) {
     { v: 'akam', label: t('海外 Akamai') },
   ];
   const { props: cdnProps } = useFocusable({
-    id: 'content-6-0', row: 6, col: 0, group: 'content',
+    id: 'content-7-0', row: 7, col: 0, group: 'content',
     onSelect: () => openPicker(t('CDN 线路'), CDN_OPTS, cdnRoute,
       (v) => { setCdnRoute(v); storage.setSettings({ ...storage.getSettings(), cdnRoute: v }); }),
   });
 
   const { props: checkUpdateProps } = useFocusable({
-    id: 'content-7-0', row: 7, col: 0, group: 'content',
+    id: 'content-8-0', row: 8, col: 0, group: 'content',
     onSelect: () => {
       // Once an update is known, OK opens the Homebrew Channel to install it;
       // otherwise re-run the check manually.
@@ -200,9 +213,9 @@ export default function ConfigPage({ onLogout, user }) {
     if (typeof window !== 'undefined' && window.__autoOpenDiag) { window.__autoOpenDiag = false; return true; }
     return false;
   });
-  useEffect(() => { if (showDiag) setFocus('content-8-0'); }, []);
+  useEffect(() => { if (showDiag) setFocus('content-9-0'); }, []);
   const { props: diagProps } = useFocusable({
-    id: 'content-8-0', row: 8, col: 0, group: 'content',
+    id: 'content-9-0', row: 9, col: 0, group: 'content',
     onSelect: () => setShowDiag(v => !v),
   });
 
@@ -221,13 +234,13 @@ export default function ConfigPage({ onLogout, user }) {
     label: (LANG_LABELS[code] || code) + (code === 'auto' ? ` (${LANG_LABELS[getLocale()] || getLocale()})` : ''),
   }));
   const { props: langProps } = useFocusable({
-    id: 'content-9-0', row: 9, col: 0, group: 'content',
+    id: 'content-10-0', row: 10, col: 0, group: 'content',
     onSelect: () => openPicker(LANG_ROW_LABEL, LANG_OPTS, langPref,
       (v) => { if (v !== langPref) setLanguage(v); /* persists + reloads */ }),
   });
 
   const { props: logoutProps } = useFocusable({
-    id: 'content-10-0', row: 10, col: 0, group: 'content',
+    id: 'content-11-0', row: 11, col: 0, group: 'content',
     onSelect: () => { if (user) { storage.clearAuth(); onLogout(); } },
   });
 
@@ -252,6 +265,14 @@ export default function ConfigPage({ onLogout, user }) {
         <span className="settings-row-value" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {autoRm ? t('开') : t('关')}
           <span className={`settings-switch ${autoRm ? 'on' : ''}`}><span className="settings-switch-knob" /></span>
+        </span>
+      </div>
+
+      <div className="settings-row" {...autoplayNextProps}>
+        <span>{t('播完自动播放下一个')}</span>
+        <span className="settings-row-value" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {autoplayNext ? t('开') : t('关')}
+          <span className={`settings-switch ${autoplayNext ? 'on' : ''}`}><span className="settings-switch-knob" /></span>
         </span>
       </div>
 

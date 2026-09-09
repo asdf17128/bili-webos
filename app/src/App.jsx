@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { initKeyboardNav, setFocus, onFocusChange, getCurrentFocusId, focusFirstContent, setLastSidebarFocus, isPointerFocus, isHoverDriven, setContentContext, cancelContentFocus, resetContentMemory } from './hooks/useFocus';
-import { castAck, castSubscribe, castGetStatus, getNavInfo, pingVersionAsset } from './api/client';
+import { castAck, castSubscribe, castGetStatus, getNavInfo, pingVersionAsset, ensureLocalProxyPort } from './api/client';
 import { thumbUrl } from './utils/thumb';
 import { normalizePlay, playAt } from './player/playIntent';
 import { storage } from './utils/storage';
@@ -434,6 +434,8 @@ export default function App() {
     storage.set('verPing', today);
     pingVersionAsset().catch(() => {});
   }, []);
+
+  useEffect(() => { ensureLocalProxyPort(); }, []);
 
   // Arrowing onto a sidebar item just previews its page — no refresh, no
   // jumping into the content.

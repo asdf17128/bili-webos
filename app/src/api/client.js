@@ -56,13 +56,23 @@ function devLunaSubscribe(method, params, onFrame) {
   return function () { try { ws.close(); } catch (e) { /* ignore */ } };
 }
 
+let _localProxyPort = 7654;
+let _portFetchStarted = false;
+export function ensureLocalProxyPort() {
+  if (_portFetchStarted) return;
+  _portFetchStarted = true;
+  lunaRequest('ping', {}, false, { allowMissing: true }).then(function (r) {
+    if (r && r.localProxyPort) _localProxyPort = r.localProxyPort;
+  }).catch(function () {});
+}
+
 // Media (images / video / sprites) always go through the SERVICE's local proxy
 // on the TV — it adds the Referer B站's CDN requires. In dev the bridge runs
 // that same proxy on the Mac, so point there too and the media path matches
 // the TV byte for byte; without the bridge fall back to the standalone proxy.
 export function mediaProxyBase() {
-  if (typeof window !== 'undefined' && window.PalmServiceBridge) return 'http://127.0.0.1:7654';
-  if (import.meta.env.DEV && devLunaUp === true) return 'http://127.0.0.1:7654';
+  if (typeof window !== 'undefined' && window.PalmServiceBridge) return 'http://127.0.0.1:' + _localProxyPort;
+  if (import.meta.env.DEV && devLunaUp === true) return 'http://127.0.0.1:' + _localProxyPort;
   return storage.getProxyUrl();
 }
 
@@ -325,6 +335,12 @@ export async function ensureBuvid() {
       buvidEnsured = true;
     }
   } catch (e) { /* best effort */ }
+}
+
+export async function resetFingerprint() {
+  buvidEnsured = false;
+  _buvid3 = '';
+  return lunaRequest('resetFingerprint', {}, false, { allowMissing: true });
 }
 
 // Rename the cast receiver as shown in the phone's 投屏 list (applies live).

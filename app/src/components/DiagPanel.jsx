@@ -151,6 +151,15 @@ export default function DiagPanel() {
     } catch (e) { /* URL too long for QR — text fallback below */ }
   }
 
+  const byName = Object.fromEntries(rows.map(r => [r.name, r]));
+  const apiUp = byName['API 连通'] && byName['API 连通'].status === 'ok';
+  const looksLikeRiskControl = apiUp && (
+    (byName['图片代理'] && byName['图片代理'].status === 'fail') ||
+    (byName['取流 playurl'] && byName['取流 playurl'].status === 'fail') ||
+    (byName['推荐流(风控)'] && byName['推荐流(风控)'].status === 'fail') ||
+    (byName['视频信息 view'] && byName['视频信息 view'].status === 'warn')
+  );
+
   const ICON = { ok: '✅', fail: '❌', run: '⏳', skip: '⏭️', warn: '⚠️' };
   return (
     <div style={{ marginTop: 18, padding: '16px 20px', background: 'rgba(255,255,255,0.05)', borderRadius: 10 }}>
@@ -161,6 +170,11 @@ export default function DiagPanel() {
               {ICON[r.status] || ''} {t(r.name)}{r.detail ? ` — ${r.detail}` : ''}
             </div>
           ))}
+          {looksLikeRiskControl && (
+            <div style={{ marginTop: 10, fontSize: 'calc(16px * var(--ui-scale))', color: '#f0c96e' }}>
+              {t('图片/取流失败但 API 正常,像是设备指纹被风控标记 —— 去下面的「重置设备指纹」试试,无需重置电视')}
+            </div>
+          )}
           {svcInfo && svcInfo.recentErrors && svcInfo.recentErrors.length > 0 && (
             <div style={{ marginTop: 8, fontSize: 'calc(16px * var(--ui-scale))', color: '#c96' }}>
               {t('服务近期错误:')}

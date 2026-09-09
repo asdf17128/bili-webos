@@ -10,6 +10,7 @@ var fs = require('fs');
 var path = require('path');
 var os = require('os');
 var childProcess = require('child_process');
+var crypto = require('crypto');
 // The WHATWG URL GLOBAL only exists on Node 10+. webOS 5 runs Node 8, where
 // every `new URL(...)` threw ReferenceError — caught by the surrounding
 // try/catch and turned into "Invalid URL"/400 for EVERY api/proxy call. That
@@ -82,14 +83,47 @@ function serializeCookies(cookies) {
   return Object.keys(cookies).map(function (k) { return k + '=' + cookies[k]; }).join('; ');
 }
 
+var COOKIE_WHITELIST = {
+  SESSDATA: 1, bili_jct: 1, DedeUserID: 1, DedeUserID__ckMd5: 1, sid: 1,
+  buvid3: 1, buvid4: 1, b_nut: 1, b_lsid: 1, bili_ticket: 1, bili_ticket_expires: 1
+};
+
+function ingestSetCookie(sc) {
+  var parts = sc.split(';');
+  var eqIdx = parts[0].indexOf('=');
+  if (eqIdx <= 0) return;
+  var key = parts[0].substring(0, eqIdx).trim();
+  var value = parts[0].substring(eqIdx + 1).trim();
+  if (!COOKIE_WHITELIST[key]) return;
+
+  var deleted = (value === 'deleted' || value === '');
+  for (var i = 1; i < parts.length && !deleted; i++) {
+    var seg = parts[i].trim();
+    var segEq = seg.indexOf('=');
+    if (segEq < 0) continue;
+    var attr = seg.substring(0, segEq).trim().toLowerCase();
+    var attrVal = seg.substring(segEq + 1).trim();
+    if (attr === 'max-age' && parseInt(attrVal, 10) <= 0) deleted = true;
+    if (attr === 'expires') {
+      var exp = new Date(attrVal).getTime();
+      if (!isNaN(exp) && exp < Date.now()) deleted = true;
+    }
+  }
+
+  if (deleted) { delete storedCookies[key]; } else { storedCookies[key] = value; }
+}
+
 // Bootstrap the buvid3/buvid4 browser-fingerprint cookies for ANONYMOUS use.
 // B站's risk control rejects fingerprint-less API calls with -352 (and serves
 // an HTML block page on some feed endpoints) — mainly hitting overseas IPs,
 // where it made the whole app look like "nothing loads" (#10). Fetch them once
 // from finger/spi and persist alongside the login cookies. Verified via an
 // overseas (HK) exit: /x/web-interface/popular flips -352 → 0 with these set.
+var BUVID_MAX_AGE_SEC = 72 * 3600;
 function ensureBuvid(attempt) {
-  if (storedCookies['buvid3']) return;
+  var bNut = parseInt(storedCookies['b_nut'] || '0', 10);
+  var age = Math.floor(Date.now() / 1000) - bNut;
+  if (storedCookies['buvid3'] && bNut && age < BUVID_MAX_AGE_SEC) return;
   var req = https.request({
     hostname: 'api.bilibili.com', port: 443, path: '/x/frontend/finger/spi', method: 'GET',
     headers: {
@@ -106,9 +140,9 @@ function ensureBuvid(attempt) {
         if (j.code === 0 && j.data && j.data.b_3) {
           storedCookies['buvid3'] = j.data.b_3;
           if (j.data.b_4) storedCookies['buvid4'] = j.data.b_4;
-          if (!storedCookies['b_nut']) storedCookies['b_nut'] = String(Math.floor(Date.now() / 1000));
+          storedCookies['b_nut'] = String(Math.floor(Date.now() / 1000));
           saveCookies();
-          console.log('[service] buvid bootstrapped');
+          console.log('[service] buvid bootstrapped/rotated');
         }
       } catch (e) { console.error('[service] buvid parse failed:', e.message); }
     });
@@ -122,6 +156,53 @@ function ensureBuvid(attempt) {
   req.end();
 }
 ensureBuvid(0);
+setInterval(function () { ensureBuvid(0); }, 3600000);
+
+var TICKET_HMAC_KEY = 'XgwSnGZ1p';
+var TICKET_REFRESH_MARGIN_SEC = 86400;
+function ensureBiliTicket(attempt) {
+  var now = Math.floor(Date.now() / 1000);
+  var exp = parseInt(storedCookies['bili_ticket_expires'] || '0', 10);
+  if (storedCookies['bili_ticket'] && (exp - now) > TICKET_REFRESH_MARGIN_SEC) return;
+  var ts = now;
+  var sign = crypto.createHmac('sha256', TICKET_HMAC_KEY).update('ts' + ts).digest('hex');
+  var csrf = storedCookies['bili_jct'] || '';
+  var qs = 'key_id=ec02&hexsign=' + sign + '&context%5Bts%5D=' + ts + '&csrf=' + encodeURIComponent(csrf);
+  var req = https.request({
+    hostname: 'api.bilibili.com', port: 443,
+    path: '/bapis/bilibili.api.ticket.v1.Ticket/GenWebTicket?' + qs, method: 'POST',
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Referer': 'https://www.bilibili.com/',
+      'Content-Length': 0
+    },
+    rejectUnauthorized: false
+  }, function (res) {
+    var chunks = [];
+    res.on('data', function (c) { chunks.push(c); });
+    res.on('end', function () {
+      try {
+        var j = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
+        if (j.code === 0 && j.data && j.data.ticket) {
+          storedCookies['bili_ticket'] = j.data.ticket;
+          storedCookies['bili_ticket_expires'] = String(now + (j.data.ttl || 259200));
+          saveCookies();
+          console.log('[service] bili_ticket refreshed');
+        } else {
+          logSvcErr('ticket', 'code=' + (j && j.code));
+        }
+      } catch (e) { console.error('[service] ticket parse failed:', e.message); }
+    });
+  });
+  req.on('error', function (e) {
+    console.error('[service] ticket fetch failed:', e.message);
+    logSvcErr('ticket', e.message);
+    if ((attempt || 0) < 5) setTimeout(function () { ensureBiliTicket((attempt || 0) + 1); }, 15000);
+  });
+  req.end();
+}
+ensureBiliTicket(0);
+setInterval(function () { ensureBiliTicket(0); }, 3600000);
 
 function isAllowedHost(host) {
   var allowed = [
@@ -144,12 +225,14 @@ function isAllowedHost(host) {
     host.indexOf('.githubusercontent.com') >= 0; // release-asset redirect targets
 }
 
-// Bilibili credentials (Cookie) and disguise headers (Referer/Origin) go ONLY
-// to the bilibili family — never to third-party hosts like the translator.
 function isBiliHost(host) {
   return host.indexOf('bilibili.com') >= 0 || host.indexOf('.hdslb.com') >= 0 ||
     host.indexOf('.bilivideo.') >= 0 || host.indexOf('.akamaized.net') >= 0 ||
     host === 's1.hdslb.com';
+}
+
+function isBiliApiHost(host) {
+  return host.indexOf('bilibili.com') >= 0;
 }
 
 // Make HTTPS request helper
@@ -171,8 +254,10 @@ function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity,
   };
   if (isBili) {
     headers['Referer'] = 'https://www.bilibili.com/';
-    headers['Cookie'] = serializeCookies(storedCookies);
     if (!isCDN) headers['Origin'] = 'https://www.bilibili.com';
+  }
+  if (isBiliApiHost(hostname)) {
+    headers['Cookie'] = serializeCookies(storedCookies);
   }
   if (contentType) headers['Content-Type'] = contentType;
   if (range) headers['Range'] = range;
@@ -192,13 +277,7 @@ function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity,
     done = true;
     var setCookieHeaders = res.headers['set-cookie'];
     if (setCookieHeaders) {
-      setCookieHeaders.forEach(function (sc) {
-        var parts = sc.split(';')[0];
-        var eqIdx = parts.indexOf('=');
-        if (eqIdx > 0) {
-          storedCookies[parts.substring(0, eqIdx).trim()] = parts.substring(eqIdx + 1).trim();
-        }
-      });
+      setCookieHeaders.forEach(ingestSetCookie);
       saveCookies();
     }
     callback(null, res);
@@ -387,6 +466,19 @@ service.register('clearCookies', function (message) {
   message.respond({ returnValue: true });
 });
 
+service.register('resetFingerprint', function (message) {
+  delete storedCookies['buvid3'];
+  delete storedCookies['buvid4'];
+  delete storedCookies['b_nut'];
+  delete storedCookies['b_lsid'];
+  delete storedCookies['bili_ticket'];
+  delete storedCookies['bili_ticket_expires'];
+  saveCookies();
+  ensureBuvid(0);
+  ensureBiliTicket(0);
+  message.respond({ returnValue: true });
+});
+
 // ==================== Live danmaku relay ====================
 var danmakuSubscribers = [];
 var danmakuStop = null;
@@ -450,6 +542,8 @@ service.register('getDiagnostics', function (message) {
     nodeVersion: process.version,
     uptimeSec: Math.floor(process.uptime()),
     buvid: !!storedCookies['buvid3'],
+    buvidAgeSec: storedCookies['b_nut'] ? (Math.floor(Date.now() / 1000) - parseInt(storedCookies['b_nut'], 10)) : null,
+    biliTicket: !!storedCookies['bili_ticket'],
     loggedIn: !!storedCookies['SESSDATA'],
     cookieKeys: Object.keys(storedCookies),
     danmakuModule: !!danmakuRelay,

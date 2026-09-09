@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { storage } from '../utils/storage';
 import { useFocusable, setCustomKeyHandler, setFocus } from '../hooks/useFocus';
-import { getLatestVersion } from '../api/client';
+import { getLatestVersion, resetFingerprint } from '../api/client';
 import { APP_VERSION, compareVersions } from '../version';
 import DiagPanel from '../components/DiagPanel';
 import { t, getLocale, setLanguage, availableLanguages } from '../i18n';
@@ -220,14 +220,26 @@ export default function ConfigPage({ onLogout, user }) {
     v: code,
     label: (LANG_LABELS[code] || code) + (code === 'auto' ? ` (${LANG_LABELS[getLocale()] || getLocale()})` : ''),
   }));
-  const { props: langProps } = useFocusable({
+  const [resetState, setResetState] = useState('');
+  const { props: resetFpProps } = useFocusable({
     id: 'content-9-0', row: 9, col: 0, group: 'content',
+    onSelect: () => {
+      if (resetState === 'running') return;
+      setResetState('running');
+      resetFingerprint()
+        .then(() => setResetState('done'))
+        .catch(() => setResetState('fail'));
+    },
+  });
+
+  const { props: langProps } = useFocusable({
+    id: 'content-10-0', row: 10, col: 0, group: 'content',
     onSelect: () => openPicker(LANG_ROW_LABEL, LANG_OPTS, langPref,
       (v) => { if (v !== langPref) setLanguage(v); /* persists + reloads */ }),
   });
 
   const { props: logoutProps } = useFocusable({
-    id: 'content-10-0', row: 10, col: 0, group: 'content',
+    id: 'content-11-0', row: 11, col: 0, group: 'content',
     onSelect: () => { if (user) { storage.clearAuth(); onLogout(); } },
   });
 
@@ -292,6 +304,16 @@ export default function ConfigPage({ onLogout, user }) {
       </div>
 
       {showDiag && <DiagPanel />}
+
+      <div className="settings-row" {...resetFpProps}>
+        <span>{t('重置设备指纹')}</span>
+        <span className="settings-row-value">
+          {resetState === 'running' ? t('重置中…')
+            : resetState === 'done' ? t('已重置,几秒后重试播放')
+            : resetState === 'fail' ? t('重置失败,请稍后再试')
+            : t('缩略图/播放长期失效时按此,无需重置电视')}
+        </span>
+      </div>
 
       <div className="settings-row" {...langProps}>
         <span>{LANG_ROW_LABEL}</span>

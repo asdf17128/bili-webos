@@ -263,6 +263,30 @@ async function main() {
     check('view 被拦时 pagelist 兜底照样播 (C-ERR-03)', fb.playing && !fb.err, `t=${fb.ct}s errScreen=${fb.err}`);
     await page.evaluate(() => { localStorage.removeItem('bili_test_view412'); });
 
+    // C-UI-15 (#27):关掉「播完自动播放下一个」后,片尾不启动倒计时,
+    // 停在推荐列表等手动选。复用上面还在播的实例,直接把进度拨到片尾。
+    await page.evaluate(() => {
+      const s = JSON.parse(localStorage.getItem('bili_settings') || '{}');
+      s.autoplayNext = false;
+      localStorage.setItem('bili_settings', JSON.stringify(s));
+      const v = document.querySelector('video');
+      if (v && v.duration) v.currentTime = Math.max(0, v.duration - 1.5);
+    });
+    await sleep(6000);
+    const end = await page.evaluate(() => {
+      const v = document.querySelector('video');
+      const text = document.body.textContent || '';
+      return { ended: !!(v && v.ended), countdown: /秒后自动播放/.test(text),
+               related: !!document.querySelector('.player-page .related-card, .player-page [class*=related]') || text.includes('相关推荐') };
+    });
+    check('关掉自动连播后片尾无倒计时 (C-UI-15)', end.ended && !end.countdown,
+      `ended=${end.ended} countdown=${end.countdown}`);
+    await page.evaluate(() => {
+      const s = JSON.parse(localStorage.getItem('bili_settings') || '{}');
+      delete s.autoplayNext;
+      localStorage.setItem('bili_settings', JSON.stringify(s));
+    });
+
     console.log('\n[Live: playback, controls, quality, chat rail, back layering]');
     const liveRoom = (await pickLiveRoom()) || { id: LIVE_ROOM_FALLBACK, title: '(fallback)', stale: true };
     if (liveRoom.stale) warn('No live room is streaming right now', 'live assertions skipped (environment, not code)');

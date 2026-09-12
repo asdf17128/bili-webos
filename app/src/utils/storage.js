@@ -51,6 +51,8 @@ export const storage = {
       // reverse. 'auto' (follow system) stays available in 设置 → 语言.
       language: 'zh',
       danmaku: true,
+      // 片尾倒计时自动播下一个 (#27)。关闭后播完只展示推荐列表等手动选。
+      autoplayNext: true,
       quality: 80,
       gridCols: 3,
       // Danmaku font scale (#11: the danmaku text was a bit small on 42").

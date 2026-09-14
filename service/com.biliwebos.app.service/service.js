@@ -545,7 +545,9 @@ var localServer = http.createServer(function (req, res) {
   makeRequest(parsed, req.method, null, null, req.headers['range'], true, function (err, proxyRes) {
     if (err) {
       logSvcErr('proxy:' + hostname, err.message);
-      if (!res.headersSent) { res.writeHead(502); res.end(err.message); }
+      // 带 CORS 头:没有它页面看到的是 CORS 错而不是 502,Shaka 分不清是
+      // 节点挂了还是别的,CDN 失败转移的判断也就没依据(#29)。
+      if (!res.headersSent) { res.writeHead(502, { 'Access-Control-Allow-Origin': '*' }); res.end(err.message); }
       return;
     }
 

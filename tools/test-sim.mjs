@@ -287,6 +287,33 @@ async function main() {
       localStorage.setItem('bili_settings', JSON.stringify(s));
     });
 
+    // C-CDN-01/02 (#29):主 CDN 挂了要自愈。测试钩子把一个必挂的 host 塞到
+    // BaseURL 最前面:视频照样播(Shaka 沿列表滑到可用镜像)、MPD 末尾带两个
+    // 兜底镜像、坏 host 被拉黑。
+    for (let i = 0; i < 5; i++) {
+      if (!(await page.evaluate(() => !!document.querySelector('.player-page')))) break;
+      await key('Escape'); await sleep(800);
+    }
+    await page.evaluate(() => { localStorage.setItem('bili_test_badcdn', '1'); });
+    await page.evaluate(() => window.__openVideo({ bvid: 'BV1xx411c7Xg', title: '弹幕测试专用', owner: { name: '碧诗' } }));
+    await sleep(12000);
+    // 上一条用例把进度存在片尾,续播会直接落在结尾 —— 拨回 5s 再看能不能往前走,
+    // 走得动 = 分片真的从可用镜像拉下来了。
+    await page.evaluate(() => { const v = document.querySelector('video'); if (v) { v.currentTime = 5; v.play(); } });
+    await sleep(5000);
+    const cdn = await page.evaluate(() => {
+      const v = document.querySelector('video');
+      const mpd = window.__lastMpd || '';
+      const urls = (mpd.match(/<BaseURL>([^<]+)<\/BaseURL>/g) || []).map(s => s.replace(/<\/?BaseURL>/g, ''));
+      return { advancing: !!(v && v.currentTime > 6 && !v.paused), ct: v ? Math.round(v.currentTime) : -1,
+               hasCosov: urls.some(u => u.includes('mirrorcosov')), hasEstgoss: urls.some(u => u.includes('estgoss')),
+               banned: (window.__cdnBanned && window.__cdnBanned()) || [] };
+    });
+    check('MPD 末尾带兜底镜像 cosov+estgoss (C-CDN-01)', cdn.hasCosov && cdn.hasEstgoss);
+    check('主 CDN 挂了照样播,坏节点被拉黑 (C-CDN-02)', cdn.advancing && cdn.banned.includes('upos-sz-mirrorbad.bilivideo.com'),
+      `t=${cdn.ct}s banned=${cdn.banned.join(',') || 'none'}`);
+    await page.evaluate(() => { localStorage.removeItem('bili_test_badcdn'); });
+
     console.log('\n[Live: playback, controls, quality, chat rail, back layering]');
     const liveRoom = (await pickLiveRoom()) || { id: LIVE_ROOM_FALLBACK, title: '(fallback)', stale: true };
     if (liveRoom.stale) warn('No live room is streaming right now', 'live assertions skipped (environment, not code)');

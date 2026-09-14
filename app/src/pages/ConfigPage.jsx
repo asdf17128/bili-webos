@@ -185,10 +185,13 @@ export default function ConfigPage({ onLogout, user }) {
 
   // CDN线路 — list picker. Forces the video CDN onto that mirror when the
   // auto-assigned node is slow (#10). Takes effect on the next video load.
+  // 没有「海外 Akamai」:它要自己的 token,强制换 host 必 403(#29 查出来
+  // 的,这个选项从上线起就没工作过)。海外用户给腾讯云/阿里云的海外镜像。
+  // 老用户存的 'akam' 找不到选项 → 按「自动」显示和生效。
   const CDN_OPTS = [
     { v: 'auto', label: t('自动') }, { v: 'ali', label: t('阿里云') },
     { v: 'cos', label: t('腾讯云') }, { v: 'ks3', label: t('金山云') },
-    { v: 'akam', label: t('海外 Akamai') },
+    { v: 'cosov', label: t('腾讯云海外') }, { v: 'aliov', label: t('阿里云海外') },
   ];
   const { props: cdnProps } = useFocusable({
     id: 'content-7-0', row: 7, col: 0, group: 'content',

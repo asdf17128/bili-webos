@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import qrcode from 'qrcode-generator';
-import { apiFetch, wbiFetch, getRecommend, getServiceDiagnostics } from '../api/client';
+import { apiFetch, wbiFetch, getRecommend, getServiceDiagnostics, mediaProxyBase } from '../api/client';
+import { FALLBACK_MIRRORS, cdnHostOf, withHost } from '../player/cdn';
 import { getErrors } from '../utils/errlog';
 import { apiErrorHint } from '../utils/apiHint';
 import { storage } from '../utils/storage';
@@ -82,6 +83,7 @@ export default function DiagPanel() {
       // 走 wbiFetch 和播放器同路径;失败时和播放器一样试 pagelist 兜底。
       push('视频信息 view', 'run', '');
       let probeCid = null;
+      let probeStreamUrl = null;
       try {
         const v = await wbiFetch('/x/web-interface/view', { bvid: PROBE_BVID });
         if (v && v.code === 0) { probeCid = v.data.cid; push('视频信息 view', 'ok', 'code=0'); }
@@ -102,7 +104,41 @@ export default function DiagPanel() {
         const p = await wbiFetch('/x/player/playurl', { bvid: PROBE_BVID, cid: probeCid, qn: 16, fnval: 16 });
         if (p && p.code === 0) push('取流 playurl', 'ok', 'code=0');
         else push('取流 playurl', 'fail', apiErrorHint(p && p.code, { loggedIn: !!storage.getAuth()?.SESSDATA }) || ('playurl code=' + (p && p.code)));
+        probeStreamUrl = p && p.code === 0 && p.data && p.data.dash && p.data.dash.video && p.data.dash.video[0]
+          ? (p.data.dash.video[0].baseUrl || p.data.dash.video[0].base_url) : null;
       } catch (e) { push('取流 playurl', 'fail', e.message); }
+
+      // 4b. 视频 CDN (#29):接口全通但拉不到流,以前只能对着一堆 E: 猜。
+      // 用刚拿到的真实签名 URL,经本地代理向「B站 分配的节点 + 两个兜底镜像」
+      // 各拉 200KB,报每家通不通、多快;分配的挂了就明说已自动切换。
+      push('视频 CDN', 'run', '');
+      try {
+        if (!probeStreamUrl) throw new Error(t('前置 view/pagelist 都失败,拿不到 cid'));
+        const assigned = cdnHostOf(probeStreamUrl);
+        const hosts = [assigned].concat(FALLBACK_MIRRORS.filter(h => h !== assigned));
+        const base = mediaProxyBase();
+        const one = async (host) => {
+          const u = withHost(probeStreamUrl, host);
+          const x = new URL(u);
+          const t0 = Date.now();
+          try {
+            const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            const timer = ctrl && setTimeout(() => ctrl.abort(), 8000);
+            const r = await fetch(`${base}/proxy/${x.host}${x.pathname}${x.search}`, { headers: { Range: 'bytes=0-200000' }, signal: ctrl ? ctrl.signal : undefined });
+            if (timer) clearTimeout(timer);
+            if (r.status !== 206 && r.status !== 200) return { host, ok: false, why: 'HTTP ' + r.status };
+            await r.arrayBuffer();
+            return { host, ok: true, ms: Date.now() - t0 };
+          } catch (e) { return { host, ok: false, why: (e && e.name === 'AbortError') ? t('超时(8s)') : t('连不上') }; }
+        };
+        const rs = [];
+        for (const h of hosts) rs.push(await one(h));
+        const short = h => h.replace(/^upos-(sz|hz)-(mirror)?/, '').replace(/\.(bilivideo\.com|akamaized\.net)$/, '');
+        const text = rs.map(r => short(r.host) + (r.ok ? ' ' + (r.ms / 1000).toFixed(1) + 's' : ' ✗' + (r.why ? '(' + r.why + ')' : ''))).join(' · ');
+        if (rs[0].ok) push('视频 CDN', 'ok', text);
+        else if (rs.some(r => r.ok)) push('视频 CDN', 'warn', text + ' — ' + t('当前节点连不上,已自动切换到可用镜像'));
+        else push('视频 CDN', 'fail', text + ' — ' + t('视频节点全部连不上,试试设置里换 CDN 线路'));
+      } catch (e) { push('视频 CDN', 'fail', e.message); }
 
       // 5. Local image proxy (:7654) — thumbnails/segments path.
       push('图片代理', 'run', '');
@@ -121,7 +157,7 @@ export default function DiagPanel() {
       // the QR too dense to scan off a TV screen. Error strings from Node /
       // Luna / HTTP are ASCII anyway; anything else gets stripped.
       const ascii = s => String(s).replace(/[^\x20-\x7e]/g, '').trim();
-      const KEY = { '后台服务': 'svc', 'API 连通': 'api', '推荐流(风控)': 'rcmd', '视频信息 view': 'view', '取流 playurl': 'playurl', '图片代理': 'imgproxy' };
+      const KEY = { '后台服务': 'svc', 'API 连通': 'api', '推荐流(风控)': 'rcmd', '视频信息 view': 'view', '取流 playurl': 'playurl', '视频 CDN': 'cdn', '图片代理': 'imgproxy' };
       const lines = [];
       lines.push('app v' + APP_VERSION);
       const ua = navigator.userAgent.match(/Chrom\w+\/[\d.]+/);

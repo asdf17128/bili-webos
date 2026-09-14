@@ -18,6 +18,7 @@ import { translateCues } from './subTranslate';
 import { createDmTranslator } from './dmTranslate';
 import { titleMT, useTitlesMT } from '../utils/titlemt';
 import { t, getLocale } from '../i18n';
+import { CDN_ROUTES, FALLBACK_MIRRORS, isUposUrl, withHost, cdnHostOf, isBanned, demoteBanned, onShakaRetry, testBadCdnEnabled, TEST_BAD_HOST } from './cdn';
 
 // Proxy + resize card thumbnails (same as VideoCard): the proxy adds the
 // Referer B站 image CDN needs, and @672w webp keeps the TV's image decoder from
@@ -474,13 +475,23 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       // Rewrite all media/segment URLs through the local proxy (TV) or Mac
       // proxy. Registered once here — not per load — so retries don't stack
       // duplicate filters.
-      player.getNetworkingEngine().registerRequestFilter((type, request) => {
-        if (request.uris[0] && request.uris[0].startsWith('http')) {
-          const originalUrl = new URL(request.uris[0]);
-          const proxyBase = mediaProxyBase();
-          request.uris[0] = `${proxyBase}/proxy/${originalUrl.host}${originalUrl.pathname}${originalUrl.search}`;
+      // 改写**每一个** URI,不只 uris[0]:Shaka 重试时会轮到备用 BaseURL,
+      // 以前它们没走代理、被电视浏览器直连 CDN(没 Referer),等于失败转移
+      // 形同虚设(#29)。拉黑的 host 直接剔掉(至少留一个)。
+      const ne = player.getNetworkingEngine();
+      ne.registerRequestFilter((type, request) => {
+        const proxyBase = mediaProxyBase();
+        const kept = [];
+        for (const u of request.uris) {
+          if (!u || !u.startsWith('http') || u.startsWith(proxyBase)) { kept.push(u); continue; }
+          let x;
+          try { x = new URL(u); } catch { kept.push(u); continue; }
+          kept.push(`${proxyBase}/proxy/${x.host}${x.pathname}${x.search}`);
         }
+        const alive = kept.filter(u => !isBanned(cdnHostOf(u)));
+        request.uris = alive.length ? alive : kept;
       });
+      ne.addEventListener('retry', onShakaRetry);
 
       if (mounted) loadVideo(player, () => mounted);
     }
@@ -976,11 +987,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       }).join('\n');
       audioAdaptations = `<AdaptationSet contentType="audio" mimeType="audio/mp4" segmentAlignment="true">${reps}</AdaptationSet>`;
     }
-    return `<?xml version="1.0" encoding="UTF-8"?>
+    const mpd = `<?xml version="1.0" encoding="UTF-8"?>
 <MPD xmlns="urn:mpeg:dash:schema:mpd:2011" profiles="urn:mpeg:dash:profile:isoff-on-demand:2011"
   type="static" mediaPresentationDuration="PT${duration}S" minBufferTime="PT${minBuffer}S">
   <Period>${videoAdaptations}${audioAdaptations}</Period>
 </MPD>`;
+    if (typeof window !== 'undefined') window.__lastMpd = mpd; // test hook (CDN 列表断言)
+    return mpd;
   }
 
   function escapeXml(str) {
@@ -995,18 +1008,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // on a non-standard port), while a stable origin CDN (upos / *.bilivideo.com
   // on :443) sits in backupUrl. Order origin FIRST so Shaka prefers it and only
   // falls back to PCDN if the origin is unreachable.
-  // Forceable CDN mirror hosts (#10, requested by randef1ned): all are B站's own
-  // upos mirrors; swapping the host among them is a stability lever when the
-  // auto-assigned node is slow. The signed query params stay valid across them.
-  const CDN_ROUTES = {
-    ali: 'upos-sz-mirrorali.bilivideo.com',
-    cos: 'upos-sz-mirrorcos.bilivideo.com',
-    ks3: 'upos-sz-mirrorks3.bilivideo.com',
-    // Overseas Akamai mirror — the mainland CDNs are often unreachable/slow
-    // outside China; this is the route for overseas users (#10, randef1ned).
-    akam: 'upos-hz-mirrorakam.akamaized.net',
-  };
-
+  // Forceable CDN mirror hosts (#10) live in cdn.js — swapping the host among
+  // B站's upos mirrors is a stability lever; the signed query stays valid.
   function buildBaseUrls(rep) {
     let urls = [];
     const primary = rep.baseUrl || rep.base_url;
@@ -1023,18 +1026,21 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     // (after the pcdn sort — Chromium 68's sort isn't stable), keeping all the
     // originals behind it as Shaka failover targets.
     const routeHost = CDN_ROUTES[storage.getSettings().cdnRoute];
-    if (routeHost) {
-      for (let i = 0; i < urls.length; i++) {
-        if (/upos-|\.bilivideo\.(com|cn)/i.test(urls[i])) {
-          try {
-            const u = new URL(urls[i]);
-            u.host = routeHost;
-            if (urls.indexOf(u.toString()) === -1) urls.unshift(u.toString());
-            break;
-          } catch { /* keep originals */ }
-        }
+    const firstUpos = urls.find(isUposUrl);
+    if (routeHost && firstUpos) {
+      const forced = withHost(firstUpos, routeHost);
+      if (forced && urls.indexOf(forced) === -1) urls.unshift(forced);
+    }
+    // 兜底镜像(#29):无条件追加在末尾。playurl 给海外用户的主备常常全是
+    // 同一家(Akamai),全挂就没退路;这两个副本让 Shaka 还有得滑。
+    if (firstUpos) {
+      for (const host of FALLBACK_MIRRORS) {
+        const alt = withHost(firstUpos, host);
+        if (alt && urls.indexOf(alt) === -1 && !urls.some(u => cdnHostOf(u) === host)) urls.push(alt);
       }
     }
+    if (testBadCdnEnabled() && firstUpos) urls.unshift(withHost(firstUpos, TEST_BAD_HOST));
+    urls = demoteBanned(urls);
     return urls
       .map(u => `<BaseURL>${escapeXml(u)}</BaseURL>`)
       .join('\n          ') || '<BaseURL></BaseURL>';

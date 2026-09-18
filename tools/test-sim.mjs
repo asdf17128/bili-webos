@@ -608,6 +608,19 @@ async function main() {
     check('OK 直达网络诊断(退出播放器 + 面板自动展开)', !landed.player && landed.diag,
       `player=${landed.player} diag=${landed.diag}`);
     await page.unroute('**/luna/fetch');
+    // C-DIAG-02:诊断里的「CDN 测速」要给出 单连接 / 4 并发 两个数。上面那轮诊断是在
+    // playurl 被 mock 成失败时跑的,拿不到取流 URL 自然没有测速 —— 收起再展开重跑一轮
+    // (焦点在网络诊断行上),真实网络下最长等 60s(慢线路每段 10s 预算)。
+    const clickDiagRow = () => page.evaluate(() => { const r = [...document.querySelectorAll('.settings-row')].find(e => e.textContent.includes('网络诊断')); if (r) r.click(); return !!r; });
+    await clickDiagRow(); await sleep(500); await clickDiagRow();
+    let speedLine = '', cdnLines = [];
+    for (let i = 0; i < 60 && !/单连接\(1x\) [\d.]+ MB\/s · 4 并发\(4x\) [\d.]+ MB\/s/.test(speedLine); i++) {
+      await sleep(1000);
+      cdnLines = await page.evaluate(() => (document.body.innerText || '').split('\n').filter(l => /视频 CDN|CDN 测速|取流 playurl/.test(l)));
+      speedLine = cdnLines.find(l => l.includes('CDN 测速')) || '';
+    }
+    check('诊断「CDN 测速」给出单连接与 4 并发吞吐 (C-DIAG-02)', /单连接\(1x\) [\d.]+ MB\/s · 4 并发\(4x\) [\d.]+ MB\/s/.test(speedLine),
+      speedLine ? speedLine.slice(0, 80) : cdnLines.join(' | ').slice(0, 160));
 
     console.log('\n[界面字号 / UI text scale]');
     // issue #22。风险不在字变大,在**放大后网格滚动会不会裁切** —— 卡片变高,

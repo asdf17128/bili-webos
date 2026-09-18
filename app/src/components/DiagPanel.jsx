@@ -104,8 +104,14 @@ export default function DiagPanel() {
         const p = await wbiFetch('/x/player/playurl', { bvid: PROBE_BVID, cid: probeCid, qn: 16, fnval: 16 });
         if (p && p.code === 0) push('取流 playurl', 'ok', 'code=0');
         else push('取流 playurl', 'fail', apiErrorHint(p && p.code, { loggedIn: !!storage.getAuth()?.SESSDATA }) || ('playurl code=' + (p && p.code)));
-        probeStreamUrl = p && p.code === 0 && p.data && p.data.dash && p.data.dash.video && p.data.dash.video[0]
-          ? (p.data.dash.video[0].baseUrl || p.data.dash.video[0].base_url) : null;
+        // 探针用的流 URL:主+备里第一个**非 PCDN** 的(mcdn/带端口的 P2P 节点是播放器
+        // 主动排到最后的,拿它测 CDN 没意义);全是 PCDN 才退回主 URL。
+        const v0 = p && p.code === 0 && p.data && p.data.dash && p.data.dash.video && p.data.dash.video[0];
+        if (v0) {
+          const cands = [v0.baseUrl || v0.base_url].concat(v0.backupUrl || v0.backup_url || []).filter(Boolean);
+          const isPcdn = (u) => /mcdn\.|szbdyd|\bxy[\dx]+xy\b|:\d{4,5}\//i.test(u);
+          probeStreamUrl = cands.find(u => !isPcdn(u)) || cands[0] || null;
+        }
       } catch (e) { push('取流 playurl', 'fail', e.message); }
 
       // 4b. 视频 CDN (#29):接口全通但拉不到流,以前只能对着一堆 E: 猜。
@@ -128,7 +134,8 @@ export default function DiagPanel() {
             if (timer) clearTimeout(timer);
             if (r.status !== 206 && r.status !== 200) return { host, ok: false, why: 'HTTP ' + r.status };
             await r.arrayBuffer();
-            return { host, ok: true, ms: Date.now() - t0 };
+            const cr = r.headers.get('content-range') || '';
+            return { host, ok: true, ms: Date.now() - t0, total: parseInt(cr.split('/')[1], 10) || 0 };
           } catch (e) { return { host, ok: false, why: (e && e.name === 'AbortError') ? t('超时(8s)') : t('连不上') }; }
         };
         const rs = [];
@@ -138,6 +145,52 @@ export default function DiagPanel() {
         if (rs[0].ok) push('视频 CDN', 'ok', text);
         else if (rs.some(r => r.ok)) push('视频 CDN', 'warn', text + ' — ' + t('当前节点连不上,已自动切换到可用镜像'));
         else push('视频 CDN', 'fail', text + ' — ' + t('视频节点全部连不上,试试设置里换 CDN 线路'));
+
+        // 4c. 单连接 vs 4 并发测速。在能连上的那家镜像上,先拉一块 2MB(单连接),
+        // 再在另一个偏移拆成 4 个子块并发拉,看聚合吞吐是不是明显高于单连接。
+        // 这是为了搞清楚"分块并发拉流"(线程撕裂者那套)对海外用户到底有没有用:
+        // 从 LA 测是负收益,但欧洲/东南亚的家庭宽带可能被按连接限速 —— 没观测点,
+        // 就让用户的诊断报告替我们测。比值 ≥3 的报告多了再做代理层分块拉取。
+        const good = rs.find(r => r.ok);
+        if (good) {
+          push('CDN 测速', 'run', '');
+          try {
+            const gx = new URL(withHost(probeStreamUrl, good.host));
+            const proxied = `${base}/proxy/${gx.host}${gx.pathname}${gx.search}`;
+            const total = good.total || 0;
+            const BLK = total ? Math.max(256 * 1024, Math.min(2 * 1024 * 1024, Math.floor(total / 8))) : 1024 * 1024;
+            // 拉 [start,end],最多 budgetMs;超时就按已收到的字节算(慢线路也要出数)。
+            const pull = async (start, end, budgetMs) => {
+              const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+              const timer = ctrl && setTimeout(() => ctrl.abort(), budgetMs);
+              const t0 = Date.now();
+              let bytes = 0;
+              try {
+                const r = await fetch(proxied, { headers: { Range: `bytes=${start}-${end}` }, signal: ctrl ? ctrl.signal : undefined });
+                if (r.status !== 206 && r.status !== 200) throw new Error('HTTP ' + r.status);
+                if (r.body && r.body.getReader) {
+                  const reader = r.body.getReader();
+                  for (;;) { const { done, value } = await reader.read(); if (done) break; bytes += value.byteLength; }
+                } else { bytes = (await r.arrayBuffer()).byteLength; }
+              } catch (e) { if (!(e && e.name === 'AbortError')) throw e; }
+              if (timer) clearTimeout(timer);
+              return { bytes, ms: Math.max(1, Date.now() - t0) };
+            };
+            const s0 = total ? Math.floor(total * 0.25) : BLK;
+            const p0 = total ? Math.floor(total * 0.5) : BLK * 3;
+            const single = await pull(s0, s0 + BLK - 1, 10000);
+            const q = Math.floor(BLK / 4);
+            const tp = Date.now();
+            const parts = await Promise.all([0, 1, 2, 3].map(i => pull(p0 + i * q, p0 + (i + 1) * q - 1, 10000)));
+            const parMs = Math.max(1, Date.now() - tp);
+            const sMB = single.bytes / single.ms / 1000;           // bytes/ms = KB/s → /1000 = MB/s
+            const pMB = parts.reduce((a, r) => a + r.bytes, 0) / parMs / 1000;
+            const ratio = sMB > 0 ? (pMB / sMB) : 0;
+            const detail = short(good.host) + ' ' + t('单连接(1x) {s} MB/s · 4 并发(4x) {p} MB/s (x{r})', { s: sMB.toFixed(2), p: pMB.toFixed(2), r: ratio.toFixed(1) });
+            if (sMB < 0.4) push('CDN 测速', 'warn', detail + ' — ' + t('单连接偏慢,1080p 可能卡顿'));
+            else push('CDN 测速', 'ok', detail);
+          } catch (e) { push('CDN 测速', 'fail', e.message); }
+        }
       } catch (e) { push('视频 CDN', 'fail', e.message); }
 
       // 5. Local image proxy (:7654) — thumbnails/segments path.
@@ -157,7 +210,7 @@ export default function DiagPanel() {
       // the QR too dense to scan off a TV screen. Error strings from Node /
       // Luna / HTTP are ASCII anyway; anything else gets stripped.
       const ascii = s => String(s).replace(/[^\x20-\x7e]/g, '').trim();
-      const KEY = { '后台服务': 'svc', 'API 连通': 'api', '推荐流(风控)': 'rcmd', '视频信息 view': 'view', '取流 playurl': 'playurl', '视频 CDN': 'cdn', '图片代理': 'imgproxy' };
+      const KEY = { '后台服务': 'svc', 'API 连通': 'api', '推荐流(风控)': 'rcmd', '视频信息 view': 'view', '取流 playurl': 'playurl', '视频 CDN': 'cdn', 'CDN 测速': 'cdnspeed', '图片代理': 'imgproxy' };
       const lines = [];
       lines.push('app v' + APP_VERSION);
       const ua = navigator.userAgent.match(/Chrom\w+\/[\d.]+/);

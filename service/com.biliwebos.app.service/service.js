@@ -556,6 +556,8 @@ var localServer = http.createServer(function (req, res) {
       // 允许页面读到细分计时(排队/连接/TTFB/下载)。没有这一行时
       // PerformanceResourceTiming 只给一个 duration,定位不了瓶颈在哪一段。
       'Timing-Allow-Origin': '*',
+      // 让页面读得到 Content-Range(诊断里的 CDN 测速要知道文件总长才能选偏移)。
+      'Access-Control-Expose-Headers': 'Content-Range, Content-Length',
       'Content-Type': proxyRes.headers['content-type'] || 'application/octet-stream',
     };
     if (proxyRes.headers['content-range']) responseHeaders['Content-Range'] = proxyRes.headers['content-range'];

@@ -27,6 +27,16 @@ const notesIdx = process.argv.indexOf('--notes-file');
 const NOTES = notesIdx > 0 ? process.argv[notesIdx + 1] : null;
 const sh = (cmd, args) => execFileSync(cmd, args, { encoding: 'utf8' }).trim();
 
+// 预检 gh 登录态。token 会静默过期(2026-09-20:只读接口不需要鉴权所以一直没暴露),
+// 不查的话要到 push/create 那一步才炸,前面打包白做。
+if (!CHECK_ONLY) {
+  try { execFileSync('gh', ['auth', 'status', '-h', 'github.com'], { stdio: 'pipe' }); }
+  catch (e) {
+    console.error('❌ gh 没登录或 token 已失效 —— 先跑 `gh auth login -h github.com` 再发版');
+    process.exit(1);
+  }
+}
+
 // --check:以外人身份体检当前 latest,任何一项不通就非零退出。
 // 这条路径可以随时跑,也可以挂进定时任务 —— 发版翻车是**静默**的
 // (release 页面看着一切正常),只有从外面访问才发现得了。

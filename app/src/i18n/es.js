@@ -220,6 +220,7 @@ export default {
   "CDN 测速": "Prueba de velocidad CDN",
   "单连接(1x) {s} MB/s · 4 并发(4x) {p} MB/s (x{r})": "1 conexión(1x) {s} MB/s · paralelo(4x) {p} MB/s (x{r})",
   "单连接偏慢,1080p 可能卡顿": "conexión única lenta; 1080p puede trabarse",
+  "超时(15s)": "tiempo agotado (15s)",
   "视频 CDN": "CDN de vídeo",
   "连不上": "inaccesible",
   "当前节点连不上,已自动切换到可用镜像": "Nodo asignado inaccesible; cambiado a un espejo disponible",

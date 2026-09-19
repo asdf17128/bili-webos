@@ -222,6 +222,7 @@ export default {
   "CDN 测速": "CDN speed test",
   "单连接(1x) {s} MB/s · 4 并发(4x) {p} MB/s (x{r})": "single(1x) {s} MB/s · parallel(4x) {p} MB/s (x{r})",
   "单连接偏慢,1080p 可能卡顿": "single connection is slow; 1080p may stutter",
+  "超时(15s)": "timeout (15s)",
   "视频 CDN": "Video CDN",
   "连不上": "unreachable",
   "当前节点连不上,已自动切换到可用镜像": "Assigned node unreachable; auto-switched to a working mirror",

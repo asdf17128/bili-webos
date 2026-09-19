@@ -45,6 +45,17 @@ try {
 
 var service = new Service('com.biliwebos.app.service');
 
+// 最后一道保险:这是个常驻后台进程,任何一个没人接的 socket 'error'(比如对端
+// 消失后的 read ETIMEDOUT)都会让整个服务退出 —— 表现为 API/代理/投屏全挂,
+// 用户只看到"什么都加载不出来"。2026-09-20 开发桥(同一份代码)就这么死过一次。
+// 记进诊断环形日志然后继续活着,比死掉强。
+process.on('uncaughtException', function (err) {
+  try { console.error('[service] uncaught:', err && err.stack || err); logSvcErr('uncaught', err && err.message || String(err)); } catch (e) { }
+});
+process.on('unhandledRejection', function (reason) {
+  try { logSvcErr('unhandledRejection', reason && reason.message || String(reason)); } catch (e) { }
+});
+
 // Reuse TLS connections to CDN hosts. The TV's CPU makes a fresh TLS handshake
 // per segment expensive; keep-alive cuts initial-load and seek latency a lot.
 var keepAliveAgent = new https.Agent({ keepAlive: true, maxSockets: 8, keepAliveMsecs: 15000 });
@@ -190,6 +201,8 @@ function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity,
   var req = https.request(options, function (res) {
     if (done) return;
     done = true;
+    // 上游响应流出错(节点中途掐断)只记日志;调用方通过 pipe 的 close 处理。
+    res.on('error', function (e) { logSvcErr('res:' + hostname, e && e.message); });
     var setCookieHeaders = res.headers['set-cookie'];
     if (setCookieHeaders) {
       setCookieHeaders.forEach(function (sc) {
@@ -511,6 +524,10 @@ service.register('castSetConfig', function (message) {
 var LOCAL_PROXY_PORT = 7654;
 
 var localServer = http.createServer(function (req, res) {
+  // 客户端(电视浏览器)中途断开是常态(换视频、拖进度条、诊断探针主动 abort),
+  // 两头的 socket 都得挂上 error 处理,否则一个 ECONNRESET 就是未处理异常。
+  req.on('error', function () { });
+  res.on('error', function () { });
   // URL format: /proxy/{host}/{path}
   var reqPath = req.url;
   if (!reqPath.startsWith('/proxy/')) {
@@ -587,6 +604,9 @@ var localServer = http.createServer(function (req, res) {
   });
 });
 
+localServer.on('clientError', function (err, socket) {
+  try { socket.destroy(); } catch (e) { }
+});
 localServer.on('error', function (err) {
   console.error('[LocalProxy] Error:', err.message);
   // Try next port

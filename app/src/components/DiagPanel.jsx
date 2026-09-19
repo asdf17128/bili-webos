@@ -62,12 +62,18 @@ export default function DiagPanel() {
         else push('API 连通', 'fail', 'code=' + code);
       } catch (e) { push('API 连通', 'fail', e.message); }
 
+      let rcmdPick = null;
       // 3. WBI-signed feed — the risk-control (-352) probe.
       push('推荐流(风控)', 'run', '');
       try {
-        const j = await getRecommend(4, 3);
+        const j = await getRecommend(4, 6);
         const code = j && j.code;
         const n = j && j.data && j.data.item ? j.data.item.length : 0;
+        // 顺手记一个热门长视频给下面的 CDN 探针用:av2 那个 2009 年的小视频在边缘节点
+        // 是冷的(首次触碰要回源,8s 都不够)而且文件太小(测速块只剩几十 KB),
+        // 拿它测出来的"超时"和"并发比值"都不可信。热门视频边缘有缓存、文件够大,
+        // 测的才是这条线路本身。
+        if (code === 0 && n > 0) rcmdPick = (j.data.item || []).find(it => it && it.goto === 'av' && it.bvid && it.cid && (it.duration || 0) >= 300) || null;
         if (code === 0 && n > 0) push('推荐流(风控)', 'ok', t('返回 {n} 条', { n }));
         else if (code === -352) push('推荐流(风控)', 'fail', t('code=-352 风控拦截(常见于海外 IP)'));
         else push('推荐流(风控)', 'fail', `code=${code} items=${n}`);
@@ -119,24 +125,36 @@ export default function DiagPanel() {
       // 各拉 200KB,报每家通不通、多快;分配的挂了就明说已自动切换。
       push('视频 CDN', 'run', '');
       try {
-        if (!probeStreamUrl) throw new Error(t('前置 view/pagelist 都失败,拿不到 cid'));
-        const assigned = cdnHostOf(probeStreamUrl);
+        let cdnUrl = probeStreamUrl;
+        if (rcmdPick) {
+          try {
+            const p2 = await wbiFetch('/x/player/playurl', { bvid: rcmdPick.bvid, cid: rcmdPick.cid, qn: 64, fnval: 16 });
+            const v2 = p2 && p2.code === 0 && p2.data && p2.data.dash && p2.data.dash.video && p2.data.dash.video[0];
+            if (v2) {
+              const c2 = [v2.baseUrl || v2.base_url].concat(v2.backupUrl || v2.backup_url || []).filter(Boolean);
+              const isPcdn2 = (u) => /mcdn\.|szbdyd|\bxy[\dx]+xy\b|:\d{4,5}\//i.test(u);
+              cdnUrl = c2.find(u => !isPcdn2(u)) || c2[0] || cdnUrl;
+            }
+          } catch (e) { /* 热门视频取流失败就退回 av2 */ }
+        }
+        if (!cdnUrl) throw new Error(t('前置 view/pagelist 都失败,拿不到 cid'));
+        const assigned = cdnHostOf(cdnUrl);
         const hosts = [assigned].concat(FALLBACK_MIRRORS.filter(h => h !== assigned));
         const base = mediaProxyBase();
         const one = async (host) => {
-          const u = withHost(probeStreamUrl, host);
+          const u = withHost(cdnUrl, host);
           const x = new URL(u);
           const t0 = Date.now();
           try {
             const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-            const timer = ctrl && setTimeout(() => ctrl.abort(), 8000);
+            const timer = ctrl && setTimeout(() => ctrl.abort(), 15000);
             const r = await fetch(`${base}/proxy/${x.host}${x.pathname}${x.search}`, { headers: { Range: 'bytes=0-200000' }, signal: ctrl ? ctrl.signal : undefined });
             if (timer) clearTimeout(timer);
             if (r.status !== 206 && r.status !== 200) return { host, ok: false, why: 'HTTP ' + r.status };
             await r.arrayBuffer();
             const cr = r.headers.get('content-range') || '';
             return { host, ok: true, ms: Date.now() - t0, total: parseInt(cr.split('/')[1], 10) || 0 };
-          } catch (e) { return { host, ok: false, why: (e && e.name === 'AbortError') ? t('超时(8s)') : t('连不上') }; }
+          } catch (e) { return { host, ok: false, why: (e && e.name === 'AbortError') ? t('超时(15s)') : t('连不上') }; }
         };
         const rs = [];
         for (const h of hosts) rs.push(await one(h));
@@ -155,7 +173,7 @@ export default function DiagPanel() {
         if (good) {
           push('CDN 测速', 'run', '');
           try {
-            const gx = new URL(withHost(probeStreamUrl, good.host));
+            const gx = new URL(withHost(cdnUrl, good.host));
             const proxied = `${base}/proxy/${gx.host}${gx.pathname}${gx.search}`;
             const total = good.total || 0;
             const BLK = total ? Math.max(256 * 1024, Math.min(2 * 1024 * 1024, Math.floor(total / 8))) : 1024 * 1024;

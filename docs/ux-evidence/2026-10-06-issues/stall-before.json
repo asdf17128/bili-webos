@@ -1,0 +1,7 @@
+[
+  {
+    "name": "buffer exhaustion is visible and retried without skipping video",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n0 !== 1\n"
+  }
+]

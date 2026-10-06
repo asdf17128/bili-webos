@@ -8,14 +8,14 @@ description: bili_webos 的测试与验证方法论 — 发版前验证管线、
 ## 一键管线(发版前必跑)
 
 ```bash
-bash tools/verify.sh          # 全链路:语法 → 真Node8 → 构建 → 部署 → 真机DOM检查
+bash tools/verify.sh          # 全链路:语法 → 真Node0.12/8 → 构建 → 部署 → 真机DOM检查
 bash tools/verify.sh --no-tv  # 只跑本地层(电视不在时)
 bash tools/verify.sh --full   # 额外跑真机 UI smoke(test-ui.mjs,~3分钟)
 ```
 
 五层,逐层 fail-fast:
-1. **syntax** — service 全部文件用 acorn 按 ES2017 解析(webOS 5 = Node 8)
-2. **node8** — docker `node:8`(x86)跑**真实 service.js**:stub webos-service、驱动 fetch handler 真连 api.bilibili.com、调 getDiagnostics。见 `tools/test-node8/`
+1. **syntax** — service 全部文件用 acorn 按 ES5 解析(webOS 4.x = Node 0.12.2)
+2. **node8** — docker x86 内分别运行真实 Node 0.12.2 和 8，跑**真实 service.js**:stub webos-service、驱动 fetch handler 真连 api.bilibili.com、调 getDiagnostics。见 `tools/test-node8/`
 3. **build** — vite 生产构建
 4. **deploy** — build.sh 部署 + `tools/launch.mjs` 重启 app
 5. **device** — CDP 断言:卡片>5、侧栏存在、0 张裂图,并存截图
@@ -33,7 +33,7 @@ bash tools/verify.sh --full   # 额外跑真机 UI smoke(test-ui.mjs,~3分钟)
 - **service 层 = Node 8**:没有 `URL`/`URLSearchParams`/`globalThis` 全局、没有 `?.`/`??`/optional catch binding。`new URL` 要写 `require('url').URL`(曾导致 webOS 5 全部请求失败,#10/#13)。`ws` 必须 v7(v8 要 Node 14)。
 - **app 层 = Chromium 68(webOS 5)/ 79(webOS 6)**:vite legacy 插件管语法;要防的是缺失的全局(globalThis 已 polyfill)和新 Web API。
 - **官方模拟器**:VirtualBox Emulator 只到 webOS 6.0 且 x86-only(Apple Silicon 跑不了);Simulator 只覆盖 webOS 22+。→ 所以用 docker node:8 测 service,这是最接近真机的手段。
-- 新增 service 依赖/语法时:`npx acorn --ecma2017 --silent <file>` 快速把关。
+- 新增 service 依赖/语法时:`npx acorn --ecma5 --silent <file>` 快速把关，再跑实际运行时。
 
 ## 真机工具箱(tools/)
 
@@ -79,3 +79,10 @@ bash tools/verify.sh --full   # 额外跑真机 UI smoke(test-ui.mjs,~3分钟)
 每次踩到新坑/建立新方法,追加到对应小节。宁可啰嗦,不可失传。
 
 **通用方法论的正式版**在独立仓库 `~/code1/webos-tv-skill`(github.com/asdf17128/webos-tv-app-skill,`reference/testing.md`)—— 本文件放 bili_webos 项目专属细节(IP/密钥/工具名),提炼出的通用经验要**同步一份**过去。
+
+## 2026-10-06：4.x 与播放卡顿
+
+- Node 0.12.2 的 URL/Buffer/String/CA 与旧 ws 兼容由 `service/compat.js` 提供，必须最先加载；语法门禁降为 ES5，真实运行时门禁同时测 0.12.2 和 8。Docker 历史镜像可能拉不下来，使用官方 SHA256 校验二进制；Apple Silicon 旧 CLI 参数异常可经 ELF loader 启动，记录实际 process.version。
+- 模拟播放停滞时，Playwright clock 必须在播放器创建计时器前安装。`readyState=1` 是缓冲耗尽，不能把它排除出卡顿检测。暂停/seek/退出必须不会继续重试。
+- 设置页添加新开关后，要同步遥控器回归的行顺序。2026-10-06 全量回归发现 #27 新开关使旧测试点错行，更新顺序后浏览器与真机均复验。
+- 诊断二维码必须按整数像素绘制并保留 quiet zone，重复错误去重；变更后，`tools/test-cdn-tv.mjs` 从真实电视截图用 jsQR 解码，核对选路和最近播放节点；测试结束恢复所有偏好与坏 CDN 注入标记。

@@ -11,7 +11,7 @@ fi
 
 # Ensure the JS service's runtime deps (ws, for live danmaku) are installed —
 # node_modules is gitignored, so a fresh clone needs this before packaging.
-if [ ! -d service/com.biliwebos.app.service/node_modules/ws ]; then
+if [ ! -d service/com.biliwebos.app.service/node_modules/ws ] || [ ! -d service/com.biliwebos.app.service/node_modules/ws-legacy ]; then
   echo "=== [0/3] Installing service deps ==="
   (cd service/com.biliwebos.app.service && npm install --no-optional --no-audit --no-fund 2>&1 | tail -1)
 fi

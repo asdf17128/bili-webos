@@ -9,13 +9,14 @@ svc.methods['fetch']({
       console.log('FETCH FAILED:', r.error);
       process.exit(/Invalid URL/.test(r.error || '') ? 1 : 2);
     }
-    console.log('fetch OK on real Node 8: status=' + r.status);
+    console.log('fetch OK on real Node ' + process.version + ': status=' + r.status);
     var body = null;
     try { body = JSON.parse(r.body); } catch (e) {}
     console.log('api code=' + (body && body.code) + ' (expect -101 anonymous or 0)');
+    if (r.status !== 200 || !body || (body.code !== -101 && body.code !== 0)) process.exit(2);
     svc.methods['getDiagnostics']({ respond: function (d) {
       console.log('getDiagnostics OK: node=' + d.nodeVersion + ' buvid=' + d.buvid + ' dm=' + d.danmakuModule);
-      process.exit(0);
+      process.exit(d.danmakuModule ? 0 : 1);
     }});
   }
 });

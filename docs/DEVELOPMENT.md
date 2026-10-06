@@ -49,7 +49,7 @@
 ## 发布门禁(gh release 前的硬性检查单)
 
 ```bash
-bash tools/verify.sh --full     # 六层:语法→静态规范/逻辑→真Node8→构建→部署→真机+UI smoke
+bash tools/verify.sh --full     # 六层:语法→静态规范/逻辑→真Node0.12/8→构建→部署→真机+UI smoke
 ```
 
 1. 🤖 自动层全绿(任何 FAIL = 不发,先修);
@@ -77,6 +77,10 @@ bash tools/verify.sh --full     # 六层:语法→静态规范/逻辑→真Node8
 | tools/test-tv-ux-device.mjs | 真机单会话导航、刷新、深列表、暂停、快进快退、弹层和播放返回检查 |
 | tools/test-tv-settings.mjs | 真机通过选择器设置 2/3/4 列与大字号，重启验证并恢复用户偏好 |
 | tools/test-player-loading.mjs | 取消、重试、Luna 超时及弹幕/字幕实际 DOM 字号；`verify.sh --ux` |
+| tools/test-playback-health.mjs | 缓冲耗尽恢复、所选 CDN 顺序、真实 HTTP 超时/Range/取消；`verify.sh --ux` |
+| tools/test-library.mjs | 收藏/合集分页映射、跨页连播、去重和网络失败 |
+| tools/test-cdn-tv.mjs | 真机坏 CDN 回退、按所选线路测速、从截图解码反馈二维码；结束恢复设置 |
+| app/src/player/mediaSelection.test.js | 杜比初始化段解析、格式选择与音轨回退；`verify.sh` |
 | .claude/skills/tv-test | 测试方法论 + 工具箱 + 坑(每踩新坑必追加) |
 
 
@@ -99,3 +103,12 @@ release 必须挂**三件**资产,少一件都会静默出事:
 2026-08-31 就这么翻过一次:v1.7.0 只挂了 ipk,15 小时里更新通道和 DAU 计数全断,而 GitHub 的 release 页面看着完全正常。
 
 `tools/release.mjs` 因此在发完之后**以外人身份**把三个 URL 都请求一遍,并核对 manifest 里的 sha256 与 ipk 一致;`--check` 可以随时单独体检线上。`tools/verify.sh` 的第 7 步也会跑它。
+
+
+## webOS 4.x 兼容验证
+
+前端生产目标为 Chromium 53，构建后额外以 ES2016 解析全部产物。CSS Grid 主布局保留，4.x 使用 `@supports not (display: grid)` 的 flex 降级。
+
+服务代码以 ES5 解析；`tools/test-node8/test.sh` 使用校验过 SHA256 的官方 Node 0.12.2 Linux 二进制和真实 Node 8，在 x86 Docker 容器内分别启动服务。Apple Silicon 下，0.12.2 经显式 ELF loader 启动，避免旧 CLI 与模拟环境的参数兼容问题。缓存保存在临时目录，可用 `BILI_NODE012_DIR` 指定。
+
+`UX_LEGACY_LAYOUT=1 node tools/test-tv-ux.mjs` 可在现代浏览器强制启用降级 CSS；这只能验证布局，不能代替 Chromium 53 或旧电视的解码实测。

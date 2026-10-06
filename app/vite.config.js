@@ -24,7 +24,12 @@ import legacy from '@vitejs/plugin-legacy';
 // check) and inline a globalThis polyfill before the bundle, in case anything
 // runs ahead of the core-js polyfill chunk.
 function webosCompat() {
-  const polyfill = `<script>if(typeof globalThis==='undefined'&&typeof window!=='undefined'){window.globalThis=window;}</script>`;
+  // webOS 4.x (Chromium 53): scrollIntoView(options) is not supported (Chrome 61+)
+  // and an options object is coerced to alignToTop=true, which jumps the focused
+  // card to the top edge. Map {block:'nearest'|'center'} onto Chrome's
+  // non-standard scrollIntoViewIfNeeded(centerIfNeeded), which 53 has.
+  const siv = `if(typeof Element!=='undefined'&&!('scrollBehavior' in document.documentElement.style)&&Element.prototype.scrollIntoViewIfNeeded){var _siv=Element.prototype.scrollIntoView;Element.prototype.scrollIntoView=function(o){if(o&&typeof o==='object'){if(o.block==='start')return _siv.call(this,true);if(o.block==='end')return _siv.call(this,false);return this.scrollIntoViewIfNeeded(o.block==='center');}return _siv.apply(this,arguments);};}`;
+  const polyfill = `<script>if(typeof globalThis==='undefined'&&typeof window!=='undefined'){window.globalThis=window;}${siv}</script>`;
   return {
     name: 'webos-compat',
     // order:'post' so this runs AFTER plugin-legacy injects its SystemJS script
@@ -53,10 +58,10 @@ export default defineConfig(({ command }) => ({
     react(),
     // Emit a classic SystemJS bundle for EVERY browser (renderModernChunks:false
     // removes the ES-module output entirely) so it runs over file:// on older
-    // webOS. targets covers webOS 5 (Chromium 68) and up; core-js polyfills are
+    // webOS. targets covers webOS 4.x (Chromium 53) and up; core-js polyfills are
     // injected based on usage.
     legacy({
-      targets: ['chrome >= 68'],
+      targets: ['chrome >= 53'],
       modernPolyfills: false,
       renderModernChunks: false,
     }),
@@ -73,7 +78,7 @@ export default defineConfig(({ command }) => ({
     // modern syntax (optional chaining ×180) that Chromium <80 can't parse,
     // which showed as a blank/black screen on older TVs (issue #10). esbuild
     // lowers the syntax; the code uses no modern runtime APIs needing polyfills.
-    target: 'chrome68',
+    target: 'chrome53',
     assetsInlineLimit: 4096,
     rollupOptions: {
       output: {

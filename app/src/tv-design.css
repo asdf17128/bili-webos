@@ -199,3 +199,68 @@ button, input { font-family: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .resume-card, .sidebar-label, .sidebar-wordmark, .player-btn { transition: none; }
 }
+.player-buffering {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  padding: 20px 28px;
+  border-radius: 14px;
+  background: rgba(20, 21, 24, 0.9);
+  color: #f3f3f5;
+  font-size: 24px;
+  pointer-events: none;
+  z-index: 12;
+}
+.player-buffering .spinner { margin-right: 16px; }
+.library-heading { display: flex; align-items: center; justify-content: space-between; }
+.library-tabs { display: flex; align-items: center; }
+.library-tabs > * + * { margin-left: 12px; }
+.diagnostic-report svg { display: block; max-width: 100%; height: auto; }
+
+
+/* ===== webOS 4.x (Chromium 53) fallback: no CSS Grid before Chrome 57 =====
+   Everything below only applies where `display:grid` is unsupported, so
+   webOS 5+ keeps the original grid layout untouched. Grids become flex-wrap
+   rows: each cell is (100% - (n-1) gaps) / n wide with a right margin of one
+   gap, and the last cell of every row drops that margin via :nth-of-type
+   (header/footer use their own tags so they don't shift the count).
+   --n = columns, --g = column gap, --gr = row gap. */
+@supports not (display: grid) {
+  .video-grid, .search-results-grid, .grid-skeleton, .resume-shelf, .config-preview, .related-grid {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 0 !important; /* spacing comes from margins only (flex gap would double it where supported) */
+    --n: 3; --g: 24px; --gr: 24px;
+  }
+  .video-grid-viewport > .video-grid { gap: 0 !important; } /* beats the grid-gap !important above */
+  .cols-2 { --n: 2; }
+  .cols-3 { --n: 3; }
+  .cols-4 { --n: 4; }
+  .search-results-grid { --g: 16px; --gr: 18px; }
+  .grid-skeleton { --g: 24px; --gr: 28px; }
+  .resume-shelf { --n: 3; }
+  .config-preview { --n: 3; --g: 10px; --gr: 10px; }
+  .related-grid { --g: 14px; --gr: 14px; }
+  .video-grid > *, .search-results-grid > *, .grid-skeleton > *, .resume-shelf > *, .config-preview > *, .related-grid > * {
+    flex: none;
+    box-sizing: border-box;
+    width: calc((100% - (var(--n) - 1) * var(--g)) / var(--n) - 0.5px); /* -0.5px: subpixel slack so N cells never wrap */
+    margin: 0 var(--g) var(--gr) 0;
+  }
+  .cols-2 > :nth-of-type(2n), .cols-3 > :nth-of-type(3n), .cols-4 > :nth-of-type(4n),
+  .resume-shelf > :nth-of-type(3n), .config-preview > :nth-of-type(3n) { margin-right: 0; }
+  /* preview bars sit under each thumbnail at 75% of a cell */
+  .config-preview > i { width: calc((100% - 20px) / 3 * 0.75 - 0.5px); margin-right: calc((100% - 20px) / 3 * 0.25 + 10px); }
+  .video-grid > .grid-header, .video-grid > .grid-footer, .video-grid > .empty-state { width: 100%; margin-right: 0; }
+  /* Two-pane layouts */
+  .search-discovery { display: flex; align-items: flex-start; gap: 0; }
+  .search-discovery > * { flex: 1 1 0; min-width: 0; }
+  .search-discovery > * + * { margin-left: 64px; }
+  .config-page { display: flex; align-items: flex-start; gap: 0; }
+  .config-page > :first-child { flex: none; width: 440px; margin-right: 80px; }
+  .config-page > * + * { flex: 1 1 0; min-width: 0; }
+}

@@ -289,3 +289,23 @@ danmaku 断言改为设置感知(测试前强开、测后还原用户偏好);徽
 
 
 最终真机播放器专项 29/29 通过，包括 C-PLAY-03/04/06/07 与 C-POP-01：续播 28 秒实际起播 28.0 秒，取消快进保留当前位置，确认快进 2.3→12.4 秒；结束后两次上键到重播，实际从 0.1 秒开始；画质和倍速弹层从当前选项打开，Back 仅关闭弹层。预览截图独立于 1 秒自动提交窗口采集，避免截图编码延迟被误算为取消失效。见 [结果](ux-evidence/2026-09-06-release-2.0.0/tv-player-ux.json)。
+
+## 2026-10-06 Issue 修复验证（开发版，未发布）
+
+基线 `5d77949`，分支 `fix/issues-playback-compat-library`。本轮覆盖 #29/#35/#37/#38 的卡顿恢复与诊断、#30 订阅、#34 旧运行时兼容，以及 #33 的杜比初始化段和独立音轨选择。MIT 文件补充对应 #39，不构成第三方素材授权核验。
+
+| Case | 行为与运行方式 | 事实佐证 |
+| --- | --- | --- |
+| C-STALL-01 | `npm run test:loading`：缓冲耗尽、`readyState=1` 且时间不动时显示缓冲、有限重试；暂停停止重试，不向前跳帧 | 相同 Playwright 时钟与夹具运行基线 PlayerPage：缓冲标记断言失败；恢复新实现通过。见 [改前](ux-evidence/2026-10-06-issues/stall-before.json)、[改后](ux-evidence/2026-10-06-issues/stall-after.json)。时钟必须在播放器创建计时器前安装 |
+| C-CDN-03 | `node tools/test-playback-health.mjs`：所选线路排第一，已耗尽缓冲也计时，30 秒终止；真实 HTTP 验证 Range/超时/取消 | 本地服务分别返回正确 206、忽略 Range 的 200、错误区间、响应体停传；新 XHR 探针均正确结束，避免只给响应头计时或下载整个视频 |
+| C-DIAG-03 | `node tools/test-cdn-tv.mjs`：真机注入不可达主节点、验证回退与拉黑，再选择阿里云运行诊断并解码电视截图 | 真机实际起播；报告首先测 `ali`，显示 1x/4x 吞吐，扫码载荷保留最近播放节点及选路且无签名流 URL。首轮抓到二维码缩放过密不能解码；改为整数模块并去重错误后 [6/6](ux-evidence/2026-10-06-issues/device-cdn.json)。测试恢复设置与注入标记 |
+| C-DIAG-04 | `UX_FILTER='diagnostic network' node tools/test-tv-ux.mjs`：打开设置后用 `route.abort()` 断开代理，诊断必须结束、失败上屏并可扫码 | 服务、API、推荐、详情、取流、CDN、图片代理七项明确失败，无等待行；从渲染像素解码二维码，逐项核对失败及 ASCII 报告。[结果](ux-evidence/2026-10-06-issues/diagnostics-offline.json) |
+| C-LIBRARY-02 | `node tools/test-library.mjs` 与 `UX_FILTER='subscriptions|subscription request' node tools/test-tv-ux.mjs`：订阅收藏夹/合集、分页、方向键、空/失败重试、跨页连播 | 浏览器验证三项订阅场景；纯逻辑验证两种响应映射、连续翻页去重、末页结束与请求失败传播。通过真实电视服务只读核对订阅及合集端点响应；没有修改用户订阅 |
+| C-MEDIA-01 | `node --test app/src/player/mediaSelection.test.js` 与 `npm run test:loading`：实际生成 MPD 的格式选择、初始化段、杜比信令和音轨回退 | 解析/选择 13/13；播放器夹具验证 E-AC-3 优先、E-AC-3/FLAC 加载失败后 AAC、杜比加载失败后同 qn 基础层；坏长度、超限区间及伪装 box 拒绝。没有把夹具通过写成 Atmos 实际输出成功 |
+| C-LEGACY-01 | `bash tools/test-node8/test.sh` 与 `UX_LEGACY_LAYOUT=1 node tools/test-tv-ux.mjs`：真实 0.12.2/8 运行服务，强制旧布局 | 两种 Node 均启动、真实 B 站 API 返回 HTTP 200、诊断报告弹幕模块加载成功；服务 ES5、前端产物 ES2016 解析通过。旧布局定向 [11/11](ux-evidence/2026-10-06-issues/legacy-layout.json)，仅为现代浏览器模拟，不替代旧电视整机验证 |
+
+本地门禁 `bash tools/verify.sh --no-tv --ux` 通过：服务单测 22/22、媒体选择 13/13、浏览器 [53/53](ux-evidence/2026-10-06-issues/browser.json)、播放器失败路径 [14/14](ux-evidence/2026-10-06-issues/player-loading.json)，另有真实 HTTP 探针测试。二维码最终调整后追加断网场景 1/1 与真机诊断 6/6。门禁日志见 [verify.log](ux-evidence/2026-10-06-issues/verify.log)。
+
+现有 LG C4 开发版已部署，播放/遥控器 [26/26](ux-evidence/2026-10-06-issues/device.json)，设置 [12/12](ux-evidence/2026-10-06-issues/device-settings.json)。保留侧栏确认主动刷新，Back/右键往返保持位置；浏览器覆盖 2/3/4 列 × 三档界面字号。此轮发现 #27 加入自动播放行后旧测试行号过时，已修正夹具后重跑。已查看电视播放及诊断截图、订阅页截图。
+
+边界：未执行会改动账号稍后再看的旧模拟器全套，不是新版本发布验收；未在海外问题用户的网络、webOS 4 实机、杜比/Atmos 音响链路上验收。旧服务只验证启动、API 和模块加载，直播弹幕实收与 DLNA 仍需旧硬件验证。未包含 PR #17 的特定 4K120 片源帧变换，不关闭这些仍需现场验证的 issue。

@@ -136,7 +136,8 @@ export default React.memo(function VideoGrid({ videos = [], group = 'content', s
         transition: 'transform 0.2s ease',
         willChange: 'transform',
       }}>
-        {header && <div className="grid-header" style={{ gridColumn: '1 / -1' }}>{header}</div>}
+        {/* <header>/<footer> tags (not div) keep :nth-of-type column math intact in the no-grid fallback */}
+        {header && <header className="grid-header" style={{ gridColumn: '1 / -1' }}>{header}</header>}
         {videos.map((video, idx) => {
           const row = startRow + Math.floor(idx / cols);
           const col = idx % cols;
@@ -155,7 +156,7 @@ export default React.memo(function VideoGrid({ videos = [], group = 'content', s
             />
           );
         })}
-        {footer && <div className="grid-footer" style={{ gridColumn: '1 / -1' }}>{footer}</div>}
+        {footer && <footer className="grid-footer" style={{ gridColumn: '1 / -1' }}>{footer}</footer>}
         {!videos.length && <div className="empty-state">{t('暂无内容')}</div>}
       </div>
     </div>

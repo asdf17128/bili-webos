@@ -1,7 +1,11 @@
 import Icon from '../components/Icon';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies, getReplyReplies, tripleVideo, likeVideo, coinVideo, favVideo, getFavFoldersFor, getVideoRelation, getHtml5PlayUrl, mediaProxyBase, addToView, delToView } from '../api/client';
+import { getLibraryPage, getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies, getReplyReplies, tripleVideo, likeVideo, coinVideo, favVideo, getFavFoldersFor, getVideoRelation, getHtml5PlayUrl, mediaProxyBase, addToView, delToView } from '../api/client';
+import { nextPlaylistItem } from '../utils/library';
 import { playPart, playAdvance } from './playIntent';
+import { createStallMonitor, startPlaybackReport, updatePlaybackReport, countPlaybackEvent, bufferedAhead } from './playbackHealth';
+import { selectVideoRepresentation, listPreferredAudio, hasAudioRepresentations, createPlaybackAttemptPlan, inspectDolbyRepresentation } from './mediaSelection';
+import { logErr } from '../utils/errlog';
 
 import { formatDuration, formatTime, formatCount, QUALITY_MAP, cleanTitle, pickAigcText } from '../utils/format';
 import { storage } from '../utils/storage';
@@ -71,6 +75,16 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const videoRef = useRef(null);
   const shakaRef = useRef(null);
   const [playing, setPlaying] = useState(false);
+  const [streamFormat, setStreamFormat] = useState({ video: '', audio: '' });
+  const probeRequestsRef = useRef(new Set());
+  const mountedRef = useRef(true);
+  const streamGenerationRef = useRef(0);
+  const loadedStreamRef = useRef(null);
+  useEffect(() => () => {
+    mountedRef.current = false;
+    probeRequestsRef.current.forEach(xhr => xhr.abort());
+    probeRequestsRef.current.clear();
+  }, []);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showControls, setShowControls] = useState(false);
@@ -103,6 +117,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // AI 生成声明 (player/v2 arc_aigc) — separate field from argue_info.
   const [aigcMsg, setAigcMsg] = useState('');
   const [loading, setLoading] = useState(true);
+  const [buffering, setBuffering] = useState(false);
+  const loadingRef = useRef(true);
+  loadingRef.current = loading;
   // 播放器是前台重活:开着期间一律不许后台预取来抢主线程和带宽
   // (实测:不关闸时首帧 1850→4185ms)。
   useEffect(() => holdPrefetch(), []);
@@ -456,7 +473,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         // (an aggressive backoff here added ~7.5s to every load).
         manifest: { retryParameters: { maxAttempts: 4, baseDelay: 150, backoffFactor: 1, timeout: 15000 } },
         streaming: {
-          retryParameters: { maxAttempts: 6, baseDelay: 200, backoffFactor: 1, fuzzFactor: 0.5, timeout: 20000 },
+          retryParameters: { maxAttempts: 6, baseDelay: 200, backoffFactor: 1, fuzzFactor: 0.5, timeout: 20000, connectionTimeout: 5000, stallTimeout: 5000 },
           bufferingGoal: 30,
           rebufferingGoal: 2,
         },
@@ -492,6 +509,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         request.uris = alive.length ? alive : kept;
       });
       ne.addEventListener('retry', onShakaRetry);
+      ne.registerResponseFilter((type, response) => {
+        if (type === 1) updatePlaybackReport({ host: cdnHostOf(response.uri || response.originalUri) });
+      });
 
       if (mounted) loadVideo(player, () => mounted);
     }
@@ -517,6 +537,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     const isBangumi = !!(video?.isBangumi || video?.epid || video?.seasonId);
     if (!video?.bvid && !video?.aid && !isBangumi) return;
     setLoading(true);
+    setBuffering(false);
+    startPlaybackReport(storage.getSettings().cdnRoute);
     setLoadError(false);
     nativeModeRef.current = false; // fresh video always starts on DASH
     setCurrentSpeed(1);            // 倍速 is per-video, never carried over
@@ -763,35 +785,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             }
 
             setQualities((meta?.accept_quality || []).map(q => ({ qn: q, label: QUALITY_MAP[q] || `${q}` })));
-            // Label what will ACTUALLY play: the retry ladder may force a qn
-            // the video doesn't have (e.g. Dolby 126 on an SDR video) and
-            // buildMPD then falls to the nearest available id — the label must
-            // follow that fall, or ordinary videos get 杜比视界/HDR labels.
-            const availIds = Array.from(new Set((dash.video || []).map(v => v.id || 0))).sort((a, b) => b - a);
-            let servedQn = wantQn != null ? wantQn : (meta?.quality || 80);
-            if (availIds.length && availIds.indexOf(servedQn) < 0) {
-              const near = availIds.find(id => id <= servedQn);
-              servedQn = near != null ? near : availIds[0];
-            }
-            setCurrentQuality(servedQn || 80);
-
-            const _tMpd = perfNow();
-            const mpd = buildMPD(dash, wantQn);
-            mark('po-mpd', perfNow() - _tMpd);
-            const blob = new Blob([mpd], { type: 'application/dash+xml' });
-            const mpdUrl = URL.createObjectURL(blob);
-            // Resume directly at the saved position via load()'s startTime — don't
-            // load at 0 then seek, which buffers the intro and immediately throws
-            // it away (the main cause of the long resume-load wait).
             const resumeAt = (resumeProgress > 0 && resumeProgress < (dash.duration || 9999) - 10)
               ? resumeProgress : 0;
-            try {
-              const _tLoad = perfNow();
-              await activeResult(player.load(mpdUrl, resumeAt || undefined));
-              mark('po-shaka', perfNow() - _tLoad);
-            } finally {
-              URL.revokeObjectURL(mpdUrl);
-            }
+            const _tLoad = perfNow();
+            await activeResult(loadDash(player, dash, wantQn, resumeAt, isActive));
+            mark('po-shaka', perfNow() - _tLoad);
             if (rung > 0) console.warn('[loadVideo] fell back to qn=' + fallbackQn + ' (top rep failed to load/decode)');
             loaded = true;
           } catch (e) {
@@ -825,7 +823,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       videoRef.current.addEventListener('loadeddata', () => {
         mark('player-first-frame', ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()) - openT.current);
       }, { once: true });
-      videoRef.current.addEventListener('ended', () => {
+      videoRef.current.addEventListener('ended', async () => {
         castReportState({ playState: 'end' }).catch(() => {});
         // 看完自动移出稍后再看(设置项,默认关)。只对**从稍后再看点开**的视频生效
         // ——否则会对着从没进过队列的视频白发一个删除请求。
@@ -843,16 +841,22 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         // video, finishing it should move to the next FAVORITE, not binge the
         // other 65 parts (per @ZMonsterror's request).
         const pl = video?.playlist;
-        const idx = video?.playlistIndex;
-        if (pl && Array.isArray(pl) && typeof idx === 'number' && idx + 1 < pl.length && onPlayNext) {
-          const next = pl[idx + 1];
-          onPlayNext(playAdvance({ ...next, playlist: pl, playlistIndex: idx + 1, fromToView: video?.fromToView }));
-          return;
+        let playlistFailed = false;
+        if (pl && onPlayNext) {
+          try {
+            const next = await nextPlaylistItem(video, getLibraryPage);
+            if (!isActive()) return;
+            if (next) { onPlayNext(playAdvance(next)); return; }
+          } catch {
+            if (!isActive()) return;
+            playlistFailed = true;
+            showPlayerToast(t('连播列表加载失败，请返回列表重试'));
+          }
         }
         // Multi-part (分P/合集) auto-advance: play the next part of THIS video
         // (only when not inside a favorites playlist).
         const parts = partsRef.current;
-        if (parts.length > 1 && onPlayNext) {
+        if (!pl && parts.length > 1 && onPlayNext) {
           const pi = parts.findIndex(p => p.cid === cidRef.current);
           if (pi >= 0 && pi + 1 < parts.length) {
             onPlayNext(playAdvance({ ...parts[pi + 1] }));
@@ -869,7 +873,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         setFocusArea('related');
         setFocusIdx(0);
         // YouTube-style autoplay next — 可在设置里关 (#27):关了就停在推荐列表等手动选。
-        if (relatedRef.current.length > 0 && storage.getSettings().autoplayNext !== false) setEndNextIn(10);
+        if (!playlistFailed && relatedRef.current.length > 0 && storage.getSettings().autoplayNext !== false) setEndNextIn(10);
       });
 
       try { setDanmakus(await activeResult(getDanmaku(cid))); } catch {}
@@ -937,32 +941,57 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     }
   }, [video, queueOrApplySeek, selectSubtitle, makeMtTrack]);
 
-  function buildMPD(dash, wantQn) {
+  async function loadDash(player, dash, wantQn, position, isActive) {
+    const supported = type => {
+      try { return !window.MediaSource?.isTypeSupported || window.MediaSource.isTypeSupported(type); }
+      catch { return false; }
+    };
+    const selected = selectVideoRepresentation(dash, wantQn, { allowFallback: true, isTypeSupported: supported });
+    if (!selected.representation) throw new Error('No video representation');
+    const audio = listPreferredAudio(dash, supported);
+    if (!audio.length && hasAudioRepresentations(dash)) throw Object.assign(new Error('Unsupported audio codec'), { category: 4 });
+    let dolby = null, dolbyCodec = null;
+    if (selected.actualQn === 126) {
+      try {
+        const rep = selected.representation;
+        const routeHost = CDN_ROUTES[storage.getSettings().cdnRoute];
+        const probe = routeHost ? { ...rep, baseUrl: withHost(rep.baseUrl || rep.base_url, routeHost) } : rep;
+        dolby = await inspectDolbyRepresentation(probe, mediaProxyBase(), { active: probeRequestsRef.current });
+        if (dolby && supported(`video/mp4; codecs="${dolby.codec}"`)) dolbyCodec = dolby.codec;
+      } catch (e) { if (isActive()) logErr('dolby-probe', e.message); }
+    }
+    const attempts = createPlaybackAttemptPlan(audio, dolbyCodec, { allowVideoOnly: !hasAudioRepresentations(dash) });
+    let lastError;
+    for (const attempt of attempts) {
+      if (!isActive()) throw Object.assign(new Error('Load cancelled'), { code: 7000 });
+      const mpd = buildMPD(dash, selected.representation, attempt);
+      const url = URL.createObjectURL(new Blob([mpd], { type: 'application/dash+xml' }));
+      try {
+        await player.load(url, position || undefined);
+        if (!isActive()) throw Object.assign(new Error('Load cancelled'), { code: 7000 });
+        const format = {
+          video: attempt.dolbyCodec ? 'Dolby Vision' : selected.actualQn === 126
+            ? (dolby?.compatibilityId === 4 ? 'HLG' : t('杜比源（基础层）'))
+            : (QUALITY_MAP[selected.actualQn] || String(selected.actualQn)),
+          audio: attempt.audioLabel,
+        };
+        loadedStreamRef.current = { mpd, format, quality: selected.actualQn };
+        setStreamFormat(format); setCurrentQuality(selected.actualQn);
+        updatePlaybackReport({ quality: selected.actualQn, videoCodec: attempt.dolbyCodec || selected.representation.codecs, audioCodec: attempt.audioCodec });
+        return selected.actualQn;
+      } catch (e) {
+        if (!isActive() || (e?.category !== 3 && e?.category !== 4)) throw e;
+        lastError = e;
+      } finally { URL.revokeObjectURL(url); }
+    }
+    throw lastError || new Error('No playable audio/video combination');
+  }
+
+  function buildMPD(dash, representation, attempt) {
     const duration = dash.duration || 0;
     const minBuffer = dash.minBufferTime || 1.5;
-    // ABR is off and manual quality re-fetches playurl, so the MPD only needs
-    // the single highest-bitrate video + audio. Emitting every quality/codec
-    // (B站 returns AVC+HEVC+AV1 × resolutions) makes Shaka's parse/codec-probe
-    // on the TV's weak CPU take several seconds before the first byte loads.
-    const pickBest = (arr) => (arr && arr.length)
-      ? [arr.reduce((a, b) => ((b.bandwidth || 0) > (a.bandwidth || 0) ? b : a))] : [];
-    // When a specific quality is wanted (manual pick, or bangumi defaulting to
-    // its top rep), select by B站's quality id — HDR=125 / Dolby Vision=126 are
-    // keyed by id, and the HDR rep is usually NOT the highest bitrate (an SDR
-    // AVC rep often is), so picking by bitrate alone never lights up HDR.
-    const pickRep = (arr) => {
-      if (!arr || !arr.length) return [];
-      if (!wantQn) return pickBest(arr);
-      let pool = arr.filter(v => v.id === wantQn);
-      if (!pool.length) {
-        const ids = Array.from(new Set(arr.map(v => v.id))).sort((a, b) => b - a);
-        const t = ids.find(id => id <= wantQn);
-        pool = arr.filter(v => v.id === (t != null ? t : ids[0]));
-      }
-      return [pool.reduce((a, b) => ((b.bandwidth || 0) > (a.bandwidth || 0) ? b : a))];
-    };
-    const videoList = pickRep(dash.video);
-    const audioList = pickBest(dash.audio);
+    const videoList = [{ ...representation, codecs: attempt.dolbyCodec || representation.codecs }];
+    const audioList = attempt.audioRepresentation ? [attempt.audioRepresentation] : [];
     let videoAdaptations = '';
     if (videoList.length > 0) {
       const reps = videoList.map(v => {
@@ -1029,7 +1058,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     const firstUpos = urls.find(isUposUrl);
     if (routeHost && firstUpos) {
       const forced = withHost(firstUpos, routeHost);
-      if (forced && urls.indexOf(forced) === -1) urls.unshift(forced);
+      if (forced) urls = [forced].concat(urls.filter(u => u !== forced));
     }
     // 兜底镜像(#29):无条件追加在末尾。playurl 给海外用户的主备常常全是
     // 同一家(Akamai),全挂就没退路;这两个副本让 Shaka 还有得滑。
@@ -1169,36 +1198,35 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     return () => clearInterval(hb);
   }, [video?.bvid]);
 
-  // Stall watchdog: if playback freezes mid-video (segment error, network
-  // hiccup) and Shaka doesn't recover on its own, retry streaming; if it's
-  // still stuck, nudge currentTime to force a re-buffer.
-  // Fixes "plays halfway, freezes, and never resumes".
+  // Count stalls even when all buffered data has been exhausted (#35).
   useEffect(() => {
-    let lastTime = -1;
-    let stalledSec = 0;
+    const sample = createStallMonitor();
+    let wasBuffering = false;
+    const clear = () => { wasBuffering = false; setBuffering(false); };
+    const v = videoRef.current;
+    ['pause', 'playing', 'ended', 'seeking'].forEach(name => v?.addEventListener(name, clear));
     const iv = setInterval(() => {
       const v = videoRef.current;
-      if (!v || v.paused || v.ended || v.seeking || v.readyState < 2) {
-        stalledSec = 0;
-        lastTime = v ? v.currentTime : -1;
-        return;
+      const state = sample(v, loadingRef.current || loadErrorRef.current);
+      updatePlaybackReport({ buffer: Math.round(bufferedAhead(v) * 10) / 10 });
+      if (state.buffering && !wasBuffering) countPlaybackEvent('stalls');
+      wasBuffering = state.buffering;
+      setBuffering(state.buffering && !state.failed);
+      if (state.retry) {
+        countPlaybackEvent('retries');
+        try { shakaRef.current?.retryStreaming(); } catch { /* unloaded */ }
       }
-      if (Math.abs(v.currentTime - lastTime) < 0.05) {
-        stalledSec += 1;
-        if (stalledSec === 3) {
-          console.warn('[watchdog] playback stalled 3s, retrying streaming');
-          try { shakaRef.current?.retryStreaming(); } catch {}
-        } else if (stalledSec >= 8) {
-          console.warn('[watchdog] still stalled, nudging currentTime');
-          try { v.currentTime = v.currentTime + 0.5; v.play(); } catch {}
-          stalledSec = 0;
-        }
-      } else {
-        stalledSec = 0;
+      if (state.failed && !loadErrorRef.current) {
+        logErr('playback-stall', '30s without progress; buffer=' + bufferedAhead(v).toFixed(1));
+        v?.pause();
+        setErrorMsg(t('播放暂时中断，请检查网络或切换线路'));
+        setLoadError(true);
       }
-      lastTime = v.currentTime;
     }, 1000);
-    return () => clearInterval(iv);
+    return () => {
+      clearInterval(iv);
+      ['pause', 'playing', 'ended', 'seeking'].forEach(name => v?.removeEventListener(name, clear));
+    };
   }, []);
 
   // When focus returns to the tab row, scroll it back into view — the grid may
@@ -1708,46 +1736,44 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const changeQuality = useCallback(async (qn) => {
     const isBangumi = !!(video?.isBangumi || video?.epid || video?.seasonId);
     if ((!video?.bvid && !video?.aid && !isBangumi) || !shakaRef.current) return;
-    setCurrentQuality(qn);
-    storage.setSettings({ ...storage.getSettings(), quality: qn });
+    const player = shakaRef.current;
+    const generation = ++streamGenerationRef.current;
+    const isActive = () => mountedRef.current && generation === streamGenerationRef.current;
+    const pos = videoRef.current.currentTime;
+    const wasPaused = videoRef.current.paused;
+    const previous = loadedStreamRef.current;
+    setLoading(true); setBuffering(false);
     try {
-      let cid = video.cid || cidRef.current;
-      let dash, meta;
-      if (isBangumi) {
-        const res = await getBangumiPlayUrl({ epid: video.epid, cid }, qn);
-        meta = res?.result || res?.data;
-        dash = meta?.dash;
-      } else {
-        const res = await getPlayUrl(video, cid, qn);
-        meta = res?.data;
-        dash = meta?.dash;
-      }
-      if (dash) {
-        // The server answers with what the ACCOUNT is allowed to have
-        // (meta.quality): a non-VIP pick of 1080P+/4K comes back as 1080P.
-        // Play and label that honestly instead of leaving the VIP tier lit.
-        const served = (meta?.quality && (dash.video || []).some(v => v.id === meta.quality))
-          ? meta.quality : qn;
-        const pos = videoRef.current.currentTime;
-        // Honor the picked quality id (this is how HDR=125 / Dolby=126 get
-        // selected — they aren't the highest-bitrate rep).
-        const mpd = buildMPD(dash, served);
-        const blob = new Blob([mpd], { type: 'application/dash+xml' });
-        const mpdUrl = URL.createObjectURL(blob);
-        await shakaRef.current.load(mpdUrl);
-        URL.revokeObjectURL(mpdUrl);
-        selectBestVariant(shakaRef.current);
-        videoRef.current.currentTime = pos;
-        videoRef.current.play();
-        setCurrentQuality(served);
-        if (served !== qn) {
-          storage.setSettings({ ...storage.getSettings(), quality: served });
-          showPlayerToast(t('该画质需要大会员,已按 {q} 播放', { q: QUALITY_MAP[served] || served }));
-        }
-      }
+      const cid = video.cid || cidRef.current;
+      const res = isBangumi ? await getBangumiPlayUrl({ epid: video.epid, cid }, qn) : await getPlayUrl(video, cid, qn);
+      if (!isActive()) return;
+      const meta = res?.result || res?.data;
+      if (!meta?.dash) throw new Error('No DASH stream');
+      const served = await loadDash(player, meta.dash, meta.quality || qn, pos, isActive);
+      if (!isActive()) return;
+      storage.setSettings({ ...storage.getSettings(), quality: served });
+      selectBestVariant(player);
+      if (!wasPaused) videoRef.current.play();
+      if (served !== qn) showPlayerToast(t('该画质需要大会员,已按 {q} 播放', { q: QUALITY_MAP[served] || served }));
     } catch (e) {
-      console.error('Quality change error:', e);
-    }
+      if (!isActive()) return;
+      showPlayerToast(t('画质切换失败，已保留原画质'));
+      // A failed decoder load can unload the old stream; restore it at the
+      // captured position, including the user's paused state.
+      if (previous) {
+        const url = URL.createObjectURL(new Blob([previous.mpd], { type: 'application/dash+xml' }));
+        try {
+          await player.load(url, pos);
+          if (isActive()) {
+            loadedStreamRef.current = previous;
+            setCurrentQuality(previous.quality); setStreamFormat(previous.format);
+            if (!wasPaused) videoRef.current.play();
+          }
+        } catch (err) {
+          if (isActive()) { setErrorMsg(t('播放暂时中断，请检查网络或切换线路')); setLoadError(true); }
+        } finally { URL.revokeObjectURL(url); }
+      }
+    } finally { if (isActive()) setLoading(false); }
   }, [video]);
 
   // 倍速: apply for THIS video only (no persistence). Browser = plain
@@ -2282,6 +2308,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         lead={(isAiLan(subLan) || subLan === 'x-mt') ? AI_LEAD : 0}
         lift={showControls ? (showRelated ? 2 : 1) : 0} fontScale={subtitleScale} />
 
+      {buffering && !loading && !loadError && (
+        <div className="player-buffering" role="status" aria-live="polite">
+          <span className="spinner" />{t('正在缓冲…')}
+        </div>
+      )}
       {loading && (
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -2488,7 +2519,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                             : subtitleLanName(subLan, (subTracks.find(s => s.lan === subLan) || {}).lan_doc)).slice(0, 22)}`) :
                           btn === 'comments' ? (commentCount ? t('评论 · {n}', { n: formatCount(commentCount) }) : t('评论')) :
                             btn === 'speed' ? (currentSpeed === 1 ? t('倍速') : `${currentSpeed}x`) :
-                            QUALITY_MAP[currentQuality] || `${currentQuality}`;
+                            streamFormat.video || QUALITY_MAP[currentQuality] || `${currentQuality}`;
             // 点赞 gets press/release handlers (long-press = 三连); the rest click.
             const handlers = btn === 'like'
               ? {
@@ -2518,6 +2549,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             );
           })}
           <span className="player-time">
+            {streamFormat.audio && <span className="player-audio-format">{streamFormat.audio} · </span>}
             {formatDuration(currentTime)} / {formatDuration(duration)}
             {(() => {
               const ch = chapters.find(c => currentTime >= c.from && currentTime < c.to);
@@ -2557,7 +2589,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                 </div>;
               }
               return (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+                <div className="related-grid cols-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
                   {list.map((rv, i) => {
                     const thumb = proxyImg(rv.pic);
                     const nowPlaying = panelTab === 'parts' && rv.cid === cidRef.current;

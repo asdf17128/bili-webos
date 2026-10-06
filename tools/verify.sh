@@ -11,10 +11,10 @@
 #   --ux     run deterministic browser remote UX regressions (no real account)
 #
 # Layers (fail-fast top to bottom):
-#   1. syntax   service files must parse as ES2017 (webOS 5 = Node 8)
+#   1. syntax   service files must parse as ES5 (webOS 4.x = Node 0.12.2)
 #   2. static   design-spec + logic gates: no <16px text, no aspect-ratio CSS
 #               (Chromium 68), play-intent policy suite (resume regression)
-#   3. node8    REAL Node 8 via docker: evaluate service.js, drive the fetch
+#   3. node8    REAL Node 0.12.2 and Node 8 via docker: evaluate service.js, drive the fetch
 #               handler + getDiagnostics end-to-end (catches URL-global-type
 #               regressions that took down webOS 5, #10/#13)
 #   4. build    vite production build
@@ -33,12 +33,12 @@ for a in "$@"; do
   [ "$a" = "--ux" ] && UX=1
 done
 
-echo "=== [1/6] Service syntax (ES2017 / Node 8) ==="
+echo "=== [1/6] Service syntax (ES5 / Node 0.12) ==="
 for f in service/com.biliwebos.app.service/*.js \
          service/com.biliwebos.app.service/cast/*.js; do
-  npx --yes acorn --ecma2017 --silent "$f" || { echo "SYNTAX-FAIL $f (too new for Node 8)"; exit 1; }
+  npx --yes acorn --ecma5 --silent "$f" || { echo "SYNTAX-FAIL $f (too new for Node 0.12)"; exit 1; }
 done
-echo "OK: all service files parse as ES2017"
+echo "OK: all service files parse as ES5"
 
 echo ""
 echo "=== [2/6] Static gates (design spec + logic) ==="
@@ -88,6 +88,8 @@ node tools/test-aigc.mjs || { echo "FAIL: aigc extraction"; exit 1; }
 # C-CAST-03: DLNA URL rewrite (Huya FLV→HLS; non-Huya untouched)
 node tools/test-casturl.mjs || { echo "FAIL: cast url rewrite"; exit 1; }
 # C-SRCH-02: search-history dedup/cap
+node --test app/src/player/mediaSelection.test.js || { echo "FAIL: media selection"; exit 1; }
+node tools/test-library.mjs || { echo "FAIL: library playlists"; exit 1; }
 node tools/test-searchhistory.mjs || { echo "FAIL: search history"; exit 1; }
 npm test || { echo "FAIL: service unit tests"; exit 1; }
 
@@ -103,16 +105,23 @@ if [ "$V_APP" != "$V_SRC" ]; then
 fi
 echo "OK: version $V_APP consistent (appinfo == src/version.js)"
 
-echo "=== [3/6] Service on REAL Node 8 (docker) ==="
+echo "=== [3/6] Service on REAL Node 0.12.2 + Node 8 (docker) ==="
 if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
   bash tools/test-node8/test.sh | grep -vE "buvid boot|Cast server|proxy on port"
 else
-  echo "SKIP: docker unavailable (Node 8 regression NOT verified!)"
+  echo "SKIP: docker unavailable (Node 0.12/8 regression NOT verified!)"
 fi
 
 echo ""
 echo "=== [4/6] App build ==="
 (cd app && npx vite build 2>&1 | tail -1)
+node --input-type=commonjs <<'NODE'
+const fs = require('fs'), acorn = require('./app/node_modules/acorn');
+for (const name of fs.readdirSync('app/dist/assets').filter(name => name.endsWith('.js'))) {
+  acorn.parse(fs.readFileSync('app/dist/assets/' + name, 'utf8'), { ecmaVersion: 2016 });
+}
+console.log('OK: production bundles parse as ES2016 (Chromium 53)');
+NODE
 
 # Deterministic remote UX regressions (C-UX-01 through C-UX-08).
 # --no-tv --ux includes this layer without starting the real account/service.
@@ -130,6 +139,7 @@ if [ -n "$UX" ]; then
   fi
   node tools/test-tv-ux.mjs
   node tools/test-player-loading.mjs
+  node tools/test-playback-health.mjs
   if [ -n "$UX_VITE_PID" ]; then kill "$UX_VITE_PID"; trap - EXIT; fi
 fi
 

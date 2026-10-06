@@ -13,6 +13,8 @@
     "test:settings:tv": "node tools/test-tv-settings.mjs"
   },
   "devDependencies": {
-    "playwright": "^1.62.1"
+    "jsqr": "^1.4.0",
+    "playwright": "^1.62.1",
+    "pngjs": "^7.0.0"
   }
 }

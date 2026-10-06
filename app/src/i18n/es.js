@@ -1,5 +1,18 @@
 // Spanish dictionary. Keys are the Chinese source strings (see index.js).
 export default {
+  '我的收藏': 'Mis favoritos',
+  '订阅': 'Suscripciones',
+  '暂无订阅，可先在 B 站订阅收藏夹或合集': 'Sin suscripciones. Suscríbete a una carpeta o colección en Bilibili.',
+  '更多订阅': 'Más suscripciones',
+  '连播列表加载失败，请返回列表重试': 'No se pudo cargar la página siguiente. Vuelve a la lista e inténtalo de nuevo.',
+
+  '杜比源（基础层）': 'Fuente Dolby (capa base)',
+  '画质切换失败，已保留原画质': 'No se pudo cambiar la calidad; se conserva la anterior',
+
+  '播放暂时中断，请检查网络或切换线路': 'Reproducción interrumpida. Revisa la red o cambia de CDN.',
+  '正在缓冲…': 'Cargando vídeo…',
+  '所选节点连不上，其他镜像可用': 'El nodo elegido no responde; hay otros servidores disponibles',
+
   '点赞': 'Me gusta',
   '投币': 'Moneda',
   "继续观看": "Seguir viendo",

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import qrcode from 'qrcode-generator';
 import { apiFetch, wbiFetch, getRecommend, getServiceDiagnostics, mediaProxyBase } from '../api/client';
-import { FALLBACK_MIRRORS, cdnHostOf, withHost } from '../player/cdn';
+import { withHost } from '../player/cdn';
+import { diagnosticHosts, probeRange } from '../player/cdnProbe';
+import { getPlaybackReport } from '../player/playbackHealth';
 import { getErrors } from '../utils/errlog';
 import { apiErrorHint } from '../utils/apiHint';
 import { storage } from '../utils/storage';
@@ -28,6 +30,8 @@ export default function DiagPanel() {
 
   useEffect(() => {
     let dead = false;
+    const active = new Set();
+    const route = storage.getSettings().cdnRoute || 'auto';
     const results = [];
     const push = (name, status, detail) => {
       if (dead) return;
@@ -122,7 +126,7 @@ export default function DiagPanel() {
 
       // 4b. 视频 CDN (#29):接口全通但拉不到流,以前只能对着一堆 E: 猜。
       // 用刚拿到的真实签名 URL,经本地代理向「B站 分配的节点 + 两个兜底镜像」
-      // 各拉 200KB,报每家通不通、多快;分配的挂了就明说已自动切换。
+      // 各拉 200KB，优先测用户所选线路。探针只报告可达性，不代表实际播放已切换。
       push('视频 CDN', 'run', '');
       try {
         let cdnUrl = probeStreamUrl;
@@ -138,30 +142,23 @@ export default function DiagPanel() {
           } catch (e) { /* 热门视频取流失败就退回 av2 */ }
         }
         if (!cdnUrl) throw new Error(t('前置 view/pagelist 都失败,拿不到 cid'));
-        const assigned = cdnHostOf(cdnUrl);
-        const hosts = [assigned].concat(FALLBACK_MIRRORS.filter(h => h !== assigned));
+        const hosts = diagnosticHosts(cdnUrl, route);
         const base = mediaProxyBase();
         const one = async (host) => {
           const u = withHost(cdnUrl, host);
           const x = new URL(u);
-          const t0 = Date.now();
           try {
-            const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-            const timer = ctrl && setTimeout(() => ctrl.abort(), 15000);
-            const r = await fetch(`${base}/proxy/${x.host}${x.pathname}${x.search}`, { headers: { Range: 'bytes=0-200000' }, signal: ctrl ? ctrl.signal : undefined });
-            if (timer) clearTimeout(timer);
-            if (r.status !== 206 && r.status !== 200) return { host, ok: false, why: 'HTTP ' + r.status };
-            await r.arrayBuffer();
-            const cr = r.headers.get('content-range') || '';
-            return { host, ok: true, ms: Date.now() - t0, total: parseInt(cr.split('/')[1], 10) || 0 };
-          } catch (e) { return { host, ok: false, why: (e && e.name === 'AbortError') ? t('超时(15s)') : t('连不上') }; }
+            const r = await probeRange(`${base}/proxy/${x.host}${x.pathname}${x.search}`, 0, 200000, { active });
+            return { host, ok: !r.timedOut, ms: r.ms, total: r.total, why: r.timedOut ? t('超时(15s)') : '' };
+          } catch (e) { return { host, ok: false, why: e.message }; }
         };
         const rs = [];
-        for (const h of hosts) rs.push(await one(h));
+        for (const h of hosts) { if (dead) return; rs.push(await one(h)); }
+        if (dead) return;
         const short = h => h.replace(/^upos-(sz|hz)-(mirror)?/, '').replace(/\.(bilivideo\.com|akamaized\.net)$/, '');
         const text = rs.map(r => short(r.host) + (r.ok ? ' ' + (r.ms / 1000).toFixed(1) + 's' : ' ✗' + (r.why ? '(' + r.why + ')' : ''))).join(' · ');
         if (rs[0].ok) push('视频 CDN', 'ok', text);
-        else if (rs.some(r => r.ok)) push('视频 CDN', 'warn', text + ' — ' + t('当前节点连不上,已自动切换到可用镜像'));
+        else if (rs.some(r => r.ok)) push('视频 CDN', 'warn', text + ' — ' + t('所选节点连不上，其他镜像可用'));
         else push('视频 CDN', 'fail', text + ' — ' + t('视频节点全部连不上,试试设置里换 CDN 线路'));
 
         // 4c. 单连接 vs 4 并发测速。在能连上的那家镜像上,先拉一块 2MB(单连接),
@@ -178,26 +175,12 @@ export default function DiagPanel() {
             const total = good.total || 0;
             const BLK = total ? Math.max(256 * 1024, Math.min(2 * 1024 * 1024, Math.floor(total / 8))) : 1024 * 1024;
             // 拉 [start,end],最多 budgetMs;超时就按已收到的字节算(慢线路也要出数)。
-            const pull = async (start, end, budgetMs) => {
-              const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-              const timer = ctrl && setTimeout(() => ctrl.abort(), budgetMs);
-              const t0 = Date.now();
-              let bytes = 0;
-              try {
-                const r = await fetch(proxied, { headers: { Range: `bytes=${start}-${end}` }, signal: ctrl ? ctrl.signal : undefined });
-                if (r.status !== 206 && r.status !== 200) throw new Error('HTTP ' + r.status);
-                if (r.body && r.body.getReader) {
-                  const reader = r.body.getReader();
-                  for (;;) { const { done, value } = await reader.read(); if (done) break; bytes += value.byteLength; }
-                } else { bytes = (await r.arrayBuffer()).byteLength; }
-              } catch (e) { if (!(e && e.name === 'AbortError')) throw e; }
-              if (timer) clearTimeout(timer);
-              return { bytes, ms: Math.max(1, Date.now() - t0) };
-            };
+            const pull = (start, end, budgetMs) => probeRange(proxied, start, end, { timeoutMs: budgetMs, active });
             const s0 = total ? Math.floor(total * 0.25) : BLK;
             const p0 = total ? Math.floor(total * 0.5) : BLK * 3;
             const single = await pull(s0, s0 + BLK - 1, 10000);
             const q = Math.floor(BLK / 4);
+            if (dead) return;
             const tp = Date.now();
             const parts = await Promise.all([0, 1, 2, 3].map(i => pull(p0 + i * q, p0 + (i + 1) * q - 1, 10000)));
             const parMs = Math.max(1, Date.now() - tp);
@@ -211,6 +194,7 @@ export default function DiagPanel() {
         }
       } catch (e) { push('视频 CDN', 'fail', e.message); }
 
+      if (dead) return;
       // 5. Local image proxy (:7654) — thumbnails/segments path.
       push('图片代理', 'run', '');
       const port = (svc && svc.localProxyPort) || 7654;
@@ -231,36 +215,43 @@ export default function DiagPanel() {
       const KEY = { '后台服务': 'svc', 'API 连通': 'api', '推荐流(风控)': 'rcmd', '视频信息 view': 'view', '取流 playurl': 'playurl', '视频 CDN': 'cdn', 'CDN 测速': 'cdnspeed', '图片代理': 'imgproxy' };
       const lines = [];
       lines.push('app v' + APP_VERSION);
+      lines.push('route=' + ascii(route));
+      const last = getPlaybackReport();
+      if (last) lines.push('last: host=' + ascii(last.host) + ' route=' + ascii(last.route) + ' buffer=' + last.buffer + 's stalls=' + last.stalls + ' retries=' + last.retries + ' age=' + Math.round((Date.now() - last.at) / 1000) + 's');
       const ua = navigator.userAgent.match(/Chrom\w+\/[\d.]+/);
       lines.push('ua ' + (ua ? ua[0] : ascii(navigator.userAgent).slice(0, 40)) + (window.webOS ? ' TV' : ' browser'));
       if (svc) lines.push('svc node=' + svc.nodeVersion + ' buvid=' + (svc.buvid ? 'Y' : 'N') + ' dm=' + (svc.danmakuModule ? 'Y' : 'N') + ' up=' + svc.uptimeSec + 's');
       results.forEach(r => lines.push('[' + r.status + '] ' + (KEY[r.name] || ascii(r.name)) + (r.detail ? ' ' + ascii(r.detail).slice(0, 60) : '')));
       const svcErrs = (svc && svc.recentErrors) || [];
-      svcErrs.slice(-5).forEach(e => lines.push('E:' + ascii(e.tag) + ' ' + ascii(e.d).slice(0, 60)));
-      getErrors().slice(-5).forEach(e => lines.push('A:' + ascii(e.tag) + ' ' + ascii(e.d).slice(0, 60)));
-      const body = '```\n' + lines.join('\n').slice(0, 700) + '\n```';
+      // Keep distinct recent failures. Repeating the same aborted socket five
+      // times made the QR dense without adding evidence.
+      const recent = svcErrs.slice(-5).map(e => 'E:' + ascii(e.tag) + ' ' + ascii(e.d).slice(0, 60))
+        .concat(getErrors().slice(-5).map(e => 'A:' + ascii(e.tag) + ' ' + ascii(e.d).slice(0, 60)));
+      lines.push(...Array.from(new Set(recent)).slice(-4));
+      const body = lines.join('\n');
       const url = REPO_ISSUE_URL + '?title=' + encodeURIComponent('[diag] v' + APP_VERSION) +
-        '&body=' + encodeURIComponent(body);
+        '&body=' + encodeURIComponent(body).replace(/%20/g, '+');
       if (!dead) setReportUrl(url);
     })();
 
-    return () => { dead = true; };
+    return () => { dead = true; active.forEach(xhr => xhr.abort()); active.clear(); };
   }, []);
 
   // Render the QR as an SVG string (qrcode-generator is ES5-safe for old TVs).
-  let qrSvg = '';
+  let qrSvg = '', qrWidth = 340;
   if (reportUrl) {
     try {
       const qr = qrcode(0, 'L');
       qr.addData(reportUrl);
       qr.make();
-      qrSvg = qr.createSvgTag({ cellSize: 3, margin: 2 });
+      qrSvg = qr.createSvgTag({ cellSize: 3, margin: 12 });
+      qrWidth = qr.getModuleCount() * 3 + 24 + 12; // modules + quiet zone + container padding
     } catch (e) { /* URL too long for QR — text fallback below */ }
   }
 
   const ICON = { ok: '✅', fail: '❌', run: '⏳', skip: '⏭️', warn: '⚠️' };
   return (
-    <div style={{ marginTop: 18, padding: '16px 20px', background: 'rgba(255,255,255,0.05)', borderRadius: 10 }}>
+    <div className="diagnostic-panel" style={{ marginTop: 18, padding: '16px 20px', background: 'rgba(255,255,255,0.05)', borderRadius: 10 }}>
       <div style={{ display: 'flex', gap: 24 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           {rows.map(r => (
@@ -278,7 +269,7 @@ export default function DiagPanel() {
           )}
         </div>
         {qrSvg && (
-          <div style={{ width: 190, flexShrink: 0, textAlign: 'center' }}>
+          <div className="diagnostic-report" style={{ width: qrWidth, flexShrink: 0, textAlign: 'center' }}>
             <div style={{ background: '#fff', borderRadius: 8, padding: 6, display: 'inline-block' }}
               dangerouslySetInnerHTML={{ __html: qrSvg }} />
             <div style={{ fontSize: 'calc(16px * var(--ui-scale))', color: '#999', marginTop: 8, lineHeight: 1.5 }}>

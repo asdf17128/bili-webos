@@ -1,0 +1,56 @@
+[
+  {
+    "name": "2 columns and largest text applied through settings",
+    "pass": true,
+    "detail": "{\"columns\":2,\"title\":28.75,\"meta\":22.5}"
+  },
+  {
+    "name": "2 columns large-text deep card visible",
+    "pass": true
+  },
+  {
+    "name": "2 columns and text size persist after reload",
+    "pass": true,
+    "detail": "{\"cols\":2,\"scale\":\"1.25\"}"
+  },
+  {
+    "name": "2 columns library native scroll keeps the enlarged card visible",
+    "pass": true
+  },
+  {
+    "name": "3 columns and largest text applied through settings",
+    "pass": true,
+    "detail": "{\"columns\":3,\"title\":28.75,\"meta\":22.5}"
+  },
+  {
+    "name": "3 columns large-text deep card visible",
+    "pass": true
+  },
+  {
+    "name": "3 columns and text size persist after reload",
+    "pass": true,
+    "detail": "{\"cols\":3,\"scale\":\"1.25\"}"
+  },
+  {
+    "name": "3 columns library native scroll keeps the enlarged card visible",
+    "pass": true
+  },
+  {
+    "name": "4 columns and largest text applied through settings",
+    "pass": true,
+    "detail": "{\"columns\":4,\"title\":27.5,\"meta\":22.5}"
+  },
+  {
+    "name": "4 columns large-text deep card visible",
+    "pass": true
+  },
+  {
+    "name": "4 columns and text size persist after reload",
+    "pass": true,
+    "detail": "{\"cols\":4,\"scale\":\"1.25\"}"
+  },
+  {
+    "name": "4 columns library native scroll keeps the enlarged card visible",
+    "pass": true
+  }
+]

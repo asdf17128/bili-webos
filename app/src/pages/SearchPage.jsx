@@ -183,7 +183,7 @@ export default function SearchPage({ onPlayVideo }) {
         error ? <PageState row={1} title={t('搜索暂时不可用')} description={t('请检查网络连接后重试')} action={t('重试')} onAction={() => doSearch(lastSearchedRef.current)} /> : results.length > 0 ? (
           <div style={{ marginTop: 18 }}>
             <div style={{ fontSize: 'calc(18px * var(--ui-scale))', color: '#aaa', margin: '0 4px 14px' }}>{t('搜索结果')}</div>
-            <div className="search-results-grid" style={{
+            <div className={`search-results-grid cols-${RESULT_COLS}`} style={{
               display: 'grid',
               gridTemplateColumns: `repeat(${RESULT_COLS}, 1fr)`,
               gap: '18px 16px',

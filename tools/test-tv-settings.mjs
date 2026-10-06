@@ -104,8 +104,8 @@ try {
     for(const cols of [2,3,4]) {
       await goto(13);
       let row = Number((await state()).focus.split('-')[1]);
-      while(row>2){await key('ArrowUp');row--;}
-      while(row<2){await key('ArrowDown');row++;}
+      while(row>3){await key('ArrowUp');row--;}
+      while(row<3){await key('ArrowDown');row++;}
       await pick(cols-2);
       for(let n=0;n<3;n++)await key('ArrowDown');
       await pick(2); // largest UI size

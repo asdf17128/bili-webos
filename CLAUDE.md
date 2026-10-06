@@ -49,9 +49,9 @@ bili_webos/
 │   │   └── utils/                # storage.js, format.js
 │   ├── public/webOSTVjs-1.2.13/  # webOS Luna bus library
 │   ├── webos-meta/               # appinfo.json, icons
-│   └── vite.config.js            # target: chrome108
+│   └── vite.config.js            # classic bundle, target: chrome53
 │
-├── service/                      # TV Background Service (Node.js v16)
+├── service/                      # TV service (Node 0.12.2/8/16 compatibility)
 │   └── com.biliwebos.app.service/
 │       ├── service.js            # Luna methods + local HTTP proxy (:7654)
 │       ├── services.json

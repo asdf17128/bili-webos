@@ -3,6 +3,8 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
+import jsQR from 'jsqr';
+import { PNG } from 'pngjs';
 
 const baseline = process.argv.includes('--baseline');
 const baseUrl = process.env.UX_URL || 'http://127.0.0.1:5173';
@@ -34,7 +36,13 @@ async function fixture(options = {}) {
   const calls = { feed: 0, qr: 0, popular: 0, folders: [] };
   await page.route('**/*', async route => {
     const url = new URL(route.request().url());
-    if (url.origin === new URL(baseUrl).origin) return route.continue();
+    if (url.origin === new URL(baseUrl).origin) {
+      if (process.env.UX_LEGACY_LAYOUT && url.pathname.endsWith('/tv-design.css')) {
+        const response = await route.fetch();
+        return route.fulfill({ response, body: (await response.text()).replace('@supports not (display: grid)', '@supports (display: grid)') });
+      }
+      return route.continue();
+    }
     if (url.pathname.includes('ux-')) {
       const n = Number((url.pathname.match(/ux-(\d+)/) || [0, 0])[1]);
       const colors = ['#254958', '#6d4e3e', '#365148', '#454563', '#4a5a66', '#695460'];
@@ -62,6 +70,18 @@ async function fixture(options = {}) {
     if (url.pathname.endsWith('/folder/created/list-all')) {
       if (options.folderError) return route.abort();
       body.data = { list: options.emptyFolders ? [] : [{ id: 1, title: '音乐收藏', media_count: 30 }, { id: 2, title: '旅行收藏', media_count: 30 }] };
+    }
+    if (url.pathname.endsWith('/folder/collected/list')) {
+      if (options.subscriptionError) return route.abort();
+      const pn = Number(url.searchParams.get('pn'));
+      assert.equal(url.searchParams.get('platform'), 'web');
+      body.data = { list: options.emptySubscriptions ? [] : pn === 1
+        ? [{ id: 11, type: 11, title: '订阅收藏夹', media_count: 30 }, { id: 12, type: 21, title: '订阅合集', mid: 123, media_count: 30 }]
+        : [{ id: 13, type: 11, title: '下一页订阅', media_count: 30 }], has_more: pn === 1 && !options.emptySubscriptions };
+    }
+    if (url.pathname.endsWith('/seasons_archives_list')) {
+      assert.equal(url.searchParams.get('season_id'), '12');
+      body.data = { archives: items('合集'), page: { total: 30 } };
     }
     if (url.pathname.endsWith('/resource/list')) {
       const folder = Number(url.searchParams.get('media_id')), pn = Number(url.searchParams.get('pn'));
@@ -258,12 +278,12 @@ await test('favorites failures can be retried', async ({ page }) => {
 }, { auth: true, folderError: true });
 await test('favorites return to the selected folder and fit the viewport', async ({ page }) => {
   await ready(page); await page.locator('.sidebar-item').filter({ hasText: '收藏' }).click();
-  await page.locator('.fav-chip').nth(1).click(); await ready(page); await page.waitForTimeout(300);
+  await page.locator('.folder-selector .fav-chip').nth(1).click(); await ready(page); await page.waitForTimeout(300);
   await page.keyboard.press('ArrowLeft'); // first col -> sidebar; enter resumes
   await page.keyboard.press('ArrowRight'); await page.waitForTimeout(150);
-  if ((await focused(page))?.startsWith('content-0-')) await page.keyboard.press('ArrowDown');
+  if ((await focused(page))?.startsWith('content-1-')) await page.keyboard.press('ArrowDown');
   await page.keyboard.press('ArrowUp');
-  assert.equal(await focused(page), 'content-0-1');
+  assert.equal(await focused(page), 'content-1-1');
   await page.keyboard.press('ArrowDown');
   for (let i = 0; i < 12; i++) await page.keyboard.press('ArrowDown');
   await page.waitForTimeout(300);
@@ -272,7 +292,7 @@ await test('favorites return to the selected folder and fit the viewport', async
 }, { auth: true, cols: 4, scale: 1.25 });
 await test('late favorite-folder responses never replace the current folder', async ({ page }) => {
   await ready(page); await page.locator('.sidebar-item').filter({ hasText: '收藏' }).click();
-  await page.locator('.fav-chip').nth(1).click();
+  await page.locator('.folder-selector .fav-chip').nth(1).click();
   await ready(page); await page.waitForTimeout(1300);
   const titles = await page.locator('.video-card-title').allTextContents();
   assert.ok(titles.length && titles.every(title => title.startsWith('收藏2')));
@@ -285,6 +305,42 @@ await test('favorites last row accounts for the folder header height', async ({ 
   const bounds = await page.locator('.video-card.focused').boundingBox();
   assert.ok(bounds && bounds.y >= 0 && bounds.y + bounds.height <= 1080, JSON.stringify(bounds));
 }, { auth: true, cols: 4, scale: 1.25 });
+await test('subscriptions show folders and collections, paginate and keep remote focus', async ({ page, calls }) => {
+  await ready(page); await page.locator('.sidebar-item').filter({ hasText: '收藏' }).click();
+  await page.getByRole('tab', { name: '订阅', exact: true }).click();
+  await page.locator('.folder-selector .fav-chip').nth(0).waitFor();
+  await page.keyboard.press('ArrowDown');
+  await ready(page); await page.waitForTimeout(300);
+  assert.ok((await page.locator('.video-card-title').allTextContents()).every(t => t.startsWith('合集')));
+  await page.keyboard.press('Enter'); await page.keyboard.press('ArrowUp');
+  assert.equal(await focused(page), 'content-1-1');
+  await page.keyboard.press('ArrowRight'); await page.keyboard.press('Enter');
+  await page.getByText('下一页订阅', { exact: false }).waitFor();
+  await page.waitForTimeout(300);
+  assert.equal(await focused(page), 'content-1-2');
+  await page.keyboard.press('ArrowUp');
+  assert.equal(await focused(page), 'content-0-1');
+  await page.getByRole('tab', { name: '我的收藏' }).click();
+  await page.locator('.folder-selector .fav-chip').first().waitFor();
+  assert.equal(await page.getByText('下一页订阅', { exact: false }).count(), 0);
+  await page.screenshot({ path: `${output}/library.png` });
+}, { auth: true });
+await test('empty subscriptions stop loading and keep tabs reachable', async ({ page }) => {
+  await ready(page); await page.locator('.sidebar-item').filter({ hasText: '收藏' }).click();
+  await page.getByRole('tab', { name: '订阅', exact: true }).click();
+  await page.getByText('暂无订阅，可先在 B 站订阅收藏夹或合集').waitFor();
+  assert.equal(await page.locator('.grid-skeleton').count(), 0);
+  await page.keyboard.press('ArrowLeft'); await page.keyboard.press('Enter');
+  await page.locator('.folder-selector .fav-chip').first().waitFor();
+}, { auth: true, emptySubscriptions: true });
+await test('subscription request failure exposes retry and preserves the mode', async ({ page }) => {
+  await ready(page); await page.locator('.sidebar-item').filter({ hasText: '收藏' }).click();
+  await page.getByRole('tab', { name: '订阅', exact: true }).click();
+  await page.getByText('重试', { exact: true }).waitFor();
+  await page.getByText('重试', { exact: true }).click();
+  await page.getByText('重试', { exact: true }).waitFor();
+  assert.equal(await page.getByRole('tab', { name: '订阅', exact: true }).getAttribute('aria-selected'), 'true');
+}, { auth: true, subscriptionError: true });
 await test('loading player can be cancelled without moving background focus', async ({ page }) => {
   await ready(page); await page.waitForTimeout(350);
   await page.route('**/player/PlayerPage.jsx', async route => { await new Promise(r => setTimeout(r, 1600)); await route.continue(); });
@@ -476,7 +532,7 @@ await test('settings font rows follow visual order in both directions', async ({
   await page.waitForTimeout(300); await page.keyboard.press('ArrowRight');
   await page.waitForSelector('.config-options .settings-row.focused');
   const label = () => page.locator('.config-options .settings-row.focused > span').first().innerText();
-  const order = ['弹幕', '看完移出稍后再看', '每行视频', '弹幕字号', '字幕字号', '界面字号', 'CDN 线路'];
+  const order = ['弹幕', '看完移出稍后再看', '播完自动播放下一个', '每行视频', '弹幕字号', '字幕字号', '界面字号', 'CDN 线路'];
   for (let i = 0; i < order.length; i++) {
     assert.equal(await label(), order[i], 'Down follows the displayed setting order');
     if (i < order.length - 1) await page.keyboard.press('ArrowDown');
@@ -492,7 +548,7 @@ await test('font pickers update their own setting and resume at the same row', a
   await page.keyboard.press('ArrowUp'); await page.keyboard.press('ArrowUp');
   await page.waitForTimeout(300); await page.keyboard.press('ArrowRight');
   await page.waitForSelector('.config-options .settings-row.focused');
-  for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowDown');
+  for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowDown');
   for (const [name, key, value] of [['弹幕字号', 'danmakuScale', 1.3], ['字幕字号', 'subtitleScale', 1.2], ['界面字号', 'uiScale', 1.12]]) {
     assert.equal(await page.locator('.settings-row.focused > span').first().innerText(), name);
     await page.keyboard.press('Enter'); await page.locator('.settings-picker').waitFor();
@@ -529,7 +585,7 @@ for (const cols of [2, 3, 4]) for (const [sizeIndex, scale] of [1, 1.12, 1.25].e
     await ready(page); await page.waitForTimeout(400);
     await page.locator('.sidebar-item').filter({ hasText: '设置' }).click();
     await page.waitForSelector('.settings-row.focused');
-    for (let i = 0; i < 2; i++) await page.keyboard.press('ArrowDown');
+    for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowDown');
     const choose = async index => {
       await page.keyboard.press('Enter'); await page.locator('.settings-picker').waitFor();
       for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowUp');
@@ -577,6 +633,27 @@ for (const cols of [2, 3, 4]) for (const [sizeIndex, scale] of [1, 1.12, 1.25].e
     await checkGrid('.search-results-grid');
   }, { auth: true, resume: true });
 }
+
+await test('diagnostic network failures finish visibly and remain scannable', async ({ page }) => {
+  await ready(page);
+  await page.locator('.sidebar-item').filter({ hasText: '设置' }).click();
+  await page.route('http://127.0.0.1:9527/**', route => route.abort());
+  await page.getByText('网络诊断', { exact: true }).click();
+  const panel = page.locator('.diagnostic-panel');
+  await panel.locator('svg').waitFor();
+  const detail = await panel.innerText();
+  assert.equal((detail.match(/❌/g) || []).length, 7, detail);
+  assert.ok(!detail.includes('⏳'), 'all probes must settle');
+  const png = PNG.sync.read(await panel.screenshot({ path: `${output}/diagnostics-offline.png` }));
+  const qr = jsQR(new Uint8ClampedArray(png.data), png.width, png.height);
+  assert.ok(qr, 'failure report QR must decode from rendered pixels');
+  const url = new URL(qr.data);
+  assert.equal(url.origin, 'https://github.com');
+  const body = url.searchParams.get('body');
+  for (const step of ['svc', 'api', 'rcmd', 'view', 'playurl', 'cdn', 'imgproxy']) assert.ok(body.includes('[fail] ' + step), body);
+  assert.match(body, /route=auto/);
+  assert.ok(!/[^\x00-\x7f]/.test(body), 'report stays ASCII');
+});
 
 await writeFile(`${output}/${baseline ? 'before' : 'after'}.json`, JSON.stringify(reports, null, 2));
 await browser.close();

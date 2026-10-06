@@ -3,6 +3,9 @@
 // Also starts a local HTTP proxy for video segments and images
 // Node.js v16.19.1 on webOS TV 24
 
+// Must run first: shims for webOS 4.x's Node v0.12 (URL, Buffer.from, TLS roots...).
+require('./compat');
+
 var Service = require('webos-service');
 var https = require('https');
 var http = require('http');
@@ -202,7 +205,9 @@ function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity,
     if (done) return;
     done = true;
     // 上游响应流出错(节点中途掐断)只记日志;调用方通过 pipe 的 close 处理。
-    res.on('error', function (e) { logSvcErr('res:' + hostname, e && e.message); });
+    res.on('error', function (e) {
+      if (!res.clientCancelled) logSvcErr('res:' + hostname, e && e.message);
+    });
     var setCookieHeaders = res.headers['set-cookie'];
     if (setCookieHeaders) {
       setCookieHeaders.forEach(function (sc) {
@@ -600,7 +605,7 @@ var localServer = http.createServer(function (req, res) {
     // response (a half-delivered segment is what Shaka chokes on); if the
     // client disconnects, free the upstream socket.
     proxyRes.on('error', function () { res.destroy(); });
-    res.on('close', function () { proxyRes.destroy(); });
+    res.on('close', function () { proxyRes.clientCancelled = true; proxyRes.destroy(); });
   });
 });
 

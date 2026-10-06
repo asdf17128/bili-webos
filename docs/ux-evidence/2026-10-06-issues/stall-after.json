@@ -1,0 +1,6 @@
+[
+  {
+    "name": "buffer exhaustion is visible and retried without skipping video",
+    "pass": true
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "name": "loading remains until actual playing event",
+    "pass": true
+  },
+  {
+    "name": "startup timeout cannot remain black indefinitely",
+    "pass": true
+  }
+]

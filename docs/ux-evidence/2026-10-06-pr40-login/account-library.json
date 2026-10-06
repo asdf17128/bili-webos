@@ -1,0 +1,60 @@
+[
+  {
+    "name": "Video starts playing",
+    "status": "pass",
+    "detail": "t=0.4s ready=4"
+  },
+  {
+    "name": "Playback advances (no immediate freeze)",
+    "status": "pass",
+    "detail": "0.4s → 4.4s"
+  },
+  {
+    "name": "Player tab row visible",
+    "status": "pass"
+  },
+  {
+    "name": "相关推荐 + UP主投稿 tabs present",
+    "status": "pass",
+    "detail": "选集 · 2P 相关推荐 UP主投稿 · 机灵的兰尼"
+  },
+  {
+    "name": "相关推荐 has cards (recommended w/ upload time)",
+    "status": "pass",
+    "detail": "12 cards"
+  },
+  {
+    "name": "UP主投稿 tab loads videos",
+    "status": "pass",
+    "detail": "25 cards; API={\"code\":0,\"count\":25}"
+  },
+  {
+    "name": "Account API confirms valid login",
+    "status": "pass"
+  },
+  {
+    "name": "Own favorites match the account folder response",
+    "status": "pass",
+    "detail": "2/2 folders"
+  },
+  {
+    "name": "Favorite folder renders videos",
+    "status": "pass",
+    "detail": "24 cards"
+  },
+  {
+    "name": "Subscriptions tab matches the account response",
+    "status": "pass",
+    "detail": "18/18 folders"
+  },
+  {
+    "name": "Subscribed folder renders videos",
+    "status": "pass",
+    "detail": "12 cards"
+  },
+  {
+    "name": "Watch Later list matches the authenticated API",
+    "status": "pass",
+    "detail": "0/0 cards"
+  }
+]

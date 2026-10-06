@@ -1,0 +1,22 @@
+✔ Dolby signaling preserves the base layer for high or unknown frame rates (0.641542ms)
+✔ parses Bilibili Profile 8 Level 9 dvvC signaling (0.275291ms)
+✔ rejects truncated and non-box Dolby markers (0.075625ms)
+✔ proxy media URLs preserve ranges and reject non-network protocols (0.167167ms)
+✔ Dolby init probing is bounded and requires a complete body (0.321541ms)
+✔ strict video selection never disguises a lower quality as 4K (0.099208ms)
+✔ automatic video fallback reports the quality it actually selected (0.063208ms)
+✔ true Dolby audio wins over Hi-Res and AAC (0.139625ms)
+✔ Hi-Res-only video selects FLAC and never pretends AAC is EC-3 (0.069167ms)
+✔ unsupported premium codecs fall back to the highest AAC representation (0.373417ms)
+✔ unsupported EC-3 falls through to supported Hi-Res FLAC (0.058333ms)
+✔ runtime audio fallbacks remain Dolby to Hi-Res to AAC without duplicates (0.528875ms)
+✔ Dolby signaling failure retries the same audio ladder on the base layer (0.087375ms)
+✔ AAC-only playback is attempted once (0.032042ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 61.823542

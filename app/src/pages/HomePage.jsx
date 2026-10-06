@@ -83,7 +83,10 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend', 
   const resumeItems = useContinueWatching(mode === 'recommend');
   const reload = () => {
     focusSidebar(); resetContentMemory();
-    retryFocusRef.current = true; setRetry(n => n + 1);
+    // Commit the skeleton in the input event, before the fetch effect starts.
+    // A fast result can otherwise batch loading=true/false into one render,
+    // skipping the loading effect that requests focus after the retry unmounts.
+    retryFocusRef.current = true; setLoading(true); setRetry(n => n + 1);
   };
 
   useEffect(() => {

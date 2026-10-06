@@ -1,0 +1,91 @@
+[Environment] Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.270 Safari/537.36 WebAppManager
+
+[Navigation + Home]
+  ✅ Home loads video cards: 20 cards
+  ✅ No broken thumbnails: 0 broken / 12 imgs
+  ✅ OK entered content (focus in grid): content-0-0
+  ✅ Back returns focus to sidebar: sidebar-1-0
+
+[Video playback + player panel]
+  ✅ Video starts playing: t=0.3s ready=4
+  ✅ Playback advances (no immediate freeze): 0.3s → 4.3s
+  ✅ Player tab row visible
+  ✅ 相关推荐 + UP主投稿 tabs present: 合集 · 6 相关推荐 UP主投稿 · 央视频
+  ✅ 相关推荐 has cards (recommended w/ upload time): 12 cards
+  ✅ UP主投稿 tab loads videos: 30 cards; API={"code":0,"count":30}
+
+[Comment rail rendering and control layout]
+  ✅ Comment rail loads real comments: 20 cards
+  ✅ Comment rail shows content without JSX or empty-state leakage
+  ✅ Comment controls fit without overlapping metadata: {"present":true,"sourceLeak":false,"empty":false,"controlsRight":1500,"railLeft":1501,"duplicate":false}
+
+[番剧 / Bangumi (PGC) + HDR]
+  ✅ Season info loads (episode list): 38 eps
+  ✅ PGC playurl returns DASH (bangumi playable): 19 video reps
+  ✅ HDR/Dolby rep present + selectable by id: accept=[125,120,112,80,64,32,16]
+
+[Live playback + danmaku + history]
+  ✅ Live list loads: 3 rooms
+  ✅ Live stream plays: t=3s ready=2 (第1个房间)
+  ✅ Danmaku layer mounted
+  ⚠️  Danmaku rendering: no items yet (quiet room?) — layer present
+  ✅ Live room recorded to recentLive: 8 stored
+  ✅ Live shows in 我的 → 最近观看 with 直播 badge: cards=98
+
+[Real-time live danmaku on a current recommended room]
+  ✅ Recommended live room advances playback
+  ✅ Live danmaku token API succeeds: code=0
+  ✅ TV starts the live danmaku subscription
+  ✅ Real-time danmaku reaches the TV overlay: 1 frames, 1 DOM items
+
+[Live quality switch and original-quality restore]
+  ✅ Live quality popup opens: 1 options: 原画
+  ⚠️  Live quality switch skipped: room only offers one quality; choose TV_LIVE_ROOM with multiple qualities
+
+[Search]
+  ✅ Search recommendations render (热门/历史): 23 rows
+  ✅ Search returns a results grid: 20 results
+
+[Follow list + pagination]
+  ✅ Follow list loads: 20 cards
+  ✅ Pagination loads more: 20 → 60
+
+[Authenticated favorites, subscriptions and watch-later list]
+  ✅ Account API confirms valid login
+  ✅ Own favorites match the account folder response: 2/2 folders
+  ✅ Favorite folder renders videos: 24 cards
+  ✅ Subscriptions tab matches the account response: 18/18 folders
+  ✅ Subscribed folder renders videos: 12 cards
+  ✅ Watch Later list matches the authenticated API: 0/0 cards
+
+[Settings auto update-check]
+  ✅ Auto update-check populated: 已是最新 (v2.1.1)
+  ✅ Update-check resolved (latest/new/version): 已是最新 (v2.1.1)
+
+[CDN settings remote selection and persistence]
+  ✅ CDN row is reachable by remote
+  ✅ CDN picker includes automatic and HWO1 routes
+  ✅ Remote HWO1 selection is saved
+  ✅ HWO1 remains selected after reload
+  ✅ Remote can restore automatic routing
+
+[Feed retry focus after an immediate Luna response]
+  ✅ Controlled feed failure exposes remote retry
+  ✅ Immediate retry puts remote focus on the first new card: 6 cards, focus=content-0-0
+  ✅ Remote navigation works immediately after retry: {"beforeMove":{"current":"content-0-0","registered":true,"pending":null,"custom":false},"dom":["content-1-0"],"state":{"current":"content-1-0","registered":true,"pending":null,"custom":false}}
+
+[热门 / 分区]
+  ✅ 热门 loads content: 20 cards
+  ✅ 分区(游戏) API and grid return content: code=0, API=100, cards=100
+  ✅ 分区(动画) API and grid return content: code=0, API=100, cards=100
+  ✅ 分区(音乐) API and grid return content: code=0, API=100, cards=100
+  ✅ 分区(知识) API and grid return content: code=0, API=100, cards=100
+  ✅ 分区(娱乐) API and grid return content: code=0, API=100, cards=100
+  ✅ 分区(鬼畜) API and grid return content: code=0, API=100, cards=100
+
+[Watch Later: guarded add / long-press remove / restore]
+  ⚠️  Watch Later writes skipped: explicit opt-in required for guarded fixture round trip
+
+====================================================
+Results: 53 passed, 0 failed, 3 warned
+====================================================

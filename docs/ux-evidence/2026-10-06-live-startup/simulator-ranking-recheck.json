@@ -1,0 +1,6 @@
+{
+  "endpoint": "/x/web-interface/ranking/v2",
+  "rid": 1008,
+  "code": -352,
+  "route": "real client.getRanking via local service bridge"
+}

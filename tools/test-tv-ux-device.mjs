@@ -193,9 +193,9 @@ try {
   check('preferences use the two-column layout', await evaluate('!!document.querySelector(".config-intro") && !!document.querySelector(".config-options")'));
   await shot('tv-settings');
   const settingLabel = () => evaluate('document.querySelector(".config-options .settings-row.focused > span")?.textContent');
-  const settingOrder = ['弹幕', '看完移出稍后再看', '每行视频', '弹幕字号', '字幕字号', '界面字号', 'CDN 线路'];
+  const settingOrder = ['弹幕', '看完移出稍后再看', '播完自动播放下一个', '每行视频', '弹幕字号', '字幕字号', '界面字号', 'CDN 线路'];
   // Use the current UI's DOM order so this also works in English/Spanish.
-  const visibleOrder = await evaluate('Array.from(document.querySelectorAll(".config-options > .settings-row")).slice(0,7).map(e=>e.firstElementChild.textContent)');
+  const visibleOrder = await evaluate('Array.from(document.querySelectorAll(".config-options > .settings-row")).slice(0,8).map(e=>e.firstElementChild.textContent)');
   const downward = [await settingLabel()];
   for (let i = 1; i < settingOrder.length; i++) { await key('ArrowDown'); downward.push(await settingLabel()); }
   const upward = [await settingLabel()];
@@ -203,9 +203,9 @@ try {
   check('settings move in the same order as the screen in both directions',
     JSON.stringify(downward) === JSON.stringify(visibleOrder) && JSON.stringify(upward) === JSON.stringify(visibleOrder.slice().reverse()), downward.join(' -> '));
   const previousSettings = await evaluate('localStorage.getItem("bili_settings")');
-  for (let i = 0; i < 3; i++) await key('ArrowDown');
+  for (let i = 0; i < 4; i++) await key('ArrowDown');
   const pickerResults = [];
-  for (let i = 3; i <= 5; i++) {
+  for (let i = 4; i <= 6; i++) {
     const origin = await settingLabel();
     await key('Enter');
     const title = await evaluate('document.querySelector(".settings-picker > div")?.textContent');

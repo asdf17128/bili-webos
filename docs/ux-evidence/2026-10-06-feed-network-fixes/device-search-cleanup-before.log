@@ -1,0 +1,28 @@
+PASS new TV build renders with visible focus content-0-0
+PASS gallery rail renders vector icons and collapses while browsing
+PASS Back to sidebar preserves exact scroll offset translateY(-1250px) -> translateY(-1250px)
+PASS expanded drawer does not move the content surface
+PASS Right restores the exact card content-3-1
+PASS OK explicitly refreshes and resets to row zero content-0-0
+PASS deep grid card stays fully inside its real viewport content-10-0
+PASS real video starts t=0.7s ready=4
+PASS OK pauses actual playback
+PASS OK resumes actual playback
+PASS scrub keeps playback near the original position before confirmation
+PASS Back cancels pending scrub without leaving playback
+PASS OK commits scrub to its new position 2.6 -> 12.6
+PASS player uses the shared icon control shelf
+PASS speed popup opens on the selected option
+PASS speed Back closes only its popup and restores the control
+PASS quality popup opens on the selected option
+PASS quality Back closes only its popup and restores the control
+PASS leaving playback restores card and scroll content-10-0
+PASS resume shelf is reachable directly above the first feed row
+PASS continue watching starts at the displayed saved position saved=28s actual=28.0s
+PASS leaving a resumed video restores the resume card content--1-0
+PASS ended video exposes replay and the navigable related panel
+PASS replay remains reachable with the remote after playback ends t=0.0
+PASS search presents its native input and two discovery columns
+PASS preferences use the two-column layout
+FAIL settings move in the same order as the screen in both directions 看完移出稍后再看 -> 播完自动播放下一个 -> 每行视频 -> 弹幕字号 -> 字幕字号 -> 界面字号 -> CDN 线路 -> 检查更新
+settings move in the same order as the screen in both directions

@@ -289,3 +289,169 @@ danmaku 断言改为设置感知(测试前强开、测后还原用户偏好);徽
 
 
 最终真机播放器专项 29/29 通过，包括 C-PLAY-03/04/06/07 与 C-POP-01：续播 28 秒实际起播 28.0 秒，取消快进保留当前位置，确认快进 2.3→12.4 秒；结束后两次上键到重播，实际从 0.1 秒开始；画质和倍速弹层从当前选项打开，Back 仅关闭弹层。预览截图独立于 1 秒自动提交窗口采集，避免截图编码延迟被误算为取消失效。见 [结果](ux-evidence/2026-09-06-release-2.0.0/tv-player-ux.json)。
+
+## 2026-10-06 Issue 修复验证（开发版，未发布）
+
+基线 `5d77949`，分支 `fix/issues-playback-compat-library`。本轮覆盖 #29/#35/#37/#38 的卡顿恢复与诊断、#30 订阅、#34 旧运行时兼容，以及 #33 的杜比初始化段和独立音轨选择。MIT 文件补充对应 #39，不构成第三方素材授权核验。
+
+| Case | 行为与运行方式 | 事实佐证 |
+| --- | --- | --- |
+| C-STALL-01 | `npm run test:loading`：缓冲耗尽、`readyState=1` 且时间不动时显示缓冲、有限重试；暂停停止重试，不向前跳帧 | 相同 Playwright 时钟与夹具运行基线 PlayerPage：缓冲标记断言失败；恢复新实现通过。见 [改前](ux-evidence/2026-10-06-issues/stall-before.json)、[改后](ux-evidence/2026-10-06-issues/stall-after.json)。时钟必须在播放器创建计时器前安装 |
+| C-CDN-03 | `node tools/test-playback-health.mjs`：所选线路排第一，已耗尽缓冲也计时，30 秒终止；真实 HTTP 验证 Range/超时/取消 | 本地服务分别返回正确 206、忽略 Range 的 200、错误区间、响应体停传；新 XHR 探针均正确结束，避免只给响应头计时或下载整个视频 |
+| C-DIAG-03 | `node tools/test-cdn-tv.mjs`：真机注入不可达主节点、验证回退与拉黑，再选择阿里云运行诊断并解码电视截图 | 真机实际起播；报告首先测 `ali`，显示 1x/4x 吞吐，扫码载荷保留最近播放节点及选路且无签名流 URL。首轮抓到二维码缩放过密不能解码；改为整数模块并去重错误后 [6/6](ux-evidence/2026-10-06-issues/device-cdn.json)。测试恢复设置与注入标记 |
+| C-DIAG-04 | `UX_FILTER='diagnostic network' node tools/test-tv-ux.mjs`：打开设置后用 `route.abort()` 断开代理，诊断必须结束、失败上屏并可扫码 | 服务、API、推荐、详情、取流、CDN、图片代理七项明确失败，无等待行；从渲染像素解码二维码，逐项核对失败及 ASCII 报告。[结果](ux-evidence/2026-10-06-issues/diagnostics-offline.json) |
+| C-LIBRARY-02 | `node tools/test-library.mjs` 与 `UX_FILTER='subscriptions|subscription request' node tools/test-tv-ux.mjs`：订阅收藏夹/合集、分页、方向键、空/失败重试、跨页连播 | 浏览器验证三项订阅场景；纯逻辑验证两种响应映射、连续翻页去重、末页结束与请求失败传播。通过真实电视服务只读核对订阅及合集端点响应；没有修改用户订阅 |
+| C-MEDIA-01 | `node --test app/src/player/mediaSelection.test.js` 与 `npm run test:loading`：实际生成 MPD 的格式选择、初始化段、杜比信令和音轨回退 | 解析/选择 13/13；播放器夹具验证 E-AC-3 优先、E-AC-3/FLAC 加载失败后 AAC、杜比加载失败后同 qn 基础层；坏长度、超限区间及伪装 box 拒绝。没有把夹具通过写成 Atmos 实际输出成功 |
+| C-LEGACY-01 | `bash tools/test-node8/test.sh` 与 `UX_LEGACY_LAYOUT=1 node tools/test-tv-ux.mjs`：真实 0.12.2/8 运行服务，强制旧布局 | 两种 Node 均启动、真实 B 站 API 返回 HTTP 200、诊断报告弹幕模块加载成功；服务 ES5、前端产物 ES2016 解析通过。旧布局定向 [11/11](ux-evidence/2026-10-06-issues/legacy-layout.json)，仅为现代浏览器模拟，不替代旧电视整机验证 |
+
+本地门禁 `bash tools/verify.sh --no-tv --ux` 通过：服务单测 22/22、媒体选择 13/13、浏览器 [53/53](ux-evidence/2026-10-06-issues/browser.json)、播放器失败路径 [14/14](ux-evidence/2026-10-06-issues/player-loading.json)，另有真实 HTTP 探针测试。二维码最终调整后追加断网场景 1/1 与真机诊断 6/6。门禁日志见 [verify.log](ux-evidence/2026-10-06-issues/verify.log)。
+
+现有 LG C4 开发版已部署，播放/遥控器 [26/26](ux-evidence/2026-10-06-issues/device.json)，设置 [12/12](ux-evidence/2026-10-06-issues/device-settings.json)。保留侧栏确认主动刷新，Back/右键往返保持位置；浏览器覆盖 2/3/4 列 × 三档界面字号。此轮发现 #27 加入自动播放行后旧测试行号过时，已修正夹具后重跑。已查看电视播放及诊断截图、订阅页截图。
+
+边界：未执行会改动账号稍后再看的旧模拟器全套，不是新版本发布验收；未在海外问题用户的网络、webOS 4 实机、杜比/Atmos 音响链路上验收。旧服务只验证启动、API 和模块加载，直播弹幕实收与 DLNA 仍需旧硬件验证。未包含 PR #17 的特定 4K120 片源帧变换，不关闭这些仍需现场验证的 issue。
+
+### PR #40 补充模拟与真机回归（同日，尚未全量验收通过）
+
+用户要求复核后，对 `45d2b6e` 及随后发现的评论栏修复重新验证。这里的模拟环境为 **Chromium + 真实 service.js 桥 + 真实 B 站网络**，不是 LG 官方模拟器；确定性浏览器用例另使用隔离夹具。真机为现有 LG C4，本轮 UA 为 Chromium 120。构建身份见 [build.json](ux-evidence/2026-10-06-pr40-validation/build.json)。
+
+| 层级 / 命令 | 本轮结果 | 证据与边界 |
+| --- | --- | --- |
+| `bash tools/verify.sh --no-tv --ux` 的静态、单元、旧 Node 与构建层 | 通过 | 服务 22/22、媒体选择 13/13；真实 Node 0.12.2/8 完成 API 请求与弹幕模块加载；生产 6 个 JS bundle 均按 ES2016 解析。首轮整体在浏览器焦点断言失败处停止，不能把这份日志称为整条门禁全绿 |
+| `node tools/test-tv-ux.mjs` | **54/54** | [结果](ux-evidence/2026-10-06-pr40-validation/browser.json)。首轮重试恢复的固定 100ms 焦点断言偶发失败，单独连续 12 次通过；改为最长 2 秒的状态等待后整套复验通过 |
+| `node tools/test-player-loading.mjs` | **15/15** | [结果](ux-evidence/2026-10-06-pr40-validation/player.json)，含新评论栏复现。真实 HTTP Range/超时/取消另通过 [探针测试](ux-evidence/2026-10-06-pr40-validation/http-probes.log) |
+| `SIM_STRICT=1 node tools/test-sim.mjs` | **55 通过 / 0 失败 / 2 跳过** | [结果](ux-evidence/2026-10-06-pr40-validation/simulator.json)、[日志](ux-evidence/2026-10-06-pr40-validation/simulator.log)。实际点播、直播、评论/楼中楼、风控错误入口、坏 CDN 回退、诊断测速、字号均执行；关注及稍后再看因 API 登录失效跳过 |
+| `node tools/test-tv-ux-device.mjs` | **26/26** | [结果](ux-evidence/2026-10-06-pr40-validation/device-navigation.json)：实际播放、暂停/恢复、快进确认/取消、重播、弹层与列表返回 |
+| `node tools/test-tv-settings.mjs` | **12/12** | [结果](ux-evidence/2026-10-06-pr40-validation/device-settings.json)：2/3/4 列、大字号、重启持久化及深列表可见。首轮 CDP 重载曾停在 `document.readyState=loading` 的空文档，重新启动 app 后复验通过；保留 [首轮日志](ux-evidence/2026-10-06-pr40-validation/settings-first-run.log)，未断言其根因 |
+| `node tools/test-cdn-tv.mjs` | **6/6** | [结果](ux-evidence/2026-10-06-pr40-validation/device-cdn.json)：不可达节点回退后实际起播、坏节点拉黑、所选线路单连接/并发测速，以及从真机截图解码二维码。已查看 [诊断截图](ux-evidence/2026-10-06-pr40-validation/tv-diagnostics.png)，测试结束恢复设置及注入标记 |
+| `node tools/test-ui.mjs` 真机广覆盖 | **26 通过 / 1 失败 / 3 跳过** | [结果](ux-evidence/2026-10-06-pr40-validation/device-smoke.json)、[日志](ux-evidence/2026-10-06-pr40-validation/device-smoke.log)。UP 主投稿列表失败；定向复测捕获真实 API `code=-352`，见 [复测](ux-evidence/2026-10-06-pr40-validation/device-uploader-recheck.json)。关注、稍后再看因未登录跳过，直播期间未观察到实时弹幕，不能算通过 |
+
+**C-COMMENT-RENDER**：实际截图发现评论栏把 `comments.length === 0 ? (` 显示为文本，并把“暂无评论”与已加载评论同时显示；底部视频信息与控制条重叠。基线代码也存在。恢复 JSX 条件表达式，控制条限制在视频一侧，控制条显示时去掉重复信息。新增相同场景改前失败、改后通过：[正对照](ux-evidence/2026-10-06-pr40-validation/comments-before.json)、[修复后](ux-evidence/2026-10-06-pr40-validation/comments-after.json)；查看 [改前截图](ux-evidence/2026-10-06-pr40-validation/comments-before.png)、[模拟实播截图](ux-evidence/2026-10-06-pr40-validation/comments-after.png)、[真机截图](ux-evidence/2026-10-06-pr40-validation/tv-comments.png)。视频黑色区域可能属于截图无法读取的媒体合成层，播放进度另有断言。
+
+模拟套件原来用“评论数 > 5”判断成功；本轮真实接口只返回 3 条，但全部已渲染。现在读取同一次 API 响应核对数量，并检查错误代码文本、空态及控件布局。仅看 DOM 数量不足以代替截图检查。
+
+账号状态必须调用 `/x/web-interface/nav` 确认，不能以本地还保存 SESSDATA 就当作已登录。两套广覆盖测试现在默认不执行稍后再看增删，只有独立测试账号可显式启用 `SIM_ACCOUNT_WRITES=1` / `TV_ACCOUNT_WRITES=1`；跳过项不会算通过。真机广覆盖测试结束恢复原始设置。
+
+**发布阻断项仍在**：UP 主投稿真机风控失败、有效登录下的账号功能、未实收的直播弹幕，以及先前列出的旧电视整机/海外网络/杜比输出验证。PR 保持草稿，未合并、未发版。
+
+### PR #40 登录恢复后的真机补验（2026-10-06）
+
+用户重新扫码后，电视 `/x/web-interface/nav` 返回 `code=0, isLogin=true`。沿用 `60b6469` 的同一已部署 app，本轮只修改测试工具和报告，没有修改产品代码。构建身份见 [environment.json](ux-evidence/2026-10-06-pr40-login/environment.json)。
+
+| 场景 | 结果与事实佐证 |
+| --- | --- |
+| 登录态综合回归 `TV_ACCOUNT_WRITES=1 node tools/test-ui.mjs` | **45 通过、0 失败、1 未观测**：[结果](ux-evidence/2026-10-06-pr40-login/device-full.json)、[日志](ux-evidence/2026-10-06-pr40-login/device-full.log)。未观测项为首个直播间 9 秒内没有实时弹幕，后续另选房间完成专项 |
+| UP 主投稿、收藏、订阅、稍后再看读取 | 定向 **12/12**：[结果](ux-evidence/2026-10-06-pr40-login/account-library.json)。UP 接口 `code=0` 且显示 25 条，综合复验为 30 条；收藏 2 个、订阅 18 个均与 API 一致；稍后再看原列表为空且正确显示空态 |
+| 关注分页 | 综合回归中从 **20 → 60** 张卡片，已补上原来因登录失效跳过的场景 |
+| 稍后再看增删 | 定向 **10/10**，综合回归再次通过：[结果](ux-evidence/2026-10-06-pr40-login/watchlater.json)。播放器加入固定测试视频 → 页面出现 → 长按进度及菜单 → 核对菜单 aid → 确认移除 → API/UI 都恢复原列表。请求层记录仅 1 次 add、1 次 del，最后原列表顺序与成员一致 |
+| 直播实时弹幕 | `TV_TEST_FILTER=testLiveRelay node tools/test-ui.mjs` **4/4**：[结果](ux-evidence/2026-10-06-pr40-login/live-realtime.json)、[截图](ux-evidence/2026-10-06-pr40-login/live-realtime.png)。动态选取当前在播的推荐房间，验证实际播放、弹幕 token `code=0`、Luna 订阅、真实收到 1 条弹幕且形成 1 个 DOM 元素；不是注入假弹幕或历史聊天。已查看截图，视频黑色区域属于不可截取的媒体层，不以此截图证明画面输出 |
+
+**修正测试误报**：有选集/合集时播放器初始标签会变化。旧脚本固定右移一次，把相关推荐当成 UP 主投稿通过，且观测到的 UP 接口为 `null`；保留 [误报记录](ux-evidence/2026-10-06-pr40-login/initial-tab-check-invalid.json)，不能作为 UP 投稿通过的依据。现改为核对活动标签与对应 API 响应后再断言；上表中的 25/30 条来自修正后的实际 UP 请求。
+
+**账号测试保护**：原列表、测试视频身份与 API 返回均先核对，原列表已有该视频或列表满时不写；请求层拒绝其他 aid 及 `viewed` 批量清除，异常也进入 finally 清理。账号页面与菜单截图已在本地逐张查看，未上传公共仓库。
+
+这轮补齐了 LG C4 上的有效登录账号场景和实时弹幕，登录后 UP 投稿复测成功；不据此宣称所有网络环境下的 `-352` 已永久解决。前一轮重载空文档的根因仍未确定，旧硬件、海外网络、杜比实际输出及旧硬件 DLNA 的验证边界不变。番剧测试仅验证 API 片源和画质元数据，不代表 HDR/Atmos 实际输出。本轮未重新运行桌面模拟套件，账号补验使用实际电视。PR 继续为草稿，未合并、未发版。
+
+### 直播起播优化与回归（2026-10-06）
+
+基线 `732ab4e`，LG C4 / Chromium 120，开发版 2.1.1，已部署。用户报告直播画面出现慢；实际 `getRoomPlayInfo` 约 70–220ms，主要等待发生在原生 HLS 启动。旧逻辑按接口排列取第一个 AVC HLS，通常选 TS；画质列表另发一次默认画质请求，而且设置 src 后就撤掉加载提示。现在优先 fMP4 AVC，沿用用户保存的原画；选源、当前画质和可选画质共用一次响应。不支持格式或启动超时回退 TS，显示真实加载状态，有限重试后允许遥控确认重试。解码降档不改写用户长期画质偏好，退出清理计时器并拒绝迟到响应。
+
+**真机同画质对照**：下表耗时从打开播放器算起，到元数据后 `currentTime` 增加至少 0.25 秒且 `readyState >= 3`，每 250ms 采样。不是逐帧像素测量：这台电视虽然暴露 `requestVideoFrameCallback`，原生 HLS 测试期间没有回调；视频媒体合成层也无法通过页面截图可靠读取。
+
+| 直播间 | 旧 TS 首次进入，进度开始推进 | 已部署新版默认选源，进度开始推进 | 实际画质 / 解码尺寸 |
+| --- | --- | --- | --- |
+| 13171605 | 9.291 秒 | 3.274 秒 | qn=10000，1216×2160 |
+| 1832043360 | 7.530 秒 | 2.260 秒 | qn=10000，1080×1920 |
+| 32137671 | 7.574 秒 | 2.009 秒 | qn=10000，1600×1280 |
+
+新版三个房间各只有 1 次取流请求，首次 `playing` 分别为 1.420 / 1.205 / 1.145 秒；启动早期仍各有一次短暂 `waiting`，所以采用更保守的时间推进指标。每间起播后继续观察 30 秒：均 `readyState=4`、播放时间持续增长，起播后 0 次 `waiting`、0 媒体错误；现场诊断未见 retry/stall/gave-up。见 [新版原始采样](ux-evidence/2026-10-06-live-startup/production.json)、[首次旧版采样](ux-evidence/2026-10-06-live-startup/initial-timing.json)、[同房间交替对照](ux-evidence/2026-10-06-live-startup/same-room-ab.json)、[另两个房间对照](ux-evidence/2026-10-06-live-startup/other-rooms-ab.json)。
+
+对照阶段仅重排真实接口的格式顺序，不注入媒体或伪造播放成功；最终新版测量没有格式覆盖。TS 与 fMP4 返回的 CDN 主机也不同，因此收益属于所选 HLS 源/线路，不能单独归因于容器格式。相同房间重复进入时 TS 也曾降到约 3.5 秒；必须区分首次和热启动。这是三个房间、本次网络的小样本与短时观察，不是所有网络或长时间稳定性保证。
+
+收录的 `tools/probe-live-startup.js` 为适配新版显式格式优先级，将指定格式模式改为筛选真实响应；`default` 仍不覆盖。追加 [工具自检](ux-evidence/2026-10-06-live-startup/probe-tool-check.json) 确认 TS/fMP4 实际源匹配请求，均保持 qn=10000、1216×2160，进度分别在 9.788/3.012 秒推进；该次仅各追加 1 秒观察，不混入上表的 30 秒稳定性结果。
+
+| Case / 验证层 | 结果与事实佐证 |
+| --- | --- |
+| C-LIVE-START-01：单次取流、真实加载提示、格式回退 | 相同受控媒体事件与接口夹具下旧实现 **0/3**，新实现对应场景通过。旧实现实测两次请求、src 后加载提示过早消失、先选 TS。[改前](ux-evidence/2026-10-06-live-startup/before.json) |
+| C-LIVE-START-02：启动/解码失败及退出清理 | `node tools/test-live-loading.mjs` **9/9**，包括格式不支持同 qn 回退 TS、启动超时最终错误及手动重试、五档解码阶梯、偏好不变、退出取消待执行重试、迟到响应拒绝附着、空响应最终错误。[结果](ux-evidence/2026-10-06-live-startup/after.json) |
+| 加载与错误画面 | 追加截图专项 **2/2**，已逐张查看 [加载中](ux-evidence/2026-10-06-live-startup/live-loading.png)、[可重试错误](ux-evidence/2026-10-06-live-startup/live-retry.png)；[截图专项结果](ux-evidence/2026-10-06-live-startup/visual.json) |
+| 纯逻辑及点播回归 | 选源 **5/5**、既有直播画质 **11/11**、投屏 URL **17 个断言**、点播加载 **15/15**；[选源](ux-evidence/2026-10-06-live-startup/selection.log)、[画质](ux-evidence/2026-10-06-live-startup/ladder.log)、[投屏 URL](ux-evidence/2026-10-06-live-startup/cast.log)、[点播](ux-evidence/2026-10-06-live-startup/vod.json)。投屏 URL 单测不等同于 DLNA 真机全流程 |
+| LG C4 画质实际切换 | `TV_LIVE_ROOM=13171605 TV_TEST_FILTER=testLiveQuality node tools/test-ui.mjs` **3/3**：原画 10000 → 超清 250 → 原画 10000，各等待实际播放，结束恢复设置。[结果](ux-evidence/2026-10-06-live-startup/tv-quality.json) |
+| LG C4 实时弹幕 | 本轮再次 **4/4**，取流、弹幕订阅、真实帧和 DOM 均通过，见 [原始结果前四项](ux-evidence/2026-10-06-live-startup/tv-live-and-first-quality.json) |
+| Chromium + 真实服务桥 + B 站网络 | 本轮整套 **54 通过 / 1 失败 / 2 跳过**。直播实播、控制、画质弹层、弹幕、返回通过；游戏分区无卡片失败，实际 `getRanking(1008, 'all')` 复核返回 **-352**。桌面桥登录过期，关注/稍后再看跳过；不能以之前电视登录成功抵消桌面跳过。[结果](ux-evidence/2026-10-06-live-startup/simulator.json)、[日志](ux-evidence/2026-10-06-live-startup/simulator.log)、[接口复核](ux-evidence/2026-10-06-live-startup/simulator-ranking-recheck.json) |
+| 构建与部署 | i18n en/es 242 keys 通过，生产 6 个 JS bundle 按 ES2016 解析通过，构建安装成功。[构建身份与 SHA256](ux-evidence/2026-10-06-live-startup/build.json)、[部署日志](ux-evidence/2026-10-06-live-startup/deploy.log)、[i18n](ux-evidence/2026-10-06-live-startup/i18n.log) |
+
+保留测试工具首次失败：先前按固定“画质”文案找按钮，实际按钮显示“原画”，导致 [两项失败](ux-evidence/2026-10-06-live-startup/tv-live-and-first-quality.json)；修正导航后又选到仅提供一档的房间，[两项失败](ux-evidence/2026-10-06-live-startup/tv-single-quality.json)。最终使用实际提供两档的房间并确认真实播放才得到 3/3，工具现将单档房间的切换覆盖记为跳过。
+
+新增确定性直播用例已接入 `tools/verify.sh --ux`；本轮分别运行相关层，未把此前的整条门禁日志当作当前全部通过。保留 DLNA 原有重连预算；没有改变服务代码，没有把现有 C4 测试当作旧硬件验收。完整模拟仍有上述 -352 失败，旧电视/海外/杜比输出边界同前，PR 保持草稿，未发版。
+### 点播 CDN 自动择优（2026-10-06）
+
+基线 `13f7b72`，开发版 2.1.1，已部署 LG C4 / Chromium 120。新增 HWO1 镜像候选与手动选项；自动模式在暂停或缓冲不少于 15 秒时，逐节点测两块 256KiB 的真实媒体，以较慢样本排序，15% 门槛避免频繁切换。后续媒体请求应用结果，不重载播放器或清空已缓冲内容。成功缓存 4 小时、失败 15 分钟，首选超过 15 分钟复测，网络重连清空缓存；仅保存主机、时间与健康/速度，不保存媒体地址或签名。
+
+**行为边界**：首次无缓存立即使用原线路，不等待测速；持续低缓冲时需暂停才有测速窗口，不能保证第一次起播就加速。手动选线优先，原始主备 URL 保留。仅普通 `.bilivideo.com/upgcxcode/` 片源合成固定镜像候选；Akamai-only 片源保留原生签名，不沿用此前盲目跨域改写。`.bilivideo.cn` 可测原生地址但不改写，直播选源不使用这套策略。
+
+研究参考：[chrisliu298 的美国 HWO1 样本](https://github.com/chrisliu298/bilibili-cdn-fix)、[realzza v0.4.0 的海外重定向修正](https://github.com/realzza/bilibili-accelerator/releases/tag/v0.4.0)、[stabruriss 的双 Range 测速与缓存策略](https://github.com/stabruriss/bilibili-accelerator/blob/main/README.en.md)。这些社区结果用于确定候选与方法，不代表本应用的海外实测结论。
+
+| Case / 本轮验证 | 结果与事实佐证 |
+| --- | --- |
+| C-CDN-AUTO-01：缓存结果改变实际请求 | 相同 React 场景下，恢复旧 `PlayerPage.jsx` 后 **0/1**：仍请求 Ali；新过滤器 **1/1**：请求 HWO1，播放器 load 次数仍为 1。[改前](ux-evidence/2026-10-06-cdn-auto/before.json)、[改后](ux-evidence/2026-10-06-cdn-auto/after-control.json) |
+| C-CDN-AUTO-02：冷启动、门控与取消 | 生产 React 请求过滤器 + 最小 Shaka 测试替身 **7/7**：冷启动沿原路线、测完影响后续真实 fetch；加载/低缓冲不测、暂停可测；手动不覆盖；全失败仍有原路；online 清缓存；退出中止不污染缓存。[结果](ux-evidence/2026-10-06-cdn-auto/browser.json)。该层不证明真实 Shaka 解码 |
+| C-CDN-AUTO-03：缓存、签名与样本有效性 | 纯逻辑 **11/11**，包括原生 Akamai/直播不改写、两次采样取较慢值、15% 门槛、TTL/损坏缓存、拒绝任意缓存域名插入、取消/迟到响应、超时与坏节点。[结果](ux-evidence/2026-10-06-cdn-auto/unit.log)。真实 HTTP Range 测试覆盖忽略/错位/短 Range、短 body、合法 EOF、超时和取消：[结果](ux-evidence/2026-10-06-cdn-auto/probes.log) |
+| C-CDN-AUTO-04：候选不会饿死其他节点 | 复查发现 `.bilivideo.cn` 候选不能写入缓存，会重复占据队列。正对照 10 次 tick 产生 **20 次**请求，修复后仅 **2 次**，其他节点也测到。未知主机保留为播放回退，但不进入无法缓存的测速队列。[修复前失败](ux-evidence/2026-10-06-cdn-auto/cache-host-before.log)，修复后见 11 项单测 |
+| C-CDN-AUTO-05：真实媒体与失败回退 | C4 首轮 **10/10**，队列边界修复并重新部署后再次 **10/10**：注入不存在主机，实际播放成功且坏节点拉黑；候选真实测速；持久化无 URL/凭据；seek 到缓冲区外后实际 Shaka 响应来自所选节点，播放推进且实例不变；诊断手选 Ali、1x/4x 吞吐与截图 QR 解码均通过。[首轮](ux-evidence/2026-10-06-cdn-auto/device-cdn.json)、[最终部署复验](ux-evidence/2026-10-06-cdn-auto/device-cdn-final.json) |
+| C-CDN-AUTO-06：遥控选线和持久化 | C4 **5/5**：方向键到 CDN 行、打开选项、选择 HWO1、重载后保持、切回自动并恢复焦点。结束恢复测试前设置。[结果](ux-evidence/2026-10-06-cdn-auto/device-settings.json)、[已目视检查的弹窗](ux-evidence/2026-10-06-cdn-auto/tv-cdn-picker.png) |
+| 播放与导航回归 | 点播加载/画质/评论 **15/15**，直播加载失败路径 **9/9**，C4 导航/实际播放/拖动/续播/设置焦点 **29/29**。[点播](ux-evidence/2026-10-06-cdn-auto/vod.json)、[直播](ux-evidence/2026-10-06-cdn-auto/live.json)、[真机导航](ux-evidence/2026-10-06-cdn-auto/device-navigation.json) |
+| 广覆盖浏览器门禁 | `verify.sh --no-tv --ux` 前置静态、服务 **22/22**、媒体选择 **13/13**、真实 Node 0.12.2/8、244 项 en/es 翻译与 ES2016 构建通过；浏览器 **53/54**，首页失败后重试的焦点等待超时。定向复测 **1/1**，未确定间歇失败根因，不能宣称完整门禁通过。[完整首轮日志](ux-evidence/2026-10-06-cdn-auto/verify-first.log)、[浏览器首轮](ux-evidence/2026-10-06-cdn-auto/browser-full-first.json)、[定向复验](ux-evidence/2026-10-06-cdn-auto/focus-recheck.json)。脚本在此退出，后续点播/直播/Range/自动选路层已独立运行，结果见上 |
+| Chromium + 真实服务桥和 B 站网络 | **54 通过 / 1 失败 / 2 跳过**。游戏分区没有卡片，真实 API 复核 **-352**；模拟环境认证失效，关注与稍后再看跳过。直播、点播、主节点失败回退通过。[结果](ux-evidence/2026-10-06-cdn-auto/simulator.json)、[日志](ux-evidence/2026-10-06-cdn-auto/simulator.log)、[接口复核](ux-evidence/2026-10-06-cdn-auto/simulator-ranking-recheck.json)。这是浏览器模拟，不是 LG 官方模拟器 |
+
+**本机测量，不能外推海外**：首轮 8 个候选中 cosov 约 0.55Mbps、aliov 1.06Mbps、HWO1 6.34Mbps、Ali 9.66Mbps，原生节点约 10.54Mbps；实际后续选中 Ali（有 15% 门槛，且音视频可用候选不一定相同）。最终复验 HWO1 约 13.80Mbps、Ali 13.03Mbps，cosov/aliov 未在单块 4 秒期限内完成；实际分片来自 HWO1。这种变化说明固定“海外线路”不能代替测量，也不能把小块测速当作长期吞吐承诺。
+
+构建与验证身份见 [environment.json](ux-evidence/2026-10-06-cdn-auto/environment.json)，记录首轮和最终 6 个 bundle SHA256、最终相关源码 SHA256；[最终部署](ux-evidence/2026-10-06-cdn-auto/deploy-final.log)、[最终语法检查](ux-evidence/2026-10-06-cdn-auto/build-syntax.log)。队列边界修复后重跑 11 项逻辑、7 项 React 和 10 项真机 CDN，其余回归为本轮首个部署版本。诊断截图已查看并用 jsQR 解码，含账号信息，只留本地；公开截图仅保留选项弹窗。测试结束确认电视回到 `auto`、坏节点注入关闭，原设置及缓存已恢复。
+
+**仍待验收**：海外报告者实际网络、首页重试间歇焦点失败、游戏接口风控；旧硬件与杜比输出边界沿用前述报告。本轮不声称“海外直播已解决”或“全量全绿”，PR 保持草稿，未合并、未发版。
+
+
+### 焦点、分区与海外网络补验（2026-10-06）
+
+基线 `679eef6`，开发版 2.1.1。本轮处理前节的首页重试焦点、游戏分区 `-352` 和海外网络验证缺口。最终安装在 LG C4 上的 6 个 JS bundle 与本地产物 SHA256 全部一致，见 [构建身份](ux-evidence/2026-10-06-feed-network-fixes/environment.json) 和 [部署](ux-evidence/2026-10-06-feed-network-fixes/deploy-complete.log)。
+
+| Case | 修复与事实佐证 |
+| --- | --- |
+| C-FOCUS-RETRY-01：立即返回也恢复可操作焦点 | 重试时在输入事件中提交 loading，再开始请求，避免 React 把快速请求的 loading=true/false 合并而漏掉恢复逻辑。旧实现立即 Promise 场景失败，网络 0ms/300ms 场景成功，见 [改前](ux-evidence/2026-10-06-feed-network-fixes/focus-immediate-before.json)。新增慢返回、再次失败、主动退回侧栏、短列表+续播栏+预加载回归 |
+| C-FOCUS-RETRY-02：高亮与实际注册目标一致 | 仅修 loading 后 C4 仍出现白框却无法向下导航。临时追踪确认旧重试按钮的 passive cleanup 在新卡片高亮后清空全局焦点：[中间失败](ux-evidence/2026-10-06-feed-network-fixes/device-focus-cleanup-race.json)。注册/注销改用 layout effect，与 DOM 同次提交；[真机专项 3/3](ux-evidence/2026-10-06-feed-network-fixes/device-focus-after.json)，同时断言注册目标、下一次 Down 和唯一白框，不只看截图 |
+| C-FOCUS-SEARCH-01：搜索切到设置不漏第一行 | 最终导航回归进一步发现手动注册的搜索框仍用 passive cleanup，删掉设置页复用的 content-0-0；真实设置从第二行开始且无法回第一行。[电视改前](ux-evidence/2026-10-06-feed-network-fixes/device-search-cleanup-before.json)、[浏览器改前 0/1](ux-evidence/2026-10-06-feed-network-fixes/search-before.json)。同步手动注册的生命周期后 [1/1](ux-evidence/2026-10-06-feed-network-fixes/search-after.json)，最终电视导航 29/29；没有修改测试起点来掩盖回归 |
+| C-RANK-REFERER-01：六个分区真实返回 | 同一匿名出口、同一游戏 API，仅交替 Referer：站点根页面两次 -352，排行榜页面两次 code=0/100 条，[A/B](ux-evidence/2026-10-06-feed-network-fixes/ranking-referer-ab.json)。生产服务与独立代理共用精确 host/path 策略，其他接口/媒体请求不变。C4 六分区各 code=0/100，真实 Node 0.12.2/8 也返回 100 条；[独立代理](ux-evidence/2026-10-06-feed-network-fixes/standalone-proxy.json)、[旧运行时](ux-evidence/2026-10-06-feed-network-fixes/legacy-runtime.log)。研究线索来自 [abcLiyew/BiliBili-API](https://github.com/abcLiyew/BiliBili-API)，结论以上述实测为准，不把所有 -352 都归为同一原因 |
+| C-NET-REGION-01：海外真实传输与择优 | 使用已有 SSH 香港/日本节点匿名请求，不传电视 Cookie、不修改服务器配置。`REGION_SSH=hk` / `jp` 运行 `tools/test-region-network.mjs`，复用生产 WBI、Referer、候选与自动排序代码。两地分别 **11/11**：六分区、view 412 后 pagelist 兜底、DASH 取流、实际媒体 Range、胜出线路新分片、缓存无签名 URL；[香港](ux-evidence/2026-10-06-feed-network-fixes/hk.json)、[日本](ux-evidence/2026-10-06-feed-network-fixes/jp.json) |
+
+香港选中 Ali 海外 **51.71 Mbps**，同次原生 cosov 22.57、Akamai 23.16，HWO1 第二块超过 4 秒被标记失败；日本选中 cosov **64.86 Mbps**，Akamai 14.03、HWO1 1.88。所选节点又成功取得新的 64KiB 分片，分别 143.8ms / 23.3ms。每节点串行两块 256KiB，取较慢样本；各区域同一位置成功分片的 SHA256 一致。这是匿名 480P 单片源、服务器出口、小块短时传输，不证明海外家庭网络中的电视解码、高码率长期稳定性或直播提速，也不固定认定某个节点永远最快。
+
+海外工具首轮错误地把 view 的 HTTP 412 抛出，漏掉产品已有的 pagelist 回退；已修工具响应语义再测，保留 [香港首轮](ux-evidence/2026-10-06-feed-network-fixes/hk-worker-before.json)、[日本首轮](ux-evidence/2026-10-06-feed-network-fixes/jp-worker-before.json)。没有把工具失败掩饰成产品故障或直接跳过。
+
+| 回归层 | 本轮结果与范围 |
+| --- | --- |
+| 最终完整本地门禁 `bash tools/verify.sh --no-tv --ux` | **通过**：浏览器 **61/61**、点播 **15/15**、直播 **9/9**、CDN React **7/7**；服务 **22/22**、媒体选择 **13/13**、真实 HTTP Range/超时/取消、CDN 逻辑 **11/11**、真实 Node 0.12.2/8、en/es **244 keys** 及 ES5/ES2016 语法均通过；[完整日志](ux-evidence/2026-10-06-feed-network-fixes/verify-complete.log)、[浏览器](ux-evidence/2026-10-06-feed-network-fixes/browser-complete.json)、[点播](ux-evidence/2026-10-06-feed-network-fixes/vod-complete.json)、[直播](ux-evidence/2026-10-06-feed-network-fixes/live-complete.json)、[CDN](ux-evidence/2026-10-06-feed-network-fixes/cdn-complete.json) |
+| 最终 Chromium + 真实 service.js 桥 + B 站网络 | **55 通过 / 0 失败 / 2 跳过**；[结果](ux-evidence/2026-10-06-feed-network-fixes/simulator-complete.json)、[日志](ux-evidence/2026-10-06-feed-network-fixes/simulator-complete.log)。游戏分区已通过，关注/稍后再看因该桥的认证失效跳过；不是 LG 官方模拟器，未复制电视账号凭据 |
+| 最终 LG C4 综合回归 `node tools/test-ui.mjs` | **53 通过 / 0 失败 / 3 跳过**；[结果](ux-evidence/2026-10-06-feed-network-fixes/device-complete.json)、[日志](ux-evidence/2026-10-06-feed-network-fixes/device-complete.log)。三个跳过分别是首个安静房间未观测到弹幕、单档直播间无法验证画质切换、未启用账号写入；独立实时弹幕场景在同套中 **4/4**，实际收到 1 帧并渲染。有效登录下 UP 投稿、关注分页、收藏/订阅/稍后再看读取通过；账号增删沿用此前已授权专项证据，本轮未重做 |
+| 最终 LG C4 导航、播放、设置焦点 | **29/29**；[结果](ux-evidence/2026-10-06-feed-network-fixes/device-navigation-final.json)。Back/右键保持列表位置、侧栏确认主动刷新、实际点播/暂停/快进/续播/重播、搜索→设置第一行及字号弹层均通过 |
+| LG C4 列数和大字号矩阵 | **12/12**；[结果](ux-evidence/2026-10-06-feed-network-fixes/device-settings.json)。2/3/4 列、大字号真实尺寸、深列表、重载持久化和历史页滚动；此专项运行在最终 SearchPage 两行生命周期调整前，调整后的字号导航由上面的 29 项再次覆盖 |
+
+补充保留一次受开发热更新干扰的本地运行：当时 59/60，长按菜单断言失败，同秒 Vite 记录 `useFocus.js` 修改和 Fast Refresh invalidation；[运行结果](ux-evidence/2026-10-06-feed-network-fixes/browser-hmr-interrupted.json)、[HMR 时间记录](ux-evidence/2026-10-06-feed-network-fixes/hmr-interruption.log)。冻结产品源码后重跑整条门禁，最终结果见表；没有删掉失败或仅用定向通过宣称全套成功。
+
+已目视检查最终设置第一行、2/3/4 列与大字号历史页、首页重试后的唯一焦点。含账号/历史的电视截图只留本地，公开 [重试截图](ux-evidence/2026-10-06-feed-network-fixes/retry-navigable.png) 使用隔离假数据；其中封面有意为空，测试只控制推荐失败/恢复时序。临时故障注入已撤销，测试恢复原设置。
+
+首页焦点与分区失败已修复，海外验证已从仅本机推进到 HK/JP 实际出口。仍需相应设备/环境确认海外问题用户家庭电视、webOS 4 整机、杜比/Atmos 输出及旧硬件 DLNA；这些不由服务器探针或 C4 回归替代。PR #40 继续为草稿，未合并、未发布新版本。
+
+
+### v2.2.0 发布验证（2026-10-06）
+
+用户要求发布并通知相关 issue，之后明确要求不再操作电视；已确认无仍运行的电视测试进程，此后不连接、安装、重启或操作电视。基线为前节已完成验证的 `c0a0460`，发布准备增加版本号/文档与下述独立杜比保护。没有把“不要动电视”解释为放弃发布及 issue 通知，也没有把它解释为新一轮真机测试通过。
+
+**C-MEDIA-120-GUARD**：复核 [PR #17](https://github.com/asdf17128/bili-webos/pull/17) 的完整说明，发现单独改用 DV 信令而遗漏专用 120fps 转换会引入已知黑屏风险。本版不移植该位流转换，超过 60fps 或帧率未知时保留原有基础层信令；明确帧率不超过 60fps 才继续原有 DV 探测。真实 PlayerPage 生成 MPD 的高帧率/未知帧率正对照 [改前 0/2](ux-evidence/2026-10-06-release-2.2.0/dolby-guard-before.json)，保护后这两项及原有 DV/音轨回退 [6/6](ux-evidence/2026-10-06-release-2.2.0/dolby-guard-after.json)。纯逻辑 [14/14](ux-evidence/2026-10-06-release-2.2.0/media-selection.log) 含整数/小数/分数字符串、非法和未知帧率。该测试证明信令选择，不证明 120fps 或 Atmos 实机解码。
+
+| 验证层 | 当前证据 |
+| --- | --- |
+| 正式版本本地自动层 | 服务 **22/22**、媒体选择 **14/14**、CDN 逻辑 **11/11**、真实 Node 0.12.2/8、244 项翻译、ES5/ES2016 通过；浏览器 [61/61](ux-evidence/2026-10-06-release-2.2.0/browser.json)、点播 [17/17](ux-evidence/2026-10-06-release-2.2.0/player-loading.json)、直播 [9/9](ux-evidence/2026-10-06-release-2.2.0/live-loading.json)、CDN [7/7](ux-evidence/2026-10-06-release-2.2.0/cdn.json) 通过 |
+| 本次 TV 尝试 | 初始安装后 DOM 检查为 cards=37、sidebar=true、brokenImgs=0，截图已查看；随后综合套件 **15 通过 / 13 失败 / 3 跳过**，[原始结果](ux-evidence/2026-10-06-release-2.2.0/device-attempt.json)。首页空、播放注入 Uncaught、导航状态不符及应用退出，原因尚未确认。完整管线因此退出 1，不能称为全量门禁通过；[完整日志](ux-evidence/2026-10-06-release-2.2.0/verify-with-tv-failures.log)。未将这些失败改写成用户干扰或产品已修复 |
+| 电脑真实网络模拟 | **55 通过 / 0 失败 / 2 跳过**：[结果](ux-evidence/2026-10-06-release-2.2.0/simulator.json)、[日志](ux-evidence/2026-10-06-release-2.2.0/simulator.log)。在 Mac Chromium + 真实 service.js 桥 + B 站网络执行，没有访问电视；关注/稍后再看因本机认证失效跳过。实际点播、直播、评论、分区、故障回退及诊断通过 |
+| 安装包一致性 | 内含 appinfo 2.2.0 与 biliReferer.js，检查包内敏感路径；[包大小与 SHA256](ux-evidence/2026-10-06-release-2.2.0/package.json)、[源码与本地产物身份](ux-evidence/2026-10-06-release-2.2.0/environment.json)。此记录不冒充禁止电视操作后的设备哈希校验 |
+
+发布判断保留上述限制：此前 `c0a0460` 的 C4 综合 **53 通过/0 失败/3 跳过**、导航 **29/29**、列数字号 **12/12** 和 HK/JP 网络各 **11/11** 是已有证据；它们不覆盖本次真机复验的失败。相对该基线，播放器运行时代码只增加高/未知帧率的保守信令门控，其他产品变化为版本号；本机相关正对照和完整模拟独立验证。用户已要求发布且禁止继续操作电视，按已完成验证及公开限制交付，不声称硬件验收全绿。新 issue #41 的收藏夹自动连播开关与循环播放诉求未实现，列入本版已知问题；海外家庭电视、旧设备及杜比输出范围仍需对应环境确认。

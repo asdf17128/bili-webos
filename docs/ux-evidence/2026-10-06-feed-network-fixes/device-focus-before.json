@@ -1,0 +1,15 @@
+[
+  {
+    "name": "Controlled feed failure exposes remote retry",
+    "status": "pass"
+  },
+  {
+    "name": "Immediate retry puts remote focus on the first new card",
+    "status": "fail",
+    "detail": "6 cards, focus=sidebar-1-0"
+  },
+  {
+    "name": "Remote navigation works immediately after retry",
+    "status": "fail"
+  }
+]

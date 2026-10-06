@@ -1,0 +1,41 @@
+[
+  {
+    "name": "Video starts playing",
+    "status": "pass",
+    "detail": "t=0.5s ready=4"
+  },
+  {
+    "name": "Playback advances (no immediate freeze)",
+    "status": "pass",
+    "detail": "0.5s → 4.5s"
+  },
+  {
+    "name": "Player tab row visible",
+    "status": "pass"
+  },
+  {
+    "name": "相关推荐 + UP主投稿 tabs present",
+    "status": "pass",
+    "detail": "合集 · 3 相关推荐 UP主投稿 · 助教罗格"
+  },
+  {
+    "name": "相关推荐 has cards (recommended w/ upload time)",
+    "status": "pass",
+    "detail": "3 cards"
+  },
+  {
+    "name": "UP主投稿 tab loads videos",
+    "status": "pass",
+    "detail": "12 cards; API=null"
+  },
+  {
+    "name": "Follow list loads",
+    "status": "pass",
+    "detail": "20 cards"
+  },
+  {
+    "name": "Pagination loads more",
+    "status": "pass",
+    "detail": "20 → 60"
+  }
+]

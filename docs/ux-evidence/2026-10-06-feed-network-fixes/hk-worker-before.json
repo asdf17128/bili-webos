@@ -1,0 +1,63 @@
+{
+  "at": "2026-10-06T07:15:47.576Z",
+  "credentials": "anonymous, newly acquired fingerprint only",
+  "checks": [
+    {
+      "name": "partition 1008",
+      "pass": true,
+      "detail": {
+        "code": 0,
+        "count": 100
+      }
+    },
+    {
+      "name": "partition 1005",
+      "pass": true,
+      "detail": {
+        "code": 0,
+        "count": 100
+      }
+    },
+    {
+      "name": "partition 1003",
+      "pass": true,
+      "detail": {
+        "code": 0,
+        "count": 100
+      }
+    },
+    {
+      "name": "partition 1010",
+      "pass": true,
+      "detail": {
+        "code": 0,
+        "count": 100
+      }
+    },
+    {
+      "name": "partition 1002",
+      "pass": true,
+      "detail": {
+        "code": 0,
+        "count": 100
+      }
+    },
+    {
+      "name": "partition 1007",
+      "pass": true,
+      "detail": {
+        "code": 0,
+        "count": 100
+      }
+    },
+    {
+      "name": "completion",
+      "pass": false,
+      "detail": "HTTPError:412"
+    }
+  ],
+  "samples": [],
+  "location": {
+    "loc": "HK"
+  }
+}

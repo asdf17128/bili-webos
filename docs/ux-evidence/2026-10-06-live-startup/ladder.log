@@ -1,0 +1,11 @@
+PASS  解码错误(code 3)要降档
+PASS  网络错误(code 2)不降档,交给重试
+PASS  格式错误(code 4)不降档
+PASS  投屏流不走这套降档(它有自己的 variant 阶梯)
+PASS  没有 error 对象时不降档
+PASS  原画 → 蓝光
+PASS  蓝光 → 超清
+PASS  已在最低档 → null(不再退)
+PASS  阶梯为空 → null(不乱退)
+PASS  当前档不在表里 → 回到最高档重来
+PASS  MEDIA_ERR_DECODE 常量就是 3

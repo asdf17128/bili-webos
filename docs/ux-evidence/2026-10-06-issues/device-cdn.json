@@ -1,0 +1,28 @@
+[
+  {
+    "name": "unreachable primary CDN falls back and starts actual playback",
+    "pass": true
+  },
+  {
+    "name": "unreachable primary CDN is banned",
+    "pass": true,
+    "detail": "upos-sz-mirrorbad.bilivideo.com"
+  },
+  {
+    "name": "diagnostics measure the selected Ali route",
+    "pass": true,
+    "detail": "视频 CDN — ali 0.2s · hwo1 0.2s · cosov 2.4s · estgoss 0.2s"
+  },
+  {
+    "name": "diagnostics report single and concurrent throughput",
+    "pass": true
+  },
+  {
+    "name": "TV QR retains selected route and last playback evidence",
+    "pass": true
+  },
+  {
+    "name": "TV QR body is ASCII and contains no signed media URL",
+    "pass": true
+  }
+]

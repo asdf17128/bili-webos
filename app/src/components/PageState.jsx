@@ -18,7 +18,7 @@ export default function PageState({ title, description, action, onAction, row = 
 }
 
 export function GridSkeleton({ cols = 3 }) {
-  return <div className="grid-skeleton" role="status" aria-label={t('加载中...')}
+  return <div className={`grid-skeleton cols-${cols}`} role="status" aria-label={t('加载中...')}
     style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
     {Array.from({ length: cols * 2 }, (_, i) => <div className="skeleton-card" key={i} aria-hidden="true">
       <div className="skeleton-cover" /><div className="skeleton-title" /><div className="skeleton-meta" />

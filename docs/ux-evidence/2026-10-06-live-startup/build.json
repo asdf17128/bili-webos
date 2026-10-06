@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-06",
+  "baseCommit": "732ab4e",
+  "appVersion": "2.1.1",
+  "device": "LG C4 / Chromium 120",
+  "sourceSha256": {
+    "app/src/player/LivePlayerPage.jsx": "5dd76049edff99e1e6b7a306df4f4d3b90642402090070ea4c4c5ab02ee4ed5a",
+    "app/src/player/liveStream.js": "fc43d12a136391e6b78b8dbebbae85bb003c921e3828cc20e234acd27c8a2ad0",
+    "app/src/api/client.js": "9c5dbb5b08778fb2f617c082bf9c96cdc70067d7bab0c99c5a181b1f286f963c"
+  },
+  "bundles": {
+    "shaka-player.compiled-legacy-01vuRLq-.js": "e7555409c7b44282543f08a2c96f3b10f4925540208e22735c90e90c84138b0f",
+    "PlayerPage-legacy-sxkU6_b1.js": "6cfe88e79d5538894b5e90ab6a550315df792f9d3c215e3334fd166b321e94a7",
+    "LivePlayerPage-legacy-B5u9D2jT.js": "6b9e61f684b2d0daa3aae7da8db2260716cd1fa6ca55fd20492ab814b41de2b7",
+    "polyfills-legacy-yMOIK_tn.js": "31b30f8657d8428be6851291eae363434f47b46f24f30f1e0ebf7ed0ccf8b14c",
+    "react-vendor-legacy-B2h5bzJ7.js": "35b6eec340e5d94be0db7cb0978d708b51ed326b6b5144b1afb1d9a2d28cad7c",
+    "index-legacy-B4Ja0n8h.js": "1c68978cd616185db67de04d016e665f5f27f54dcad0530c1b752c047dc119ae"
+  },
+  "note": "liveStream.js explanatory comment updated after deployment; executable source unchanged."
+}

@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-06",
+  "baseline": "13f7b72acc71d073d38a76ddd3bae4e008ae1d6c",
+  "version": "2.1.1 development",
+  "device": "LG C4 / Chromium 120",
+  "network": "Local TV network; not an overseas acceptance run",
+  "initialBundleSha256": {
+    "app/dist/webOSTVjs-1.2.13/webOSTV.js": "2e83e028aef8651ef0b79b25a70c7ebc076a36781486a68623634bc0c2162670",
+    "app/dist/webOSTVjs-1.2.13/webOSTV-dev.js": "aa204c8b925b3214e9aa0f047a2874f8dda8aa0bb452936ca819368b349f0a51",
+    "app/dist/assets/shaka-player.compiled-legacy-01vuRLq-.js": "e7555409c7b44282543f08a2c96f3b10f4925540208e22735c90e90c84138b0f",
+    "app/dist/assets/PlayerPage-legacy-D9IZDSn9.js": "5921cc8776e765be102ecaf8356f540305917b3ff79eec26ba6316de23fe8969",
+    "app/dist/assets/LivePlayerPage-legacy-fJe2sKu2.js": "fccbc13e4ec537613377d25f0487a20db7df2c3615e510359316cbc905fcee56",
+    "app/dist/assets/index-legacy-BDK9uKDR.js": "10cd391f1fc4c63f6a05ecd8f55231ae2eb3487c5705b0c8e1c640cf0bd8c27a",
+    "app/dist/assets/react-vendor-legacy-B2h5bzJ7.js": "35b6eec340e5d94be0db7cb0978d708b51ed326b6b5144b1afb1d9a2d28cad7c",
+    "app/dist/assets/polyfills-legacy-BM5L0Uut.js": "70f60ce348e3017fc4a5649b93772dec6959305b99e1eb7303c4727687e8a4d5"
+  },
+  "finalBundleSha256": {
+    "app/dist/assets/shaka-player.compiled-legacy-01vuRLq-.js": "e7555409c7b44282543f08a2c96f3b10f4925540208e22735c90e90c84138b0f",
+    "app/dist/assets/index-legacy-Bdmi-ce_.js": "8c61ba9e60f15543503910afc3a0463acd59f0c47f36e6880839d79b1d402c6b",
+    "app/dist/assets/PlayerPage-legacy-BFnn8BHQ.js": "a0c43111707e637533f14a1491edb35e34355e7c9fa6e0c620f511976dd57d5d",
+    "app/dist/assets/LivePlayerPage-legacy-BaSB491z.js": "914b5adc203f47ff0f563d59f5bdf2b75773732195ef74ac71b93dc732235fc6",
+    "app/dist/assets/react-vendor-legacy-B2h5bzJ7.js": "35b6eec340e5d94be0db7cb0978d708b51ed326b6b5144b1afb1d9a2d28cad7c",
+    "app/dist/assets/polyfills-legacy-BM5L0Uut.js": "70f60ce348e3017fc4a5649b93772dec6959305b99e1eb7303c4727687e8a4d5"
+  },
+  "sourceSha256": {
+    "app/src/player/cdn.js": "11be88d5b52d07a844ddd0b09cad9afee0c8df3ea7422cfeb8f514ec56d71650",
+    "app/src/player/cdnAuto.js": "f1417925c3e31e8166651a7a26ea068725693ad150dbb142b1f4f3a4d10ebbd8",
+    "app/src/player/cdnProbe.js": "e02f86ae7b3a16877ff2dc3081784f9eaec79d48ef85cc808dfae9e099beb903",
+    "app/src/player/PlayerPage.jsx": "33b371c2f7a12dff48d1d7852e9d00d1217a6a2f98aa11a59223045931159a47",
+    "app/src/pages/ConfigPage.jsx": "3c187d604ddde5e6c7c4885e8d3c2db758aefa3f5a86001606c480d296fc4f49",
+    "app/src/components/DiagPanel.jsx": "a5f1839a809867ce4ad968ea30156ac5292b9ca61ed5ae8d21ca5713b518f7fa",
+    "app/src/utils/storage.js": "5a7227f2c2681f9bea96595a074fd287c4b03b2a21fcb8025ce72a1c7fa1b7c5",
+    "app/src/i18n/en.js": "c6bd939b885c21648c6ad4e6be1ad94a248e311a3ffdc3ad66f6db9ec5e491a3",
+    "app/src/i18n/es.js": "0d8134e35e82a711661542e92af8e08c0107ee4e790926b4f975e4f9e9d5a669"
+  },
+  "finalValidation": "11 unit, 7 React filter integration, 10 device CDN checks rerun after cache-host queue fix; earlier suites used initial bundle."
+}

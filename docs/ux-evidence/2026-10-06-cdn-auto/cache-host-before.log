@@ -1,0 +1,28 @@
+✖ native .cn hosts are measured once; uncacheable hosts cannot monopolize probes (2.555125ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 61.522916
+
+✖ failing tests:
+
+test at app/src/player/cdnAuto.test.js:48:1
+✖ native .cn hosts are measured once; uncacheable hosts cannot monopolize probes (2.555125ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  20 !== 2
+
+      at TestContext.<anonymous> (file:///Users/yuanzhan/code1/bili_webos/app/src/player/cdnAuto.test.js:57:10)
+      at async Test.run (node:internal/test_runner/test:1102:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 20,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

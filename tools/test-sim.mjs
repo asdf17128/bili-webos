@@ -16,11 +16,20 @@
 //   (cd app && npm run dev) &           # vite on :5173
 //   node tools/test-sim.mjs             # exit 0 = pass
 import { chromium } from 'playwright';
+import { mkdir, writeFile } from 'node:fs/promises';
 
 const URL_BASE = process.env.SIM_URL || 'http://localhost:5173';
 const BRIDGE = 'http://127.0.0.1:9528/ping';
 const FIXTURE = 'BV1xx411c7Xg';        // 弹幕测试专用 — stable, busy comments
 const LIVE_ROOM_FALLBACK = 3683436;
+const output = process.env.SIM_OUTPUT || '/tmp/bili-simulator';
+await mkdir(output, { recursive: true });
+const results = [];
+const serviceJson = async url => {
+  const r = await fetch('http://127.0.0.1:9528/luna/fetch', { method: 'POST', body: JSON.stringify({ url }) });
+  const j = await r.json();
+  return typeof j.body === 'string' ? JSON.parse(j.body) : j.body || {};
+};
 
 // 直播断言曾经写死一个房间号,那个房间下播后整段变红(2026-08-06:live_status=0
 // 连挂 4 条)。改成运行时挑一个"此刻真的在播"的房间;一个都挑不到就跳过直播段
@@ -52,10 +61,11 @@ async function pickLiveRoom() {
 
 let passed = 0, failed = 0, warned = 0;
 const check = (name, ok, detail) => {
+  results.push({ name, status: ok ? 'pass' : 'fail', detail });
   if (ok) { passed++; console.log(`  ✅ ${name}${detail ? ': ' + detail : ''}`); }
   else { failed++; console.log(`  ❌ ${name}${detail ? ': ' + detail : ''}`); }
 };
-const warn = (name, detail) => { warned++; console.log(`  ⚠️  ${name}${detail ? ': ' + detail : ''}`); };
+const warn = (name, detail) => { results.push({ name, status: 'skip', detail }); warned++; console.log(`  ⚠️  ${name}${detail ? ': ' + detail : ''}`); };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function main() {
@@ -74,7 +84,20 @@ async function main() {
 
   const browser = await chromium.launch({ channel: 'chrome' });
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+  console.log('[Environment] Chromium ' + browser.version() + ', real service bridge, real network');
   const pageErrors = [];
+  let expectedComments = null;
+  page.on('response', async response => {
+    if (!response.url().endsWith('/luna/fetch')) return;
+    try {
+      const payload = JSON.parse(response.request().postData() || '{}');
+      const url = new URL(payload.url);
+      if (url.pathname !== '/x/v2/reply' || url.searchParams.get('pn') !== '1') return;
+      const bridge = await response.json();
+      const body = JSON.parse(bridge.body || '{}');
+      if (body.code === 0) expectedComments = (body.data?.replies || []).length;
+    } catch { /* unrelated request */ }
+  });
   page.on('pageerror', e => pageErrors.push(String(e).slice(0, 120)));
 
   const key = (k) => page.keyboard.press(k);
@@ -121,6 +144,7 @@ async function main() {
     check('Home renders cards', home.cards > 5, `${home.cards} cards`);
     check('Sidebar present', home.sidebar >= 10, `${home.sidebar} items`);
     check('No broken thumbnails', home.broken <= 1, `${home.broken} broken`);
+    await page.screenshot({ path: `${output}/home.png` });
 
     for (let i = 0; i < 3; i++) { await key('ArrowLeft'); await sleep(200); }
     await key('ArrowRight'); await sleep(800);
@@ -199,9 +223,11 @@ async function main() {
       wrapSeq[0].includes('暂停') && wrapSeq[1].includes('评论') && wrapSeq[2].includes('暂停'),
       wrapSeq.join(' → '));
 
-    const loggedIn = await page.evaluate(() => !!(JSON.parse(localStorage.getItem('bili_auth') || '{}').SESSDATA));
-    if (loggedIn) {
-      check('Logged in: 赞/币/藏 present in the control bar',
+    const storedAuth = await page.evaluate(() => !!(JSON.parse(localStorage.getItem('bili_auth') || '{}').SESSDATA));
+    const nav = await serviceJson('https://api.bilibili.com/x/web-interface/nav');
+    const loggedIn = nav.code === 0 && nav.data?.isLogin === true;
+    if (storedAuth) {
+      check('Stored login: 赞/币/藏 present in the control bar',
         await page.locator('.player-btn[aria-label="点赞"]').count() === 1 &&
         await page.locator('.player-btn[aria-label="投币"]').count() === 1 &&
         await page.locator('.player-btn[aria-label="收藏"]').count() === 1,
@@ -216,14 +242,19 @@ async function main() {
     const rail = await page.evaluate(() => {
       const v = document.querySelector('video');
       const r = [...document.querySelectorAll('div')].find(d => d.style && d.style.width === '420px' && d.style.right === '0px');
-      const strip = [...document.querySelectorAll('div')].find(d => d.style && d.style.top === '844px');
+      const strip = document.querySelector('.player-comment-metadata');
+      const controls = document.querySelector('.player-controls').getBoundingClientRect();
       return { videoW: Math.round(v.getBoundingClientRect().width), railLeft: r ? Math.round(r.getBoundingClientRect().left) : null,
-        cards: document.querySelectorAll('.comment-card').length, strip: !!strip };
+        cards: document.querySelectorAll('.comment-card').length, strip: !!strip, controlsRight: controls.right,
+        text: document.querySelector('.comment-rail-body')?.innerText || '' };
     });
     check('Comment rail: video shrinks, rail docks right', rail.videoW === 1500 && rail.railLeft === 1500,
       `video=${rail.videoW} rail@${rail.railLeft}`);
-    check('Comment rail loads comments', rail.cards > 5, `${rail.cards} cards`);
-    check('Metadata strip fills the letterbox', rail.strip);
+    check('Comment rail renders the comments returned by the API', expectedComments > 0 && rail.cards === expectedComments,
+      `${rail.cards} cards / ${expectedComments} API replies`);
+    check('Comment rail never displays JSX or a contradictory empty state', !rail.text.includes('comments.length') && !rail.text.includes('暂无评论'));
+    check('Controls fit beside comments without duplicate metadata', !rail.strip && rail.controlsRight <= rail.railLeft);
+    await page.screenshot({ path: `${output}/player-comments.png` });
 
     await key('ArrowDown'); await sleep(600);
     const subCount = () => page.evaluate(() => {
@@ -411,6 +442,8 @@ async function main() {
     // 且移除前断言卡片身份 —— 绝不能把 owner 真正存的东西长按掉(写操作安全线)。
     if (!loggedIn) {
       warn('Watch Later skipped', 'needs a logged-in session');
+    } else if (process.env.SIM_ACCOUNT_WRITES !== '1') {
+      warn('Watch Later writes skipped', 'set SIM_ACCOUNT_WRITES=1 only with a disposable test account');
     } else {
       await page.evaluate((bv) => window.__openVideo({ bvid: bv }), FIXTURE);
       await sleep(8000);
@@ -565,6 +598,9 @@ async function main() {
     // 判据必然为真:「关注」页里的 UP 按定义全部已关注,所以每张卡都该有标。
     // 原来只拉 5 页关注列表(250 个)就停,第 251 个之后的 UP 永远没标 ——
     // 表现就是 owner 说的"有的有 有的没有"(2026-08-31)。
+    if (!loggedIn) {
+      warn('Follow badges skipped', 'API session is logged out; stored cookies alone do not establish authentication');
+    } else {
     await gotoPage('关注');
     await sleep(3500);
     const fol = await page.evaluate(() => {
@@ -576,6 +612,7 @@ async function main() {
     });
     check('关注页每张卡都有「已关注」标', fol.n > 0 && fol.badged === fol.n,
       `${fol.badged}/${fol.n} 有标 · 本地关注缓存 ${fol.cached} 个`);
+    }
 
     console.log('\n[取流失败 → 直达网络诊断]');
     // issue #23:用户被风控拦住时,原来只看到一句"视频加载失败"。现在要给
@@ -597,8 +634,8 @@ async function main() {
       btn: !!([...document.querySelectorAll('.player-btn')].find(b => b.textContent.includes('诊断'))),
     }));
     check('取流被拒时给出风控提示(不是泛泛的加载失败)', !!errScreen.hint, errScreen.hint.slice(0, 46));
-    check('已登录时提示指向"账号被风控"而不是"去登录"',
-      errScreen.hint.includes('账号'), errScreen.hint.slice(0, 46));
+    check('风控提示对应客户端保存的登录状态',
+      errScreen.hint.includes(storedAuth ? '账号' : '登录'), errScreen.hint.slice(0, 46));
     check('错误页有「去网络诊断」按钮', errScreen.btn);
     await key('Enter'); await sleep(5000);
     const landed = await page.evaluate(() => ({
@@ -670,9 +707,10 @@ async function main() {
     console.log('\n[Runtime health]');
     check('No uncaught page errors', pageErrors.length === 0, pageErrors.slice(0, 2).join(' | '));
   } catch (e) {
-    failed++;
-    console.log('  ❌ suite threw:', e.message);
+    check('suite completed', false, e.message);
   } finally {
+    if (failed) await page.screenshot({ path: `${output}/failure.png` }).catch(() => {});
+    await writeFile(`${output}/results.json`, JSON.stringify(results, null, 2));
     await browser.close();
   }
 

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "unverified Dolby frame rate keeps the original base layer: dolby-120",
+    "pass": true
+  },
+  {
+    "name": "unverified Dolby frame rate keeps the original base layer: dolby-unknown",
+    "pass": true
+  },
+  {
+    "name": "actual manifest and codec fallback: premium",
+    "pass": true
+  },
+  {
+    "name": "actual manifest and codec fallback: premium-fallback",
+    "pass": true
+  },
+  {
+    "name": "actual manifest and codec fallback: dolby",
+    "pass": true
+  },
+  {
+    "name": "actual manifest and codec fallback: dolby-fallback",
+    "pass": true
+  }
+]

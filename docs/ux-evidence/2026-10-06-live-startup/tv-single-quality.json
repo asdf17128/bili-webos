@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Live quality popup retains API ladder",
+    "status": "fail",
+    "detail": "1 options"
+  },
+  {
+    "name": "testLiveQuality",
+    "status": "fail",
+    "detail": "threw: Quality fixture unavailable"
+  }
+]

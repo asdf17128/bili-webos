@@ -1,0 +1,17 @@
+[
+  {
+    "name": "one request selects fast HLS without lowering saved quality",
+    "pass": false,
+    "error": "stream and quality ladder must share one response\n\n2 !== 1\n"
+  },
+  {
+    "name": "loading remains until actual playing event",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n0 !== 1\n"
+  },
+  {
+    "name": "unsupported fast HLS falls back to TS at the same quality",
+    "pass": false,
+    "error": "The input did not match the regular expression /fmp4\\.m3u8\\?qn=10000/. Input:\n\n'http://192.168.50.242:9527/proxy/live.bilivideo.com/ts.m3u8?qn=10000'\n"
+  }
+]

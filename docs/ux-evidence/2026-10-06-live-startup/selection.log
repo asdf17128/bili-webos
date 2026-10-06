@@ -1,0 +1,13 @@
+✔ TS-first API ordering still selects fMP4 with matching original-quality metadata (1.200042ms)
+✔ explicit fallback selects TS without reducing quality (0.079375ms)
+✔ rooms missing usable fMP4 AVC keep working through TS (0.065916ms)
+✔ FLV-only and missing HLS URL responses are errors rather than endless loading (0.20625ms)
+✔ failed API response is not mistaken for an empty room (0.05125ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 67.040958

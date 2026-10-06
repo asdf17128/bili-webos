@@ -1,0 +1,6 @@
+[
+  {
+    "name": "leaving search preserves the next page first focus cell",
+    "pass": true
+  }
+]

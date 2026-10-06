@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Live quality popup retains API ladder",
+    "status": "pass",
+    "detail": "2 options: 原画/超清"
+  },
+  {
+    "name": "Selected live quality starts actual playback",
+    "status": "pass",
+    "detail": "10000 → 250"
+  },
+  {
+    "name": "Original live quality starts playback again",
+    "status": "pass",
+    "detail": "qn=10000"
+  }
+]

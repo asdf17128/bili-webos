@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Recommended live room advances playback",
+    "status": "pass"
+  },
+  {
+    "name": "Live danmaku token API succeeds",
+    "status": "pass",
+    "detail": "code=0"
+  },
+  {
+    "name": "TV starts the live danmaku subscription",
+    "status": "pass"
+  },
+  {
+    "name": "Real-time danmaku reaches the TV overlay",
+    "status": "pass",
+    "detail": "1 frames, 1 DOM items"
+  }
+]

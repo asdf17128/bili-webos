@@ -1,0 +1,9 @@
+file:///Users/yuanzhan/code1/bili_webos/tools/test-tv-settings.mjs:78
+    throw new Error('State timeout: ' + JSON.stringify(current));
+          ^
+
+Error: State timeout: {"focus":null,"scroll":null,"cards":0,"modern":false,"visible":false,"video":null,"player":false,"redesigned":false,"broken":0}
+    at wait (file:///Users/yuanzhan/code1/bili_webos/tools/test-tv-settings.mjs:78:11)
+    at async file:///Users/yuanzhan/code1/bili_webos/tools/test-tv-settings.mjs:129:31
+
+Node.js v25.4.0

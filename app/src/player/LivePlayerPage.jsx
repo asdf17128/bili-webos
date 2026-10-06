@@ -1,6 +1,6 @@
 import Icon from '../components/Icon';
 import React, { useState, useEffect, useRef } from 'react';
-import { getLiveStreamUrl, getLiveQualities, getRoomInit, getDanmuInfo, getBuvid3, getLiveHistory, danmakuSubscribe, danmakuStop, castReportState, castReportProgress, mediaProxyBase } from '../api/client';
+import { getLivePlayback, getRoomInit, getDanmuInfo, getBuvid3, getLiveHistory, danmakuSubscribe, danmakuStop, castReportState, castReportProgress, mediaProxyBase } from '../api/client';
 import { formatCount } from '../utils/format';
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
@@ -16,6 +16,8 @@ const VIDEO_H = Math.round(VIDEO_W * 9 / 16); // 844 — the rest holds metadata
 export default function LivePlayerPage({ room, onBack }) {
   const videoRef = useRef(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const reconnectRef = useRef(null);
   const [showInfo, setShowInfo] = useState(true);
   const [danmakuEnabled, setDanmakuEnabled] = useState(storage.getSettings().danmaku !== false);
   const infoTimer = useRef(null);
@@ -56,6 +58,12 @@ export default function LivePlayerPage({ room, onBack }) {
   useEffect(() => {
     let disposed = false;
     let retries = 0;
+    let requestId = 0;
+    let retryTimer = null;
+    let startupTimer = null;
+    let everPlayed = false;
+    let preferredFormat = 'fmp4';
+    let currentFormat = '';
     // A live HLS stream fires `ended` on ordinary hiccups (playlist gap, mid-
     // stream discontinuity). Treating that as "this variant is broken" walked
     // the quality ladder down on every hiccup — and rung 2 is the raw FLV,
@@ -80,7 +88,7 @@ export default function LivePlayerPage({ room, onBack }) {
       console.info('[live] ' + why + (extra ? ' ' + JSON.stringify(extra) : ''));
     };
 
-    async function resolveSrc() {
+    async function resolveSrc(id) {
       if (room.directUrl) {
         // DLNA cast (Huya etc): third-party CDNs aren't in our proxy
         // allowlist and <video> needs no CORS, so play direct. Huya gets the
@@ -90,10 +98,15 @@ export default function LivePlayerPage({ room, onBack }) {
       }
       // B站 live: refetch on every (re)connect — the signed URL expires, so a
       // reconnect with the OLD URL would just fail again.
-      const hlsUrl = await getLiveStreamUrl(room.roomid, qnRef.current || undefined);
-      if (!hlsUrl) return null;
+      const playback = await getLivePlayback(room.roomid, qnRef.current || undefined, preferredFormat);
+      if (disposed || id !== requestId) return null;
+      currentFormat = playback.format;
+      setQualities(playback.accept);
+      qnLadderRef.current = playback.accept.map(q => q.qn);
+      if (playback.qn) { qnRef.current = playback.qn; setCurQn(playback.qn); }
+      note('source-ready', { format: currentFormat, qn: playback.qn });
       const proxyBase = mediaProxyBase();
-      const parsed = new URL(hlsUrl);
+      const parsed = new URL(playback.url);
       return `${proxyBase}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
     }
 
@@ -102,10 +115,11 @@ export default function LivePlayerPage({ room, onBack }) {
     // 一下"). In DEV only, attach hls.js when the engine can't do it itself —
     // the production bundle never imports it (import.meta.env.DEV is folded to
     // false and the dynamic import is dropped).
-    async function attachSrc(v, src) {
+    async function attachSrc(v, src, id) {
       const nativeHls = v.canPlayType('application/vnd.apple.mpegurl');
       if (import.meta.env.DEV && !nativeHls && /\.m3u8(\?|$)/.test(src)) {
         const { default: Hls } = await import('hls.js');
+        if (disposed || id !== requestId) return;
         if (Hls.isSupported()) {
           if (hlsRef.current) { try { hlsRef.current.destroy(); } catch (e) { /* ignore */ } }
           const h = new Hls({ lowLatencyMode: false, enableWorker: false });
@@ -122,32 +136,52 @@ export default function LivePlayerPage({ room, onBack }) {
         }
       }
       v.src = src;
-      v.play();
+      const playing = v.play();
+      if (playing?.catch) playing.catch(err => {
+        if (!disposed && id === requestId && err?.name !== 'AbortError') scheduleRetry('play-rejected');
+      });
     }
 
     async function connect(reason) {
       if (disposed) return;
+      const id = ++requestId;
+      clearTimeout(retryTimer); retryTimer = null;
+      clearTimeout(startupTimer);
+      setLoading(true); setLoadError(false);
       try {
         note('connect', { reason, attempt: retries });
         castReportState({ playState: 'loading' }).catch(() => {});
-        const src = await resolveSrc();
-        if (!src || !videoRef.current || disposed) return;
-        await attachSrc(videoRef.current, src);
-        setLoading(false);
+        const src = await resolveSrc(id);
+        if (!src || !videoRef.current || disposed || id !== requestId) return;
+        startupTimer = setTimeout(() => scheduleRetry('startup-timeout'), 12000);
+        await attachSrc(videoRef.current, src, id);
+        if (disposed || id !== requestId) return;
+        clearTimeout(infoTimer.current);
         infoTimer.current = setTimeout(() => setShowInfo(false), 3000);
       } catch (err) {
+        if (disposed || id !== requestId) return;
         note('connect-failed', { msg: err?.message });
         scheduleRetry('connect-failed');
       }
     }
 
     function scheduleRetry(why) {
-      if (disposed) return;
-      if (retries >= MAX_RETRIES) {
+      if (disposed || retryTimer != null) return;
+      clearTimeout(startupTimer);
+      requestId++; // Late API/import results cannot replace a newer attempt.
+      // Preserve the full decoder ladder and the existing DLNA variant budget.
+      const retryLimit = everPlayed || room.directUrl ? MAX_RETRIES : Math.max(2, qnLadderRef.current.length);
+      if (retries >= retryLimit) {
         note('gave-up', { after: retries, variant });
         setLoading(false);
+        setLoadError(true);
         castReportState({ playState: 'error', error: 'live-' + why }).catch(() => {});
         return;
+      }
+      if (!room.directUrl && currentFormat === 'fmp4' &&
+          (why === 'startup-timeout' || why === 'format-error')) {
+        preferredFormat = 'ts';
+        note('format-fallback', { from: 'fmp4', to: 'ts' });
       }
       // Only a repeated failure means the VARIANT is wrong; a single hiccup
       // just needs the same stream again (with a freshly resolved URL).
@@ -159,15 +193,20 @@ export default function LivePlayerPage({ room, onBack }) {
       retries++;
       setLoading(true);
       note('retry', { why, attempt: retries, variant });
-      setTimeout(() => connect(why), Math.min(800 * retries, 4000));
+      retryTimer = setTimeout(() => { retryTimer = null; connect(why); }, Math.min(800 * retries, 4000));
     }
 
     const v = videoRef.current;
     // Honest state + self-healing: a live stream must never just sit black.
     const onPlaying = () => {
+      clearTimeout(startupTimer);
+      clearTimeout(retryTimer); retryTimer = null;
+      everPlayed = true;
+      note('playing', { format: currentFormat, qn: qnRef.current });
       retries = 0; // healthy again — future drops get a fresh retry budget
       variantFails = 0; // this variant works; don't step off it on a later blip
       setLoading(false);
+      setLoadError(false);
       castReportState({ playState: 'playing' }).catch(() => {});
     };
     const onError = () => {
@@ -187,20 +226,22 @@ export default function LivePlayerPage({ room, onBack }) {
           // 不该变成用户的长期偏好。
         }
       }
-      scheduleRetry('media-error');
+      scheduleRetry(e?.code === 4 ? 'format-error' : 'media-error');
     };
+    const onWaiting = () => { if (!disposed) setLoading(true); };
     const onEnded = () => { note('ended'); scheduleRetry('ended'); }; // live never "ends" on purpose
     if (v) {
       v.addEventListener('playing', onPlaying);
       v.addEventListener('error', onError);
       v.addEventListener('ended', onEnded);
+      v.addEventListener('waiting', onWaiting);
     }
 
     // Stall watchdog: frozen currentTime while "playing" = silent black screen.
     let lastT = -1;
     let stuckSince = 0;
     const watchdog = setInterval(() => {
-      if (disposed || !v || v.paused || v.readyState < 2) return; // still buffering/connecting
+      if (disposed || !v || v.paused || !everPlayed) return;
       if (Math.abs(v.currentTime - lastT) < 0.05) {
         if (!stuckSince) stuckSince = Date.now();
         else if (Date.now() - stuckSince > 8000) {
@@ -215,10 +256,14 @@ export default function LivePlayerPage({ room, onBack }) {
     }, 2000);
 
     if (!room.directUrl) storage.addRecentLive(room); // local "recent live" history
+    reconnectRef.current = reason => { retries = 0; everPlayed = false; connect(reason); };
     connect('initial');
 
     return () => {
       disposed = true;
+      requestId++;
+      reconnectRef.current = null;
+      clearTimeout(retryTimer); clearTimeout(startupTimer);
       if (hlsRef.current) { try { hlsRef.current.destroy(); } catch (e) { /* ignore */ } hlsRef.current = null; }
       clearInterval(watchdog);
       if (infoTimer.current) clearTimeout(infoTimer.current);
@@ -226,10 +271,12 @@ export default function LivePlayerPage({ room, onBack }) {
         v.removeEventListener('playing', onPlaying);
         v.removeEventListener('error', onError);
         v.removeEventListener('ended', onEnded);
+        v.removeEventListener('waiting', onWaiting);
+        v.pause(); v.removeAttribute('src'); v.load();
       }
       castReportState({ playState: 'stop' }).catch(() => {});
     };
-  }, [room.roomid]);
+  }, [room.roomid, room.directUrl]);
 
   // Live danmaku via the service relay (the browser can't connect to B站's chat
   // WS — file:// origin gets reset; the Node service connects with a proper
@@ -319,52 +366,13 @@ export default function LivePlayerPage({ room, onBack }) {
     return () => clearInterval(id);
   }, [room.directUrl]);
 
-  // Quality ladder for this room (#18). Cast/DLNA streams have none.
-  useEffect(() => {
-    let active = true;
-    if (room.directUrl) { setQualities([]); return () => { active = false; }; }
-    getLiveQualities(room.roomid).then(q => {
-      if (!active || !q || !q.accept.length) return;
-      setQualities(q.accept);
-      // 降档用的阶梯:从高到低。accept 已是 B站 给的顺序,这里只取 qn。
-      qnLadderRef.current = q.accept.map(o => o.qn);
-      // No saved preference (or it isn't offered here) → whatever B站 served.
-      const saved = storage.getSettings().liveQn;
-      const usable = saved && q.accept.some(o => o.qn === saved) ? saved : q.qn;
-      setCurQn(usable);
-      qnRef.current = usable;
-    }).catch(() => {});
-    return () => { active = false; };
-  }, [room.roomid, room.directUrl]);
-
-  // Switching quality = reconnect with the new qn (live URLs are per-quality).
+  // The source and quality ladder are resolved together by connect().
   const applyQuality = (qn) => {
     qnRef.current = qn;
     setCurQn(qn);
     setShowQuality(false);
     storage.setSettings({ ...storage.getSettings(), liveQn: qn });
-    const v = videoRef.current;
-    if (!v) return;
-    setLoading(true);
-    getLiveStreamUrl(room.roomid, qn).then(url => {
-      if (!url) { setLoading(false); return; }
-      const proxyBase = mediaProxyBase();
-      const parsed = new URL(url);
-      const next = `${proxyBase}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
-      const nativeHls = v.canPlayType('application/vnd.apple.mpegurl');
-      if (import.meta.env.DEV && !nativeHls && /\.m3u8(\?|$)/.test(next)) {
-        import('hls.js').then(({ default: Hls }) => {
-          if (!Hls.isSupported()) { v.src = next; v.play(); return; }
-          if (hlsRef.current) { try { hlsRef.current.destroy(); } catch (e) { /* ignore */ } }
-          const h = new Hls({ enableWorker: false });
-          hlsRef.current = h; h.loadSource(next); h.attachMedia(v); v.play().catch(() => {});
-        });
-      } else {
-        v.src = next;
-        v.play();
-      }
-      setLoading(false);
-    }).catch(() => setLoading(false));
+    reconnectRef.current?.('quality');
   };
 
   useEffect(() => {
@@ -431,6 +439,9 @@ export default function LivePlayerPage({ room, onBack }) {
         return true;
       }
       // === Quality popup ===
+      if (loadError && e.key === 'Enter') {
+        e.preventDefault(); reconnectRef.current?.('manual'); return true;
+      }
       if (showQuality) {
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
           e.preventDefault();
@@ -478,7 +489,7 @@ export default function LivePlayerPage({ room, onBack }) {
     };
     setCustomKeyHandler(handler);
     return () => setCustomKeyHandler(null);
-  }, [onBack, showControls, showQuality, ctrlIdx, qualities, curQn, interactOn, danmakuEnabled]);
+  }, [onBack, showControls, showQuality, ctrlIdx, qualities, curQn, interactOn, danmakuEnabled, loadError]);
 
   // Magic Remote pointer: moving shows the info bar, clicking toggles danmaku
   // (mirrors up/down and OK on the D-pad).
@@ -524,11 +535,13 @@ export default function LivePlayerPage({ room, onBack }) {
         )}
       </div>
 
-      {loading && (
+      {(loading || loadError) && (
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: 'rgba(0,0,0,0.8)', zIndex: 50 }}>
-          <div className="loading"><div className="loading-spinner" />{t('加载直播...')}</div>
+          {loadError
+            ? <button className="player-btn focused" onClick={e => { e.stopPropagation(); reconnectRef.current?.('manual'); }}>{t('加载失败，按确认重试')}</button>
+            : <div className="loading"><div className="loading-spinner" />{t('加载直播...')}</div>}
         </div>
       )}
 

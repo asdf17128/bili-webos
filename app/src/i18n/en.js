@@ -2,6 +2,19 @@
 // ADDING A LANGUAGE: copy this file to <code>.js, translate values, register
 // it in index.js DICTS. That's all.
 export default {
+  '我的收藏': 'My favorites',
+  '订阅': 'Subscriptions',
+  '暂无订阅，可先在 B 站订阅收藏夹或合集': 'No subscriptions. Follow a favorites folder or collection on Bilibili first.',
+  '更多订阅': 'More subscriptions',
+  '连播列表加载失败，请返回列表重试': 'Unable to load the next page. Return to the list to retry.',
+
+  '杜比源（基础层）': 'Dolby source (base layer)',
+  '画质切换失败，已保留原画质': 'Quality change failed; keeping the previous quality',
+
+  '播放暂时中断，请检查网络或切换线路': 'Playback interrupted. Check your network or change CDN route.',
+  '正在缓冲…': 'Buffering…',
+  '所选节点连不上，其他镜像可用': 'Selected node is unreachable; other mirrors are available',
+
   '点赞': 'Like',
   '投币': 'Coin',
   "继续观看": "Continue watching",
@@ -218,6 +231,8 @@ export default {
   "网络诊断": "Network Diagnostics",
   "联系 / 反馈：": "Contact / feedback: ",
   "腾讯云海外": "Tencent Cloud (overseas)",
+  "自动择优": "Auto (best route)",
+  "华为云 HWO1": "Huawei Cloud HWO1",
   "阿里云海外": "Alibaba Cloud (overseas)",
   "CDN 测速": "CDN speed test",
   "单连接(1x) {s} MB/s · 4 并发(4x) {p} MB/s (x{r})": "single(1x) {s} MB/s · parallel(4x) {p} MB/s (x{r})",

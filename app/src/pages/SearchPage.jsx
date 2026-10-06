@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { searchVideo, searchSuggest, getHotSearches } from '../api/client';
 import { storage } from '../utils/storage';
 import { useFocusable, setFocus, getCurrentFocusId, registerFocusable, unregisterFocusable } from '../hooks/useFocus';
@@ -48,7 +48,9 @@ export default function SearchPage({ onPlayVideo }) {
   // Register the search box as a focus cell (col 0, row 0); OK raises the
   // system keyboard. Manual registration keeps the native <input> focus ring
   // without useFocusable's click-preventDefault (which blocks input focus).
-  useEffect(() => {
+  // Match useFocusable's commit phase so unmount cannot unregister the next
+  // page's content-0-0 after that page has already registered it.
+  useLayoutEffect(() => {
     // NB: do NOT setFocus here — the search page also mounts on sidebar *preview*
     // (arrowing onto 搜索), and stealing focus into the box would break sidebar
     // navigation. App's selectPage → focusFirstContent moves focus in on OK.
@@ -183,7 +185,7 @@ export default function SearchPage({ onPlayVideo }) {
         error ? <PageState row={1} title={t('搜索暂时不可用')} description={t('请检查网络连接后重试')} action={t('重试')} onAction={() => doSearch(lastSearchedRef.current)} /> : results.length > 0 ? (
           <div style={{ marginTop: 18 }}>
             <div style={{ fontSize: 'calc(18px * var(--ui-scale))', color: '#aaa', margin: '0 4px 14px' }}>{t('搜索结果')}</div>
-            <div className="search-results-grid" style={{
+            <div className={`search-results-grid cols-${RESULT_COLS}`} style={{
               display: 'grid',
               gridTemplateColumns: `repeat(${RESULT_COLS}, 1fr)`,
               gap: '18px 16px',

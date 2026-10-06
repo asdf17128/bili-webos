@@ -1,0 +1,55 @@
+[Environment] Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.270 Safari/537.36 WebAppManager
+
+[Navigation + Home]
+  ✅ Home loads video cards: 20 cards
+  ✅ No broken thumbnails: 0 broken / 12 imgs
+  ✅ OK entered content (focus in grid): content-0-0
+  ✅ Back returns focus to sidebar: sidebar-1-0
+
+[Video playback + player panel]
+  ✅ Video starts playing: t=0.3s ready=4
+  ✅ Playback advances (no immediate freeze): 0.3s → 4.3s
+  ✅ Player tab row visible
+  ✅ 相关推荐 + UP主投稿 tabs present: 相关推荐 UP主投稿 · 枫泽雨畔
+  ✅ 相关推荐 has cards (recommended w/ upload time): 12 cards
+  ❌ UP主投稿 tab loads videos: 0 cards
+
+[Comment rail rendering and control layout]
+  ✅ Comment rail loads real comments: 3 cards
+  ✅ Comment rail shows content without JSX or empty-state leakage
+  ✅ Comment controls fit without overlapping metadata: {"present":true,"sourceLeak":false,"empty":false,"controlsRight":1500,"railLeft":1501,"duplicate":false}
+
+[番剧 / Bangumi (PGC) + HDR]
+  ✅ Season info loads (episode list): 38 eps
+  ✅ PGC playurl returns DASH (bangumi playable): 6 video reps
+  ✅ HDR/Dolby rep present + selectable by id: accept=[125,120,112,80,64,32,16]
+
+[Live playback + danmaku + history]
+  ✅ Live list loads: 12 rooms
+  ✅ Live stream plays: t=0.2s ready=4 (第1个房间)
+  ✅ Danmaku layer mounted
+  ⚠️  Danmaku rendering: no items yet (quiet room?) — layer present
+  ✅ Live room recorded to recentLive: 8 stored
+  ✅ Live shows in 我的 → 最近观看 with 直播 badge: cards=8
+
+[Search]
+  ✅ Search recommendations render (热门/历史): 23 rows
+  ✅ Search returns a results grid: 20 results
+
+[Follow list + pagination]
+  ⚠️  Follow list and pagination skipped: API session is logged out
+
+[Settings auto update-check]
+  ✅ Auto update-check populated: 已是最新 (v2.1.1)
+  ✅ Update-check resolved (latest/new/version): 已是最新 (v2.1.1)
+
+[热门 / 分区]
+  ✅ 热门 loads content: 20 cards / 12 imgs
+  ✅ 分区(游戏) loads content: 100 cards / 12 imgs
+
+[稍后再看 / Watch Later]
+  ⚠️  Watch Later skipped: API session is logged out
+
+====================================================
+Results: 26 passed, 1 failed, 3 warned
+====================================================

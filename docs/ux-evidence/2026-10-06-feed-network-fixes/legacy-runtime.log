@@ -1,0 +1,16 @@
+Testing Node 0.12.2
+[BiliService] Local proxy on port 7654
+[BiliService] Cast server on 172.17.0.4:9958
+[service] buvid bootstrapped
+fetch OK on real Node v0.12.2: status=200
+api code=-101 (expect -101 anonymous or 0)
+getDiagnostics OK: node=v0.12.2 buvid=true dm=true
+ranking on real Node v0.12.2: code=0 count=100
+Testing Node 8
+[BiliService] Local proxy on port 7654
+[BiliService] Cast server on 172.17.0.4:9958
+[service] buvid bootstrapped
+fetch OK on real Node v8.17.0: status=200
+api code=-101 (expect -101 anonymous or 0)
+getDiagnostics OK: node=v8.17.0 buvid=true dm=true
+ranking on real Node v8.17.0: code=0 count=100

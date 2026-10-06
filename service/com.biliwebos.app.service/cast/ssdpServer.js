@@ -105,7 +105,9 @@ CastLanServer.prototype.startUdp = function () {
     var match = str.match(/\r\nST:\s*(.+)\r\n/i);
     if (match) st = match[1].trim();
     var response = deviceProfile.getSsdpSearchResponse(self.profile, st);
-    self.udpServer.send(Buffer.from(response), rinfo.port, rinfo.address);
+    // Full (buf, offset, length, port, addr) form: Node 0.12 (webOS 4.x) has no short form.
+    var resBuf = Buffer.from(response);
+    self.udpServer.send(resBuf, 0, resBuf.length, rinfo.port, rinfo.address);
   });
   self.udpServer.on('error', function (err) {
     console.error('[Cast][SSDP] error:', err.message);
@@ -252,7 +254,8 @@ CastLanServer.prototype.broadcastAlive = function () {
   var self = this;
   if (!self.udpServer) return;
   deviceProfile.getSsdpNotifyPackets(self.profile).forEach(function (packet) {
-    self.udpServer.send(Buffer.from(packet), 1900, '239.255.255.250');
+    var pktBuf = Buffer.from(packet);
+    self.udpServer.send(pktBuf, 0, pktBuf.length, 1900, '239.255.255.250');
   });
 };
 

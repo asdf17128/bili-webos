@@ -2,7 +2,11 @@
 // Connects to B站's chat WS — auth must use the real uid (the DedeUserID cookie);
 // uid:0 with a logged-in token is rejected with a 1006 — parses DANMU_MSG
 // packets and hands the text back to the app.
-var WebSocket = require('ws');
+// ws@7 needs Node 8 (it is written with const/class); webOS 4.x services run
+// Node v0.12, where it throws a SyntaxError at require(). Fall back to the
+// vendored ws@1 (supports Node 0.10+), same on/send/close API we use here.
+var WebSocket;
+try { WebSocket = require('ws'); } catch (e) { WebSocket = require('ws-legacy'); }
 var zlib = require('zlib');
 
 var OP_HEARTBEAT = 2;
@@ -117,7 +121,7 @@ function connectDanmaku(opts, onDanmaku) {
     });
     ws.on('open', function () {
       ws.send(buildPacket(OP_AUTH, JSON.stringify({
-        uid: opts.uid || 0, roomid: opts.roomid, protover: 3,
+        uid: opts.uid || 0, roomid: opts.roomid, protover: zlib.brotliDecompressSync ? 3 : 2, // no brotli before Node 11 -> ask for zlib frames
         buvid: opts.buvid || '', platform: 'web', type: 2, key: opts.token,
       })));
       hb = setInterval(function () {

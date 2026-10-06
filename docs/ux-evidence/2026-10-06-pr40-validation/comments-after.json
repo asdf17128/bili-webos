@@ -1,0 +1,6 @@
+[
+  {
+    "name": "comment rail renders one state and keeps controls unobscured",
+    "pass": true
+  }
+]

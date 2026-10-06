@@ -4,6 +4,8 @@
 import { storage } from '../utils/storage';
 import { getWbiKeys, signWbi } from './wbi';
 import { logErr } from '../utils/errlog';
+import { mapLibraryPage } from '../utils/library';
+import { selectLivePlayback } from '../player/liveStream';
 
 const API_HOST = 'api.bilibili.com';
 const PASSPORT_HOST = 'passport.bilibili.com';
@@ -654,56 +656,11 @@ export async function getLiveHistory(roomId) {
     { host: 'api.live.bilibili.com' });
 }
 
-export async function getLiveQualities(roomId) {
-  var res = await smartFetch('api.live.bilibili.com',
-    '/xlive/web-room/v2/index/getRoomPlayInfo?room_id=' + roomId + '&protocol=0,1&format=0,1,2&codec=0,1,2&platform=web&ptype=8');
-  var pu = res && res.data && res.data.playurl_info && res.data.playurl_info.playurl;
-  if (!pu) return { qn: 0, accept: [] };
-  var names = {};
-  var descs = pu.g_qn_desc || [];
-  for (var i = 0; i < descs.length; i++) names[descs[i].qn] = descs[i].desc;
-  // Read the ladder off the HLS/AVC codec entry the player actually uses.
-  var streams = pu.stream || [];
-  for (var s = 0; s < streams.length; s++) {
-    var formats = streams[s].format || [];
-    for (var f = 0; f < formats.length; f++) {
-      var codecs = formats[f].codec || [];
-      for (var c = 0; c < codecs.length; c++) {
-        if (codecs[c].codec_name !== 'avc') continue;
-        var acc = codecs[c].accept_qn || [];
-        if (!acc.length) continue;
-        var list = acc.slice().sort(function (a, b) { return b - a; }).map(function (q) {
-          return { qn: q, label: names[q] || String(q) };
-        });
-        return { qn: codecs[c].current_qn || list[0].qn, accept: list };
-      }
-    }
-  }
-  return { qn: 0, accept: [] };
-}
-
-export async function getLiveStreamUrl(roomId, qn) {
-  var res = await smartFetch('api.live.bilibili.com',
+export async function getLivePlayback(roomId, qn, preferredFormat) {
+  const res = await smartFetch('api.live.bilibili.com',
     '/xlive/web-room/v2/index/getRoomPlayInfo?room_id=' + roomId + '&protocol=0,1&format=0,1,2&codec=0,1,2&platform=web&ptype=8'
       + (qn ? '&qn=' + qn : ''));
-  var streams = res && res.data && res.data.playurl_info && res.data.playurl_info.playurl && res.data.playurl_info.playurl.stream;
-  if (!streams) return null;
-  // Find HLS AVC stream
-  for (var s = 0; s < streams.length; s++) {
-    var formats = streams[s].format || [];
-    for (var f = 0; f < formats.length; f++) {
-      if (formats[f].format_name === 'fmp4' || formats[f].format_name === 'ts') {
-        var codecs = formats[f].codec || [];
-        for (var c = 0; c < codecs.length; c++) {
-          if (codecs[c].codec_name === 'avc') {
-            var info = (codecs[c].url_info || [{}])[0];
-            return (info.host || '') + (codecs[c].base_url || '') + (info.extra || '');
-          }
-        }
-      }
-    }
-  }
-  return null;
+  return selectLivePlayback(res, preferredFormat);
 }
 
 // ============ Search ============
@@ -865,6 +822,21 @@ export async function getFavFolders(mid) {
 
 export async function getFavList(mediaId, pn, ps) {
   return wbiFetch('/x/v3/fav/resource/list', { media_id: mediaId, pn: pn || 1, ps: ps || 20, platform: 'web' });
+}
+
+export async function getSubscribedFolders(mid, pn = 1, ps = 20) {
+  return wbiFetch('/x/v3/fav/folder/collected/list', { up_mid: mid, pn, ps, platform: 'web' });
+}
+
+export async function getLibraryPage(folder, pn = 1, ps = 36) {
+  const response = Number(folder.type) === 21
+    ? await wbiFetch('/x/polymer/web-space/seasons_archives_list', {
+      mid: folder.mid || folder.upper?.mid, season_id: folder.id,
+      page_num: pn, page_size: ps, sort_reverse: false,
+    })
+    : await getFavList(folder.id, pn, ps);
+  if (!response || response.code !== 0 || !response.data) throw new Error(response?.message || 'Library request failed');
+  return mapLibraryPage(response.data, folder, pn, ps);
 }
 
 // ============ Heartbeat ============

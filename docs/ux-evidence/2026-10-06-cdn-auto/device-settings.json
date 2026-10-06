@@ -1,0 +1,22 @@
+[
+  {
+    "name": "CDN row is reachable by remote",
+    "status": "pass"
+  },
+  {
+    "name": "CDN picker includes automatic and HWO1 routes",
+    "status": "pass"
+  },
+  {
+    "name": "Remote HWO1 selection is saved",
+    "status": "pass"
+  },
+  {
+    "name": "HWO1 remains selected after reload",
+    "status": "pass"
+  },
+  {
+    "name": "Remote can restore automatic routing",
+    "status": "pass"
+  }
+]

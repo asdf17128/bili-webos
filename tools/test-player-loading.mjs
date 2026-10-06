@@ -10,7 +10,7 @@ const results = [];
 const stub = `class Player {
  static isBrowserSupported(){return true}
  async attach(v){this.video=v}
- configure(){} addEventListener(){} getNetworkingEngine(){return {registerRequestFilter(){},registerResponseFilter(){},addEventListener(){}}}
+ configure(){} addEventListener(){} getNetworkingEngine(){return this.net||(this.net={registerRequestFilter(f){this.request=f},registerResponseFilter(f){this.response=f},addEventListener(n,f){this.retry=f}})}
  getVariantTracks(){return []} retryStreaming(){window.__probe.retries++;return true} getStats(){return {}}
  async load(url,position){window.__probe.loads++;
  const mpd=await (await fetch(url)).text();window.__probe.mpds.push(mpd);window.__probe.positions.push(position);
@@ -18,6 +18,14 @@ const stub = `class Player {
  if(window.__mode==='dolby-fallback' && /codecs="dvh1/.test(mpd)) throw Object.assign(new Error('DV decoder failed'),{category:3}); if(window.__mode==='cancel') return new Promise((r,j)=>{this.reject=j});
  if(window.__mode==='network') throw Object.assign(new Error('network unavailable'),{code:1001,category:1});
  if(window.__mode==='retry'&&window.__probe.loads===1) throw Object.assign(new Error('transient network'),{code:1001,category:1});
+ if(window.__mode==='trace-media'){
+ this.net.request(1,{uris:['https://media.bilivideo.com/video']});
+ this.net.retry({error:{code:1001,data:['https://media.bilivideo.com/video']}});
+ await new Promise(r=>setTimeout(r,400));
+ this.net.response(1,{timeMs:400,uri:'https://media.bilivideo.com/video'}, {stream:{type:'video'}});
+ this.video.dispatchEvent(new Event('loadedmetadata'));
+ await new Promise(r=>setTimeout(r,650));
+ }
  Object.defineProperty(this.video,'currentTime',{configurable:true,get:()=>1,set:()=>{}});
  Object.defineProperty(this.video,'duration',{configurable:true,get:()=>100});
  const ready=()=>{Object.defineProperty(this.video,'readyState',{configurable:true,get:()=>4});this.video.dispatchEvent(new Event('loadeddata'));};
@@ -31,9 +39,10 @@ async function run(name, mode, fn, scale) {
  const context=await browser.newContext({viewport:{width:1920,height:1080}});
  await context.addInitScript(({mode,scale})=>{
    delete window.webOS;window.__mode=mode;window.__probe={loads:0,destroyed:0,retries:0,mpds:[],positions:[]};
-   localStorage.setItem('bili_settings',JSON.stringify({language:'zh',gridCols:3,subtitle:true,danmaku:true,subtitleScale:scale?.sub||1,danmakuScale:scale?.dm||1}));
+   localStorage.setItem('bili_settings',JSON.stringify({language:'zh',uiScale:scale?.ui||1,gridCols:3,subtitle:true,danmaku:true,subtitleScale:scale?.sub||1,danmakuScale:scale?.dm||1}));
+   if(mode.startsWith('layout'))localStorage.setItem('bili_auth',JSON.stringify({SESSDATA:'fixture'}));
    localStorage.setItem('bili_perfopt',JSON.stringify({prefetchPage:false,warmPlayer:false}));
-   HTMLMediaElement.prototype.play=()=>Promise.resolve();
+   HTMLMediaElement.prototype.play=function(){if(this.readyState>=2)this.dispatchEvent(new Event('playing'));return Promise.resolve()};
    if (/premium|dolby/.test(mode)) MediaSource.isTypeSupported=type=>!type.includes('av01');
  },{mode,scale});
  const page=await context.newPage();page.setDefaultTimeout(7000);
@@ -41,11 +50,18 @@ async function run(name, mode, fn, scale) {
  await page.route('**/*',async route=>{
   const u=new URL(route.request().url());
   if(u.pathname.includes('shaka-player')) { if(mode==='startup-overlap')await new Promise(r=>setTimeout(r,650));calls.events.push({type:'shaka',at:Date.now()});return route.fulfill({contentType:'application/javascript',body:stub}); }
-  if(u.port==='5173')return route.continue();
+  if(u.port==='5173') {
+    if(mode==='layout-legacy' && /\.css$/.test(u.pathname)) {
+      const response=await route.fetch();
+      return route.fulfill({response,body:(await response.text()).replace('@supports not (display: grid)','@supports (display: grid)')});
+    }
+    return route.continue();
+  }
   if(u.port==='9528')return route.abort();
+  if(calls.fail)return route.abort();
   let data={};
   if(u.pathname.endsWith('/nav'))data={wbi_img:{img_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png',sub_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png'}};
-  if(u.pathname.endsWith('/view')){calls.info++;calls.events.push({type:'view',at:Date.now()});if(mode==='slow-info')await new Promise(r=>setTimeout(r,1200));data={aid:1,cid:2,bvid:'BVtest',pages:mode==='startup-part'?[{cid:2},{cid:3}]:[{cid:2}],title:'加载回归',owner:{mid:1,name:'测试'},stat:{}};}
+  if(u.pathname.endsWith('/view')){calls.info++;calls.events.push({type:'view',at:Date.now()});if(mode==='slow-info')await new Promise(r=>setTimeout(r,1200));data={aid:1,cid:2,bvid:'BVtest',pages:mode==='startup-part'?[{cid:2},{cid:3}]:[{cid:2}],title:mode.startsWith('layout')?'日本有钱人的小别墅能有多离谱！超迷你设计成这样就问你敢住吗':'加载回归',owner:{mid:1,name:mode.startsWith('layout')?'11区小豪的故事':'测试'},pubdate:1790323200,stat:{}};}
   if(u.pathname.endsWith('/playurl')){
     calls.playurl++;calls.events.push({type:'playurl',cid:u.searchParams.get('cid'),at:Date.now()});if(mode.startsWith('startup'))await new Promise(r=>setTimeout(r,500));
     const qn=mode.startsWith('dolby')?126:80;
@@ -64,6 +80,7 @@ async function run(name, mode, fn, scale) {
   if(u.pathname.endsWith('/v2')) { calls.meta++;calls.events.push({type:'meta-start',cid:u.searchParams.get('cid'),at:Date.now()});if(mode.startsWith('startup'))await new Promise(r=>setTimeout(r,500));calls.events.push({type:'meta-end',at:Date.now()});if(mode==='startup-meta-error' && calls.meta===1)return route.fulfill({json:{code:-352}});data={last_play_cid:mode==='startup-part'?3:2,last_play_time:12000,subtitle:{subtitles:[{lan:'zh-CN',lan_doc:'中文',subtitle_url:'https://aisubtitle.hdslb.com/test.json'}]}}; }
   if(u.pathname.endsWith('/test.json'))return route.fulfill({json:{body:[{from:0,to:20,content:'字幕字号验证'}]}});
   if(u.pathname.endsWith('/list.so'))return route.fulfill({contentType:'text/xml',body:'<i><d p="1,1,28,16777215,0,0,0,0">弹幕字号验证</d></i>'});
+  if(u.pathname.endsWith('/archive/related') && mode.startsWith('layout'))data=Array.from({length:30},(_,i)=>({bvid:'BVrelated'+i,title:'推荐视频 '+i,owner:{name:'测试UP'},duration:553}));
   if(u.pathname.endsWith('/x/v2/reply')) data={page:{count:3},replies:Array.from({length:3},(_,i)=>({rpid:i+1,member:{uname:'测试用户'},content:{message:'评论内容 '+i},like:1}))};
   return route.fulfill({json:{code:0,data}});
  });
@@ -71,7 +88,26 @@ async function run(name, mode, fn, scale) {
  catch(e){results.push({name,pass:false,error:e.message});console.log('FAIL',name,e.message.split('\n')[0]);await page.screenshot({path:`${output}/failure-${results.length}.png`});}
  finally{await context.close();}
 }
+const report=page=>page.evaluate(async()=>{const url=performance.getEntriesByType('resource').find(e=>new URL(e.name).pathname==='/src/player/playbackHealth.js').name;return (await import(url)).getPlaybackReport()});
 const open=page=>page.evaluate(()=>window.__openVideo({bvid:'BVtest',resumeMode:'none'}));
+for (const mode of ['layout-legacy','layout-modern']) for(const ui of [1,1.4]) await run('player shelf separates progress, controls and recommendation tabs: '+mode+' scale='+ui,mode,async page=>{
+ if(mode==='layout-legacy')await page.addStyleTag({content:'.player-controls,.panel-tab-row {gap:0!important}'});
+ await open(page);await page.waitForFunction(()=>window.__probe.mpds.length===1);await page.waitForTimeout(200);
+ await page.keyboard.press('ArrowUp');await page.keyboard.press('ArrowDown');
+ await page.waitForFunction(()=>document.querySelectorAll('.related-card').length>=12);
+ await page.waitForFunction(()=>getComputedStyle(document.querySelector('.player-controls')).opacity==='1');
+ const layout=await page.evaluate(()=>{
+  const box=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {top:r.top,bottom:r.bottom,height:r.height};};
+  return {progress:box('.player-progress-bar'),buttons:box('.player-btns'),tabs:box('.panel-tab-row'),title:box('.player-title'),firstButton:box('.player-btn'),grid:box('.related-grid')};
+ });
+ await page.screenshot({path:output+'/'+mode+'-'+ui+'.png'});
+ assert.ok(layout.progress.height>=6,JSON.stringify(layout));
+ assert.ok(layout.buttons.top>=layout.progress.bottom+8,JSON.stringify(layout));
+ assert.ok(layout.tabs.top>=layout.buttons.bottom+8,JSON.stringify(layout));
+ assert.ok(layout.buttons.height>=layout.firstButton.height,JSON.stringify(layout));
+ await page.keyboard.press('ArrowDown');await page.keyboard.press('ArrowDown');await page.keyboard.press('ArrowUp');await page.keyboard.press('ArrowUp');await page.keyboard.press('ArrowUp');
+ await page.waitForFunction(()=>{const b=document.querySelector('.player-btn.focused'),c=document.querySelector('.player-controls');if(!b)return false;const x=b.getBoundingClientRect(),y=c.getBoundingClientRect();return x.top>=y.top&&x.bottom<=y.bottom;});
+}, {ui});
 for (const mode of ['frame-ready','frame-cancel']) await run('auxiliary requests wait for real media data: '+mode,mode,async(page,calls)=>{
  await open(page);await page.waitForFunction(()=>!!window.__releaseFrame);await page.waitForTimeout(250);
  assert.equal(calls.meta,0);assert.equal(calls.extras,0);
@@ -95,6 +131,9 @@ for (const mode of ['startup-overlap','startup-part']) await run('startup overla
  assert.ok(firstPu.at<metaEnd.at,JSON.stringify(events));
  if(mode==='startup-overlap') {
    assert.ok(events.find(x=>x.type==='view').at<events.find(x=>x.type==='shaka').at,JSON.stringify(events));
+   const trace=(await report(page)).startup;
+   assert.ok(trace.stages.engine.ms>=600&&trace.stages.view.ms<600,JSON.stringify(trace));
+   assert.ok(trace.stages.url.ms>=450&&trace.stages.resume.ms>=450,JSON.stringify(trace));
    assert.equal(calls.meta,1,'resume and subtitle metadata share the same response');
    assert.equal(calls.playurl,1);
  } else {
@@ -178,6 +217,7 @@ await run('cancelled load stops retries and releases the player','cancel',async(
  await page.keyboard.press('Escape');await page.waitForTimeout(1600);
  assert.equal(await page.locator('.player-page').count(),0);
  assert.equal(calls.playurl,1);assert.equal(await page.evaluate(()=>window.__probe.loads),1);
+ assert.equal((await report(page)).startup.state,'cancelled');
 });
 await run('leaving while video information is pending prevents later streaming','slow-info',async(page,calls)=>{
  await open(page);await page.waitForTimeout(400);await page.keyboard.press('Escape');await page.waitForTimeout(1500);
@@ -185,6 +225,7 @@ await run('leaving while video information is pending prevents later streaming',
 });
 await run('network failure stops after two outer attempts instead of trying every quality','network',async(page,calls)=>{
  await open(page);await page.waitForTimeout(2000);assert.equal(calls.playurl,2);
+ const trace=(await report(page)).startup;assert.equal(trace.state,'failed');assert.equal(trace.stages.load.errors,2);assert.equal(trace.stages.url.count,2);assert.equal(trace.points.data,undefined);
  assert.equal(await page.locator('.player-page .loading').count(),0);
 });
 await run('transient network failure can recover on the second attempt','retry',async(page,calls)=>{
@@ -199,6 +240,33 @@ for(const [name,dm,sub] of [['small',.8,.85],['normal',1,1],['large',1.3,1.2],['
  },{dm,sub});
 }
 
+await run('startup report separates slow media readiness and stays visible when diagnostics APIs fail','trace-media',async(page,calls)=>{
+ await open(page);await page.waitForFunction(()=>window.__probe.loads===1);
+ await page.waitForTimeout(1500);
+ const r=await report(page),trace=r.startup;
+ assert.equal(trace.state,'ready');
+ assert.equal(trace.requests,1);assert.equal(trace.responses,1);assert.equal(trace.retries,1);
+ assert.ok(trace.points.response-trace.points.request>=350,JSON.stringify(trace));
+ assert.ok(trace.points.data-trace.points.metadata>=600,JSON.stringify(trace));
+ assert.ok(trace.points.playing>=trace.points.data,JSON.stringify(trace));
+ assert.ok(Math.abs(r.startupMs-trace.points.data)<=5);
+ assert.equal(trace.stages.load.count,1);assert.equal(trace.stages.load.pending,0);
+ await page.keyboard.press('Escape');calls.fail=true;
+ await page.locator('[data-focus-id="sidebar-13-0"]').click();
+ await page.locator('[data-focus-id="content-9-0"]').click();
+ const summary=page.locator('.startup-summary');await summary.scrollIntoViewIfNeeded();
+ assert.match(await summary.innerText(),/最近一次起播.*[0-9]+\.[0-9]+s/);
+ assert.match(await summary.innerText(),/首个媒体响应.*媒体就绪.*播放事件/);
+ await page.waitForFunction(()=>!!document.querySelector('.diagnostic-report svg'));
+ assert.match(await page.locator('.diagnostic-panel').innerText(),/❌/);
+ await page.locator('.diagnostic-panel').screenshot({path:output+'/diagnostics-api-failure.png'});
+});
+await run('diagnostics without a previous video explains how to obtain startup evidence','trace-empty',async(page,calls)=>{
+ calls.fail=true;
+ await page.locator('[data-focus-id="sidebar-13-0"]').click();
+ await page.locator('[data-focus-id="content-9-0"]').click();
+ assert.match(await page.locator('.startup-summary').innerText(),/先播放一个视频/);
+});
 await run('Luna requests time out, cancel their bridge and ignore late success','fonts',async page=>{
  await page.clock.install();
  await page.evaluate(async()=>{

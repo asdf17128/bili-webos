@@ -121,6 +121,14 @@ Login information is stored on your TV and used to access your Bilibili account.
 
 [MIT 开源项目](LICENSE)，再发布源码或修改后的安装包时请保留版权与许可声明。第三方依赖和随附资源保留各自许可；代码许可不授予哔哩哔哩、LG 等第三方商标的使用权，也不代表官方认可。本项目由社区独立开发，与哔哩哔哩及 LG 无隶属关系。
 
+### v2.2.3 — player layout and startup diagnostics / 播放器布局与起播诊断
+
+- 修复推荐列表展开后挤压进度条的问题，控制按钮和推荐标签按内容高度排列；从列表返回时，遥控焦点自动回到可见区域。
+- **设置 → 网络诊断** 直接显示最近一次起播总耗时及各阶段耗时；扫码报告增加首个媒体响应、媒体就绪、播放事件、重试与编码信息。先播放视频，再返回设置打开诊断即可查看。
+- C9 用户反馈 v2.2.2 仍需约 16–18 秒出画面，本版增加定位数据，尚未确认其等待原因或提速效果。详情见 [发布说明](docs/releases/v2.2.3.md)。
+
+Fixes the compressed progress bar when recommendations expand and keeps remote focus visible. Startup timings now appear directly in diagnostics, with detailed media milestones in the QR report. The C9 startup delay remains under investigation.
+
 ### v2.2.2 — startup and danmaku / 起播与弹幕
 
 - 起播时并行加载播放器与视频信息、续播位置与取流结果；同一分 P 复用元数据，切换分 P 后仍重新获取正确的流与字幕。

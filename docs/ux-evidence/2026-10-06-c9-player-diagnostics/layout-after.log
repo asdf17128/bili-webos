@@ -1,0 +1,5 @@
+PASS player shelf separates progress, controls and recommendation tabs: layout-legacy scale=1
+PASS player shelf separates progress, controls and recommendation tabs: layout-legacy scale=1.4
+PASS player shelf separates progress, controls and recommendation tabs: layout-modern scale=1
+PASS player shelf separates progress, controls and recommendation tabs: layout-modern scale=1.4
+4/4 passed

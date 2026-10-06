@@ -75,6 +75,7 @@ node tools/test-apihint.mjs || { echo "FAIL: api error hints"; exit 1; }
 node tools/test-liveqn.mjs || { echo "FAIL: live qn ladder"; exit 1; }
 node --test app/src/player/liveStream.test.js || { echo "FAIL: live stream selection"; exit 1; }
 node --test app/src/player/cdnAuto.test.js || { echo "FAIL: automatic CDN routing"; exit 1; }
+node --test app/src/player/startupTrace.test.js || { echo "FAIL: startup diagnostics"; exit 1; }
 # C-I18N-01: every t('…') key covered in every dictionary (missing = zh fallback leaks)
 node tools/test-i18n-coverage.mjs || { echo "FAIL: i18n coverage"; exit 1; }
 # C-I18N-04: locale-aware formatters (万/亿 vs K/M, relative time)

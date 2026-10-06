@@ -6,6 +6,7 @@ import { playPart, playAdvance } from './playIntent';
 import { getPlaybackMode } from './playbackMode';
 import { createStallMonitor, startPlaybackReport, updatePlaybackReport, countPlaybackEvent, bufferedAhead } from './playbackHealth';
 import { selectVideoRepresentation, listPreferredAudio, hasAudioRepresentations, createPlaybackAttemptPlan, inspectDolbyRepresentation, dolbySignalingFrameRateAllowed } from './mediaSelection';
+import { createStartupTrace } from './startupTrace';
 import { logErr } from '../utils/errlog';
 
 import { formatDuration, formatTime, formatCount, QUALITY_MAP, cleanTitle, pickAigcText } from '../utils/format';
@@ -445,6 +446,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // Initialize Shaka Player
   useEffect(() => {
     let mounted = true, player = null;
+    const report = startPlaybackReport(storage.getSettings().cdnRoute);
+    const trace = createStartupTrace(startup => report({ startup }), { start: openT.current });
     const media = videoRef.current;
     let extras = [], firstFrame = false;
     const onFirstFrame = () => {
@@ -452,7 +455,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       firstFrame = true;
       const startupMs = Math.round(perfNow() - openT.current);
       mark('player-first-frame', startupMs);
-      updatePlaybackReport({ startupMs });
+      trace.point('data');
+      report({ startupMs });
       const pending = extras; extras = [];
       pending.forEach(fn => fn());
     };
@@ -461,26 +465,36 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       if (firstFrame || media.readyState >= 2) { onFirstFrame(); fn(); }
       else extras.push(fn);
     };
+    const onMetadata = () => trace.point('metadata');
+    const onPlaying = () => trace.point('playing');
+    media.addEventListener('loadedmetadata', onMetadata);
+    media.addEventListener('playing', onPlaying);
     media.addEventListener('loadeddata', onFirstFrame);
     const infoStart = perfNow();
     const infoTask = !(video?.isBangumi || video?.epid || video?.seasonId)
-      ? getVideoInfo(video).then(value => ({ value }), error => ({ error })) : null;
+      ? trace.measure('view', () => getVideoInfo(video)).then(value => ({ value }), error => ({ error })) : null;
     async function init() {
       const _tShakaImp = perfNow();
-      const shaka = await import('shaka-player');
+      let supported = false;
+      await trace.measure('engine', async () => {
+        const shaka = await import('shaka-player');
+        if (!mounted) return;
+        shaka.polyfill.installAll();
+        supported = shaka.Player.isBrowserSupported();
+        if (supported) player = new shaka.Player();
+      });
       if (!mounted) return;
       mark('po-shaka-import', perfNow() - _tShakaImp);
-      shaka.polyfill.installAll();
-      if (!shaka.Player.isBrowserSupported()) {
+      if (!supported) {
         // Older webOS engines may lack MSE/EME — surface it instead of a
         // silent black screen / endless spinner.
         setLoading(false);
+        trace.fail();
         setErrorMsg(t('当前设备不支持视频播放(浏览器内核过旧)'));
         setLoadError(true);
         return;
       }
-      player = new shaka.Player();
-      await player.attach(videoRef.current);
+      await trace.measure('attach', () => player.attach(videoRef.current));
       if (!mounted) return;
       shakaRef.current = player;
       if (typeof window !== 'undefined') window.__shakaPlayer = player; // test hook (speed diag)
@@ -530,6 +544,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         },
       });
       ne.registerRequestFilter((type, request) => {
+        if (type === 1) trace.request();
         const proxyBase = mediaProxyBase();
         // Shaka can reuse proxied URIs; audio/video keep their own signed paths.
         let urls = request.uris.map(u => u?.startsWith(proxyBase + '/proxy/')
@@ -546,24 +561,32 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         request.uris = alive.length ? alive : kept;
       });
       ne.addEventListener('retry', e => {
+        trace.retry();
         onShakaRetry(e);
         const error = e.error || e.detail?.error;
         cdnAutoRef.current?.failed(cdnHostOf(error?.data?.[0]));
       });
-      ne.registerResponseFilter((type, response) => {
-        if (type === 1) updatePlaybackReport({ host: cdnHostOf(response.uri || response.originalUri) });
+      ne.registerResponseFilter((type, response, context) => {
+        if (type === 1) {
+          trace.response(response, context);
+          if (mounted) report({ host: cdnHostOf(response.uri || response.originalUri) });
+        }
       });
 
-      if (mounted) loadVideo(player, () => mounted, infoTask, infoStart, afterFirstFrame);
+      if (mounted) loadVideo(player, () => mounted, infoTask, infoStart, afterFirstFrame, trace);
     }
     init().catch(err => {
       if (!mounted) return;
+      trace.fail();
       console.error('Player initialization failed:', err?.message || err);
       setLoading(false); setLoadError(true);
     });
     return () => {
       mounted = false;
       extras = [];
+      trace.dispose();
+      media.removeEventListener('loadedmetadata', onMetadata);
+      media.removeEventListener('playing', onPlaying);
       media.removeEventListener('loadeddata', onFirstFrame);
       cdnAutoRef.current?.dispose(); cdnAutoRef.current = null;
       player?.destroy();
@@ -571,7 +594,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     };
   }, []);
 
-  const loadVideo = useCallback(async (player, isActive, infoTask, infoStart, afterFirstFrame) => {
+  const loadVideo = useCallback(async (player, isActive, infoTask, infoStart, afterFirstFrame, trace) => {
     const cancelled = err => !isActive() || err?.code === 7000 || err?.code === 7001;
     const activeResult = async promise => {
       const result = await promise;
@@ -579,11 +602,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       return result;
     };
     const isBangumi = !!(video?.isBangumi || video?.epid || video?.seasonId);
-    if (!video?.bvid && !video?.aid && !isBangumi) return;
+    if (!video?.bvid && !video?.aid && !isBangumi) { trace.fail(); return; }
     setLoading(true);
     setBuffering(false);
     cdnAutoRef.current?.setSource(null);
-    startPlaybackReport(storage.getSettings().cdnRoute);
     setLoadError(false);
     nativeModeRef.current = false; // fresh video always starts on DASH
     setCurrentSpeed(1);            // 倍速 is per-video, never carried over
@@ -604,7 +626,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         // the season listing when the history/feed item didn't carry them.
         if (!cid || !epid) {
           try {
-            const info = await activeResult(getBangumiInfo({ epid, seasonId }));
+            const info = await activeResult(trace.measure('view', () => getBangumiInfo({ epid, seasonId })));
             const result = info?.result || info?.data || {};
             const eps = result.episodes || [];
             let ep = epid ? eps.find(e => String(e.id) === String(epid)) : null;
@@ -681,7 +703,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         // cid. Rejections are handled here so cancellation never leaks one.
         if (cid) {
           initialCid = cid;
-          initialPlay = getPlayUrl(video, cid, storage.getSettings().quality || 80)
+          initialPlay = trace.measure('url', () => getPlayUrl(video, cid, storage.getSettings().quality || 80))
             .then(value => ({ value }), error => ({ error }));
         }
         // 续播: casual opens (resumeMode 'auto', see playIntent.js) resume at the
@@ -690,7 +712,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         if (video.resumeMode === 'auto' && d.aid && cid) {
           try {
             playerMetaCid = cid;
-            const pv = await activeResult(getPlayerV2(d.aid, cid));
+            const pv = await activeResult(trace.measure('resume', () => getPlayerV2(d.aid, cid)));
             playerMeta = pv?.code === 0 ? pv : null;
             const lc = pv?.data?.last_play_cid;
             const lt = pv?.data?.last_play_time; // ms
@@ -808,7 +830,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             if (isBangumi) {
               // Request the full ladder so HDR/4K reps are present; pick the
               // top rep by default, or the forced fallback quality.
-              const res = await activeResult(getBangumiPlayUrl({ epid, cid }, 127));
+              const res = await activeResult(trace.measure('url', () => getBangumiPlayUrl({ epid, cid }, 127)));
               meta = res?.result || res?.data;
               dash = meta?.dash;
               if (!dash) throw new Error('No DASH stream (bangumi — region/VIP locked?)');
@@ -824,7 +846,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                 if (result.error) throw result.error;
                 res = result.value;
               } else {
-                res = await activeResult(getPlayUrl(video, cid, fallbackQn || settings.quality || 80));
+                res = await activeResult(trace.measure('url', () => getPlayUrl(video, cid, fallbackQn || settings.quality || 80)));
               }
               initialPlay = null;
               mark('po-playurl', perfNow() - _tPu);
@@ -834,6 +856,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               if (res && res.code !== 0) {
                 const hint = apiErrorHint(res.code, { loggedIn: !!storage.getAuth()?.SESSDATA });
                 if (hint) {
+                  trace.fail();
                   setLoading(false);
                   setErrorMsg(hint);
                   setLoadError(true);
@@ -854,7 +877,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             const resumeAt = (resumeProgress > 0 && resumeProgress < (dash.duration || 9999) - 10)
               ? resumeProgress : 0;
             const _tLoad = perfNow();
-            await activeResult(loadDash(player, dash, wantQn, resumeAt, isActive));
+            await activeResult(loadDash(player, dash, wantQn, resumeAt, isActive, trace));
             mark('po-shaka', perfNow() - _tLoad);
             if (rung > 0) console.warn('[loadVideo] fell back to qn=' + fallbackQn + ' (top rep failed to load/decode)');
             loaded = true;
@@ -1020,6 +1043,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       }
     } catch (err) {
       if (cancelled(err)) return;
+      trace.fail();
       console.error('Load video error:', err?.message || err);
       // Order-play: a 失效 (taken-down) video in a favorites folder throws here —
       // don't dead-end on the error screen, just skip to the next item (#11).
@@ -1035,7 +1059,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     }
   }, [video, queueOrApplySeek, selectSubtitle, makeMtTrack]);
 
-  async function loadDash(player, dash, wantQn, position, isActive) {
+  async function loadDash(player, dash, wantQn, position, isActive, trace) {
+    const measure = (key, fn) => trace ? trace.measure(key, fn) : fn();
     const supported = type => {
       try { return !window.MediaSource?.isTypeSupported || window.MediaSource.isTypeSupported(type); }
       catch { return false; }
@@ -1051,7 +1076,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         const rep = selected.representation;
         const routeHost = CDN_ROUTES[storage.getSettings().cdnRoute];
         const probe = routeHost ? { ...rep, baseUrl: withHost(rep.baseUrl || rep.base_url, routeHost) } : rep;
-        dolby = await inspectDolbyRepresentation(probe, mediaProxyBase(), { active: probeRequestsRef.current });
+        dolby = await measure('probe', () => inspectDolbyRepresentation(probe, mediaProxyBase(), { active: probeRequestsRef.current }));
         if (dolby && supported(`video/mp4; codecs="${dolby.codec}"`)) dolbyCodec = dolby.codec;
       } catch (e) { if (isActive()) logErr('dolby-probe', e.message); }
     }
@@ -1062,7 +1087,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       const mpd = buildMPD(dash, selected.representation, attempt);
       const url = URL.createObjectURL(new Blob([mpd], { type: 'application/dash+xml' }));
       try {
-        await player.load(url, position || undefined);
+        await measure('load', () => player.load(url, position || undefined));
         if (!isActive()) throw Object.assign(new Error('Load cancelled'), { code: 7000 });
         const format = {
           video: attempt.dolbyCodec ? 'Dolby Vision' : selected.actualQn === 126
@@ -1295,14 +1320,17 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     };
   }, []);
 
-  // When focus returns to the tab row, scroll it back into view — the grid may
-  // have scrolled the panel down, leaving the tabs (and focus) off-screen.
+  // The grid can scroll the entire shelf. Restore the focused row, including
+  // wrapped controls at large text sizes, without moving the page behind it.
   useEffect(() => {
     if (focusArea === 'tabs') {
       const el = document.querySelector('.panel-tab-row');
       if (el) el.scrollIntoView({ block: 'nearest' });
+    } else if (showControls && focusArea === 'controls') {
+      const el = btnRefs.current[controlsRef.current[focusIdx]];
+      if (el) el.scrollIntoView({ block: 'nearest' });
     }
-  }, [focusArea]);
+  }, [focusArea, focusIdx, showControls]);
 
   // ===== Scrub (deferred seek) =====
   const clearScrub = useCallback(() => {
@@ -2629,7 +2657,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         {/* Tabbed panel below controls: 相关推荐 / UP主投稿 */}
         {showRelated && (
           <div style={{ marginTop: 16, paddingBottom: 10 }}>
-            <div className="panel-tab-row" style={{ display: 'flex', gap: 14, marginBottom: 12 }}>
+            <div className="panel-tab-row">
               {(isMultiP
                 ? [['parts', partsLabel], ['related', t('相关推荐')], ['up', upName ? t('UP主投稿 · {name}', { name: upName }) : t('UP主投稿')]]
                 : [['related', t('相关推荐')], ['up', upName ? t('UP主投稿 · {name}', { name: upName }) : t('UP主投稿')]]

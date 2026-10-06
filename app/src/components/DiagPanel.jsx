@@ -4,6 +4,7 @@ import { apiFetch, wbiFetch, getRecommend, getServiceDiagnostics, mediaProxyBase
 import { withHost } from '../player/cdn';
 import { diagnosticHosts, probeRange } from '../player/cdnProbe';
 import { getPlaybackReport } from '../player/playbackHealth';
+import { startupReportLines } from '../player/startupTrace';
 import { getAutoCdnStatus } from '../player/cdnAuto';
 import { getErrors } from '../utils/errlog';
 import { apiErrorHint } from '../utils/apiHint';
@@ -28,6 +29,7 @@ export default function DiagPanel() {
   const [rows, setRows] = useState([]);   // {name, status: 'run'|'ok'|'fail'|'skip'|'warn', detail}
   const [svcInfo, setSvcInfo] = useState(null);
   const [reportUrl, setReportUrl] = useState('');
+  const [lastPlayback] = useState(getPlaybackReport);
 
   useEffect(() => {
     let dead = false;
@@ -217,8 +219,10 @@ export default function DiagPanel() {
       const lines = [];
       lines.push('app v' + APP_VERSION);
       lines.push('route=' + ascii(route));
-      const last = getPlaybackReport();
+      const last = lastPlayback;
       if (last) lines.push('last: host=' + ascii(last.host) + ' route=' + ascii(last.route) + ' buffer=' + last.buffer + 's startup=' + (last.startupMs == null ? '?' : last.startupMs + 'ms') + ' stalls=' + last.stalls + ' retries=' + last.retries + ' age=' + Math.round((Date.now() - last.at) / 1000) + 's');
+      lines.push(...startupReportLines(last?.startup));
+      if (last?.quality) lines.push('format: qn=' + last.quality + ' video=' + ascii(last.videoCodec || '?') + ' audio=' + ascii(last.audioCodec || '?'));
       const auto = getAutoCdnStatus();
       if (last?.route === 'auto' && auto?.candidates?.length) lines.push('auto: preferred=' + ascii(auto.preferred) + ' measured=' + auto.candidates.filter(c => c.ok !== null).length + '/' + auto.candidates.length);
       const ua = navigator.userAgent.match(/Chrom\w+\/[\d.]+/);
@@ -253,10 +257,26 @@ export default function DiagPanel() {
   }
 
   const ICON = { ok: '✅', fail: '❌', run: '⏳', skip: '⏭️', warn: '⚠️' };
+  const startup = lastPlayback?.startup;
+  const seconds = ms => ms == null ? '—' : (ms / 1000).toFixed(2) + 's';
+  const stageNames = { engine: t('播放器初始化'), attach: t('媒体连接'), view: t('视频信息'), resume: t('续播查询'), url: t('获取播放地址'), probe: t('杜比检测'), load: t('媒体加载') };
   return (
     <div className="diagnostic-panel" style={{ marginTop: 18, padding: '16px 20px', background: 'rgba(255,255,255,0.05)', borderRadius: 10 }}>
       <div style={{ display: 'flex', gap: 24 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="startup-summary" style={{ marginBottom: 16, fontSize: 'calc(18px * var(--ui-scale))', lineHeight: 1.7, color: '#ccc' }}>
+            <div style={{ color: '#fff' }}>{t('最近一次起播')} · {seconds(lastPlayback?.startupMs ?? startup?.elapsedMs)}
+              {startup && startup.state !== 'ready' && ' · ' + (startup.state === 'failed' ? t('加载失败') : startup.state === 'cancelled' ? t('已退出') : t('加载中…'))}
+            </div>
+            {!lastPlayback && <div>{t('先播放一个视频，再打开诊断查看起播耗时')}</div>}
+            {startup && <>
+              <div>{t('阶段耗时（并行执行，不相加）')}：{Object.keys(stageNames).filter(k => startup.stages[k]).map(k => {
+                const s = startup.stages[k];
+                return stageNames[k] + ' ' + seconds(s.ms) + (s.count > 1 ? ' ×' + s.count : '') + (s.pending ? '…' : '') + (s.errors ? ' !' + s.errors : '');
+              }).join(' · ')}</div>
+              <div>{t('从打开视频开始')}：{t('首个媒体响应')} {seconds(startup.points.response)} · {t('媒体就绪')} {seconds(startup.points.data)} · {t('播放事件')} {seconds(startup.points.playing)}</div>
+            </>}
+          </div>
           {rows.map(r => (
             <div key={r.name} style={{ fontSize: 'calc(18px * var(--ui-scale))', lineHeight: 1.9, color: r.status === 'fail' ? '#ff7a7a' : '#ccc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {ICON[r.status] || ''} {t(r.name)}{r.detail ? ` — ${r.detail}` : ''}

@@ -22,6 +22,9 @@ export function createStallMonitor() {
 let lastPlayback = null;
 export function startPlaybackReport(route) {
   lastPlayback = { route: route || 'auto', host: '', stalls: 0, retries: 0, buffer: 0, at: Date.now() };
+  const report = lastPlayback;
+  // An old import/request finishing after the next video must not overwrite it.
+  return values => { if (lastPlayback === report) updatePlaybackReport(values); };
 }
 export function updatePlaybackReport(values) {
   if (lastPlayback) Object.assign(lastPlayback, values, { at: Date.now() });

@@ -606,7 +606,7 @@ await test('settings font rows follow visual order in both directions', async ({
   await page.waitForTimeout(300); await page.keyboard.press('ArrowRight');
   await page.waitForSelector('.config-options .settings-row.focused');
   const label = () => page.locator('.config-options .settings-row.focused > span').first().innerText();
-  const order = ['弹幕', '看完移出稍后再看', '播完自动播放下一个', '每行视频', '弹幕字号', '字幕字号', '界面字号', 'CDN 线路'];
+  const order = ['弹幕', '看完移出稍后再看', '播放结束后', '每行视频', '弹幕字号', '字幕字号', '界面字号', 'CDN 线路'];
   for (let i = 0; i < order.length; i++) {
     assert.equal(await label(), order[i], 'Down follows the displayed setting order');
     if (i < order.length - 1) await page.keyboard.press('ArrowDown');

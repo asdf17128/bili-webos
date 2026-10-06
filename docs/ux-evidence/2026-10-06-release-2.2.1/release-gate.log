@@ -1,0 +1,297 @@
+=== [1/6] Service syntax (ES5 / Node 0.12) ===
+OK: all service files parse as ES5
+
+=== [2/6] Static gates (design spec + logic) ===
+OK: no <16px inline text
+OK: no aspect-ratio CSS
+OK: no inset shorthand
+PASS  feed card (cid present) → auto-resume
+PASS  history row (progress 300) → at/300
+PASS  选集 pick → none/0
+PASS  连播 advance strips stale progress → none/0
+PASS  cast seekTs → at
+PASS  explicit intent passes through normalize
+PASS  playFresh always auto
+PASS  全新三连 → 三项全亮
+PASS  之前已赞已投(接口只回 fav)→ 仍然三项全亮
+PASS  本地状态是空的(relation 请求失败)→ 三连后照样全亮
+PASS  投币数封顶 2
+PASS  计数:已赞过 → like 不再 +1
+PASS  计数:本次新增收藏 → favorite +1
+PASS  计数:本次投 2 币 → coin +2
+PASS  校准:服务端还没同步(全 false)也不会把已亮的按灭
+PASS  校准:服务端说已赞已投已藏 → 从暗变亮
+PASS  校准:字段名以实测为准(favorite 不是 fav)
+PASS  未登录时:提示先登录
+PASS  已登录时:提示多半是账号被风控,建议换账号
+PASS  已登录时:不能再劝"先试试登录"
+PASS  -352 同样提示风控
+PASS  两种情况都给出换 CDN 线路这条后路
+PASS  -10403 提示地区限制
+PASS  -404 提示稿件失效
+PASS  -403 提示权限/大会员
+PASS  未知码返回 null(调用方回落默认文案)
+PASS  code=0 也返回 null
+PASS  解码错误(code 3)要降档
+PASS  网络错误(code 2)不降档,交给重试
+PASS  格式错误(code 4)不降档
+PASS  投屏流不走这套降档(它有自己的 variant 阶梯)
+PASS  没有 error 对象时不降档
+PASS  原画 → 蓝光
+PASS  蓝光 → 超清
+PASS  已在最低档 → null(不再退)
+PASS  阶梯为空 → null(不乱退)
+PASS  当前档不在表里 → 回到最高档重来
+PASS  MEDIA_ERR_DECODE 常量就是 3
+✔ TS-first API ordering still selects fMP4 with matching original-quality metadata (1.106917ms)
+✔ explicit fallback selects TS without reducing quality (0.069917ms)
+✔ rooms missing usable fMP4 AVC keep working through TS (0.053ms)
+✔ FLV-only and missing HLS URL responses are errors rather than endless loading (0.169958ms)
+✔ failed API response is not mistaken for an empty room (0.045625ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 59.94575
+(node:14821) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ cached measurements promote a faster mirror, retaining exact native signed URLs (1.372583ms)
+✔ Akamai-only and live URLs are never mirror templates (0.551584ms)
+✔ similar measurements preserve incumbent, all-failed restores original order (0.087791ms)
+✔ cache expires, survives restart, strips private fields and handles corrupt storage (0.090875ms)
+✔ untrusted cache host cannot insert a new destination into requests (0.1995ms)
+✔ native .cn hosts are measured once; uncacheable hosts cannot monopolize probes (1.531584ms)
+✔ two completed samples rank by slower transfer; every candidate is visited (0.574209ms)
+✔ loading/buffer gate and manual choice prevent probes and automatic override (0.172459ms)
+✔ buffer loss aborts active probe without poisoning cache (0.460292ms)
+✔ late result after source change or exit cannot update routing/cache (0.308334ms)
+✔ partial/timeout sample is failure and banned winner yields to healthy fallback (0.215458ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 70.696625
+PASS en.js: covers all 248 source keys (+51 dynamic/extra)
+PASS es.js: covers all 248 source keys (+51 dynamic/extra)
+PASS zh
+PASS en
+PASS es
+  ✓ parse: null/garbage input → []
+  ✓ parse: drops empty/invalid cues, keeps valid ones
+  ✓ parse: sorts unsorted bodies by from
+  ✓ pick: inside / boundary / gap / before / after
+  ✓ pick: overlapping earlier cue still live is found
+  ✓ pick: sweep never crashes and matches linear scan (1000 cues)
+  ✓ isAiLan / AI_LEAD
+  ✓ lan name: known enum localized, unknown falls back to lan_doc/lan
+  ✓ match: exact lan wins regardless of track order
+  ✓ match: language family bridges region/ai variants, human preferred
+  ✓ match: no same-language track / no saved lan → null (caller falls back)
+  ✓ lan names covered by every i18n dictionary
+PASS test-subtitle (12 groups)
+  ✓ batch: line limit splits 250 → 100/100/50
+  ✓ batch: char limit forces a split (one giant line alone in its batch)
+  ✓ batch: empty input → no ranges
+  ✓ orderRanges: playhead batch first, wraps, tolerates out-of-range
+  ✓ translate: all batches issued (concurrent), preserves order+timings
+  ✓ translate: cache hit → zero engine calls
+  ✓ translate: stale cache (wrong length) ignored, re-fetched
+  ✓ translate: onPartial per batch, playhead first, translated-only
+  ✓ translate: transient batch failure recovered by retry round
+  ✓ translate: short/failed/garbage engine response throws (caller falls back)
+  ✓ cache: LRU evicts beyond 8 entries (oldest first)
+  ✓ translate: null store tolerated
+PASS test-subtranslate (12 groups)
+  ✓ window + dedup: unique texts once, dupes filled, out-of-window skipped
+  ✓ global text cache: repeated memes translate once across videos
+  ✓ engine failure leaves item untranslated; next tick retries
+  ✓ batch cap honored; stop() makes it inert
+PASS test-dmtranslate (4 groups)
+PASS test-aigc (9 asserts)
+PASS test-casturl (17 asserts)
+✔ Dolby signaling preserves the base layer for high or unknown frame rates (0.643292ms)
+✔ parses Bilibili Profile 8 Level 9 dvvC signaling (0.295541ms)
+✔ rejects truncated and non-box Dolby markers (0.079042ms)
+✔ proxy media URLs preserve ranges and reject non-network protocols (0.160834ms)
+✔ Dolby init probing is bounded and requires a complete body (0.321167ms)
+✔ strict video selection never disguises a lower quality as 4K (0.098083ms)
+✔ automatic video fallback reports the quality it actually selected (0.06275ms)
+✔ true Dolby audio wins over Hi-Res and AAC (0.140875ms)
+✔ Hi-Res-only video selects FLAC and never pretends AAC is EC-3 (0.067291ms)
+✔ unsupported premium codecs fall back to the highest AAC representation (0.429042ms)
+✔ unsupported EC-3 falls through to supported Hi-Res FLAC (0.103166ms)
+✔ runtime audio fallbacks remain Dolby to Hi-Res to AAC without duplicates (0.58925ms)
+✔ Dolby signaling failure retries the same audio ladder on the base layer (0.098625ms)
+✔ AAC-only playback is attempted once (0.035333ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 63.093583
+PASS favorites/collections mapping, pagination, cross-page playback, duplicates, network failure and end of list
+PASS test-searchhistory (5 asserts)
+
+> test
+> node --test service/com.biliwebos.app.service/test/*.test.js
+
+✔ parse play command into video intent (0.721667ms)
+✔ parse play command into live intent (0.0655ms)
+✔ parse playurl command via nva_ext payload into video intent (0.327083ms)
+✔ unsupported playurl payload is ignored without clobbering active session (0.632166ms)
+✔ reporting state and progress produces outbound NVA events (0.131834ms)
+✔ parse seek command with seekTs field (0.052417ms)
+✔ description xml exposes AVTransport and NirvanaControl services (0.860833ms)
+✔ default device profile matches official-style bilibili renderer fields (0.135791ms)
+✔ ssdp packets advertise media renderer and nirvana service (0.105625ms)
+✔ ssdp search response points to description xml and echoes the requested ST (0.79975ms)
+✔ ssdp search response falls back to rootdevice when ST is empty (0.1155ms)
+✔ complete API response: identity (2.109208ms)
+✔ complete API response: gzip (2.0755ms)
+✔ complete API response: deflate (0.519416ms)
+✔ complete API response: raw-deflate (0.747167ms)
+✔ partial API response settles exactly once on error (0.516333ms)
+✔ partial API response settles exactly once on aborted (0.260667ms)
+✔ partial API response settles exactly once on close (0.225875ms)
+✔ invalid compressed API response rejects (0.358375ms)
+✔ decode command frame with json body (0.854709ms)
+✔ encode json reply and command frames (0.166917ms)
+✔ encode empty reply frame (0.592958ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 68.324625
+
+OK: version 2.2.1 consistent (appinfo == src/version.js)
+=== [3/6] Service on REAL Node 0.12.2 + Node 8 (docker) ===
+Testing Node 0.12.2
+fetch OK on real Node v0.12.2: status=200
+api code=-101 (expect -101 anonymous or 0)
+getDiagnostics OK: node=v0.12.2 buvid=true dm=true
+ranking on real Node v0.12.2: code=0 count=100
+Testing Node 8
+fetch OK on real Node v8.17.0: status=200
+api code=-101 (expect -101 anonymous or 0)
+getDiagnostics OK: node=v8.17.0 buvid=true dm=true
+ranking on real Node v8.17.0: code=0 count=100
+
+=== [4/6] App build ===
+✓ built in 6.92s
+OK: production bundles parse as ES2016 (Chromium 53)
+
+=== [5/6] Deploy to TV ===
+=== [3/3] Done ===
+
+=== [6/6] On-device check (CDP) ===
+RESULT: "PASS cards=37 sidebar=true brokenImgs=0"
+screenshot.png saved
+
+=== [full] On-device UI smoke (test-ui.mjs) ===
+[Environment] Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.270 Safari/537.36 WebAppManager
+
+[Navigation + Home]
+  ✅ Home loads video cards: 20 cards
+  ✅ No broken thumbnails: 0 broken / 4 imgs
+  ✅ OK entered content (focus in grid): content-0-0
+  ✅ Back returns focus to sidebar: sidebar-1-0
+
+[Video playback + player panel]
+  ✅ Video starts playing: t=0.2s ready=4
+  ✅ Playback advances (no immediate freeze): 0.2s → 4.3s
+  ✅ Player tab row visible
+  ✅ 相关推荐 + UP主投稿 tabs present: 合集 · 3 相关推荐 UP主投稿 · -黄同学run-
+  ✅ 相关推荐 has cards (recommended w/ upload time): 12 cards
+  ✅ UP主投稿 tab loads videos: 11 cards; API={"code":0,"count":11}
+
+[Comment rail rendering and control layout]
+  ✅ Comment rail loads real comments: 20 cards
+  ✅ Comment rail shows content without JSX or empty-state leakage
+  ✅ Comment controls fit without overlapping metadata: {"present":true,"sourceLeak":false,"empty":false,"controlsRight":1500,"railLeft":1501,"duplicate":false}
+
+[番剧 / Bangumi (PGC) + HDR]
+  ✅ Season info loads (episode list): 38 eps
+  ✅ PGC playurl returns DASH (bangumi playable): 19 video reps
+  ✅ HDR/Dolby rep present + selectable by id: accept=[125,120,112,80,64,32,16]
+
+[Live playback + danmaku + history]
+  ✅ Live list loads: 4 rooms
+  ✅ Live stream plays: t=1s ready=4 (第1个房间)
+  ✅ Danmaku layer mounted
+  ✅ Danmaku rendering: 3 on screen
+  ✅ Live room recorded to recentLive: 8 stored
+  ✅ Live shows in 我的 → 最近观看 with 直播 badge: cards=98
+
+[Real-time live danmaku on a current recommended room]
+  ✅ Recommended live room advances playback
+  ✅ Live danmaku token API succeeds: code=0
+  ✅ TV starts the live danmaku subscription
+  ✅ Real-time danmaku reaches the TV overlay: 2 frames, 2 DOM items
+
+[Live quality switch and original-quality restore]
+  ✅ Live quality popup opens: 1 options: 原画
+  ⚠️  Live quality switch skipped: room only offers one quality; choose TV_LIVE_ROOM with multiple qualities
+
+[Search]
+  ✅ Search recommendations render (热门/历史): 23 rows
+  ✅ Search returns a results grid: 20 results
+
+[Follow list + pagination]
+  ✅ Follow list loads: 20 cards
+  ✅ Pagination loads more: 20 → 60
+
+[Authenticated favorites, subscriptions and watch-later list]
+  ✅ Account API confirms valid login
+  ✅ Own favorites match the account folder response: 2/2 folders
+  ✅ Favorite folder renders videos: 24 cards
+  ✅ Subscriptions tab matches the account response: 18/18 folders
+  ✅ Subscribed folder renders videos: 12 cards
+  ✅ Watch Later list matches the authenticated API: 0/0 cards
+
+[Settings auto update-check]
+  ✅ Auto update-check populated: 已是最新 (v2.2.1)
+  ✅ Update-check resolved (latest/new/version): 已是最新 (v2.2.1)
+
+[CDN settings remote selection and persistence]
+  ✅ CDN row is reachable by remote
+  ✅ CDN picker includes automatic and HWO1 routes
+  ✅ Remote HWO1 selection is saved
+  ✅ HWO1 remains selected after reload
+  ✅ Remote can restore automatic routing
+
+[Feed retry focus after an immediate Luna response]
+  ✅ Controlled feed failure exposes remote retry
+  ✅ Immediate retry puts remote focus on the first new card: 6 cards, focus=content-0-0
+  ✅ Remote navigation works immediately after retry: {"beforeMove":{"current":"content-0-0","registered":true,"pending":null,"custom":false},"dom":["content-1-0"],"state":{"current":"content-1-0","registered":true,"pending":null,"custom":false}}
+
+[热门 / 分区]
+  ✅ 热门 loads content: 20 cards
+  ✅ 分区(游戏) API and grid return content: code=0, API=100, cards=100
+  ✅ 分区(动画) API and grid return content: code=0, API=100, cards=100
+  ✅ 分区(音乐) API and grid return content: code=0, API=100, cards=100
+  ✅ 分区(知识) API and grid return content: code=0, API=100, cards=100
+  ✅ 分区(娱乐) API and grid return content: code=0, API=100, cards=100
+  ✅ 分区(鬼畜) API and grid return content: code=0, API=100, cards=100
+
+[Watch Later: guarded add / long-press remove / restore]
+  ⚠️  Watch Later writes skipped: explicit opt-in required for guarded fixture round trip
+
+====================================================
+Results: 54 passed, 0 failed, 2 warned
+====================================================
+
+
+=== [7/7] 线上发布物体检 ===
+✅ 线上体检通过:latest = 2.2.0 · manifest 2.2.0 · ipk 可下载
+=== Verification complete ===

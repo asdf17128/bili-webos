@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { storage } from '../utils/storage';
+import { getPlaybackMode } from '../player/playbackMode';
 import { useFocusable, setCustomKeyHandler, setFocus } from '../hooks/useFocus';
 import { getLatestVersion } from '../api/client';
 import { APP_VERSION, compareVersions } from '../version';
@@ -129,17 +130,20 @@ export default function ConfigPage({ onLogout, user }) {
     },
   });
 
-  // 播完自动播放下一个 (#27)。默认开(维持现状);关了片尾不启动倒计时,
-  // 人不在电视前也不会被带去别的视频。
-  const [autoplayNext, setAutoplayNext] = useState(() => settings.autoplayNext !== false);
-  const { props: autoplayNextProps } = useFocusable({
+  // #41: stop and repeat are separate choices. Keep this at the existing row
+  // so all font-size and grid settings retain their remote navigation order.
+  const [playbackMode, setPlaybackMode] = useState(() => getPlaybackMode(settings));
+  const PLAYBACK_MODES = [
+    { v: 'next', label: t('自动连播') },
+    { v: 'stop', label: t('播完停止') },
+    { v: 'repeat', label: t('单集循环') },
+  ];
+  const { props: playbackModeProps } = useFocusable({
     id: 'content-2-0', row: 2, col: 0, group: 'content',
-    onSelect: () => {
-      const s = storage.getSettings();
-      const next = !(s.autoplayNext !== false);
-      storage.setSettings({ ...s, autoplayNext: next });
-      setAutoplayNext(next);
-    },
+    onSelect: () => openPicker(t('播放结束后'), PLAYBACK_MODES, playbackMode, v => {
+      storage.setSettings({ ...storage.getSettings(), playbackMode: v, autoplayNext: v === 'next' });
+      setPlaybackMode(v);
+    }),
   });
 
   // 每行视频数 — list picker.
@@ -272,12 +276,9 @@ export default function ConfigPage({ onLogout, user }) {
         </span>
       </div>
 
-      <div className="settings-row" {...autoplayNextProps}>
-        <span>{t('播完自动播放下一个')}</span>
-        <span className="settings-row-value" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {autoplayNext ? t('开') : t('关')}
-          <span className={`settings-switch ${autoplayNext ? 'on' : ''}`}><span className="settings-switch-knob" /></span>
-        </span>
+      <div className="settings-row" {...playbackModeProps}>
+        <span>{t('播放结束后')}</span>
+        <span className="settings-row-value">{PLAYBACK_MODES.find(o => o.v === playbackMode).label}</span>
       </div>
 
       <div className="settings-row" {...gridProps}>

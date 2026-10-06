@@ -121,6 +121,18 @@ Login information is stored on your TV and used to access your Bilibili account.
 
 [MIT 开源项目](LICENSE)，再发布源码或修改后的安装包时请保留版权与许可声明。第三方依赖和随附资源保留各自许可；代码许可不授予哔哩哔哩、LG 等第三方商标的使用权，也不代表官方认可。本项目由社区独立开发，与哔哩哔哩及 LG 无隶属关系。
 
+### v2.2.1 — playback end modes / 播放结束行为
+
+设置 → 播放与显示 → **播放结束后**：
+
+- **自动连播**：按收藏夹、稍后再看或分 P / 合集顺序继续播放；普通视频保留相关推荐倒计时。
+- **播完停止**：当前视频结束后停留在播放器，可手动重播或选下一条。
+- **单集循环**：从当前视频或当前分 P 的开头重新播放，不跳到列表下一条。
+
+升级前关闭「播完自动播放下一个」的用户会继续使用「播完停止」，不会被自动改成循环播放。修复覆盖收藏夹跨页及失效视频跳转；网络失败和退出期间的迟到响应不会强行切换视频。
+
+Settings → **When playback ends** now offers **Play next automatically**, **Stop after this video**, and **Repeat current video**. Existing autoplay-off preferences remain stopped after upgrade. Based on the report in [#41](https://github.com/asdf17128/bili-webos/issues/41) and the playlist gate identified by @SSSS-VIII in [PR #42](https://github.com/asdf17128/bili-webos/pull/42).
+
 ### v2.2.0 — playback, subscriptions and compatibility / 播放、订阅与兼容
 
 - DASH video has **automatic CDN selection** and an HWO1 option. It measures small media ranges while paused or with at least 15 seconds buffered, caches host health, and applies the choice to subsequent requests without restarting playback. Manual choices take priority; native Akamai signatures remain intact. Overseas performance still needs testing on the affected networks.
@@ -141,4 +153,4 @@ v2.2.0 补充缓冲耗尽恢复、按所选 CDN 测速和最近播放节点记�
 
 杜比源会读取初始化段中的实际格式，并按设备能力选择 E-AC-3、FLAC 或 AAC；加载阶段解码失败会回退。显示 E-AC-3 只代表所选音轨，全景声是否输出还取决于片源、电视、音响连接和系统设置。部分实现来自 [PR #17](https://github.com/asdf17128/bili-webos/pull/17)，本版未包含其中针对特定 4K120 片源的帧变换；超过 60fps 或帧率未知时保留原有基础层信令，避免直接开启杜比信令的已知黑屏风险。webOS 4.x 整机兼容及杜比／全景声输出仍需对应设备实测。
 
-完整更新说明与已知问题见 [v2.2.0 release notes](docs/releases/v2.2.0.md)，包括仍待修复的收藏夹自动连播设置问题 [#41](https://github.com/asdf17128/bili-webos/issues/41)。
+完整更新说明与已知问题见 [v2.2.0 release notes](docs/releases/v2.2.0.md)。#41 在后续 v2.2.1 中修复，见上方播放结束行为说明。

@@ -76,6 +76,7 @@ bash tools/verify.sh --full     # 六层:语法→静态规范/逻辑→真Node0
 | tools/test-tv-ux.mjs | 隔离夹具下的遥控器/指针/慢请求回归；`verify.sh --no-tv --ux` |
 | tools/test-tv-ux-device.mjs | 真机单会话导航、刷新、深列表、暂停、快进快退、弹层和播放返回检查 |
 | tools/test-tv-settings.mjs | 真机通过选择器设置 2/3/4 列与大字号，重启验证并恢复用户偏好 |
+| tools/test-playback-end.mjs / test-playback-end-tv.mjs | #41 片尾三模式：本地受控 React 回归与真机原生 ended、遥控重播/暂停及设置持久化；真机结束恢复用户偏好 |
 | tools/test-player-loading.mjs | 取消、重试、Luna 超时及弹幕/字幕实际 DOM 字号；`verify.sh --ux` |
 | tools/test-live-loading.mjs | 直播单次取流、fMP4/TS 回退、加载提示、启动超时、解码阶梯和退出取消；`verify.sh --ux` |
 | tools/probe-live-startup.js | LG 原生 HLS 的接口、playing、实际时间推进及稳定性采样 |

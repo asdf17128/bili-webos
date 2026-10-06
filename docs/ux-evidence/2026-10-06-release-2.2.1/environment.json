@@ -1,0 +1,9 @@
+{
+  "version": "2.2.1",
+  "baseCommit": "b16beb3cbb38f6fe7001728077882f96b11bb691",
+  "productionSourceSha256": "8f8d928562b30701dd16203728a09db09681a13cf253a1f8d3e4fcecf7cc9b57",
+  "television": "LG C4 / Chromium 120",
+  "desktop": "Chromium + real service bridge; anonymous session",
+  "tvAccountWrites": false,
+  "simAccountWrites": false
+}

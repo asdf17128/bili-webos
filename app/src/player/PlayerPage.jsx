@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getLibraryPage, getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies, getReplyReplies, tripleVideo, likeVideo, coinVideo, favVideo, getFavFoldersFor, getVideoRelation, getHtml5PlayUrl, mediaProxyBase, addToView, delToView } from '../api/client';
 import { nextPlaylistItem } from '../utils/library';
 import { playPart, playAdvance } from './playIntent';
+import { getPlaybackMode } from './playbackMode';
 import { createStallMonitor, startPlaybackReport, updatePlaybackReport, countPlaybackEvent, bufferedAhead } from './playbackHealth';
 import { selectVideoRepresentation, listPreferredAudio, hasAudioRepresentations, createPlaybackAttemptPlan, inspectDolbyRepresentation, dolbySignalingFrameRateAllowed } from './mediaSelection';
 import { logErr } from '../utils/errlog';
@@ -845,57 +846,87 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       videoRef.current.addEventListener('loadeddata', () => {
         mark('player-first-frame', ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()) - openT.current);
       }, { once: true });
+      let finishing = false, removedFromToView = false;
       videoRef.current.addEventListener('ended', async () => {
-        castReportState({ playState: 'end' }).catch(() => {});
-        // 看完自动移出稍后再看(设置项,默认关)。只对**从稍后再看点开**的视频生效
-        // ——否则会对着从没进过队列的视频白发一个删除请求。
-        if (video?.fromToView && storage.getSettings().toviewAutoRemove) {
-          const aid = videoAidRef.current || video?.aid;
-          if (aid) delToView(aid).then(() => {
-            window.dispatchEvent(new CustomEvent('toview-changed', { detail: { aid, added: false } }));
-          }).catch(() => {});
-        }
-        // Multi-part (分P) auto-advance: play the next part of THIS video before
-        // anything else, so a 66-讲 series plays straight through (#11).
-        // Order-play (收藏夹顺序播放, #11): a favorites playlist takes PRIORITY
-        // over 分P/合集 auto-advance — when the user is playing their favorites
-        // folder in order and one item happens to be a single part of a multi-P
-        // video, finishing it should move to the next FAVORITE, not binge the
-        // other 65 parts (per @ZMonsterror's request).
-        const pl = video?.playlist;
-        let playlistFailed = false;
-        if (pl && onPlayNext) {
-          try {
-            const next = await nextPlaylistItem(video, getLibraryPage);
-            if (!isActive()) return;
-            if (next) { onPlayNext(playAdvance(next)); return; }
-          } catch {
-            if (!isActive()) return;
-            playlistFailed = true;
-            showPlayerToast(t('连播列表加载失败，请返回列表重试'));
+        if (!isActive() || finishing) return;
+        finishing = true;
+        try {
+          setPlaying(false);
+          setEndNextIn(null);
+          castReportState({ playState: 'end' }).catch(() => {});
+          // 看完自动移出稍后再看(设置项,默认关)。只对**从稍后再看点开**的视频生效
+          // ——否则会对着从没进过队列的视频白发一个删除请求。
+          if (!removedFromToView && video?.fromToView && storage.getSettings().toviewAutoRemove) {
+            const aid = videoAidRef.current || video?.aid;
+            if (aid) {
+              removedFromToView = true;
+              delToView(aid).then(() => {
+                window.dispatchEvent(new CustomEvent('toview-changed', { detail: { aid, added: false } }));
+              }).catch(() => {});
+            }
           }
-        }
-        // Multi-part (分P/合集) auto-advance: play the next part of THIS video
-        // (only when not inside a favorites playlist).
-        const parts = partsRef.current;
-        if (!pl && parts.length > 1 && onPlayNext) {
-          const pi = parts.findIndex(p => p.cid === cidRef.current);
-          if (pi >= 0 && pi + 1 < parts.length) {
-            onPlayNext(playAdvance({ ...parts[pi + 1] }));
-            return;
+          // PR #42 identified the missing playlist/part gate. Repeat is opt-in;
+          // turning autoplay off must continue to mean stop (#27/#41).
+          const mode = getPlaybackMode(storage.getSettings());
+          if (mode === 'repeat') {
+            try {
+              const v = videoRef.current;
+              v.currentTime = 0;
+              await v.play();
+              if (!isActive()) return;
+              setCurrentTime(0);
+              setEnded(false);
+              setPlaying(true);
+              return;
+            } catch {
+              if (!isActive()) return;
+              showPlayerToast(t('循环播放失败，可手动重播'));
+            }
           }
+          // Multi-part (分P) auto-advance: play the next part of THIS video before
+          // anything else, so a 66-讲 series plays straight through (#11).
+          // Order-play (收藏夹顺序播放, #11): a favorites playlist takes PRIORITY
+          // over 分P/合集 auto-advance — when the user is playing their favorites
+          // folder in order and one item happens to be a single part of a multi-P
+          // video, finishing it should move to the next FAVORITE, not binge the
+          // other 65 parts (per @ZMonsterror's request).
+          const pl = video?.playlist;
+          let playlistFailed = false;
+          if (mode === 'next' && pl && onPlayNext) {
+            try {
+              const next = await nextPlaylistItem(video, getLibraryPage);
+              if (!isActive()) return;
+              if (next && getPlaybackMode(storage.getSettings()) === 'next') { onPlayNext(playAdvance(next)); return; }
+            } catch {
+              if (!isActive()) return;
+              playlistFailed = true;
+              showPlayerToast(t('连播列表加载失败，请返回列表重试'));
+            }
+          }
+          // Multi-part (分P/合集) auto-advance: play the next part of THIS video
+          // (only when not inside a favorites playlist).
+          const parts = partsRef.current;
+          if (mode === 'next' && !pl && parts.length > 1 && onPlayNext) {
+            const pi = parts.findIndex(p => p.cid === cidRef.current);
+            if (pi >= 0 && pi + 1 < parts.length) {
+              onPlayNext(playAdvance({ ...parts[pi + 1] }));
+              return;
+            }
+          }
+          // Land back on the NORMAL player page (controls pinned + panel open)
+          // instead of a modal end screen — the old overlay trapped the D-pad in
+          // its grid, so 重播/选集/画质 were unreachable after playback finished.
+          setEnded(true);
+          setShowControls(true);
+          setShowRelated(true);
+          setPanelTab('related');
+          setFocusArea('related');
+          setFocusIdx(0);
+          // YouTube-style autoplay next — 可在设置里关 (#27):关了就停在推荐列表等手动选。
+          if (!playlistFailed && relatedRef.current.length > 0 && getPlaybackMode(storage.getSettings()) === 'next') setEndNextIn(10);
+        } finally {
+          finishing = false;
         }
-        // Land back on the NORMAL player page (controls pinned + panel open)
-        // instead of a modal end screen — the old overlay trapped the D-pad in
-        // its grid, so 重播/选集/画质 were unreachable after playback finished.
-        setEnded(true);
-        setShowControls(true);
-        setShowRelated(true);
-        setPanelTab('related');
-        setFocusArea('related');
-        setFocusIdx(0);
-        // YouTube-style autoplay next — 可在设置里关 (#27):关了就停在推荐列表等手动选。
-        if (!playlistFailed && relatedRef.current.length > 0 && storage.getSettings().autoplayNext !== false) setEndNextIn(10);
       });
 
       try { setDanmakus(await activeResult(getDanmaku(cid))); } catch {}
@@ -953,7 +984,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       // don't dead-end on the error screen, just skip to the next item (#11).
       const pl = video?.playlist;
       const idx = video?.playlistIndex;
-      if (pl && Array.isArray(pl) && typeof idx === 'number' && idx + 1 < pl.length && onPlayNext) {
+      if (getPlaybackMode(storage.getSettings()) === 'next' && pl && Array.isArray(pl) && typeof idx === 'number' && idx + 1 < pl.length && onPlayNext) {
         onPlayNext(playAdvance({ ...pl[idx + 1], playlist: pl, playlistIndex: idx + 1 }));
         return;
       }
@@ -1170,6 +1201,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // End-screen autoplay countdown.
   useEffect(() => {
     if (endNextIn == null) return;
+    if (getPlaybackMode(storage.getSettings()) !== 'next') { setEndNextIn(null); return; }
     if (endNextIn <= 0) {
       const rv = relatedRef.current[0];
       setEndNextIn(null);

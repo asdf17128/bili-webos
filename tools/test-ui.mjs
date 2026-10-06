@@ -403,6 +403,42 @@ async function main(call, relaunchApp) {
     await reload();
   }
 
+  async function testLiveQuality() {
+    console.log('\n[Live quality switch and original-quality restore]');
+    await exitPlayer();
+    const rec = await serviceFetch('https://api.live.bilibili.com/xlive/web-interface/v1/webMain/getMoreRecList?platform=web&page=1&page_size=12');
+    const room = (rec.data?.recommend_room_list || rec.data?.list || [])[0];
+    if (!room) { warn('Live quality fixture', 'no current recommended room'); return; }
+    await evalJSON('JSON.stringify(window.__liveDiag=[])');
+    const roomid = Number(process.env.TV_LIVE_ROOM || room.roomid || room.room_id);
+    await evalJSON(`JSON.stringify(window.__openLive({roomid:${roomid},title:'直播画质测试'}))`);
+    await waitFor(x => x.v && x.v.t > 0, { timeout: 18000 });
+    const playingQn = () => evalJSON('JSON.stringify((window.__liveDiag||[]).filter(x=>x.why==="playing").slice(-1)[0]?.qn)');
+    let originalQn;
+    for(let i=0;i<40;i++){originalQn=await playingQn();if(originalQn)break;await sleep(500);}
+    await key('up');
+    // The quality control displays its current label (e.g. 原画), not 画质.
+    // Up anchors the three-control row at 弹幕; the next control is quality.
+    await key('right');
+    await key('ok');
+    const options = await evalJSON('JSON.stringify(Array.from(document.querySelectorAll(".quality-option")).map(x=>({label:x.textContent,focused:x.classList.contains("focused")})))');
+    check('Live quality popup opens', options.length > 0, `${options.length} options: ${options.map(o=>o.label).join('/')}`);
+    if (!options.length || !originalQn) throw new Error('Quality fixture unavailable');
+    if (options.length < 2) { warn('Live quality switch skipped', 'room only offers one quality; choose TV_LIVE_ROOM with multiple qualities'); await exitPlayer(); return; }
+    const index = options.findIndex(x => x.focused);
+    const direction = index < options.length - 1 ? 'down' : 'up';
+    await key(direction);await key('ok');
+    let changed;
+    for(let i=0;i<40;i++){changed=await playingQn();if(changed!==originalQn)break;await sleep(500);}
+    check('Selected live quality starts actual playback', !!changed && changed !== originalQn, `${originalQn} → ${changed}`);
+    await key('ok'); // Control focus remains on 画质, reopen the popup.
+    await key(direction==='down'?'up':'down');await key('ok');
+    let restored;
+    for(let i=0;i<40;i++){restored=await playingQn();if(restored===originalQn)break;await sleep(500);}
+    check('Original live quality starts playback again', restored === originalQn, `qn=${restored}`);
+    await exitPlayer();
+  }
+
   async function testFollowPagination() {
     console.log('\n[Follow list + pagination]');
     const nav = await serviceFetch('https://api.bilibili.com/x/web-interface/nav');
@@ -613,7 +649,7 @@ async function main(call, relaunchApp) {
   }
 
   const tests = [
-    testNavAndHome, testVideoPlayback, testCommentRail, testBangumiPlayback, testLiveAndDanmaku, testLiveRelay, testSearch,
+    testNavAndHome, testVideoPlayback, testCommentRail, testBangumiPlayback, testLiveAndDanmaku, testLiveRelay, testLiveQuality, testSearch,
     testFollowPagination, testAccountLibrary, testSettingsAutoCheck, testHotAndPartition, testWatchLater,
   ];
   try {

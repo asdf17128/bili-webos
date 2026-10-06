@@ -350,3 +350,36 @@ danmaku 断言改为设置感知(测试前强开、测后还原用户偏好);徽
 **账号测试保护**：原列表、测试视频身份与 API 返回均先核对，原列表已有该视频或列表满时不写；请求层拒绝其他 aid 及 `viewed` 批量清除，异常也进入 finally 清理。账号页面与菜单截图已在本地逐张查看，未上传公共仓库。
 
 这轮补齐了 LG C4 上的有效登录账号场景和实时弹幕，登录后 UP 投稿复测成功；不据此宣称所有网络环境下的 `-352` 已永久解决。前一轮重载空文档的根因仍未确定，旧硬件、海外网络、杜比实际输出及旧硬件 DLNA 的验证边界不变。番剧测试仅验证 API 片源和画质元数据，不代表 HDR/Atmos 实际输出。本轮未重新运行桌面模拟套件，账号补验使用实际电视。PR 继续为草稿，未合并、未发版。
+
+### 直播起播优化与回归（2026-10-06）
+
+基线 `732ab4e`，LG C4 / Chromium 120，开发版 2.1.1，已部署。用户报告直播画面出现慢；实际 `getRoomPlayInfo` 约 70–220ms，主要等待发生在原生 HLS 启动。旧逻辑按接口排列取第一个 AVC HLS，通常选 TS；画质列表另发一次默认画质请求，而且设置 src 后就撤掉加载提示。现在优先 fMP4 AVC，沿用用户保存的原画；选源、当前画质和可选画质共用一次响应。不支持格式或启动超时回退 TS，显示真实加载状态，有限重试后允许遥控确认重试。解码降档不改写用户长期画质偏好，退出清理计时器并拒绝迟到响应。
+
+**真机同画质对照**：下表耗时从打开播放器算起，到元数据后 `currentTime` 增加至少 0.25 秒且 `readyState >= 3`，每 250ms 采样。不是逐帧像素测量：这台电视虽然暴露 `requestVideoFrameCallback`，原生 HLS 测试期间没有回调；视频媒体合成层也无法通过页面截图可靠读取。
+
+| 直播间 | 旧 TS 首次进入，进度开始推进 | 已部署新版默认选源，进度开始推进 | 实际画质 / 解码尺寸 |
+| --- | --- | --- | --- |
+| 13171605 | 9.291 秒 | 3.274 秒 | qn=10000，1216×2160 |
+| 1832043360 | 7.530 秒 | 2.260 秒 | qn=10000，1080×1920 |
+| 32137671 | 7.574 秒 | 2.009 秒 | qn=10000，1600×1280 |
+
+新版三个房间各只有 1 次取流请求，首次 `playing` 分别为 1.420 / 1.205 / 1.145 秒；启动早期仍各有一次短暂 `waiting`，所以采用更保守的时间推进指标。每间起播后继续观察 30 秒：均 `readyState=4`、播放时间持续增长，起播后 0 次 `waiting`、0 媒体错误；现场诊断未见 retry/stall/gave-up。见 [新版原始采样](ux-evidence/2026-10-06-live-startup/production.json)、[首次旧版采样](ux-evidence/2026-10-06-live-startup/initial-timing.json)、[同房间交替对照](ux-evidence/2026-10-06-live-startup/same-room-ab.json)、[另两个房间对照](ux-evidence/2026-10-06-live-startup/other-rooms-ab.json)。
+
+对照阶段仅重排真实接口的格式顺序，不注入媒体或伪造播放成功；最终新版测量没有格式覆盖。TS 与 fMP4 返回的 CDN 主机也不同，因此收益属于所选 HLS 源/线路，不能单独归因于容器格式。相同房间重复进入时 TS 也曾降到约 3.5 秒；必须区分首次和热启动。这是三个房间、本次网络的小样本与短时观察，不是所有网络或长时间稳定性保证。
+
+收录的 `tools/probe-live-startup.js` 为适配新版显式格式优先级，将指定格式模式改为筛选真实响应；`default` 仍不覆盖。追加 [工具自检](ux-evidence/2026-10-06-live-startup/probe-tool-check.json) 确认 TS/fMP4 实际源匹配请求，均保持 qn=10000、1216×2160，进度分别在 9.788/3.012 秒推进；该次仅各追加 1 秒观察，不混入上表的 30 秒稳定性结果。
+
+| Case / 验证层 | 结果与事实佐证 |
+| --- | --- |
+| C-LIVE-START-01：单次取流、真实加载提示、格式回退 | 相同受控媒体事件与接口夹具下旧实现 **0/3**，新实现对应场景通过。旧实现实测两次请求、src 后加载提示过早消失、先选 TS。[改前](ux-evidence/2026-10-06-live-startup/before.json) |
+| C-LIVE-START-02：启动/解码失败及退出清理 | `node tools/test-live-loading.mjs` **9/9**，包括格式不支持同 qn 回退 TS、启动超时最终错误及手动重试、五档解码阶梯、偏好不变、退出取消待执行重试、迟到响应拒绝附着、空响应最终错误。[结果](ux-evidence/2026-10-06-live-startup/after.json) |
+| 加载与错误画面 | 追加截图专项 **2/2**，已逐张查看 [加载中](ux-evidence/2026-10-06-live-startup/live-loading.png)、[可重试错误](ux-evidence/2026-10-06-live-startup/live-retry.png)；[截图专项结果](ux-evidence/2026-10-06-live-startup/visual.json) |
+| 纯逻辑及点播回归 | 选源 **5/5**、既有直播画质 **11/11**、投屏 URL **17 个断言**、点播加载 **15/15**；[选源](ux-evidence/2026-10-06-live-startup/selection.log)、[画质](ux-evidence/2026-10-06-live-startup/ladder.log)、[投屏 URL](ux-evidence/2026-10-06-live-startup/cast.log)、[点播](ux-evidence/2026-10-06-live-startup/vod.json)。投屏 URL 单测不等同于 DLNA 真机全流程 |
+| LG C4 画质实际切换 | `TV_LIVE_ROOM=13171605 TV_TEST_FILTER=testLiveQuality node tools/test-ui.mjs` **3/3**：原画 10000 → 超清 250 → 原画 10000，各等待实际播放，结束恢复设置。[结果](ux-evidence/2026-10-06-live-startup/tv-quality.json) |
+| LG C4 实时弹幕 | 本轮再次 **4/4**，取流、弹幕订阅、真实帧和 DOM 均通过，见 [原始结果前四项](ux-evidence/2026-10-06-live-startup/tv-live-and-first-quality.json) |
+| Chromium + 真实服务桥 + B 站网络 | 本轮整套 **54 通过 / 1 失败 / 2 跳过**。直播实播、控制、画质弹层、弹幕、返回通过；游戏分区无卡片失败，实际 `getRanking(1008, 'all')` 复核返回 **-352**。桌面桥登录过期，关注/稍后再看跳过；不能以之前电视登录成功抵消桌面跳过。[结果](ux-evidence/2026-10-06-live-startup/simulator.json)、[日志](ux-evidence/2026-10-06-live-startup/simulator.log)、[接口复核](ux-evidence/2026-10-06-live-startup/simulator-ranking-recheck.json) |
+| 构建与部署 | i18n en/es 242 keys 通过，生产 6 个 JS bundle 按 ES2016 解析通过，构建安装成功。[构建身份与 SHA256](ux-evidence/2026-10-06-live-startup/build.json)、[部署日志](ux-evidence/2026-10-06-live-startup/deploy.log)、[i18n](ux-evidence/2026-10-06-live-startup/i18n.log) |
+
+保留测试工具首次失败：先前按固定“画质”文案找按钮，实际按钮显示“原画”，导致 [两项失败](ux-evidence/2026-10-06-live-startup/tv-live-and-first-quality.json)；修正导航后又选到仅提供一档的房间，[两项失败](ux-evidence/2026-10-06-live-startup/tv-single-quality.json)。最终使用实际提供两档的房间并确认真实播放才得到 3/3，工具现将单档房间的切换覆盖记为跳过。
+
+新增确定性直播用例已接入 `tools/verify.sh --ux`；本轮分别运行相关层，未把此前的整条门禁日志当作当前全部通过。保留 DLNA 原有重连预算；没有改变服务代码，没有把现有 C4 测试当作旧硬件验收。完整模拟仍有上述 -352 失败，旧电视/海外/杜比输出边界同前，PR 保持草稿，未发版。

@@ -73,6 +73,7 @@ node tools/test-triplestate.mjs || { echo "FAIL: triple-state policy"; exit 1; }
 node tools/test-apihint.mjs || { echo "FAIL: api error hints"; exit 1; }
 # C-LIVE-06: 直播解码失败要降档(owner 2026-08-22 黑屏:同一 qn 无限重试)
 node tools/test-liveqn.mjs || { echo "FAIL: live qn ladder"; exit 1; }
+node --test app/src/player/liveStream.test.js || { echo "FAIL: live stream selection"; exit 1; }
 # C-I18N-01: every t('…') key covered in every dictionary (missing = zh fallback leaks)
 node tools/test-i18n-coverage.mjs || { echo "FAIL: i18n coverage"; exit 1; }
 # C-I18N-04: locale-aware formatters (万/亿 vs K/M, relative time)
@@ -139,6 +140,7 @@ if [ -n "$UX" ]; then
   fi
   node tools/test-tv-ux.mjs
   node tools/test-player-loading.mjs
+  node tools/test-live-loading.mjs
   node tools/test-playback-health.mjs
   if [ -n "$UX_VITE_PID" ]; then kill "$UX_VITE_PID"; trap - EXIT; fi
 fi

@@ -1,0 +1,38 @@
+[
+  {
+    "name": "one request selects fast HLS without lowering saved quality",
+    "pass": true
+  },
+  {
+    "name": "loading remains until actual playing event",
+    "pass": true
+  },
+  {
+    "name": "unsupported fast HLS falls back to TS at the same quality",
+    "pass": true
+  },
+  {
+    "name": "startup timeout cannot remain black indefinitely",
+    "pass": true
+  },
+  {
+    "name": "decode fallback keeps the original quality preference",
+    "pass": true
+  },
+  {
+    "name": "exit cancels a queued live retry",
+    "pass": true
+  },
+  {
+    "name": "startup budget preserves every decoder quality rung",
+    "pass": true
+  },
+  {
+    "name": "late stream response after exit cannot attach media",
+    "pass": true
+  },
+  {
+    "name": "empty play info ends with retryable error",
+    "pass": true
+  }
+]

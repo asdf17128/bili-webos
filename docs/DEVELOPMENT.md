@@ -77,6 +77,8 @@ bash tools/verify.sh --full     # 六层:语法→静态规范/逻辑→真Node0
 | tools/test-tv-ux-device.mjs | 真机单会话导航、刷新、深列表、暂停、快进快退、弹层和播放返回检查 |
 | tools/test-tv-settings.mjs | 真机通过选择器设置 2/3/4 列与大字号，重启验证并恢复用户偏好 |
 | tools/test-player-loading.mjs | 取消、重试、Luna 超时及弹幕/字幕实际 DOM 字号；`verify.sh --ux` |
+| tools/test-live-loading.mjs | 直播单次取流、fMP4/TS 回退、加载提示、启动超时、解码阶梯和退出取消；`verify.sh --ux` |
+| tools/probe-live-startup.js | LG 原生 HLS 的接口、playing、实际时间推进及稳定性采样 |
 | tools/test-playback-health.mjs | 缓冲耗尽恢复、所选 CDN 顺序、真实 HTTP 超时/Range/取消；`verify.sh --ux` |
 | tools/test-library.mjs | 收藏/合集分页映射、跨页连播、去重和网络失败 |
 | tools/test-cdn-tv.mjs | 真机坏 CDN 回退、按所选线路测速、从截图解码反馈二维码；结束恢复设置 |
@@ -118,3 +120,11 @@ release 必须挂**三件**资产,少一件都会静默出事:
 `test-sim.mjs` 使用 Chromium 和真实服务桥，`SIM_OUTPUT` 指定 JSON/截图目录；`test-ui.mjs` 使用电视 CDP，`TV_OUTPUT` 指定结果目录，`TV_TEST_FILTER` 可按测试函数名定向复测。两者均将跳过项与通过项分开记录。认证以 API 的实际登录状态为准，本地 Cookie 的存在不代表有效登录。
 
 账号增删默认关闭。模拟套件的 `SIM_ACCOUNT_WRITES=1` 仅用于独立测试账号。真机的 `TV_ACCOUNT_WRITES=1` 使用有保护的测试流程：先取得完整原列表，只允许加入原列表不存在的固定测试视频；Luna 请求校验精确 aid，拒绝其他条目及批量清除；长按菜单也核对事件中的 aid，最后在 `finally` 清理测试视频并比对原列表顺序和成员。用户已授权账号测试时可启用；测试视频已存在、列表已满或原列表读取不完整时不写入。账号页面截图仅保存在本地，不提交到公共仓库。
+
+### 直播启动专项
+
+本地 Vite 启动后，`node tools/test-live-loading.mjs` 使用隔离接口及受控媒体事件验证 React 播放器失败路径；`LIVE_FILTER` 可筛选用例，`LIVE_TEST_OUTPUT` 指定 JSON 和截图目录。`node --test app/src/player/liveStream.test.js` 检查选源及同一响应的画质元数据。
+
+真机运行 `node tools/_cdp.mjs tools/probe-live-startup.js`。可先用 `tools/eval.mjs` 设置 `window.__startupCases=[{roomid:13171605,format:'default'}]` 与 `window.__startupObserveMs=30000`；房间必须当时在播。`default` 保持生产选源，`ts`/`fmp4` 仅从真实 API 响应筛选指定格式，供同画质 A/B 对照，结束恢复请求包装与监听。报告区分接口耗时、`playing` 事件和实际播放时间推进，不包含签名播放 URL。原生视频合成层可能既无法截图，也不触发已暴露的 `requestVideoFrameCallback`，不能把时间推进称作逐帧像素测量。
+
+`TV_LIVE_ROOM=13171605 TV_TEST_FILTER=testLiveQuality node tools/test-ui.mjs` 用遥控器切换画质并切回，等待实际播放事件；选择当前提供多档画质的房间，只有一档时报告跳过。按钮文字是当前画质（例如“原画”），不能按固定“画质”文案寻找。真机测试结束恢复设置。详细对照见 `docs/TESTCASES.md`。

@@ -1,0 +1,12 @@
+[
+  {
+    "name": "unverified Dolby frame rate keeps the original base layer: dolby-120",
+    "pass": false,
+    "error": "The input did not match the regular expression /codecs=\"hvc1.2.4.L156.90\"/. Input:\n\n'<?xml version=\"1.0\" encoding=\"UTF-8\"?>\\n' +\n  '<MPD xmlns=\"urn:mpeg:dash:schema:mpd:2011\" profiles=\"urn:mpeg:dash:profile:isoff-on-demand:2011\"\\n' +\n  '  type=\"static\" mediaPresentationDuration=\"PT100S\" minBufferTime=\"PT1.5S\">\\n' +\n  '  <Period><AdaptationSet contentType=\"video\" mimeType=\"video/mp4\" segmentAlignment=\"true\"><Representation id=\"126\" bandwidth=\"1000\" codecs=\"dvh1.08.09\" mimeType=\"video/mp4\" width=\"1920\" height=\"1080\" frameRate=\"120000/1001\">\\n' +\n  '          <BaseURL>https://media.bilivideo.com/video</BaseURL>\\n' +\n  '          <SegmentBase indexRange=\"52-70\">\\n' +\n  '            <Initialization range=\"0-51\" />\\n' +\n  '          </SegmentBase>\\n' +\n  '        </Representation></AdaptationSet></Period>\\n' +\n  '</MPD>'\n"
+  },
+  {
+    "name": "unverified Dolby frame rate keeps the original base layer: dolby-unknown",
+    "pass": false,
+    "error": "The input did not match the regular expression /codecs=\"hvc1.2.4.L156.90\"/. Input:\n\n'<?xml version=\"1.0\" encoding=\"UTF-8\"?>\\n' +\n  '<MPD xmlns=\"urn:mpeg:dash:schema:mpd:2011\" profiles=\"urn:mpeg:dash:profile:isoff-on-demand:2011\"\\n' +\n  '  type=\"static\" mediaPresentationDuration=\"PT100S\" minBufferTime=\"PT1.5S\">\\n' +\n  '  <Period><AdaptationSet contentType=\"video\" mimeType=\"video/mp4\" segmentAlignment=\"true\"><Representation id=\"126\" bandwidth=\"1000\" codecs=\"dvh1.08.09\" mimeType=\"video/mp4\" width=\"1920\" height=\"1080\" frameRate=\"30\">\\n' +\n  '          <BaseURL>https://media.bilivideo.com/video</BaseURL>\\n' +\n  '          <SegmentBase indexRange=\"52-70\">\\n' +\n  '            <Initialization range=\"0-51\" />\\n' +\n  '          </SegmentBase>\\n' +\n  '        </Representation></AdaptationSet></Period>\\n' +\n  '</MPD>'\n"
+  }
+]

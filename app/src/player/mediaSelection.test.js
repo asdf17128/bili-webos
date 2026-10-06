@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   createPlaybackAttemptPlan,
+  dolbySignalingFrameRateAllowed,
   inspectDolbyRepresentation,
   listPreferredAudio,
   mediaTypeFor,
@@ -10,6 +11,17 @@ import {
   selectPreferredAudio,
   selectVideoRepresentation,
 } from './mediaSelection.js';
+
+test('Dolby signaling preserves the base layer for high or unknown frame rates', () => {
+  for (const frameRate of [24, 30, 60, '60000/1001', '59.94']) {
+    assert.equal(dolbySignalingFrameRateAllowed({ frameRate }), true, String(frameRate));
+  }
+  for (const frameRate of [120, '120000/1001', 60.01, '', 'unknown', '60fps', '60/0', 0, -1]) {
+    assert.equal(dolbySignalingFrameRateAllowed({ frameRate }), false, String(frameRate));
+  }
+  assert.equal(dolbySignalingFrameRateAllowed({ frame_rate: '30000/1001' }), true);
+  assert.equal(dolbySignalingFrameRateAllowed(null), false);
+});
 
 function specimen() {
   const prefix = Buffer.from('0000000068766331000000006876634300000000', 'hex');

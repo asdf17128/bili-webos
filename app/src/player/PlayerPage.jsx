@@ -4,7 +4,7 @@ import { getLibraryPage, getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, repo
 import { nextPlaylistItem } from '../utils/library';
 import { playPart, playAdvance } from './playIntent';
 import { createStallMonitor, startPlaybackReport, updatePlaybackReport, countPlaybackEvent, bufferedAhead } from './playbackHealth';
-import { selectVideoRepresentation, listPreferredAudio, hasAudioRepresentations, createPlaybackAttemptPlan, inspectDolbyRepresentation } from './mediaSelection';
+import { selectVideoRepresentation, listPreferredAudio, hasAudioRepresentations, createPlaybackAttemptPlan, inspectDolbyRepresentation, dolbySignalingFrameRateAllowed } from './mediaSelection';
 import { logErr } from '../utils/errlog';
 
 import { formatDuration, formatTime, formatCount, QUALITY_MAP, cleanTitle, pickAigcText } from '../utils/format';
@@ -974,7 +974,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     const audio = listPreferredAudio(dash, supported);
     if (!audio.length && hasAudioRepresentations(dash)) throw Object.assign(new Error('Unsupported audio codec'), { category: 4 });
     let dolby = null, dolbyCodec = null;
-    if (selected.actualQn === 126) {
+    if (selected.actualQn === 126 && dolbySignalingFrameRateAllowed(selected.representation)) {
       try {
         const rep = selected.representation;
         const routeHost = CDN_ROUTES[storage.getSettings().cdnRoute];

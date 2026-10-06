@@ -47,7 +47,7 @@ async function run(name, mode, fn, scale) {
   if(u.pathname.endsWith('/playurl')){
     calls.playurl++;
     const qn=mode.startsWith('dolby')?126:80;
-    data={quality:qn,accept_quality:[qn,16],dash:{duration:100,video:[{id:qn,bandwidth:1000,baseUrl:'https://media.bilivideo.com/video',codecs:qn===126?'hvc1.2.4.L156.90':'avc1.640028',width:1920,height:1080,SegmentBase:{Initialization:'0-51',indexRange:'52-70'}}],audio:[]}};
+    data={quality:qn,accept_quality:[qn,16],dash:{duration:100,video:[{id:qn,bandwidth:1000,baseUrl:'https://media.bilivideo.com/video',codecs:qn===126?'hvc1.2.4.L156.90':'avc1.640028',width:1920,height:1080,frameRate:mode==='dolby-120'?'120000/1001':mode==='dolby-unknown'?'':'60000/1001',SegmentBase:{Initialization:'0-51',indexRange:'52-70'}}],audio:[]}};
     if(mode.startsWith('premium')) {
       const rep=(id,codecs)=>({id,codecs,mimeType:'audio/mp4',bandwidth:1000,baseUrl:'https://media.bilivideo.com/audio',SegmentBase:{Initialization:'0-1',indexRange:'2-3'}});
       data.dash.dolby={audio:[rep(30250,'ec-3')]};data.dash.flac={audio:rep(30251,'fLaC')};data.dash.audio=[rep(30280,'mp4a.40.2')];
@@ -69,6 +69,13 @@ async function run(name, mode, fn, scale) {
  finally{await context.close();}
 }
 const open=page=>page.evaluate(()=>window.__openVideo({bvid:'BVtest',resumeMode:'none'}));
+for (const mode of ['dolby-120', 'dolby-unknown']) await run('unverified Dolby frame rate keeps the original base layer: '+mode, mode, async page => {
+ await open(page);await page.waitForFunction(()=>window.__probe.loads===1);
+ const mpd=await page.evaluate(()=>window.__probe.mpds[0]);
+ assert.match(mpd,/codecs="hvc1.2.4.L156.90"/);
+ assert.doesNotMatch(mpd,/codecs="dvh1/);
+ assert.match(mpd,/<Representation id="126"/);
+});
 await run('comment rail renders one state and keeps controls unobscured','comments',async page=>{
  await open(page);await page.waitForFunction(()=>window.__probe.loads===1);
  await page.keyboard.press('ArrowUp');

@@ -121,7 +121,7 @@ Login information is stored on your TV and used to access your Bilibili account.
 
 [MIT 开源项目](LICENSE)，再发布源码或修改后的安装包时请保留版权与许可声明。第三方依赖和随附资源保留各自许可；代码许可不授予哔哩哔哩、LG 等第三方商标的使用权，也不代表官方认可。本项目由社区独立开发，与哔哩哔哩及 LG 无隶属关系。
 
-### In development / 开发中（尚未发布）
+### v2.2.0 — playback, subscriptions and compatibility / 播放、订阅与兼容
 
 - DASH video has **automatic CDN selection** and an HWO1 option. It measures small media ranges while paused or with at least 15 seconds buffered, caches host health, and applies the choice to subsequent requests without restarting playback. Manual choices take priority; native Akamai signatures remain intact. Overseas performance still needs testing on the affected networks.
 - Fixed focus loss after fast feed retries and the ranking request context that caused partitions to return `-352`. Anonymous network checks from Hong Kong and Japan now cover all six partitions, video metadata fallback, stream URLs and actual media ranges; these do not replace TV testing on an affected home connection.
@@ -129,9 +129,9 @@ Login information is stored on your TV and used to access your Bilibili account.
 - Playback recovery and diagnostics now account for exhausted buffers and the selected CDN route. Reports include the last playback node and stall count.
 - Favorites has a **Subscriptions** tab for followed folders and creator collections, with pagination and playback across pages.
 - webOS 4.x compatibility includes Chromium 53 layout fallbacks and a Node 0.12 service compatibility layer. Community patch: [#34](https://github.com/asdf17128/bili-webos/issues/34).
-- Dolby initialization metadata and supported E-AC-3 / FLAC audio tracks are selected independently. Decoder failures during loading fall back; E-AC-3 alone is not a guarantee of Atmos output. Selection/parsing adapted from [PR #17](https://github.com/asdf17128/bili-webos/pull/17). The source-specific 4K120 frame transform from that PR is not included.
+- Dolby initialization metadata and supported E-AC-3 / FLAC audio tracks are selected independently. Decoder failures during loading fall back; E-AC-3 alone is not a guarantee of Atmos output. Selection/parsing adapted from [PR #17](https://github.com/asdf17128/bili-webos/pull/17). The source-specific 4K120 frame transform from that PR is not included; sources above 60 fps or with an unknown frame rate retain their original base-layer signaling.
 
-开发分支已补充缓冲耗尽恢复、按所选 CDN 测速和最近播放节点记录；收藏页增加 **订阅**，支持别人的收藏夹、UP 主合集及跨页连播。webOS 4.x 的布局和旧服务运行时兼容基于社区 [#34](https://github.com/asdf17128/bili-webos/issues/34) 补丁。
+v2.2.0 补充缓冲耗尽恢复、按所选 CDN 测速和最近播放节点记录；收藏页增加 **订阅**，支持别人的收藏夹、UP 主合集及跨页连播。webOS 4.x 的布局和旧服务运行时兼容基于社区 [#34](https://github.com/asdf17128/bili-webos/issues/34) 补丁。
 
 点播新增 **CDN 自动择优**及 **华为云 HWO1** 选项：暂停或缓冲达到 15 秒后，用小块媒体测速并缓存节点健康状态，后续分片自动采用较快的可用线路，无需重载视频。手动选择优先，保留原始签名地址与失败回退。首次无缓存播放仍立即使用原线路；已在 C4 验证实际分片选路，并在香港、日本出口实测 API 和媒体传输；海外家庭电视的实播仍待当地验证，见 [CDN 验证记录](docs/TESTCASES.md#点播-cdn-自动择优2026-10-06)。直播不套用点播域名替换策略。
 
@@ -139,4 +139,6 @@ Login information is stored on your TV and used to access your Bilibili account.
 
 直播保留所选画质，优先使用本机实测起播更快的 fMP4 HLS 源，不兼容或启动超时则回退 TS；取流与画质列表合并为一次请求，真正播放后才结束加载提示，失败可按确认重试。LG C4 三个直播间的播放进度开始推进由约 7.5–9.3 秒缩短至 2.0–3.3 秒；这是本机、本次网络的小样本结果，详见 [直播实测记录](docs/TESTCASES.md#直播起播优化与回归2026-10-06)。
 
-杜比源会读取初始化段中的实际格式，并按设备能力选择 E-AC-3、FLAC 或 AAC；加载阶段解码失败会回退。显示 E-AC-3 只代表所选音轨，全景声是否输出还取决于片源、电视、音响连接和系统设置。部分实现来自 [PR #17](https://github.com/asdf17128/bili-webos/pull/17)，本轮未包含其中针对特定 4K120 片源的帧变换。webOS 4.x 整机兼容及杜比／全景声输出仍需对应设备实测；上方安装说明描述的是已发布版本。
+杜比源会读取初始化段中的实际格式，并按设备能力选择 E-AC-3、FLAC 或 AAC；加载阶段解码失败会回退。显示 E-AC-3 只代表所选音轨，全景声是否输出还取决于片源、电视、音响连接和系统设置。部分实现来自 [PR #17](https://github.com/asdf17128/bili-webos/pull/17)，本版未包含其中针对特定 4K120 片源的帧变换；超过 60fps 或帧率未知时保留原有基础层信令，避免直接开启杜比信令的已知黑屏风险。webOS 4.x 整机兼容及杜比／全景声输出仍需对应设备实测。
+
+完整更新说明与已知问题见 [v2.2.0 release notes](docs/releases/v2.2.0.md)，包括仍待修复的收藏夹自动连播设置问题 [#41](https://github.com/asdf17128/bili-webos/issues/41)。

@@ -1,0 +1,154 @@
+[
+  {
+    "name": "Home loads video cards",
+    "status": "fail",
+    "detail": "0 cards"
+  },
+  {
+    "name": "No broken thumbnails",
+    "status": "pass",
+    "detail": "0 broken / 1 imgs"
+  },
+  {
+    "name": "OK entered content (focus in grid)",
+    "status": "fail",
+    "detail": "sidebar-1-0"
+  },
+  {
+    "name": "Back returns focus to sidebar",
+    "status": "pass",
+    "detail": "sidebar-1-0"
+  },
+  {
+    "name": "testVideoPlayback",
+    "status": "fail",
+    "detail": "threw: Uncaught"
+  },
+  {
+    "name": "testCommentRail",
+    "status": "fail",
+    "detail": "threw: Uncaught"
+  },
+  {
+    "name": "Season info loads (episode list)",
+    "status": "fail",
+    "detail": "0 eps"
+  },
+  {
+    "name": "PGC playurl returns DASH (bangumi playable)",
+    "status": "fail",
+    "detail": "0 video reps"
+  },
+  {
+    "name": "HDR/Dolby rep present",
+    "status": "skip",
+    "detail": "none for this title (needs VIP?) accept=[]"
+  },
+  {
+    "name": "testLiveAndDanmaku",
+    "status": "fail",
+    "detail": "threw: goto(live): stuck at sidebar row 2, want 3"
+  },
+  {
+    "name": "testLiveRelay",
+    "status": "fail",
+    "detail": "threw: Uncaught"
+  },
+  {
+    "name": "Live quality fixture",
+    "status": "skip",
+    "detail": "no current recommended room"
+  },
+  {
+    "name": "Search recommendations render (热门/历史)",
+    "status": "pass",
+    "detail": "23 rows"
+  },
+  {
+    "name": "Search returns a results grid",
+    "status": "pass",
+    "detail": "20 results"
+  },
+  {
+    "name": "Follow list loads",
+    "status": "pass",
+    "detail": "20 cards"
+  },
+  {
+    "name": "Pagination loads more",
+    "status": "pass",
+    "detail": "20 → 60"
+  },
+  {
+    "name": "Account API confirms valid login",
+    "status": "pass"
+  },
+  {
+    "name": "Own favorites match the account folder response",
+    "status": "pass",
+    "detail": "2/2 folders"
+  },
+  {
+    "name": "Favorite folder renders videos",
+    "status": "pass",
+    "detail": "24 cards"
+  },
+  {
+    "name": "Subscriptions tab matches the account response",
+    "status": "pass",
+    "detail": "18/18 folders"
+  },
+  {
+    "name": "Subscribed folder renders videos",
+    "status": "pass",
+    "detail": "12 cards"
+  },
+  {
+    "name": "Watch Later list matches the authenticated API",
+    "status": "pass",
+    "detail": "0/0 cards"
+  },
+  {
+    "name": "Auto update-check populated",
+    "status": "pass",
+    "detail": "已是最新 (v2.2.0)"
+  },
+  {
+    "name": "Update-check resolved (latest/new/version)",
+    "status": "pass",
+    "detail": "已是最新 (v2.2.0)"
+  },
+  {
+    "name": "CDN row is reachable by remote",
+    "status": "fail"
+  },
+  {
+    "name": "CDN picker includes automatic and HWO1 routes",
+    "status": "fail"
+  },
+  {
+    "name": "testCdnSettings",
+    "status": "fail",
+    "detail": "threw: Uncaught"
+  },
+  {
+    "name": "testFeedRetry",
+    "status": "fail",
+    "detail": "threw: goto(recommend): stuck at sidebar row null, want 1"
+  },
+  {
+    "name": "热门 loads content",
+    "status": "pass",
+    "detail": "20 cards"
+  },
+  {
+    "name": "testHotAndPartition",
+    "status": "fail",
+    "detail": "threw: goto(game): stuck at sidebar row 2, want 6"
+  },
+  {
+    "name": "Watch Later writes skipped",
+    "status": "skip",
+    "detail": "explicit opt-in required for guarded fixture round trip"
+  }
+]

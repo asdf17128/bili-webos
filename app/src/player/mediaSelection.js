@@ -5,6 +5,18 @@ export const DOLBY_QN = 126;
 const TV_PROXY_BASE = 'http://127.0.0.1:7654';
 const MAX_DOLBY_INIT_BYTES = 1024 * 1024;
 
+// PR #17 documents black/corrupt output when the untouched 4K120 stream is
+// advertised as Dolby Vision. Its source-specific frame transform is not part
+// of this player. Keep the original base-layer signaling above 60 fps (or when
+// the rate is unknown), even if MSE accepts the Dolby codec string.
+export function dolbySignalingFrameRateAllowed(rep) {
+  const value = String(rep?.frameRate || rep?.frame_rate || '').trim();
+  if (!/^\d+(?:\.\d+)?(?:\/\d+(?:\.\d+)?)?$/.test(value)) return false;
+  const [numerator, denominator = '1'] = value.split('/');
+  const fps = Number(numerator) / Number(denominator);
+  return Number.isFinite(fps) && fps > 0 && fps <= 60;
+}
+
 function asArray(value) {
   if (Array.isArray(value)) return value.slice();
   return value ? [value] : [];

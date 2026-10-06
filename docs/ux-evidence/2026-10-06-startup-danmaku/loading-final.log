@@ -1,0 +1,23 @@
+PASS auxiliary requests wait for real media data: frame-ready
+PASS auxiliary requests wait for real media data: frame-cancel
+PASS failed resume metadata is retried for subtitles after media data
+PASS startup overlaps independent requests and preserves resume: startup-overlap
+PASS startup overlaps independent requests and preserves resume: startup-part
+PASS unverified Dolby frame rate keeps the original base layer: dolby-120
+PASS unverified Dolby frame rate keeps the original base layer: dolby-unknown
+PASS comment rail renders one state and keeps controls unobscured
+PASS buffer exhaustion is visible and retried without skipping video
+PASS actual manifest and codec fallback: premium
+PASS actual manifest and codec fallback: premium-fallback
+PASS actual manifest and codec fallback: dolby
+PASS actual manifest and codec fallback: dolby-fallback
+PASS cancelled load stops retries and releases the player
+PASS leaving while video information is pending prevents later streaming
+PASS network failure stops after two outer attempts instead of trying every quality
+PASS transient network failure can recover on the second attempt
+PASS actual danmaku and subtitle font sizes: small
+PASS actual danmaku and subtitle font sizes: normal
+PASS actual danmaku and subtitle font sizes: large
+PASS actual danmaku and subtitle font sizes: largest
+PASS Luna requests time out, cancel their bridge and ignore late success
+22/22 passed

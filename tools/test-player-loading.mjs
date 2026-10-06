@@ -20,6 +20,8 @@ const stub = `class Player {
  if(window.__mode==='retry'&&window.__probe.loads===1) throw Object.assign(new Error('transient network'),{code:1001,category:1});
  Object.defineProperty(this.video,'currentTime',{configurable:true,get:()=>1,set:()=>{}});
  Object.defineProperty(this.video,'duration',{configurable:true,get:()=>100});
+ const ready=()=>{Object.defineProperty(this.video,'readyState',{configurable:true,get:()=>4});this.video.dispatchEvent(new Event('loadeddata'));};
+ if(window.__mode.startsWith('frame-'))window.__releaseFrame=ready;else ready();
  }
  async destroy(){this.reject?.(Object.assign(new Error('load interrupted'),{code:7000}));window.__probe.destroyed++}
 }
@@ -35,17 +37,17 @@ async function run(name, mode, fn, scale) {
    if (/premium|dolby/.test(mode)) MediaSource.isTypeSupported=type=>!type.includes('av01');
  },{mode,scale});
  const page=await context.newPage();page.setDefaultTimeout(7000);
- const calls={playurl:0,info:0};
+ const calls={playurl:0,info:0,meta:0,extras:0,events:[]};
  await page.route('**/*',async route=>{
   const u=new URL(route.request().url());
-  if(u.pathname.includes('shaka-player'))return route.fulfill({contentType:'application/javascript',body:stub});
+  if(u.pathname.includes('shaka-player')) { if(mode==='startup-overlap')await new Promise(r=>setTimeout(r,650));calls.events.push({type:'shaka',at:Date.now()});return route.fulfill({contentType:'application/javascript',body:stub}); }
   if(u.port==='5173')return route.continue();
   if(u.port==='9528')return route.abort();
   let data={};
   if(u.pathname.endsWith('/nav'))data={wbi_img:{img_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png',sub_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png'}};
-  if(u.pathname.endsWith('/view')){calls.info++;if(mode==='slow-info')await new Promise(r=>setTimeout(r,1200));data={aid:1,cid:2,bvid:'BVtest',pages:[{cid:2}],title:'加载回归',owner:{mid:1,name:'测试'},stat:{}};}
+  if(u.pathname.endsWith('/view')){calls.info++;calls.events.push({type:'view',at:Date.now()});if(mode==='slow-info')await new Promise(r=>setTimeout(r,1200));data={aid:1,cid:2,bvid:'BVtest',pages:mode==='startup-part'?[{cid:2},{cid:3}]:[{cid:2}],title:'加载回归',owner:{mid:1,name:'测试'},stat:{}};}
   if(u.pathname.endsWith('/playurl')){
-    calls.playurl++;
+    calls.playurl++;calls.events.push({type:'playurl',cid:u.searchParams.get('cid'),at:Date.now()});if(mode.startsWith('startup'))await new Promise(r=>setTimeout(r,500));
     const qn=mode.startsWith('dolby')?126:80;
     data={quality:qn,accept_quality:[qn,16],dash:{duration:100,video:[{id:qn,bandwidth:1000,baseUrl:'https://media.bilivideo.com/video',codecs:qn===126?'hvc1.2.4.L156.90':'avc1.640028',width:1920,height:1080,frameRate:mode==='dolby-120'?'120000/1001':mode==='dolby-unknown'?'':'60000/1001',SegmentBase:{Initialization:'0-51',indexRange:'52-70'}}],audio:[]}};
     if(mode.startsWith('premium')) {
@@ -58,7 +60,8 @@ async function run(name, mode, fn, scale) {
     const init=Buffer.from('000000006876633100000000687663430000000000000020647676430100104d4000000000000000000000000000000000000000','hex');
     return route.fulfill({status:206,body:init,headers:{'content-range':`bytes 0-${init.length-1}/1000`,'content-length':String(init.length),'access-control-allow-origin':'*','access-control-expose-headers':'Content-Range, Content-Length'}});
   }
-  if(u.pathname.endsWith('/v2'))data={subtitle:{subtitles:[{lan:'zh-CN',lan_doc:'中文',subtitle_url:'https://aisubtitle.hdslb.com/test.json'}]}};
+  if(/videoshot|list.so|archive\/related/.test(u.pathname))calls.extras++;
+  if(u.pathname.endsWith('/v2')) { calls.meta++;calls.events.push({type:'meta-start',cid:u.searchParams.get('cid'),at:Date.now()});if(mode.startsWith('startup'))await new Promise(r=>setTimeout(r,500));calls.events.push({type:'meta-end',at:Date.now()});if(mode==='startup-meta-error' && calls.meta===1)return route.fulfill({json:{code:-352}});data={last_play_cid:mode==='startup-part'?3:2,last_play_time:12000,subtitle:{subtitles:[{lan:'zh-CN',lan_doc:'中文',subtitle_url:'https://aisubtitle.hdslb.com/test.json'}]}}; }
   if(u.pathname.endsWith('/test.json'))return route.fulfill({json:{body:[{from:0,to:20,content:'字幕字号验证'}]}});
   if(u.pathname.endsWith('/list.so'))return route.fulfill({contentType:'text/xml',body:'<i><d p="1,1,28,16777215,0,0,0,0">弹幕字号验证</d></i>'});
   if(u.pathname.endsWith('/x/v2/reply')) data={page:{count:3},replies:Array.from({length:3},(_,i)=>({rpid:i+1,member:{uname:'测试用户'},content:{message:'评论内容 '+i},like:1}))};
@@ -69,8 +72,39 @@ async function run(name, mode, fn, scale) {
  finally{await context.close();}
 }
 const open=page=>page.evaluate(()=>window.__openVideo({bvid:'BVtest',resumeMode:'none'}));
+for (const mode of ['frame-ready','frame-cancel']) await run('auxiliary requests wait for real media data: '+mode,mode,async(page,calls)=>{
+ await open(page);await page.waitForFunction(()=>!!window.__releaseFrame);await page.waitForTimeout(250);
+ assert.equal(calls.meta,0);assert.equal(calls.extras,0);
+ if(mode==='frame-cancel')await page.keyboard.press('Escape');
+ await page.evaluate(()=>window.__releaseFrame());await page.waitForTimeout(350);
+ if(mode==='frame-cancel'){assert.equal(calls.meta,0);assert.equal(calls.extras,0);}
+ else {assert.equal(calls.meta,1);assert.ok(calls.extras>=3);}
+});
+await run('failed resume metadata is retried for subtitles after media data','startup-meta-error',async(page,calls)=>{
+ await page.evaluate(()=>window.__openVideo({bvid:'BVtest',resumeMode:'auto'}));
+ await page.waitForFunction(()=>window.__probe.loads===1);await page.waitForTimeout(750);
+ assert.equal(calls.meta,2);assert.equal(calls.playurl,1);
+ assert.equal(await page.evaluate(()=>window.__probe.positions[0]),undefined);
+});
+for (const mode of ['startup-overlap','startup-part']) await run('startup overlaps independent requests and preserves resume: '+mode,mode,async(page,calls)=>{
+ await page.evaluate(()=>window.__openVideo({bvid:'BVtest',resumeMode:'auto'}));
+ await page.waitForFunction(()=>window.__probe.loads===1);
+ await page.waitForTimeout(650);
+ const events=calls.events;
+ const firstPu=events.find(x=>x.type==='playurl'),metaEnd=events.find(x=>x.type==='meta-end');
+ assert.ok(firstPu.at<metaEnd.at,JSON.stringify(events));
+ if(mode==='startup-overlap') {
+   assert.ok(events.find(x=>x.type==='view').at<events.find(x=>x.type==='shaka').at,JSON.stringify(events));
+   assert.equal(calls.meta,1,'resume and subtitle metadata share the same response');
+   assert.equal(calls.playurl,1);
+ } else {
+   assert.deepEqual(events.filter(x=>x.type==='playurl').map(x=>x.cid),['2','3'],'resume to another part must fetch that part');
+   assert.equal(calls.meta,2,'chapters/subtitles belong to final part');
+ }
+ assert.equal(await page.evaluate(()=>window.__probe.positions[0]),12);
+});
 for (const mode of ['dolby-120', 'dolby-unknown']) await run('unverified Dolby frame rate keeps the original base layer: '+mode, mode, async page => {
- await open(page);await page.waitForFunction(()=>window.__probe.loads===1);
+ await open(page);await page.waitForFunction(()=>window.__probe.mpds.length===1);
  const mpd=await page.evaluate(()=>window.__probe.mpds[0]);
  assert.match(mpd,/codecs="hvc1.2.4.L156.90"/);
  assert.doesNotMatch(mpd,/codecs="dvh1/);

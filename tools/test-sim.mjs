@@ -327,12 +327,19 @@ async function main() {
       await key('Escape'); await sleep(800);
     }
     await page.evaluate(() => { localStorage.setItem('bili_test_badcdn', '1'); });
-    await page.evaluate(() => window.__openVideo({ bvid: 'BV1xx411c7Xg', title: '弹幕测试专用', owner: { name: '碧诗' } }));
-    await sleep(12000);
-    // 上一条用例把进度存在片尾,续播会直接落在结尾 —— 拨回 5s 再看能不能往前走,
-    // 走得动 = 分片真的从可用镜像拉下来了。
+    await page.evaluate(() => window.__openVideo({ bvid: 'BV1xx411c7Xg', resumeMode: 'none', title: '弹幕测试专用', owner: { name: '碧诗' } }));
+    // A failed primary may still be retrying after a fixed 12s sleep. Seeking
+    // before load completes is overwritten by Shaka's start position. First
+    // wait for actual playback, then require real advancement after the seek.
+    await page.waitForFunction(() => {
+      const v = document.querySelector('video');
+      return v && v.readyState >= 2 && v.currentTime > 1 && !v.paused;
+    }, null, { timeout: 40000 }).catch(() => {});
     await page.evaluate(() => { const v = document.querySelector('video'); if (v) { v.currentTime = 5; v.play(); } });
-    await sleep(5000);
+    await page.waitForFunction(() => {
+      const v = document.querySelector('video');
+      return v && v.currentTime > 6 && !v.paused;
+    }, null, { timeout: 12000 }).catch(() => {});
     const cdn = await page.evaluate(() => {
       const v = document.querySelector('video');
       const mpd = window.__lastMpd || '';

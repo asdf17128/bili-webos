@@ -1,0 +1,12 @@
+[
+  {
+    "name": "startup overlaps independent requests and preserves resume: startup-overlap",
+    "pass": false,
+    "error": "[{\"type\":\"shaka\",\"at\":1791278473862},{\"type\":\"view\",\"at\":1791278473868},{\"type\":\"meta-start\",\"cid\":\"2\",\"at\":1791278473870},{\"type\":\"meta-end\",\"at\":1791278474372},{\"type\":\"meta-start\",\"cid\":\"2\",\"at\":1791278474380},{\"type\":\"playurl\",\"cid\":\"2\",\"at\":1791278474381},{\"type\":\"meta-end\",\"at\":1791278474882}]"
+  },
+  {
+    "name": "startup overlaps independent requests and preserves resume: startup-part",
+    "pass": false,
+    "error": "[{\"type\":\"shaka\",\"at\":1791278475719},{\"type\":\"view\",\"at\":1791278475722},{\"type\":\"meta-start\",\"cid\":\"2\",\"at\":1791278475723},{\"type\":\"meta-end\",\"at\":1791278476225},{\"type\":\"meta-start\",\"cid\":\"3\",\"at\":1791278476233},{\"type\":\"playurl\",\"cid\":\"3\",\"at\":1791278476234},{\"type\":\"meta-end\",\"at\":1791278476734}]"
+  }
+]

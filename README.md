@@ -121,6 +121,15 @@ Login information is stored on your TV and used to access your Bilibili account.
 
 [MIT 开源项目](LICENSE)，再发布源码或修改后的安装包时请保留版权与许可声明。第三方依赖和随附资源保留各自许可；代码许可不授予哔哩哔哩、LG 等第三方商标的使用权，也不代表官方认可。本项目由社区独立开发，与哔哩哔哩及 LG 无隶属关系。
 
+### v2.2.2 — startup and danmaku / 起播与弹幕
+
+- 起播时并行加载播放器与视频信息、续播位置与取流结果；同一分 P 复用元数据，切换分 P 后仍重新获取正确的流与字幕。
+- 弹幕、推荐、缩略图等辅助内容等媒体数据就绪后加载，避免争抢起播资源。
+- 弹幕仅查找当前时间附近的记录；密集时最多同时滚动 24 条。暂停时冻结弹幕，前后跳转清掉旧画面，翻译与字号设置保留。
+- 网络诊断新增 `startup` 耗时，便于继续定位旧电视上的起播问题。C9 / webOS 4.x 的实际改善仍需社区设备复测。
+
+Player loading overlaps independent requests and reuses resume metadata. Auxiliary content waits for media readiness. Danmaku lookup and concurrent animations are bounded; pause and seek keep the overlay in sync. See [release notes and validation limits](docs/releases/v2.2.2.md).
+
 ### v2.2.1 — playback end modes / 播放结束行为
 
 设置 → 播放与显示 → **播放结束后**：

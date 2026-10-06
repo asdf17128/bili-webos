@@ -1,0 +1,41 @@
+{
+  "cpuThrottle": 6,
+  "results": [
+    {
+      "measurement": "time field reads at 3500s / 100000 comments",
+      "value": 35015
+    },
+    {
+      "name": "late-video lookup has bounded work",
+      "pass": false,
+      "error": "time reads=35015"
+    },
+    {
+      "measurement": "peak animated nodes",
+      "value": 60
+    },
+    {
+      "name": "dense comments have a bounded number of animation layers",
+      "pass": false,
+      "error": "animated nodes=60"
+    },
+    {
+      "name": "forward seek clears the old screen and backward seek replays",
+      "pass": false,
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n+   '开头',\n    '后段'\n  ]\n"
+    },
+    {
+      "name": "paused animations freeze and resume; hidden layer resets",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'running'\n- 'paused'\n"
+    },
+    {
+      "name": "translation retries preserve original indices and do not flash Chinese",
+      "pass": true
+    },
+    {
+      "name": "font scales, animation cleanup and repeat render do not duplicate",
+      "pass": true
+    }
+  ]
+}

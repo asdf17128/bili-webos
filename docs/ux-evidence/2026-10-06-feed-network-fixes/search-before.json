@@ -1,0 +1,7 @@
+[
+  {
+    "name": "leaving search preserves the next page first focus cell",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'content-1-0'\n- 'content-0-0'\n           ^\n"
+  }
+]

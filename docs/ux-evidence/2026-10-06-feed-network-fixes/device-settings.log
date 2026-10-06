@@ -1,0 +1,12 @@
+PASS 2 columns and largest text applied through settings {"columns":2,"title":28.75,"meta":22.5}
+PASS 2 columns large-text deep card visible
+PASS 2 columns and text size persist after reload {"cols":2,"scale":"1.25"}
+PASS 2 columns library native scroll keeps the enlarged card visible
+PASS 3 columns and largest text applied through settings {"columns":3,"title":28.75,"meta":22.5}
+PASS 3 columns large-text deep card visible
+PASS 3 columns and text size persist after reload {"cols":3,"scale":"1.25"}
+PASS 3 columns library native scroll keeps the enlarged card visible
+PASS 4 columns and largest text applied through settings {"columns":4,"title":27.5,"meta":22.5}
+PASS 4 columns large-text deep card visible
+PASS 4 columns and text size persist after reload {"cols":4,"scale":"1.25"}
+PASS 4 columns library native scroll keeps the enlarged card visible

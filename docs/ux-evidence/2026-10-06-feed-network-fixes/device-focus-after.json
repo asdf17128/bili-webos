@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Controlled feed failure exposes remote retry",
+    "status": "pass"
+  },
+  {
+    "name": "Immediate retry puts remote focus on the first new card",
+    "status": "pass",
+    "detail": "6 cards, focus=content-0-0"
+  },
+  {
+    "name": "Remote navigation works immediately after retry",
+    "status": "pass",
+    "detail": "{\"beforeMove\":{\"current\":\"content-0-0\",\"registered\":true,\"pending\":null,\"custom\":false},\"dom\":[\"content-1-0\"],\"state\":{\"current\":\"content-1-0\",\"registered\":true,\"pending\":null,\"custom\":false}}"
+  }
+]

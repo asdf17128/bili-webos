@@ -1,0 +1,12 @@
+[
+  {
+    "path": "/x/web-interface/ranking/v2?rid=1008&type=all",
+    "code": 0,
+    "count": 100
+  },
+  {
+    "path": "/x/web-interface/popular?pn=1&ps=5",
+    "code": 0,
+    "count": 5
+  }
+]

@@ -1,0 +1,7 @@
+[
+  {
+    "name": "retry recovers a failed feed",
+    "pass": false,
+    "error": "page.waitForFunction: Timeout 2000ms exceeded."
+  }
+]

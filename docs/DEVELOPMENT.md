@@ -140,3 +140,13 @@ release 必须挂**三件**资产,少一件都会静默出事:
 自动模式不等待测速再起播。每个候选串行测两块 256KiB，单块超时 4 秒；完整一轮最多 12 个候选、6MiB 成功样本。暂停或缓冲不少于 15 秒才开始，低缓冲、seek、换源和退出取消，不把主动取消写为失败。成功缓存 4 小时、失败 15 分钟，当前首选超过 15 分钟复测；网络 online 事件清空缓存。缓存仅保存 host/耗时折算速度/时间/成功状态。`window.__cdnAuto()` 查看无签名诊断，实际请求节点另见播放报告。
 
 新增镜像仅使用普通 `.bilivideo.com/upgcxcode/` 地址作为模板。Akamai-only 片源保留 API 原生 URL，不合成跨域签名；直播走自己的取流路径。`.bilivideo.cn` 可作为原生候选测速，但不作为改写模板。未知域名保留原生回退、不进入无法缓存的测速队列。
+
+### 重试焦点、分区和海外网络
+
+`UX_FILTER='retry|feed failure' node tools/test-tv-ux.mjs` 包含立即完成的 Promise、正常网络任务与慢响应、再次失败、主动返回侧栏、短列表及续播栏组合。`TV_TEST_FILTER=testFeedRetry node tools/test-ui.mjs` 在真机拦截推荐流的 Luna 回调制造失败与立即恢复，其他请求保持原样，结束恢复原入口。断言既看 DOM，也看只读 `window.__focusState()` 的真实注册目标，并继续按方向键验证只有一个焦点。不能把残留的白框当作成功。
+
+`UX_FILTER='leaving search' node tools/test-tv-ux.mjs` 验证搜索页切到设置页后第一行仍可达，下/上往返不跳行。焦点注册须统一在 layout effect 中，包含原生搜索输入框的手动注册，避免旧页面延迟清理删除新页面复用的 ID。完整真机导航套件也覆盖这一转换。
+
+`TV_TEST_FILTER=testHotAndPartition node tools/test-ui.mjs` 验证热门与六个分区的真实 API 和卡片。`tools/test-node8/run8.js` 也通过真实服务取游戏排行榜，覆盖实际请求头。排行榜的 Referer 策略在 `service/com.biliwebos.app.service/biliReferer.js`，电视服务与独立 Mac 代理共用；仅对 `api.bilibili.com/x/web-interface/ranking/v2` 使用排行榜页，其余请求沿原策略。
+
+`REGION_SSH=<已有 SSH 别名> REGION_OUTPUT=/tmp/bili-region node tools/test-region-network.mjs` 通过已有 SSH 主机做匿名网络检查。远端只运行 stdin 传入的 Python HTTP worker，不安装依赖、不写文件、不改服务、不传用户登录凭据；进程结束清理。复用生产的 Referer、WBI 签名及 CDN 候选/排序/缓存代码，记录国家代码、API 结果、主机级速度、Range 字节数及摘要；签名地址仅在内存中。所有请求串行、超时有界；每候选两块 256KiB，再从胜出节点读取新的 64KiB。探针将 API HTTP 412 保留为响应状态，使既有 pagelist 回退可验证。它验证远端 HTTP 链路，不运行 React、Shaka 解码或电视音视频输出，也不应加入要求任意开发机都可运行的默认门禁。

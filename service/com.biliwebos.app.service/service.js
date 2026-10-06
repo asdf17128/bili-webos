@@ -13,6 +13,7 @@ var fs = require('fs');
 var path = require('path');
 var os = require('os');
 var childProcess = require('child_process');
+var biliReferer = require('./biliReferer');
 // The WHATWG URL GLOBAL only exists on Node 10+. webOS 5 runs Node 8, where
 // every `new URL(...)` threw ReferenceError — caught by the surrounding
 // try/catch and turned into "Invalid URL"/400 for EVERY api/proxy call. That
@@ -184,7 +185,7 @@ function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity,
     'Accept-Encoding': (isCDN || forceIdentity) ? 'identity' : 'gzip, deflate'
   };
   if (isBili) {
-    headers['Referer'] = 'https://www.bilibili.com/';
+    headers['Referer'] = biliReferer(hostname, parsedUrl.pathname);
     headers['Cookie'] = serializeCookies(storedCookies);
     if (!isCDN) headers['Origin'] = 'https://www.bilibili.com';
   }

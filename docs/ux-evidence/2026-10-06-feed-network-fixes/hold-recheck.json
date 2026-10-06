@@ -1,0 +1,6 @@
+[
+  {
+    "name": "long-press menu requires release then a new confirmation and can reopen",
+    "pass": true
+  }
+]

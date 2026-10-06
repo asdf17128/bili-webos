@@ -30,7 +30,7 @@ const KEYMAP = {
 // a hardcoded index table silently drifted when 收藏 was inserted (2026-07-10:
 // 'settings:6' landed on 搜索, four "flaky" failures + one false-positive pass
 // all traced to this one stale map).
-const NAV_ICON = { search: '搜索', recommend: '推荐', hot: '热门', live: '直播', follow: '关注', favorites: '收藏', game: '游戏', settings: '我的', config: '设置' };
+const NAV_ICON = { search: '搜索', recommend: '推荐', hot: '热门', live: '直播', follow: '关注', favorites: '收藏', game: '游戏', animation: '动画', music: '音乐', knowledge: '知识', entertainment: '娱乐', remix: '鬼畜', settings: '我的', config: '设置' };
 
 // One probe reads every field the tests assert on, in a single round-trip.
 const PROBE = `JSON.stringify({
@@ -521,16 +521,53 @@ async function main(call, relaunchApp) {
     writeFileSync(`${output}/account-library-private.png`, Buffer.from(shot.data, 'base64'));
   }
 
+  async function testFeedRetry() {
+    console.log('\n[Feed retry focus after an immediate Luna response]');
+    await reload(); await goto('hot');
+    await evalJSON(`JSON.stringify((() => {
+      const original = window.webOS.service.request;
+      window.__retryOriginal = original; window.__retryMode = 'fail';
+      window.webOS.service.request = function(uri, options) {
+        if (options.method === 'fetch' && (options.parameters?.url || '').includes('/top/feed/rcmd')) {
+          const data = window.__retryMode === 'fail' ? {code:-1,message:'controlled feed failure'} : {code:0,data:{item:Array.from({length:6},(_,i)=>({bvid:'BVretry'+i,title:'重试焦点验证 '+i,pic:'',owner:{name:'测试'},stat:{view:1}}))}};
+          options.onSuccess({returnValue:true,body:JSON.stringify(data)}); return {cancel(){}};
+        }
+        return original.apply(this, arguments);
+      };
+      return true;
+    })())`);
+    try {
+      await goto('recommend');
+      const error = await evalJSON('JSON.stringify(document.querySelector(".page-state")?.innerText || "")');
+      check('Controlled feed failure exposes remote retry', error.includes('重试') && (await probe()).focus === 'content-0-0');
+      await evalJSON('JSON.stringify(window.__retryMode="success")');
+      await key('ok');
+      const s = await waitFor(x => x.cards === 6 && x.focus === 'content-0-0');
+      check('Immediate retry puts remote focus on the first new card', s.cards === 6 && s.focus === 'content-0-0', `${s.cards} cards, focus=${s.focus}`);
+      const beforeMove = await evalJSON('JSON.stringify(window.__focusState?.() || {})');
+      await key('down');
+      const afterMove = await evalJSON('JSON.stringify({dom:Array.from(document.querySelectorAll("[data-focus-id].focused")).map(e=>e.dataset.focusId),state:window.__focusState?.()})');
+      check('Remote navigation works immediately after retry', beforeMove.current === 'content-0-0' && beforeMove.registered && afterMove.state?.current === 'content-1-0' && afterMove.dom.length === 1 && afterMove.dom[0] === 'content-1-0', JSON.stringify({beforeMove,...afterMove}));
+      const shot = await call('Page.captureScreenshot', {format:'png'});
+      writeFileSync(`${output}/tv-feed-retry-private.png`, Buffer.from(shot.data, 'base64'));
+    } finally {
+      await evalJSON('JSON.stringify((() => {window.webOS.service.request=window.__retryOriginal;delete window.__retryOriginal;delete window.__retryMode;return true;})())');
+      await reload();
+    }
+  }
+
   async function testHotAndPartition() {
     console.log('\n[热门 / 分区]');
     await reload();
     let s = await goto('hot');
-    s = await waitFor(x => x.cards > 0 || x.imgs > 3, { timeout: 9000 });
-    check('热门 loads content', s.cards > 0 || s.imgs > 3, `${s.cards} cards / ${s.imgs} imgs`);
-    // 游戏 is one of the 6 pulled-out partitions (new pid_v2 ranking, current).
-    s = await goto('game');
-    s = await waitFor(x => x.cards > 0 || x.imgs > 3, { timeout: 9000 });
-    check('分区(游戏) loads content', s.cards > 0 || s.imgs > 3, `${s.cards} cards / ${s.imgs} imgs`);
+    s = await waitFor(x => x.cards > 0, { timeout: 9000 });
+    check('热门 loads content', s.cards > 0, `${s.cards} cards`);
+    for (const [page, rid] of [['game',1008],['animation',1005],['music',1003],['knowledge',1010],['entertainment',1002],['remix',1007]]) {
+      await goto(page);
+      const response = await serviceFetch(`https://api.bilibili.com/x/web-interface/ranking/v2?rid=${rid}&type=all`);
+      s = await waitFor(x => x.cards > 0, { timeout: 9000 });
+      check(`分区(${NAV_ICON[page]}) API and grid return content`, response.code === 0 && (response.data?.list?.length || 0) > 0 && s.cards > 0, `code=${response.code}, API=${response.data?.list?.length || 0}, cards=${s.cards}`);
+    }
   }
 
   // Explicit opt-in for a bounded UI round trip. Snapshot the full original list,
@@ -675,7 +712,7 @@ async function main(call, relaunchApp) {
 
   const tests = [
     testNavAndHome, testVideoPlayback, testCommentRail, testBangumiPlayback, testLiveAndDanmaku, testLiveRelay, testLiveQuality, testSearch,
-    testFollowPagination, testAccountLibrary, testSettingsAutoCheck, testCdnSettings, testHotAndPartition, testWatchLater,
+    testFollowPagination, testAccountLibrary, testSettingsAutoCheck, testCdnSettings, testFeedRetry, testHotAndPartition, testWatchLater,
   ];
   try {
     for (const t of tests) {

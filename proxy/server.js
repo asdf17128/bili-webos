@@ -3,6 +3,7 @@ import https from 'node:https';
 import { URL } from 'node:url';
 import zlib from 'node:zlib';
 import { pipeline } from 'node:stream';
+import biliReferer from '../service/com.biliwebos.app.service/biliReferer.js';
 
 // Prevent crash on unhandled errors
 process.on('uncaughtException', (err) => {
@@ -171,7 +172,7 @@ const server = http.createServer((req, res) => {
     // Bili credentials + disguise headers go ONLY to the bilibili family —
     // never to third-party hosts (the translator must not see our cookies).
     if (isBiliHost(hostname)) {
-      options.headers['Referer'] = 'https://www.bilibili.com/';
+      options.headers['Referer'] = biliReferer(hostname, apiPath);
       options.headers['Cookie'] = serializeCookies(allCookies);
       // CDN requests should not send Origin (causes 403)
       if (!isCDN) options.headers['Origin'] = 'https://www.bilibili.com';

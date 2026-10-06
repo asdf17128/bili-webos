@@ -1,0 +1,11 @@
+=== [1/3] Build & Package ===
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 6.71s
+Create com.biliwebos.app_2.1.1_all.ipk to /Users/yuanzhan/code1/bili_webos/app/dist
+Success
+
+=== [2/3] Deploy ===
+  Connected!
+  Done!
+
+=== [3/3] Done ===

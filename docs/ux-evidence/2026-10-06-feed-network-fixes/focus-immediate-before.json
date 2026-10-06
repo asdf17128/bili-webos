@@ -1,0 +1,15 @@
+[
+  {
+    "name": "remote retry restores first card after immediatems response",
+    "pass": false,
+    "error": "page.waitForFunction: Timeout 2000ms exceeded."
+  },
+  {
+    "name": "remote retry restores first card after 0ms response",
+    "pass": true
+  },
+  {
+    "name": "remote retry restores first card after 300ms response",
+    "pass": true
+  }
+]

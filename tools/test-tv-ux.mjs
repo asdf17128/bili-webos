@@ -37,6 +37,12 @@ async function fixture(options = {}) {
   await page.route('**/*', async route => {
     const url = new URL(route.request().url());
     if (url.origin === new URL(baseUrl).origin) {
+      if (options.immediateFeed && url.pathname === '/src/api/client.js') {
+        const response = await route.fetch();
+        const source = await response.text();
+        assert.ok(source.includes('export async function getRecommend(freshType, ps) {'));
+        return route.fulfill({ response, body: source.replace('export async function getRecommend(freshType, ps) {', 'export async function getRecommend(freshType, ps) { if (window.__instantFeed) return window.__instantFeed;') });
+      }
       if (process.env.UX_LEGACY_LAYOUT && url.pathname.endsWith('/tv-design.css')) {
         const response = await route.fetch();
         return route.fulfill({ response, body: (await response.text()).replace('@supports not (display: grid)', '@supports (display: grid)') });
@@ -211,6 +217,58 @@ await test('retry recovers a failed feed', async ({ page, options }) => {
   await page.waitForFunction(() => !!document.querySelector('.video-card.focused'), undefined, { timeout: 2000 });
   assert.match(await focused(page) || '', /^content-/);
 }, { feedError: true });
+for (const delay of ['immediate', 0, 300]) await test(`remote retry restores first card (${delay === 'immediate' ? delay : delay + 'ms'} response)`, async ({ page, options }) => {
+  await page.getByText('重试', { exact: true }).waitFor();
+  await page.keyboard.press('ArrowRight');
+  await page.waitForFunction(() => document.querySelector('.tv-action.focused'));
+  options.feedError = false; options.feedDelay = Number(delay) || 0;
+  if (delay === 'immediate') await page.evaluate(item => { window.__instantFeed = { code: 0, data: { item } }; }, items('立即重试'));
+  await page.keyboard.press('Enter');
+  await ready(page);
+  await page.waitForFunction(() => document.querySelector('.video-card.focused')?.dataset.focusId === 'content-0-0', undefined, { timeout: 2000 });
+  assert.equal(await page.evaluate(() => window.__focusState().current), 'content-0-0');
+  await page.keyboard.press('ArrowDown');
+  assert.equal(await focused(page), 'content-1-0');
+  assert.equal(await page.locator('[data-focus-id].focused').count(), 1);
+}, { feedError: true, immediateFeed: delay === 'immediate' });
+
+await test('retry does not steal focus after the user returns to sidebar', async ({ page, options }) => {
+  await page.getByText('重试', { exact: true }).waitFor();
+  await page.keyboard.press('ArrowRight');
+  await page.waitForFunction(() => document.querySelector('.tv-action.focused'));
+  options.feedError = false; options.feedDelay = 500;
+  await page.keyboard.press('Enter');
+  await page.locator('.grid-skeleton').waitFor();
+  await page.keyboard.press('ArrowLeft');
+  await ready(page);
+  assert.match(await focused(page), /^sidebar-/);
+}, { feedError: true });
+
+await test('immediate short-feed retry remains navigable with resume shelf and prefetch', async ({ page, options }) => {
+  await page.getByText('重试', { exact: true }).waitFor();
+  await page.keyboard.press('ArrowRight');
+  await page.waitForFunction(() => document.querySelector('.tv-action.focused'));
+  options.feedError = false;
+  await page.evaluate(item => { window.__instantFeed = { code: 0, data: { item } }; }, items('立即重试', 6));
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => document.querySelector('.video-card.focused'));
+  await page.keyboard.press('ArrowDown');
+  await page.waitForFunction(() => document.querySelector('.video-card.focused')?.dataset.focusId === 'content-1-0');
+  assert.equal(await page.locator('[data-focus-id].focused').count(), 1);
+  await page.screenshot({path:`${output}/retry-navigable.png`});
+}, { feedError: true, immediateFeed: true, auth: true, resume: true, cols: 4, prefetch: true });
+
+await test('failed retry remains reachable and a later retry recovers', async ({ page, options }) => {
+  await page.getByText('重试', { exact: true }).waitFor();
+  await page.keyboard.press('ArrowRight');
+  await page.waitForFunction(() => document.querySelector('.tv-action.focused'));
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => document.querySelector('.tv-action.focused'));
+  options.feedError = false;
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => document.querySelector('.video-card.focused'));
+}, { feedError: true, feedDelay: 100 });
+
 await test('rapid sidebar traversal commits only the settled section', async ({ page, calls }) => {
   await ready(page); await page.waitForTimeout(400);
   await page.keyboard.press('Backspace');
@@ -524,6 +582,22 @@ for (const language of ['zh', 'en', 'es']) {
     await page.screenshot({ path: `${output}/design-settings-${language}.png` });
   }, { language, scale: 1.25 });
 }
+
+await test('leaving search preserves the next page first focus cell', async ({ page }) => {
+  await ready(page);
+  await page.keyboard.press('Backspace'); await page.keyboard.press('ArrowUp');
+  await page.waitForTimeout(350); await page.keyboard.press('ArrowRight');
+  await page.locator('.search-input').waitFor();
+  await page.keyboard.press('Backspace'); await page.keyboard.press('ArrowUp');
+  await page.waitForTimeout(350); await page.keyboard.press('ArrowRight');
+  await page.waitForSelector('.config-options .settings-row.focused');
+  assert.equal(await focused(page), 'content-0-0');
+  await page.keyboard.press('ArrowDown');
+  assert.equal(await focused(page), 'content-1-0');
+  await page.keyboard.press('ArrowUp');
+  assert.equal(await focused(page), 'content-0-0');
+  assert.equal(await page.locator('[data-focus-id].focused').count(), 1);
+});
 
 await test('settings font rows follow visual order in both directions', async ({ page }) => {
   await ready(page); await page.waitForTimeout(400);

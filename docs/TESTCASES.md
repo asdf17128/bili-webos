@@ -408,3 +408,34 @@ danmaku 断言改为设置感知(测试前强开、测后还原用户偏好);徽
 构建与验证身份见 [environment.json](ux-evidence/2026-10-06-cdn-auto/environment.json)，记录首轮和最终 6 个 bundle SHA256、最终相关源码 SHA256；[最终部署](ux-evidence/2026-10-06-cdn-auto/deploy-final.log)、[最终语法检查](ux-evidence/2026-10-06-cdn-auto/build-syntax.log)。队列边界修复后重跑 11 项逻辑、7 项 React 和 10 项真机 CDN，其余回归为本轮首个部署版本。诊断截图已查看并用 jsQR 解码，含账号信息，只留本地；公开截图仅保留选项弹窗。测试结束确认电视回到 `auto`、坏节点注入关闭，原设置及缓存已恢复。
 
 **仍待验收**：海外报告者实际网络、首页重试间歇焦点失败、游戏接口风控；旧硬件与杜比输出边界沿用前述报告。本轮不声称“海外直播已解决”或“全量全绿”，PR 保持草稿，未合并、未发版。
+
+
+### 焦点、分区与海外网络补验（2026-10-06）
+
+基线 `679eef6`，开发版 2.1.1。本轮处理前节的首页重试焦点、游戏分区 `-352` 和海外网络验证缺口。最终安装在 LG C4 上的 6 个 JS bundle 与本地产物 SHA256 全部一致，见 [构建身份](ux-evidence/2026-10-06-feed-network-fixes/environment.json) 和 [部署](ux-evidence/2026-10-06-feed-network-fixes/deploy-complete.log)。
+
+| Case | 修复与事实佐证 |
+| --- | --- |
+| C-FOCUS-RETRY-01：立即返回也恢复可操作焦点 | 重试时在输入事件中提交 loading，再开始请求，避免 React 把快速请求的 loading=true/false 合并而漏掉恢复逻辑。旧实现立即 Promise 场景失败，网络 0ms/300ms 场景成功，见 [改前](ux-evidence/2026-10-06-feed-network-fixes/focus-immediate-before.json)。新增慢返回、再次失败、主动退回侧栏、短列表+续播栏+预加载回归 |
+| C-FOCUS-RETRY-02：高亮与实际注册目标一致 | 仅修 loading 后 C4 仍出现白框却无法向下导航。临时追踪确认旧重试按钮的 passive cleanup 在新卡片高亮后清空全局焦点：[中间失败](ux-evidence/2026-10-06-feed-network-fixes/device-focus-cleanup-race.json)。注册/注销改用 layout effect，与 DOM 同次提交；[真机专项 3/3](ux-evidence/2026-10-06-feed-network-fixes/device-focus-after.json)，同时断言注册目标、下一次 Down 和唯一白框，不只看截图 |
+| C-FOCUS-SEARCH-01：搜索切到设置不漏第一行 | 最终导航回归进一步发现手动注册的搜索框仍用 passive cleanup，删掉设置页复用的 content-0-0；真实设置从第二行开始且无法回第一行。[电视改前](ux-evidence/2026-10-06-feed-network-fixes/device-search-cleanup-before.json)、[浏览器改前 0/1](ux-evidence/2026-10-06-feed-network-fixes/search-before.json)。同步手动注册的生命周期后 [1/1](ux-evidence/2026-10-06-feed-network-fixes/search-after.json)，最终电视导航 29/29；没有修改测试起点来掩盖回归 |
+| C-RANK-REFERER-01：六个分区真实返回 | 同一匿名出口、同一游戏 API，仅交替 Referer：站点根页面两次 -352，排行榜页面两次 code=0/100 条，[A/B](ux-evidence/2026-10-06-feed-network-fixes/ranking-referer-ab.json)。生产服务与独立代理共用精确 host/path 策略，其他接口/媒体请求不变。C4 六分区各 code=0/100，真实 Node 0.12.2/8 也返回 100 条；[独立代理](ux-evidence/2026-10-06-feed-network-fixes/standalone-proxy.json)、[旧运行时](ux-evidence/2026-10-06-feed-network-fixes/legacy-runtime.log)。研究线索来自 [abcLiyew/BiliBili-API](https://github.com/abcLiyew/BiliBili-API)，结论以上述实测为准，不把所有 -352 都归为同一原因 |
+| C-NET-REGION-01：海外真实传输与择优 | 使用已有 SSH 香港/日本节点匿名请求，不传电视 Cookie、不修改服务器配置。`REGION_SSH=hk` / `jp` 运行 `tools/test-region-network.mjs`，复用生产 WBI、Referer、候选与自动排序代码。两地分别 **11/11**：六分区、view 412 后 pagelist 兜底、DASH 取流、实际媒体 Range、胜出线路新分片、缓存无签名 URL；[香港](ux-evidence/2026-10-06-feed-network-fixes/hk.json)、[日本](ux-evidence/2026-10-06-feed-network-fixes/jp.json) |
+
+香港选中 Ali 海外 **51.71 Mbps**，同次原生 cosov 22.57、Akamai 23.16，HWO1 第二块超过 4 秒被标记失败；日本选中 cosov **64.86 Mbps**，Akamai 14.03、HWO1 1.88。所选节点又成功取得新的 64KiB 分片，分别 143.8ms / 23.3ms。每节点串行两块 256KiB，取较慢样本；各区域同一位置成功分片的 SHA256 一致。这是匿名 480P 单片源、服务器出口、小块短时传输，不证明海外家庭网络中的电视解码、高码率长期稳定性或直播提速，也不固定认定某个节点永远最快。
+
+海外工具首轮错误地把 view 的 HTTP 412 抛出，漏掉产品已有的 pagelist 回退；已修工具响应语义再测，保留 [香港首轮](ux-evidence/2026-10-06-feed-network-fixes/hk-worker-before.json)、[日本首轮](ux-evidence/2026-10-06-feed-network-fixes/jp-worker-before.json)。没有把工具失败掩饰成产品故障或直接跳过。
+
+| 回归层 | 本轮结果与范围 |
+| --- | --- |
+| 最终完整本地门禁 `bash tools/verify.sh --no-tv --ux` | **通过**：浏览器 **61/61**、点播 **15/15**、直播 **9/9**、CDN React **7/7**；服务 **22/22**、媒体选择 **13/13**、真实 HTTP Range/超时/取消、CDN 逻辑 **11/11**、真实 Node 0.12.2/8、en/es **244 keys** 及 ES5/ES2016 语法均通过；[完整日志](ux-evidence/2026-10-06-feed-network-fixes/verify-complete.log)、[浏览器](ux-evidence/2026-10-06-feed-network-fixes/browser-complete.json)、[点播](ux-evidence/2026-10-06-feed-network-fixes/vod-complete.json)、[直播](ux-evidence/2026-10-06-feed-network-fixes/live-complete.json)、[CDN](ux-evidence/2026-10-06-feed-network-fixes/cdn-complete.json) |
+| 最终 Chromium + 真实 service.js 桥 + B 站网络 | **55 通过 / 0 失败 / 2 跳过**；[结果](ux-evidence/2026-10-06-feed-network-fixes/simulator-complete.json)、[日志](ux-evidence/2026-10-06-feed-network-fixes/simulator-complete.log)。游戏分区已通过，关注/稍后再看因该桥的认证失效跳过；不是 LG 官方模拟器，未复制电视账号凭据 |
+| 最终 LG C4 综合回归 `node tools/test-ui.mjs` | **53 通过 / 0 失败 / 3 跳过**；[结果](ux-evidence/2026-10-06-feed-network-fixes/device-complete.json)、[日志](ux-evidence/2026-10-06-feed-network-fixes/device-complete.log)。三个跳过分别是首个安静房间未观测到弹幕、单档直播间无法验证画质切换、未启用账号写入；独立实时弹幕场景在同套中 **4/4**，实际收到 1 帧并渲染。有效登录下 UP 投稿、关注分页、收藏/订阅/稍后再看读取通过；账号增删沿用此前已授权专项证据，本轮未重做 |
+| 最终 LG C4 导航、播放、设置焦点 | **29/29**；[结果](ux-evidence/2026-10-06-feed-network-fixes/device-navigation-final.json)。Back/右键保持列表位置、侧栏确认主动刷新、实际点播/暂停/快进/续播/重播、搜索→设置第一行及字号弹层均通过 |
+| LG C4 列数和大字号矩阵 | **12/12**；[结果](ux-evidence/2026-10-06-feed-network-fixes/device-settings.json)。2/3/4 列、大字号真实尺寸、深列表、重载持久化和历史页滚动；此专项运行在最终 SearchPage 两行生命周期调整前，调整后的字号导航由上面的 29 项再次覆盖 |
+
+补充保留一次受开发热更新干扰的本地运行：当时 59/60，长按菜单断言失败，同秒 Vite 记录 `useFocus.js` 修改和 Fast Refresh invalidation；[运行结果](ux-evidence/2026-10-06-feed-network-fixes/browser-hmr-interrupted.json)、[HMR 时间记录](ux-evidence/2026-10-06-feed-network-fixes/hmr-interruption.log)。冻结产品源码后重跑整条门禁，最终结果见表；没有删掉失败或仅用定向通过宣称全套成功。
+
+已目视检查最终设置第一行、2/3/4 列与大字号历史页、首页重试后的唯一焦点。含账号/历史的电视截图只留本地，公开 [重试截图](ux-evidence/2026-10-06-feed-network-fixes/retry-navigable.png) 使用隔离假数据；其中封面有意为空，测试只控制推荐失败/恢复时序。临时故障注入已撤销，测试恢复原设置。
+
+首页焦点与分区失败已修复，海外验证已从仅本机推进到 HK/JP 实际出口。仍需相应设备/环境确认海外问题用户家庭电视、webOS 4 整机、杜比/Atmos 输出及旧硬件 DLNA；这些不由服务器探针或 C4 回归替代。PR #40 继续为草稿，未合并、未发布新版本。

@@ -1,0 +1,55 @@
+{
+  "at": "2026-10-06T07:36:28.554Z",
+  "baseline": "679eef69298df0ba7afc3c6f751a019524046335",
+  "device": "LG C4 / Chromium 120",
+  "version": "2.1.1",
+  "bundles": [
+    {
+      "file": "LivePlayerPage-legacy-BEJw1PnM.js",
+      "sha256": "632e8bf3f15cab48b2ecccf98c9ebb6446296f6626db84dc14cecb9838c2c007",
+      "installedSha256": "632e8bf3f15cab48b2ecccf98c9ebb6446296f6626db84dc14cecb9838c2c007",
+      "match": true
+    },
+    {
+      "file": "PlayerPage-legacy-U__F8jzN.js",
+      "sha256": "f051512bf8b41bb9ae8b100a4210969b68f8c85f90be8b61d24d78d5352a4da1",
+      "installedSha256": "f051512bf8b41bb9ae8b100a4210969b68f8c85f90be8b61d24d78d5352a4da1",
+      "match": true
+    },
+    {
+      "file": "index-legacy-CzO6vIKk.js",
+      "sha256": "668659b823bbdeb0ae352fd9c42ffd365abb3a410e8cfe36eedc545bae028b0b",
+      "installedSha256": "668659b823bbdeb0ae352fd9c42ffd365abb3a410e8cfe36eedc545bae028b0b",
+      "match": true
+    },
+    {
+      "file": "polyfills-legacy-BM5L0Uut.js",
+      "sha256": "70f60ce348e3017fc4a5649b93772dec6959305b99e1eb7303c4727687e8a4d5",
+      "installedSha256": "70f60ce348e3017fc4a5649b93772dec6959305b99e1eb7303c4727687e8a4d5",
+      "match": true
+    },
+    {
+      "file": "react-vendor-legacy-B2h5bzJ7.js",
+      "sha256": "35b6eec340e5d94be0db7cb0978d708b51ed326b6b5144b1afb1d9a2d28cad7c",
+      "installedSha256": "35b6eec340e5d94be0db7cb0978d708b51ed326b6b5144b1afb1d9a2d28cad7c",
+      "match": true
+    },
+    {
+      "file": "shaka-player.compiled-legacy-01vuRLq-.js",
+      "sha256": "e7555409c7b44282543f08a2c96f3b10f4925540208e22735c90e90c84138b0f",
+      "installedSha256": "e7555409c7b44282543f08a2c96f3b10f4925540208e22735c90e90c84138b0f",
+      "match": true
+    }
+  ],
+  "sources": {
+    "app/src/pages/HomePage.jsx": "23aa46a65aeaf34e240e342226ff3e1837bec33d0b3b60b97869440b9d5aebc7",
+    "app/src/pages/SearchPage.jsx": "7134f298b2fc1e0563b568012d11c60dbfc107d3d0894e72e29d7114360f18be",
+    "app/src/hooks/useFocus.js": "74c9d67347d1d9ff9588eca921f18cddd9e709dc1a25768f3d923ba05c63e3b7",
+    "service/com.biliwebos.app.service/biliReferer.js": "80244e49d0a9e8ac3d0f3b64ce3c3fcd193a6b9ff5d8e4d197e2bd84341ee4f1",
+    "service/com.biliwebos.app.service/service.js": "50de066a90f73f83276c023270020fb51fcb9462e6f7adbcb80db041fcf7d382",
+    "tools/test-tv-ux.mjs": "7b1237cbd423bb79a109e12fa5d0d94d57538b44f783c0e0eb83249d9347a95e",
+    "tools/test-ui.mjs": "dd1f4356c508213bbefa1acddfd60311e3a807f8cb6e340b3573d83e4f427946",
+    "tools/test-region-network.mjs": "b553ea5a3b73e694850d0cf0910855fb80f49ed25d2b38c524da200ff764b270",
+    "tools/probe-region.py": "a6409329a79a93feff597a36ea3eaf84f6eeff484d3cd65172e078b3b27ba79a"
+  }
+}

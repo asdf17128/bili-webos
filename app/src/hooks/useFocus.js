@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useLayoutEffect, useCallback, useRef } from 'react';
 import { markAfterPaint } from '../utils/perf';
 
 // ======================================================
@@ -13,6 +13,13 @@ let contentContext = 'recommend';
 const contentMemory = new Map();
 let pendingContentFocus = null;
 let contentFocusTimer = null;
+
+// Read-only diagnostics: a painted ring alone does not prove that D-pad input
+// still has a registered target after a fast React replacement.
+if (typeof window !== 'undefined') window.__focusState = () => ({
+  current: currentFocusId, registered: focusRegistry.has(currentFocusId),
+  pending: pendingContentFocus?.context || null, custom: !!customKeyHandler,
+});
 
 export function cancelContentFocus() {
   pendingContentFocus = null;
@@ -473,7 +480,10 @@ export function useFocusable({ id, row = 0, col = 0, group = 'content', onSelect
   // 回调本身走 ref,重渲染不会重新注册。
   const hasLongPress = !!onLongPress;
 
-  useEffect(() => {
+  // Keep the registry in the same commit as its DOM. A pending focus timer
+  // must not resolve against an old retry button after new cards have painted,
+  // only to lose its target when that button's passive cleanup finally runs.
+  useLayoutEffect(() => {
     registerFocusable(id, {
       row, col, group,
       onSelect: () => onSelectRef.current?.(),

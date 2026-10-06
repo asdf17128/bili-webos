@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { searchVideo, searchSuggest, getHotSearches } from '../api/client';
 import { storage } from '../utils/storage';
 import { useFocusable, setFocus, getCurrentFocusId, registerFocusable, unregisterFocusable } from '../hooks/useFocus';
@@ -48,7 +48,9 @@ export default function SearchPage({ onPlayVideo }) {
   // Register the search box as a focus cell (col 0, row 0); OK raises the
   // system keyboard. Manual registration keeps the native <input> focus ring
   // without useFocusable's click-preventDefault (which blocks input focus).
-  useEffect(() => {
+  // Match useFocusable's commit phase so unmount cannot unregister the next
+  // page's content-0-0 after that page has already registered it.
+  useLayoutEffect(() => {
     // NB: do NOT setFocus here — the search page also mounts on sidebar *preview*
     // (arrowing onto 搜索), and stealing focus into the box would break sidebar
     // navigation. App's selectPage → focusFirstContent moves focus in on OK.

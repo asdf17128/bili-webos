@@ -1,0 +1,29 @@
+{
+  "credentials": "none",
+  "rows": [
+    {
+      "referer": "https://www.bilibili.com/",
+      "status": 200,
+      "code": -352,
+      "count": 0
+    },
+    {
+      "referer": "https://www.bilibili.com/v/popular/rank/all",
+      "status": 200,
+      "code": 0,
+      "count": 100
+    },
+    {
+      "referer": "https://www.bilibili.com/",
+      "status": 200,
+      "code": -352,
+      "count": 0
+    },
+    {
+      "referer": "https://www.bilibili.com/v/popular/rank/all",
+      "status": 200,
+      "code": 0,
+      "count": 100
+    }
+  ]
+}

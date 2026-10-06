@@ -263,8 +263,8 @@ async function main() {
     check('view 被拦时 pagelist 兜底照样播 (C-ERR-03)', fb.playing && !fb.err, `t=${fb.ct}s errScreen=${fb.err}`);
     await page.evaluate(() => { localStorage.removeItem('bili_test_view412'); });
 
-    // C-UI-15 (#27):关掉「播完自动播放下一个」后,片尾不启动倒计时,
-    // 停在推荐列表等手动选。复用上面还在播的实例,直接把进度拨到片尾。
+    // C-UI-15 (#27/#41):关掉「播完自动播放下一个」后单集循环 —— 无「秒后自动播放」
+    // 倒计时,视频从片尾回到开头继续播(不是停在结束页)。
     await page.evaluate(() => {
       const s = JSON.parse(localStorage.getItem('bili_settings') || '{}');
       s.autoplayNext = false;
@@ -276,11 +276,15 @@ async function main() {
     const end = await page.evaluate(() => {
       const v = document.querySelector('video');
       const text = document.body.textContent || '';
-      return { ended: !!(v && v.ended), countdown: /秒后自动播放/.test(text),
-               related: !!document.querySelector('.player-page .related-card, .player-page [class*=related]') || text.includes('相关推荐') };
+      return {
+        ended: !!(v && v.ended),
+        countdown: /秒后自动播放/.test(text),
+        looping: !!(v && !v.ended && !v.paused && v.currentTime < 45),
+        t: v ? Math.round(v.currentTime) : -1,
+      };
     });
-    check('关掉自动连播后片尾无倒计时 (C-UI-15)', end.ended && !end.countdown,
-      `ended=${end.ended} countdown=${end.countdown}`);
+    check('关掉自动连播后单集循环 (C-UI-15)', end.looping && !end.countdown,
+      `looping=${end.looping} ended=${end.ended} countdown=${end.countdown} t=${end.t}`);
     await page.evaluate(() => {
       const s = JSON.parse(localStorage.getItem('bili_settings') || '{}');
       delete s.autoplayNext;

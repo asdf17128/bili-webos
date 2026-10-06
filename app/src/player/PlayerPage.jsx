@@ -826,6 +826,24 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         mark('player-first-frame', ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()) - openT.current);
       }, { once: true });
       videoRef.current.addEventListener('ended', () => {
+        // autoplayNext gates EVERY end-of-stream advance (#27/#41): related
+        // countdown, favorites/watch-later playlist order-play, and 分P/合集.
+        // Previously only the related countdown checked the setting, so turning
+        // it off stopped home videos but favorites still skipped ahead.
+        // Off ⇒ single-video loop (seek 0 + play) instead of pausing on the end page.
+        const autoNext = storage.getSettings().autoplayNext !== false;
+        if (!autoNext) {
+          const v = videoRef.current;
+          if (v) {
+            try { v.currentTime = 0; } catch {}
+            const p = v.play();
+            if (p && typeof p.catch === 'function') p.catch(() => {});
+          }
+          setPlaying(true);
+          setEnded(false);
+          castReportState({ playState: 'playing' }).catch(() => {});
+          return;
+        }
         castReportState({ playState: 'end' }).catch(() => {});
         // 看完自动移出稍后再看(设置项,默认关)。只对**从稍后再看点开**的视频生效
         // ——否则会对着从没进过队列的视频白发一个删除请求。
@@ -868,8 +886,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         setPanelTab('related');
         setFocusArea('related');
         setFocusIdx(0);
-        // YouTube-style autoplay next — 可在设置里关 (#27):关了就停在推荐列表等手动选。
-        if (relatedRef.current.length > 0 && storage.getSettings().autoplayNext !== false) setEndNextIn(10);
+        // YouTube-style autoplay next — gated above; countdown only when on.
+        if (relatedRef.current.length > 0) setEndNextIn(10);
       });
 
       try { setDanmakus(await activeResult(getDanmaku(cid))); } catch {}

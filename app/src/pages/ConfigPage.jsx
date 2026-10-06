@@ -129,8 +129,8 @@ export default function ConfigPage({ onLogout, user }) {
     },
   });
 
-  // 播完自动播放下一个 (#27)。默认开(维持现状);关了片尾不启动倒计时,
-  // 人不在电视前也不会被带去别的视频。
+  // 播完自动播放下一个 (#27/#41)。默认开;关掉后单集循环 —— 相关推荐倒计时、
+  // 收藏夹/稍后再看连播、分P/合集推进全部停住,当前视频从头再播。
   const [autoplayNext, setAutoplayNext] = useState(() => settings.autoplayNext !== false);
   const { props: autoplayNextProps } = useFocusable({
     id: 'content-2-0', row: 2, col: 0, group: 'content',

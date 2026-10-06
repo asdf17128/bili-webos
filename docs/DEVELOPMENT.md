@@ -59,7 +59,7 @@ bash tools/verify.sh --full     # 六层:语法→静态规范/逻辑→真Node0
    (如动了播放器 → C-PLAY-03~08;动了焦点 → C-FOCUS-*;动了投屏 → C-CAST-01 需手机);
 4. 涉及 UI 的改动:真机截图**当用户视角逐像素过目**(v1.2.7 黑封面就是只看断言没看图);
 5. 发布节奏:改动攒批、部署给 owner 过目、点头再发(feedback_release_pace)。
-6. **每个 release 必须上传 `version.json` 资产**(`{"version":"x.y.z"}`)——
+6. **每个正式 release 必须上传 `version.json` 资产**(`{"version":"x.y.z"}`)——
    app 每日一次的版本检查拉它,其 download_count 即日活代理
    (`gh api repos/asdf17128/bili-webos/releases --jq '...download_count'`);
    忘传则当日计数断档(app 侧静默容错,次日重试)。
@@ -157,3 +157,14 @@ release 必须挂**三件**资产,少一件都会静默出事:
 `app/src/player/startupTrace.test.js` 已进入静态门禁。`tools/test-player-loading.mjs` 覆盖并发阶段、媒体响应与就绪间隔、失败/退出、无记录及诊断接口全失败；`LOADING_FILTER='player shelf|startup|diagnostics'` 可定向运行。读取 Vite 单例模块时使用实际加载的含 HMR 时间戳 URL。
 
 `tools/test-tv-ux-device.mjs` 额外检查推荐展开时标准/特大字号进度条和按钮边界，并保存真机截图；`tools/test-cdn-tv.mjs` 从真实电视二维码读取阶段与媒体事件，将不含账号内容的摘录保存为 `startup-report.txt`。阶段耗时可以并行，不作求和；总起播仍以 loadeddata 为界，不等同于逐帧上屏。未发生的事件保留为空，网络重试单列于播放中卡顿恢复次数。
+
+
+### C9 起播测试包（不更新正式通道）
+
+`node tools/release.mjs v2.2.3-c9-test.1 --test --notes-file docs/C9-TEST.md` 仅供已授权的测试分发。`--dry-run` 输出计划；真正分发要求独立分支已提交并推送、tag 与 `TEST_BUILD` 一致、当前 latest 仍是对应基础版。新建不可覆盖的 prerelease，显式 `latest=false`，只上传带测试标记的 IPK 和 SHA256，不上传稳定版 metadata。上传后匿名下载校验 IPK，并比较操作前后稳定版 tag / version.json / Homebrew manifest 的哈希。包含非空 `TEST_BUILD` 的代码禁止走正式发布入口。
+
+webOS 安装版本保持 2.2.3，设置/诊断显示 `2.2.3 c9-test.1`；同版本覆盖与回滚由真机安装验证。测试分支未合并，待 C9 回传再决定正式版。
+
+`tools/test-manifest-mime.mjs` 使用真实 Shaka 4.16.24 和 Chromium Blob 网络栈，固定空 MPD 使两组都到达同一个解析错误；对照无 MIME 的 4 次 HEAD 失败与显式 DASH 的零次重试。它证明网络路径，不测视频解码或 C9 性能。已加入 `verify.sh --ux`；PlayerPage 的失败恢复路径另由加载回归测试覆盖。
+
+扩展起播报告：`dispatch` 是各阶段首次派发时间；`first-host` 是首次媒体请求（可能是索引）及首次响应的节点，不随后续后台测速覆盖；`vappend/aappend` 是 Shaka 公共 `segmentappended` 事件（写入完成，不代表画面已上屏）；`buffer` 为相应时点的缓冲毫秒与 readyState；`net-retry` 按请求类型/协议/错误码/主机聚合，最多四组，多余计入 other。不保留路径、签名、响应体或请求头。

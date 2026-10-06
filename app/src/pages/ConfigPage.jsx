@@ -3,7 +3,7 @@ import { storage } from '../utils/storage';
 import { getPlaybackMode } from '../player/playbackMode';
 import { useFocusable, setCustomKeyHandler, setFocus } from '../hooks/useFocus';
 import { getLatestVersion } from '../api/client';
-import { APP_VERSION, compareVersions } from '../version';
+import { APP_VERSION, BUILD_VERSION, compareVersions } from '../version';
 import DiagPanel from '../components/DiagPanel';
 import { t, getLocale, setLanguage, availableLanguages } from '../i18n';
 
@@ -309,7 +309,7 @@ export default function ConfigPage({ onLogout, user }) {
 
       <div className="settings-row" {...checkUpdateProps}>
         <span>{t('检查更新')}</span>
-        <span className="settings-row-value">{updateMsg || `v${APP_VERSION}`}</span>
+        <span className="settings-row-value">{updateMsg || `v${BUILD_VERSION}`}</span>
       </div>
 
       <div className="settings-row" {...diagProps}>
@@ -361,7 +361,7 @@ export default function ConfigPage({ onLogout, user }) {
 
       <div style={{ marginTop: 28, color: '#888', fontSize: 'calc(18px * var(--ui-scale))', lineHeight: 2 }}>
         <div style={{ fontSize: 'calc(20px * var(--ui-scale))', color: '#aaa', marginBottom: 6 }}>{t('关于')}</div>
-        <div>{t('哔哩哔哩 webOS · 版本 v{v}', { v: APP_VERSION })}</div>
+        <div>{t('哔哩哔哩 webOS · 版本 v{v}', { v: BUILD_VERSION })}</div>
         <div>{t('联系 / 反馈：')}{CONTACT_EMAIL}</div>
         <div>{t('项目主页：')}github.com/asdf17128/bili-webos</div>
         <div style={{ fontSize: 'calc(16px * var(--ui-scale))', color: '#9b9da7', marginTop: 8 }}>{t('代理: ')}{proxyUrl}</div>

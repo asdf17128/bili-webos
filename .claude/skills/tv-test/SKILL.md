@@ -142,3 +142,9 @@ bash tools/verify.sh --full   # 额外跑真机 UI smoke(test-ui.mjs,~3分钟)
 - 高推荐列表放进限高的纵向 flex 容器，会把 6px 进度条压成 0px。正对照需包含真实按钮数量、多行推荐、长标题和大字号，同时检查进度条高度、各行边界与返回按钮后的可见焦点。垂直内容可用普通流与显式 margin，避免旧引擎的 flex 压缩和 gap 缺失；强制旧 CSS 的现代浏览器测试仍不是 Chromium 53 整机验证。
 - 起播阶段从请求发出时计时，不能等并发任务被 await 时才起表；并行时长不可相加。Shaka load、首个分片响应、loadedmetadata、loadeddata、playing 分开记录，loadeddata 不是逐帧上屏测量。未知值用缺失标记；取消/失败保留部分数据，退出后的迟到任务不能覆盖下一条视频。
 - Vite HMR 给模块 URL 添加时间戳。测试直接 import 无时间戳路径会得到另一份模块内存，误把真实播放报告读成 null；读取实际已加载的 resource URL 或从产品 UI 观察，不能以重复模块的空状态判产品失败。
+
+## 2026-10-07：Blob DASH 的隐式 MIME 探测
+
+- 真实 Shaka 4.16.24 对无扩展名 Blob 的 `load(url)` 会 HEAD 探测 MIME；Chromium Blob HEAD 返回 HTTP_ERROR，4 次失败后改 GET。Blob 自带 type 不等于播放器知道格式，生成 DASH 时给 `load` 第三个参数 `application/dash+xml`，并覆盖画质回滚入口。
+- `tools/test-manifest-mime.mjs` 用真实网络栈、相同空 MPD 的同一终止解析错误作正对照，仅证明多余探测；不能将测试耗时当电视出画面提速。Shaka retry 事件包含清单与媒体，错误 data 布局按 code 不同；报告需分类，不能把全部次数标为媒体/CDN失败。
+- 第一条媒体响应可能是 SegmentBase 索引；公共 segmentappended 才表示媒体写入完成，但仍不等于画面上屏。记录首个节点，不能用后台测速后的最后节点推断起播选路。

@@ -4,6 +4,9 @@
 // said 1.5.0 while this said 1.4.0), so every v1.5.0 user was told "发现新版
 // v1.5.0" forever. tools/verify.sh now gates on it.
 export const APP_VERSION = '2.2.3';
+// Test distribution only; numeric version/update comparison remains unchanged.
+export const TEST_BUILD = 'c9-test.1';
+export const BUILD_VERSION = APP_VERSION + (TEST_BUILD ? ' ' + TEST_BUILD : '');
 
 // Compare two "x.y.z" strings. Returns >0 if a is newer than b.
 export function compareVersions(a, b) {

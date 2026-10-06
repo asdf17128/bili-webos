@@ -455,7 +455,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       firstFrame = true;
       const startupMs = Math.round(perfNow() - openT.current);
       mark('player-first-frame', startupMs);
-      trace.point('data');
+      trace.point('data', media);
       report({ startupMs });
       const pending = extras; extras = [];
       pending.forEach(fn => fn());
@@ -465,7 +465,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       if (firstFrame || media.readyState >= 2) { onFirstFrame(); fn(); }
       else extras.push(fn);
     };
-    const onMetadata = () => trace.point('metadata');
+    const onMetadata = () => trace.point('metadata', media);
     const onPlaying = () => trace.point('playing');
     media.addEventListener('loadedmetadata', onMetadata);
     media.addEventListener('playing', onPlaying);
@@ -543,8 +543,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             (v.paused || bufferedAhead(v) >= 15);
         },
       });
+      player.addEventListener('segmentappended', e => trace.append(e.contentType, media));
       ne.registerRequestFilter((type, request) => {
-        if (type === 1) trace.request();
         const proxyBase = mediaProxyBase();
         // Shaka can reuse proxied URIs; audio/video keep their own signed paths.
         let urls = request.uris.map(u => u?.startsWith(proxyBase + '/proxy/')
@@ -559,11 +559,12 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }
         const alive = kept.filter(u => !isBanned(cdnHostOf(u)));
         request.uris = alive.length ? alive : kept;
+        if (type === 1) trace.request(request);
       });
       ne.addEventListener('retry', e => {
-        trace.retry();
-        onShakaRetry(e);
         const error = e.error || e.detail?.error;
+        trace.retry(error);
+        onShakaRetry(e);
         cdnAutoRef.current?.failed(cdnHostOf(error?.data?.[0]));
       });
       ne.registerResponseFilter((type, response, context) => {
@@ -1087,7 +1088,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       const mpd = buildMPD(dash, selected.representation, attempt);
       const url = URL.createObjectURL(new Blob([mpd], { type: 'application/dash+xml' }));
       try {
-        await measure('load', () => player.load(url, position || undefined));
+        await measure('load', () => player.load(url, position || undefined, 'application/dash+xml'));
         if (!isActive()) throw Object.assign(new Error('Load cancelled'), { code: 7000 });
         const format = {
           video: attempt.dolbyCodec ? 'Dolby Vision' : selected.actualQn === 126
@@ -1859,7 +1860,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         cdnAutoRef.current?.setSource(previous.representation);
         const url = URL.createObjectURL(new Blob([previous.mpd], { type: 'application/dash+xml' }));
         try {
-          await player.load(url, pos);
+          await player.load(url, pos, 'application/dash+xml');
           if (isActive()) {
             loadedStreamRef.current = previous;
             setCurrentQuality(previous.quality); setStreamFormat(previous.format);

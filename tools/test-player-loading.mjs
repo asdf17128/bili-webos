@@ -10,9 +10,10 @@ const results = [];
 const stub = `class Player {
  static isBrowserSupported(){return true}
  async attach(v){this.video=v}
- configure(){} addEventListener(){} getNetworkingEngine(){return this.net||(this.net={registerRequestFilter(f){this.request=f},registerResponseFilter(f){this.response=f},addEventListener(n,f){this.retry=f}})}
+ configure(){} addEventListener(n,f){(this.events||(this.events={}))[n]=f} getNetworkingEngine(){return this.net||(this.net={registerRequestFilter(f){this.request=f},registerResponseFilter(f){this.response=f},addEventListener(n,f){this.retry=f}})}
  getVariantTracks(){return []} retryStreaming(){window.__probe.retries++;return true} getStats(){return {}}
- async load(url,position){window.__probe.loads++;
+ async load(url,position,mime){window.__probe.loads++;window.__probe.mimes.push(mime);
+ if(window.__mode==='quality-restore'&&window.__probe.loads===2)throw Object.assign(new Error('network failed'),{category:1});
  const mpd=await (await fetch(url)).text();window.__probe.mpds.push(mpd);window.__probe.positions.push(position);
  if(window.__mode==='premium-fallback' && /codecs="(ec-3|fLaC)"/.test(mpd)) throw Object.assign(new Error('unsupported decoder'),{category:3});
  if(window.__mode==='dolby-fallback' && /codecs="dvh1/.test(mpd)) throw Object.assign(new Error('DV decoder failed'),{category:3}); if(window.__mode==='cancel') return new Promise((r,j)=>{this.reject=j});
@@ -20,10 +21,11 @@ const stub = `class Player {
  if(window.__mode==='retry'&&window.__probe.loads===1) throw Object.assign(new Error('transient network'),{code:1001,category:1});
  if(window.__mode==='trace-media'){
  this.net.request(1,{uris:['https://media.bilivideo.com/video']});
- this.net.retry({error:{code:1001,data:['https://media.bilivideo.com/video']}});
+ this.net.retry({error:{code:1001,data:['https://media.bilivideo.com/video',502,'secret',{},1]}});
  await new Promise(r=>setTimeout(r,400));
  this.net.response(1,{timeMs:400,uri:'https://media.bilivideo.com/video'}, {stream:{type:'video'}});
  this.video.dispatchEvent(new Event('loadedmetadata'));
+ this.events?.segmentappended?.({contentType:'video'});
  await new Promise(r=>setTimeout(r,650));
  }
  Object.defineProperty(this.video,'currentTime',{configurable:true,get:()=>1,set:()=>{}});
@@ -38,7 +40,7 @@ async function run(name, mode, fn, scale) {
  if(process.env.LOADING_FILTER&&!new RegExp(process.env.LOADING_FILTER).test(name))return;
  const context=await browser.newContext({viewport:{width:1920,height:1080}});
  await context.addInitScript(({mode,scale})=>{
-   delete window.webOS;window.__mode=mode;window.__probe={loads:0,destroyed:0,retries:0,mpds:[],positions:[]};
+   delete window.webOS;window.__mode=mode;window.__probe={loads:0,destroyed:0,retries:0,mpds:[],positions:[],mimes:[]};
    localStorage.setItem('bili_settings',JSON.stringify({language:'zh',uiScale:scale?.ui||1,gridCols:3,subtitle:true,danmaku:true,subtitleScale:scale?.sub||1,danmakuScale:scale?.dm||1}));
    if(mode.startsWith('layout'))localStorage.setItem('bili_auth',JSON.stringify({SESSDATA:'fixture'}));
    localStorage.setItem('bili_perfopt',JSON.stringify({prefetchPage:false,warmPlayer:false}));
@@ -84,7 +86,7 @@ async function run(name, mode, fn, scale) {
   if(u.pathname.endsWith('/x/v2/reply')) data={page:{count:3},replies:Array.from({length:3},(_,i)=>({rpid:i+1,member:{uname:'测试用户'},content:{message:'评论内容 '+i},like:1}))};
   return route.fulfill({json:{code:0,data}});
  });
- try {await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>!!window.__openVideo);await fn(page,calls);results.push({name,pass:true});console.log('PASS',name);}
+ try {await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>!!window.__openVideo);await fn(page,calls);assert.ok((await page.evaluate(()=>window.__probe.mimes)).every(m=>'application/dash+xml'===m),'every generated MPD load, including recovery, supplies DASH MIME');results.push({name,pass:true});console.log('PASS',name);}
  catch(e){results.push({name,pass:false,error:e.message});console.log('FAIL',name,e.message.split('\n')[0]);await page.screenshot({path:`${output}/failure-${results.length}.png`});}
  finally{await context.close();}
 }
@@ -223,6 +225,16 @@ await run('leaving while video information is pending prevents later streaming',
  await open(page);await page.waitForTimeout(400);await page.keyboard.press('Escape');await page.waitForTimeout(1500);
  assert.equal(calls.playurl,0);assert.equal(await page.evaluate(()=>window.__probe.loads),0);
 });
+await run('failed quality load restores original stream with explicit DASH MIME','quality-restore',async page=>{
+ await open(page);await page.waitForFunction(()=>window.__probe.mpds.length===1);
+ await page.keyboard.press('ArrowUp');
+ await page.locator('.player-btn').filter({hasText:'1080P'}).click();
+ await page.locator('.quality-option').filter({hasText:'360P'}).click();
+ await page.waitForFunction(()=>window.__probe.loads===3);
+ await page.waitForFunction(()=>!document.querySelector('.player-page .loading'));
+ assert.deepEqual(await page.evaluate(()=>window.__probe.mimes),Array(3).fill('application/dash+xml'));
+ assert.equal(await page.locator('.player-page .player-error').count(),0);
+});
 await run('network failure stops after two outer attempts instead of trying every quality','network',async(page,calls)=>{
  await open(page);await page.waitForTimeout(2000);assert.equal(calls.playurl,2);
  const trace=(await report(page)).startup;assert.equal(trace.state,'failed');assert.equal(trace.stages.load.errors,2);assert.equal(trace.stages.url.count,2);assert.equal(trace.points.data,undefined);
@@ -251,6 +263,10 @@ await run('startup report separates slow media readiness and stays visible when 
  assert.ok(trace.points.playing>=trace.points.data,JSON.stringify(trace));
  assert.ok(Math.abs(r.startupMs-trace.points.data)<=5);
  assert.equal(trace.stages.load.count,1);assert.equal(trace.stages.load.pending,0);
+ assert.ok(trace.stages.load.start<=trace.points.request);
+ assert.ok(trace.points.vappend>=trace.points.metadata&&trace.points.vappend<trace.points.data);
+ assert.equal(trace.hosts.request,'media.bilivideo.com');assert.equal(trace.hosts.video,'media.bilivideo.com');
+ assert.equal(trace.retryKinds[0].kind,'media');assert.equal(trace.retryKinds[0].code,1001);
  await page.keyboard.press('Escape');calls.fail=true;
  await page.locator('[data-focus-id="sidebar-13-0"]').click();
  await page.locator('[data-focus-id="content-9-0"]').click();

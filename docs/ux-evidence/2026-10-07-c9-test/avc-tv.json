@@ -1,0 +1,308 @@
+{
+  "ua": "Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.270 Safari/537.36 WebAppManager",
+  "runs": [
+    {
+      "sample": {
+        "bvid": "BV1GvXKBMEAb",
+        "resumeMode": "none",
+        "route": "auto"
+      },
+      "events": [
+        {
+          "type": "loadstart",
+          "ms": 284,
+          "ready": 0,
+          "time": 0
+        },
+        {
+          "type": "waiting",
+          "ms": 1024,
+          "ready": 0,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 1141,
+          "ready": 1,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 1653,
+          "ready": 4,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 1677,
+          "ready": 4,
+          "time": 0
+        }
+      ],
+      "api": [
+        {
+          "path": "/x/web-interface/view",
+          "start": 244,
+          "end": 408,
+          "ms": 164
+        },
+        {
+          "path": "/x/player/playurl",
+          "start": 419,
+          "end": 518,
+          "ms": 99
+        },
+        {
+          "path": "/x/web-interface/archive/relation",
+          "start": 1659,
+          "end": 1755,
+          "ms": 96
+        },
+        {
+          "path": "/x/player/videoshot",
+          "start": 1661,
+          "end": 2074,
+          "ms": 413
+        },
+        {
+          "path": "/x/v1/dm/list.so",
+          "start": 1663,
+          "end": 1944,
+          "ms": 281
+        },
+        {
+          "path": "/x/player/wbi/v2",
+          "start": 1667,
+          "end": 1845,
+          "ms": 178
+        },
+        {
+          "path": "/x/web-interface/archive/related",
+          "start": 1668,
+          "end": 2080,
+          "ms": 412
+        },
+        {
+          "path": "/x/web-interface/archive/related",
+          "start": 2175,
+          "end": 2563,
+          "ms": 388
+        }
+      ],
+      "progress": 2402,
+      "format": {
+        "video": "avc1.640032",
+        "audio": "mp4a.40.2"
+      },
+      "end": {
+        "time": 2.367,
+        "ready": 4,
+        "width": 1920,
+        "height": 804,
+        "quality": 804
+      }
+    },
+    {
+      "sample": {
+        "bvid": "BV1GvXKBMEAb",
+        "resumeMode": "none",
+        "route": "cos"
+      },
+      "events": [
+        {
+          "type": "loadstart",
+          "ms": 149,
+          "ready": 0,
+          "time": 0
+        },
+        {
+          "type": "waiting",
+          "ms": 875,
+          "ready": 0,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 986,
+          "ready": 1,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 1484,
+          "ready": 4,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 1510,
+          "ready": 4,
+          "time": 0
+        }
+      ],
+      "api": [
+        {
+          "path": "/x/web-interface/view",
+          "start": 131,
+          "end": 218,
+          "ms": 87
+        },
+        {
+          "path": "/x/player/playurl",
+          "start": 224,
+          "end": 333,
+          "ms": 109
+        },
+        {
+          "path": "/x/web-interface/archive/relation",
+          "start": 1485,
+          "end": 1554,
+          "ms": 69
+        },
+        {
+          "path": "/x/player/videoshot",
+          "start": 1491,
+          "end": 1749,
+          "ms": 258
+        },
+        {
+          "path": "/x/v1/dm/list.so",
+          "start": 1497,
+          "end": 1635,
+          "ms": 138
+        },
+        {
+          "path": "/x/player/wbi/v2",
+          "start": 1501,
+          "end": 1591,
+          "ms": 90
+        },
+        {
+          "path": "/x/web-interface/archive/related",
+          "start": 1507,
+          "end": 1754,
+          "ms": 247
+        },
+        {
+          "path": "/x/web-interface/archive/related",
+          "start": 1841,
+          "end": 2050,
+          "ms": 209
+        }
+      ],
+      "progress": 2279,
+      "format": {
+        "video": "avc1.640032",
+        "audio": "mp4a.40.2"
+      },
+      "end": {
+        "time": 2.4,
+        "ready": 4,
+        "width": 1920,
+        "height": 804,
+        "quality": 804
+      }
+    },
+    {
+      "sample": {
+        "bvid": "BV1GvXKBMEAb",
+        "resumeMode": "none",
+        "route": "auto"
+      },
+      "events": [
+        {
+          "type": "loadstart",
+          "ms": 165,
+          "ready": 0,
+          "time": 0
+        },
+        {
+          "type": "waiting",
+          "ms": 704,
+          "ready": 0,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 773,
+          "ready": 1,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 1305,
+          "ready": 4,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 1323,
+          "ready": 4,
+          "time": 0
+        }
+      ],
+      "api": [
+        {
+          "path": "/x/web-interface/view",
+          "start": 141,
+          "end": 235,
+          "ms": 94
+        },
+        {
+          "path": "/x/player/playurl",
+          "start": 238,
+          "end": 379,
+          "ms": 141
+        },
+        {
+          "path": "/x/web-interface/archive/relation",
+          "start": 1307,
+          "end": 1382,
+          "ms": 75
+        },
+        {
+          "path": "/x/player/videoshot",
+          "start": 1309,
+          "end": 1506,
+          "ms": 197
+        },
+        {
+          "path": "/x/v1/dm/list.so",
+          "start": 1312,
+          "end": 1444,
+          "ms": 132
+        },
+        {
+          "path": "/x/player/wbi/v2",
+          "start": 1316,
+          "end": 1395,
+          "ms": 79
+        },
+        {
+          "path": "/x/web-interface/archive/related",
+          "start": 1321,
+          "end": 1544,
+          "ms": 223
+        },
+        {
+          "path": "/x/web-interface/archive/related",
+          "start": 1622,
+          "end": 1847,
+          "ms": 225
+        }
+      ],
+      "progress": 2054,
+      "format": {
+        "video": "avc1.640032",
+        "audio": "mp4a.40.2"
+      },
+      "end": {
+        "time": 2.367,
+        "ready": 4,
+        "width": 1920,
+        "height": 804,
+        "quality": 804
+      }
+    }
+  ]
+}

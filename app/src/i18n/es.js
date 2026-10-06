@@ -1,5 +1,21 @@
 // Spanish dictionary. Keys are the Chinese source strings (see index.js).
 export default {
+  "最近一次起播": "Último inicio de vídeo",
+  "先播放一个视频，再打开诊断查看起播耗时": "Reproduce un vídeo y vuelve a abrir el diagnóstico para ver los tiempos",
+  "阶段耗时（并行执行，不相加）": "Duración por etapa (se superponen; no sumar)",
+  "从打开视频开始": "Tiempo desde la apertura del vídeo",
+  "首个媒体响应": "Primera respuesta multimedia",
+  "媒体就绪": "Multimedia lista",
+  "播放事件": "Evento de reproducción",
+  "播放器初始化": "Inicio del reproductor",
+  "媒体连接": "Conexión multimedia",
+  "视频信息": "Información del vídeo",
+  "续播查询": "Consulta de reanudación",
+  "获取播放地址": "Consulta de la fuente",
+  "杜比检测": "Prueba de Dolby",
+  "媒体加载": "Carga multimedia",
+  "已退出": "Cerrado",
+
   '我的收藏': 'Mis favoritos',
   '订阅': 'Suscripciones',
   '暂无订阅，可先在 B 站订阅收藏夹或合集': 'Sin suscripciones. Suscríbete a una carpeta o colección en Bilibili.',

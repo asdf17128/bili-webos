@@ -1,0 +1,22 @@
+[
+  {
+    "name": "player shelf separates progress, controls and recommendation tabs: layout-legacy scale=1",
+    "pass": false,
+    "error": "{\"progress\":{\"top\":677,\"bottom\":677,\"height\":0},\"buttons\":{\"top\":677,\"bottom\":773,\"height\":96},\"tabs\":{\"top\":789,\"bottom\":826,\"height\":37},\"title\":{\"top\":594,\"bottom\":636,\"height\":42},\"firstButton\":{\"top\":685,\"bottom\":773,\"height\":88},\"grid\":{\"top\":838,\"bottom\":1795.609375,\"height\":957.609375}}"
+  },
+  {
+    "name": "player shelf separates progress, controls and recommendation tabs: layout-legacy scale=1.4",
+    "pass": false,
+    "error": "{\"progress\":{\"top\":694,\"bottom\":694,\"height\":0},\"buttons\":{\"top\":694,\"bottom\":793.75,\"height\":99.75},\"tabs\":{\"top\":809.75,\"bottom\":846.75,\"height\":37},\"title\":{\"top\":594,\"bottom\":653,\"height\":59},\"firstButton\":{\"top\":702,\"bottom\":793.75,\"height\":91.75},\"grid\":{\"top\":858.75,\"bottom\":1816.359375,\"height\":957.609375}}"
+  },
+  {
+    "name": "player shelf separates progress, controls and recommendation tabs: layout-modern scale=1",
+    "pass": false,
+    "error": "{\"progress\":{\"top\":709,\"bottom\":709,\"height\":0},\"buttons\":{\"top\":725,\"bottom\":821,\"height\":96},\"tabs\":{\"top\":853,\"bottom\":890,\"height\":37},\"title\":{\"top\":594,\"bottom\":636,\"height\":42},\"firstButton\":{\"top\":733,\"bottom\":821,\"height\":88},\"grid\":{\"top\":902,\"bottom\":1846.453125,\"height\":944.453125}}"
+  },
+  {
+    "name": "player shelf separates progress, controls and recommendation tabs: layout-modern scale=1.4",
+    "pass": false,
+    "error": "{\"progress\":{\"top\":726,\"bottom\":726,\"height\":0},\"buttons\":{\"top\":742,\"bottom\":841.75,\"height\":99.75},\"tabs\":{\"top\":873.75,\"bottom\":910.75,\"height\":37},\"title\":{\"top\":594,\"bottom\":653,\"height\":59},\"firstButton\":{\"top\":750,\"bottom\":841.75,\"height\":91.75},\"grid\":{\"top\":922.75,\"bottom\":1867.203125,\"height\":944.453125}}"
+  }
+]

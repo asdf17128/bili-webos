@@ -151,3 +151,9 @@ release 必须挂**三件**资产,少一件都会静默出事:
 `TV_TEST_FILTER=testHotAndPartition node tools/test-ui.mjs` 验证热门与六个分区的真实 API 和卡片。`tools/test-node8/run8.js` 也通过真实服务取游戏排行榜，覆盖实际请求头。排行榜的 Referer 策略在 `service/com.biliwebos.app.service/biliReferer.js`，电视服务与独立 Mac 代理共用；仅对 `api.bilibili.com/x/web-interface/ranking/v2` 使用排行榜页，其余请求沿原策略。
 
 `REGION_SSH=<已有 SSH 别名> REGION_OUTPUT=/tmp/bili-region node tools/test-region-network.mjs` 通过已有 SSH 主机做匿名网络检查。远端只运行 stdin 传入的 Python HTTP worker，不安装依赖、不写文件、不改服务、不传用户登录凭据；进程结束清理。复用生产的 Referer、WBI 签名及 CDN 候选/排序/缓存代码，记录国家代码、API 结果、主机级速度、Range 字节数及摘要；签名地址仅在内存中。所有请求串行、超时有界；每候选两块 256KiB，再从胜出节点读取新的 64KiB。探针将 API HTTP 412 保留为响应状态，使既有 pagelist 回退可验证。它验证远端 HTTP 链路，不运行 React、Shaka 解码或电视音视频输出，也不应加入要求任意开发机都可运行的默认门禁。
+
+### 点播阶段计时与推荐面板
+
+`app/src/player/startupTrace.test.js` 已进入静态门禁。`tools/test-player-loading.mjs` 覆盖并发阶段、媒体响应与就绪间隔、失败/退出、无记录及诊断接口全失败；`LOADING_FILTER='player shelf|startup|diagnostics'` 可定向运行。读取 Vite 单例模块时使用实际加载的含 HMR 时间戳 URL。
+
+`tools/test-tv-ux-device.mjs` 额外检查推荐展开时标准/特大字号进度条和按钮边界，并保存真机截图；`tools/test-cdn-tv.mjs` 从真实电视二维码读取阶段与媒体事件，将不含账号内容的摘录保存为 `startup-report.txt`。阶段耗时可以并行，不作求和；总起播仍以 loadeddata 为界，不等同于逐帧上屏。未发生的事件保留为空，网络重试单列于播放中卡顿恢复次数。

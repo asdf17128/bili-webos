@@ -2,6 +2,22 @@
 // ADDING A LANGUAGE: copy this file to <code>.js, translate values, register
 // it in index.js DICTS. That's all.
 export default {
+  "最近一次起播": "Last video startup",
+  "先播放一个视频，再打开诊断查看起播耗时": "Play a video, then reopen diagnostics to see startup timing",
+  "阶段耗时（并行执行，不相加）": "Stage durations (overlap; do not add)",
+  "从打开视频开始": "Time since opening the video",
+  "首个媒体响应": "First media response",
+  "媒体就绪": "Media ready",
+  "播放事件": "Playing event",
+  "播放器初始化": "Player initialization",
+  "媒体连接": "Media attachment",
+  "视频信息": "Video information",
+  "续播查询": "Resume lookup",
+  "获取播放地址": "Stream lookup",
+  "杜比检测": "Dolby probe",
+  "媒体加载": "Media loading",
+  "已退出": "Exited",
+
   '我的收藏': 'My favorites',
   '订阅': 'Subscriptions',
   '暂无订阅，可先在 B 站订阅收藏夹或合集': 'No subscriptions. Follow a favorites folder or collection on Bilibili first.',

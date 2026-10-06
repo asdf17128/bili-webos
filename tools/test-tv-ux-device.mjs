@@ -178,6 +178,22 @@ try {
     await sleep(500);
     check('ended video exposes replay and the navigable related panel', await evaluate('!!document.querySelector(".panel-tab-row") && !!document.querySelector(".related-card") && /重播|Replay|Repetir/.test(document.querySelector(".player-btn")?.textContent || "")'));
     await key('ArrowUp'); // cancels up-next, then goes to the tabs
+    const originalScale = await evaluate('document.documentElement.style.getPropertyValue("--ui-scale")');
+    try {
+      for (const scale of [1, 1.25]) {
+        await evaluate(`document.documentElement.style.setProperty('--ui-scale','${scale}');document.querySelector('.player-controls').scrollTop=0`);
+        await sleep(350);
+        const boxes = await evaluate(`(() => {
+          const box = selector => {const r=document.querySelector(selector).getBoundingClientRect();return {top:r.top,bottom:r.bottom,height:r.height}};
+          return {progress:box('.player-progress-bar'),buttons:box('.player-btns'),tabs:box('.panel-tab-row')};
+        })()`);
+        check('recommendations keep progress and controls separated at scale '+scale,
+          boxes.progress.height>=6 && boxes.buttons.top>=boxes.progress.bottom+8 && boxes.tabs.top>=boxes.buttons.bottom+8, JSON.stringify(boxes));
+        await shot('tv-player-shelf-'+scale);
+      }
+    } finally {
+      await evaluate(`document.documentElement.style.setProperty('--ui-scale',${JSON.stringify(originalScale)})`);
+    }
     await shot('tv-ended');
     await key('ArrowUp'); await key('Enter');
     current = await wait(s => s.video && !s.video.paused && s.video.t < 8 && s.video.ready >= 2, 15000);

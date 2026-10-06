@@ -1,0 +1,5 @@
+startup ready elapsed=2116ms: engine=97ms attach=39ms view=116ms url=108ms load=1200ms
+since-open: request=904ms response=1384ms video=1606ms audio=1594ms metadata=1619ms data=2116ms playing=2135ms
+media: req=8 res=7 retry=6 slowest=393ms
+format: qn=32 video=avc1.64001E audio=mp4a.40.2
+ua Chrome/120.0.6099.270 TV

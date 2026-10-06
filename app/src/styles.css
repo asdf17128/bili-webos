@@ -399,11 +399,14 @@ html, body, #root {
   overflow-y: auto;
   background: linear-gradient(transparent 0%, rgba(0,0,0,0.85) 15%, rgba(0,0,0,0.95) 100%);
   padding: 40px 60px 30px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  /* Normal flow keeps long recommendation lists from shrinking the controls.
+     Explicit margins also work on Chrome 53, which has no flex gap. */
+  display: block;
   transition: opacity 0.3s ease;
 }
+.player-controls > .player-progress-bar { margin-top: 16px; margin-bottom: 16px; }
+.panel-tab-row { display: flex; flex-wrap: wrap; margin-bottom: 12px; }
+.panel-tab-row > * { margin-right: 14px; margin-bottom: 6px; }
 .player-controls.hidden { opacity: 0; pointer-events: none; }
 .player-title { font-size: calc(28px * var(--ui-scale)); color: #fff; font-weight: 600; }
 .player-progress-bar {

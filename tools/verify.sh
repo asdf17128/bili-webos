@@ -141,6 +141,7 @@ if [ -n "$UX" ]; then
   fi
   node tools/test-tv-ux.mjs
   node tools/test-player-loading.mjs
+  node tools/test-playback-end.mjs
   node tools/test-live-loading.mjs
   node tools/test-playback-health.mjs
   node tools/test-cdn-auto.mjs

@@ -1,0 +1,31 @@
+[
+  {
+    "name": "legacy off stops home",
+    "pass": true
+  },
+  {
+    "name": "legacy off stops playlist",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n2 !== 1\n"
+  },
+  {
+    "name": "legacy off stops watchlater",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n2 !== 1\n"
+  },
+  {
+    "name": "legacy off stops parts",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n2 !== 1\n"
+  },
+  {
+    "name": "legacy off stops season",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n2 !== 1\n"
+  },
+  {
+    "name": "legacy off stops paged",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n2 !== 1\n"
+  }
+]

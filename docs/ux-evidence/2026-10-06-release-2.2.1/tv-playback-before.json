@@ -1,0 +1,15 @@
+[
+  {
+    "name": "legacy off stops real favorite playlist at native EOS",
+    "pass": false
+  },
+  {
+    "name": "original user settings restored",
+    "pass": true
+  },
+  {
+    "name": "completion",
+    "pass": false,
+    "detail": "legacy off stops real favorite playlist at native EOS"
+  }
+]

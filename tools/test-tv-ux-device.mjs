@@ -193,7 +193,7 @@ try {
   check('preferences use the two-column layout', await evaluate('!!document.querySelector(".config-intro") && !!document.querySelector(".config-options")'));
   await shot('tv-settings');
   const settingLabel = () => evaluate('document.querySelector(".config-options .settings-row.focused > span")?.textContent');
-  const settingOrder = ['弹幕', '看完移出稍后再看', '播完自动播放下一个', '每行视频', '弹幕字号', '字幕字号', '界面字号', 'CDN 线路'];
+  const settingOrder = ['弹幕', '看完移出稍后再看', '播放结束后', '每行视频', '弹幕字号', '字幕字号', '界面字号', 'CDN 线路'];
   // Use the current UI's DOM order so this also works in English/Spanish.
   const visibleOrder = await evaluate('Array.from(document.querySelectorAll(".config-options > .settings-row")).slice(0,8).map(e=>e.firstElementChild.textContent)');
   const downward = [await settingLabel()];

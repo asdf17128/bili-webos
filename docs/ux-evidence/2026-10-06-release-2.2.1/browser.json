@@ -1,0 +1,246 @@
+[
+  {
+    "name": "long-press menu requires release then a new confirmation and can reopen",
+    "pass": true
+  },
+  {
+    "name": "loading retains a usable sidebar focus",
+    "pass": true
+  },
+  {
+    "name": "pointer hover does not scroll the grid",
+    "pass": true
+  },
+  {
+    "name": "wheel still moves a row that the pointer already highlights",
+    "pass": true
+  },
+  {
+    "name": "sidebar keeps scroll; Right restores the same card",
+    "pass": true
+  },
+  {
+    "name": "OK intentionally refreshes the current sidebar section",
+    "pass": true
+  },
+  {
+    "name": "passing follow in sidebar never opens login",
+    "pass": true
+  },
+  {
+    "name": "native search editing keeps Backspace and caret arrows",
+    "pass": true
+  },
+  {
+    "name": "feed failure offers a focusable retry",
+    "pass": true
+  },
+  {
+    "name": "retry recovers a failed feed",
+    "pass": true
+  },
+  {
+    "name": "remote retry restores first card (immediate response)",
+    "pass": true
+  },
+  {
+    "name": "remote retry restores first card (0ms response)",
+    "pass": true
+  },
+  {
+    "name": "remote retry restores first card (300ms response)",
+    "pass": true
+  },
+  {
+    "name": "retry does not steal focus after the user returns to sidebar",
+    "pass": true
+  },
+  {
+    "name": "immediate short-feed retry remains navigable with resume shelf and prefetch",
+    "pass": true
+  },
+  {
+    "name": "failed retry remains reachable and a later retry recovers",
+    "pass": true
+  },
+  {
+    "name": "rapid sidebar traversal commits only the settled section",
+    "pass": true
+  },
+  {
+    "name": "switching sections restores the cached feed and scroll",
+    "pass": true
+  },
+  {
+    "name": "slow content never steals focus after navigating away",
+    "pass": true
+  },
+  {
+    "name": "latest search wins even if an older response arrives last",
+    "pass": true
+  },
+  {
+    "name": "search network failures have their own retry state",
+    "pass": true
+  },
+  {
+    "name": "login isolates navigation and provides retry / cancel",
+    "pass": true
+  },
+  {
+    "name": "favorites empty response resolves loading",
+    "pass": true
+  },
+  {
+    "name": "favorites failures can be retried",
+    "pass": true
+  },
+  {
+    "name": "favorites return to the selected folder and fit the viewport",
+    "pass": true
+  },
+  {
+    "name": "late favorite-folder responses never replace the current folder",
+    "pass": true
+  },
+  {
+    "name": "favorites last row accounts for the folder header height",
+    "pass": true
+  },
+  {
+    "name": "subscriptions show folders and collections, paginate and keep remote focus",
+    "pass": true
+  },
+  {
+    "name": "empty subscriptions stop loading and keep tabs reachable",
+    "pass": true
+  },
+  {
+    "name": "subscription request failure exposes retry and preserves the mode",
+    "pass": true
+  },
+  {
+    "name": "loading player can be cancelled without moving background focus",
+    "pass": true
+  },
+  {
+    "name": "visual / deep scrolling / large text (zh)",
+    "pass": true
+  },
+  {
+    "name": "visual / deep scrolling / large text (en)",
+    "pass": true
+  },
+  {
+    "name": "visual / deep scrolling / large text (es)",
+    "pass": true
+  },
+  {
+    "name": "design: drawer overlays without shifting content or losing the card",
+    "pass": true
+  },
+  {
+    "name": "design: reopening navigation keeps the bottom item visible",
+    "pass": true
+  },
+  {
+    "name": "design: resume shelf uses unfinished history and supports remote navigation",
+    "pass": true
+  },
+  {
+    "name": "design: resume and a two-column large-text feed share a safe viewport",
+    "pass": true
+  },
+  {
+    "name": "design: late history preserves a deep card position",
+    "pass": true
+  },
+  {
+    "name": "design: history failure leaves discovery usable",
+    "pass": true
+  },
+  {
+    "name": "design: search has connected trending and recent columns",
+    "pass": true
+  },
+  {
+    "name": "late title height changes keep a deep focused card in place",
+    "pass": true
+  },
+  {
+    "name": "design: mixed title lengths keep card and resume metadata aligned",
+    "pass": true
+  },
+  {
+    "name": "design: card metadata stays inside compact cards",
+    "pass": true
+  },
+  {
+    "name": "design: settings remain readable with large text (zh)",
+    "pass": true
+  },
+  {
+    "name": "design: settings remain readable with large text (en)",
+    "pass": true
+  },
+  {
+    "name": "design: settings remain readable with large text (es)",
+    "pass": true
+  },
+  {
+    "name": "leaving search preserves the next page first focus cell",
+    "pass": true
+  },
+  {
+    "name": "settings font rows follow visual order in both directions",
+    "pass": true
+  },
+  {
+    "name": "font pickers update their own setting and resume at the same row",
+    "pass": true
+  },
+  {
+    "name": "library native scrolling keeps the last large card visible",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 2 columns, scale 1, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 2 columns, scale 1.12, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 2 columns, scale 1.25, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 3 columns, scale 1, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 3 columns, scale 1.12, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 3 columns, scale 1.25, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 4 columns, scale 1, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 4 columns, scale 1.12, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 4 columns, scale 1.25, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "diagnostic network failures finish visibly and remain scannable",
+    "pass": true
+  }
+]

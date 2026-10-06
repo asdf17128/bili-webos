@@ -1,0 +1,56 @@
+[
+  {
+    "name": "legacy off stops real favorite playlist at native EOS",
+    "pass": true
+  },
+  {
+    "name": "remote replay is reachable after stop",
+    "pass": true
+  },
+  {
+    "name": "repeat retains actual stream and plays again, cycle 1",
+    "pass": true,
+    "detail": "{\"time\":0.7,\"width\":640,\"height\":480}"
+  },
+  {
+    "name": "repeat retains actual stream and plays again, cycle 2",
+    "pass": true,
+    "detail": "{\"time\":0.45,\"width\":640,\"height\":480}"
+  },
+  {
+    "name": "remote can pause repeat mode",
+    "pass": true
+  },
+  {
+    "name": "remote can resume repeat mode",
+    "pass": true
+  },
+  {
+    "name": "Back exits repeat playback",
+    "pass": true
+  },
+  {
+    "name": "next mode advances real playlist and decodes next video",
+    "pass": true
+  },
+  {
+    "name": "playback picker restores stop selection",
+    "pass": true
+  },
+  {
+    "name": "Back cancels mode change",
+    "pass": true
+  },
+  {
+    "name": "remote selects repeat and retains row focus",
+    "pass": true
+  },
+  {
+    "name": "repeat setting persists after app reload",
+    "pass": true
+  },
+  {
+    "name": "original user settings restored",
+    "pass": true
+  }
+]

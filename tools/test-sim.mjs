@@ -299,6 +299,7 @@ async function main() {
     await page.evaluate(() => {
       const s = JSON.parse(localStorage.getItem('bili_settings') || '{}');
       s.autoplayNext = false;
+      delete s.playbackMode; // exercise migration of the existing disabled setting
       localStorage.setItem('bili_settings', JSON.stringify(s));
       const v = document.querySelector('video');
       if (v && v.duration) v.currentTime = Math.max(0, v.duration - 1.5);
@@ -563,8 +564,12 @@ async function main() {
     await page.keyboard.up('Enter');
     await sleep(2500);
     const homeMenu = await page.evaluate(() => [...document.querySelectorAll('.cardmenu-item')].map(x => x.textContent.trim()));
-    check('首页卡片长按也弹菜单,含「加入稍后再看」',
-      homeMenu.some(x => x.includes('稍后再看')), homeMenu.join(' | '));
+    // A clean logged-out profile deliberately has only Cancel; account actions
+    // are rendered only when a local session exists (CardMenu's contract).
+    check('首页卡片长按菜单符合登录状态',
+      homeMenu.includes('取消') && (storedAuth
+        ? homeMenu.some(x => x.includes('稍后再看'))
+        : homeMenu.length === 1), homeMenu.join(' | '));
     const noPlay = await page.evaluate(() => !document.querySelector('.player-page'));
     check('长按不会误触发播放', noPlay);
     await key('Escape'); await sleep(900);

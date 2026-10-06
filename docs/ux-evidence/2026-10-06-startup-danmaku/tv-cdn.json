@@ -1,0 +1,50 @@
+[
+  {
+    "name": "unreachable primary CDN falls back and starts actual playback",
+    "pass": true
+  },
+  {
+    "name": "unreachable primary CDN is banned",
+    "pass": true,
+    "detail": "upos-sz-mirrorbad.bilivideo.com"
+  },
+  {
+    "name": "automatic routing measures real candidate ranges",
+    "pass": true,
+    "detail": "{\"state\":\"ready\",\"preferred\":\"upos-sz-mirrorhwo1.bilivideo.com\",\"candidates\":[{\"host\":\"cn-hbyc-ct-01-01.bilivideo.com\",\"ok\":true,\"rateMbps\":15.087424460431656,\"ageMs\":16109},{\"host\":\"upos-sz-mirrorcos.bilivideo.com\",\"ok\":true,\"rateMbps\":7.384338028169014,\"ageMs\":14762},{\"host\":\"upos-sz-mirrorcosov.bilivideo.com\",\"ok\":true,\"rateMbps\":0.6258287078484035,\"ageMs\":8889},{\"host\":\"upos-sz-estgoss.bilivideo.com\",\"ok\":true,\"rateMbps\":6.944211920529802,\"ageMs\":7835},{\"host\":\"upos-sz-mirrorhwo1.bilivideo.com\",\"ok\":true,\"rateMbps\":21.183353535353536,\"ageMs\":7136},{\"host\":\"upos-sz-mirroraliov.bilivideo.com\",\"ok\":true,\"rateMbps\":0.5706536054421769,\"ageMs\":997},{\"host\":\"upos-sz-mirrorali.bilivideo.com\",\"ok\":true,\"rateMbps\":12.48304761904762,\"ageMs\":3}]}"
+  },
+  {
+    "name": "automatic selection points to a measured healthy route",
+    "pass": true
+  },
+  {
+    "name": "CDN health persists without media URLs or credentials",
+    "pass": true
+  },
+  {
+    "name": "selected route delivers actual media and playback continues",
+    "pass": true,
+    "detail": "upos-sz-mirrorhwo1.bilivideo.com,upos-sz-mirrorhwo1.bilivideo.com,upos-sz-mirrorhwo1.bilivideo.com,upos-sz-mirrorhwo1.bilivideo.com,upos-sz-mirrorhwo1.bilivideo.com,upos-sz-mirrorhwo1.bilivideo.com,upos-sz-mirrorhwo1.bilivideo.com,upos-sz-mirrorhwo1.bilivideo.com,upos-sz-mirrorhwo1.bilivideo.com,upos-sz-mirrorhwo1.bilivideo.com,upos-sz-mirrorhwo1.bilivideo.com,upos-sz-mirrorhwo1.bilivideo.com,upos-sz-mirrorhwo1.bilivideo.com,upos-sz-mirrorhwo1.bilivideo.com,upos-sz-mirrorhwo1.bilivideo.com,upos-sz-mirrorhwo1.bilivideo.com"
+  },
+  {
+    "name": "diagnostics measure the selected Ali route",
+    "pass": true,
+    "detail": "视频 CDN — ali 0.1s · cn-sccd-ct-02-08 0.4s · cosov 3.8s · estgoss 0.1s · hwo1 0.1s"
+  },
+  {
+    "name": "diagnostics report single and concurrent throughput",
+    "pass": true
+  },
+  {
+    "name": "TV QR retains selected route and last playback evidence",
+    "pass": true
+  },
+  {
+    "name": "TV QR reports actual media readiness time",
+    "pass": true
+  },
+  {
+    "name": "TV QR body is ASCII and contains no signed media URL",
+    "pass": true
+  }
+]

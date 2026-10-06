@@ -445,6 +445,26 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // Initialize Shaka Player
   useEffect(() => {
     let mounted = true, player = null;
+    const media = videoRef.current;
+    let extras = [], firstFrame = false;
+    const onFirstFrame = () => {
+      if (!mounted || firstFrame) return;
+      firstFrame = true;
+      const startupMs = Math.round(perfNow() - openT.current);
+      mark('player-first-frame', startupMs);
+      updatePlaybackReport({ startupMs });
+      const pending = extras; extras = [];
+      pending.forEach(fn => fn());
+    };
+    const afterFirstFrame = fn => {
+      if (!mounted) return;
+      if (firstFrame || media.readyState >= 2) { onFirstFrame(); fn(); }
+      else extras.push(fn);
+    };
+    media.addEventListener('loadeddata', onFirstFrame);
+    const infoStart = perfNow();
+    const infoTask = !(video?.isBangumi || video?.epid || video?.seasonId)
+      ? getVideoInfo(video).then(value => ({ value }), error => ({ error })) : null;
     async function init() {
       const _tShakaImp = perfNow();
       const shaka = await import('shaka-player');
@@ -534,7 +554,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         if (type === 1) updatePlaybackReport({ host: cdnHostOf(response.uri || response.originalUri) });
       });
 
-      if (mounted) loadVideo(player, () => mounted);
+      if (mounted) loadVideo(player, () => mounted, infoTask, infoStart, afterFirstFrame);
     }
     init().catch(err => {
       if (!mounted) return;
@@ -543,13 +563,15 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     });
     return () => {
       mounted = false;
+      extras = [];
+      media.removeEventListener('loadeddata', onFirstFrame);
       cdnAutoRef.current?.dispose(); cdnAutoRef.current = null;
       player?.destroy();
       if (window.__shakaPlayer === player) delete window.__shakaPlayer;
     };
   }, []);
 
-  const loadVideo = useCallback(async (player, isActive) => {
+  const loadVideo = useCallback(async (player, isActive, infoTask, infoStart, afterFirstFrame) => {
     const cancelled = err => !isActive() || err?.code === 7000 || err?.code === 7001;
     const activeResult = async promise => {
       const result = await promise;
@@ -573,6 +595,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       let epid = video.epid;
       let seasonId = video.seasonId;
       let ownerMid = video.owner?.mid || null;
+      let playerMeta = null, playerMetaCid = null, initialPlay = null, initialCid = null;
       let replyCount = video.stat?.reply || 0;   // 评论数打底(见下面的 setCommentCount)
       let ownerName = video.owner?.name || '';
 
@@ -598,9 +621,10 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       let ugcPages = [];
       let ugcSeason = null;
       if (!isBangumi) {
-        const _tInfo = perfNow();
-        const info = await activeResult(getVideoInfo(video));
-        mark('po-info', perfNow() - _tInfo);
+        const result = await activeResult(infoTask);
+        if (result.error) throw result.error;
+        const info = result.value;
+        mark('po-info', perfNow() - infoStart);
         const d = info?.data || {};
         // view 挂了且兜底也没补出 cid(client.js 里有 pagelist 兜底)——
         // 用对症提示立刻报错,别拖到 playurl 那里报一个 cid 缺失的怪错。
@@ -636,7 +660,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               });
             }
           }).catch(() => { if (attempt < 1) setTimeout(() => fetchRel(attempt + 1), 1500); });
-          fetchRel(0);
+          afterFirstFrame(() => fetchRel(0));
         }
         if (d.title) setVideoTitle(d.title);
         if (d.owner) {
@@ -652,12 +676,22 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         // view response so heartbeat/related (which key on bvid) keep working.
         if (!video.bvid && d.bvid) video.bvid = d.bvid;
         if (!cid) cid = d.cid;
+        // The initial part usually is the resumed part. Fetch its stream in
+        // parallel with resume metadata; discard it if resume selects another
+        // cid. Rejections are handled here so cancellation never leaks one.
+        if (cid) {
+          initialCid = cid;
+          initialPlay = getPlayUrl(video, cid, storage.getSettings().quality || 80)
+            .then(value => ({ value }), error => ({ error }));
+        }
         // 续播: casual opens (resumeMode 'auto', see playIntent.js) resume at the
         // part and offset where the user last left off (player v2 last_play_*).
         // 'at' (history/cast) already carries progress; 'none' (选集/连播) starts at 0.
         if (video.resumeMode === 'auto' && d.aid && cid) {
           try {
+            playerMetaCid = cid;
             const pv = await activeResult(getPlayerV2(d.aid, cid));
+            playerMeta = pv?.code === 0 ? pv : null;
             const lc = pv?.data?.last_play_cid;
             const lt = pv?.data?.last_play_time; // ms
             if (lc && ugcPages.some(p => p.cid === lc)) {
@@ -678,7 +712,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       selectSubtitle(null); // also bumps subReqRef → orphans in-flight bodies
       subBodyCacheRef.current = new Map(); // bodies are per-cid
       if (!isBangumi && videoAidRef.current) {
-        getPlayerV2(videoAidRef.current, cid).then(pv => {
+        afterFirstFrame(() => (playerMeta && playerMetaCid === cid
+          ? Promise.resolve(playerMeta) : getPlayerV2(videoAidRef.current, cid)).then(pv => {
           if (!isActive()) return;
           const vp = pv?.data?.view_points;
           if (Array.isArray(vp)) {
@@ -714,12 +749,12 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               }
             }
           }
-        }).catch(() => {});
+        }).catch(() => {}));
       }
       // Seek-preview sprites (YouTube-style scrub thumbnails) — best effort.
       setVideoshot(null);
       if (!isBangumi && (video.bvid || video.aid)) {
-        getVideoshot(video.bvid, cid).then(r => {
+        afterFirstFrame(() => getVideoshot(video.bvid, cid).then(r => {
           if (!isActive()) return;
           const d2 = r?.data;
           if (d2 && Array.isArray(d2.image) && d2.image.length > 0) {
@@ -730,7 +765,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               index: Array.isArray(d2.index) ? d2.index : null,
             });
           }
-        }).catch(() => {});
+        }).catch(() => {}));
       }
       // Reset the "UP主投稿" tab (regular videos only).
       upMidRef.current = isBangumi ? null : ownerMid;
@@ -783,7 +818,15 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
               // Pass the whole `video` so a cast-initiated, aid-only payload
               // still resolves via getPlayUrl's object overload.
               const _tPu = perfNow();
-              const res = await activeResult(getPlayUrl(video, cid, fallbackQn || settings.quality || 80));
+              let res;
+              if (initialPlay && initialCid === cid && rung === 0 && attempt === 0) {
+                const result = await activeResult(initialPlay);
+                if (result.error) throw result.error;
+                res = result.value;
+              } else {
+                res = await activeResult(getPlayUrl(video, cid, fallbackQn || settings.quality || 80));
+              }
+              initialPlay = null;
               mark('po-playurl', perfNow() - _tPu);
               // 取流被拒时,把**能照着做的话**摆到用户面前(issue #20/#23:
               // 两位用户都只看到一句"视频加载失败",不知道是风控、更不知道
@@ -842,10 +885,6 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       setLoading(false);
       castReportState({ playState: 'playing' }).catch(() => {});
 
-      // 打开播放器 → 真正出画面(loadeddata)。这是用户按下 OK 之后盯着黑屏的时间。
-      videoRef.current.addEventListener('loadeddata', () => {
-        mark('player-first-frame', ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()) - openT.current);
-      }, { once: true });
       let finishing = false, removedFromToView = false;
       videoRef.current.addEventListener('ended', async () => {
         if (!isActive() || finishing) return;
@@ -929,11 +968,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         }
       });
 
-      try { setDanmakus(await activeResult(getDanmaku(cid))); } catch {}
+      afterFirstFrame(() => {
+        getDanmaku(cid).then(items => { if (isActive()) setDanmakus(items); }).catch(() => {});
+      });
       if (!isActive()) return;
       if (isBangumi) {
         // "相关推荐" → the season's episode list; each plays via the PGC path.
-        try {
+        afterFirstFrame(async () => { try {
           const info = await activeResult(getBangumiInfo({ epid, seasonId }));
           const result = info?.result || info?.data || {};
           const eps = (result.episodes || []).map(e => ({
@@ -942,7 +983,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             pic: e.cover, owner: { name: result.season_title || '' },
           }));
           setRelatedVideos(eps.slice(0, 60));   // 番剧选集是全量的,没有"加载更多",不预取
-        } catch {}
+        } catch {} });
       } else {
         // UGC. Build the 选集 (分P or 合集) if present, kept SEPARATE from 相关推荐
         // so both get their own tab (#11).
@@ -969,13 +1010,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         setIsMultiP(parts.length > 0);
         if (parts.length > 0) setPanelTab('parts');
         // Always fetch 相关推荐 too (its own tab).
-        try {
+        afterFirstFrame(async () => { try {
           const rel = await activeResult(getRelated(video.bvid));
           const firstBatch = (rel?.data || []).slice(0, 12);
           setRelatedVideos(firstBatch);
           // 首批一到就在空闲时备下一批 —— 用户往下翻时不再等请求
           if (firstBatch.length) prefetchRelatedRef.current?.(firstBatch[firstBatch.length - 1].bvid);
-        } catch {}
+        } catch {} });
       }
     } catch (err) {
       if (cancelled(err)) return;
@@ -2328,7 +2369,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         </div>
       )}
 
-      <DanmakuLayer danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale}
+      <DanmakuLayer danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale} paused={!playing}
         mtRef={dmMtActive ? dmMtRef : null} />
 
       <SubtitleLayer videoRef={videoRef} cues={subCues} enabled={subLan != null}

@@ -122,6 +122,7 @@ try {
     const url = new URL(qr.data);
     const body = url.searchParams.get('body');
     check('TV QR retains selected route and last playback evidence', body.includes('route=ali') && /last: host=.+stalls=/.test(body));
+    check('TV QR reports actual media readiness time', /startup=[1-9][0-9]*ms/.test(body));
     check('TV QR body is ASCII and contains no signed media URL', /^[\x00-\x7f]*$/.test(body) && !/upsig|SESSDATA|hdnts/i.test(body));
   } finally {
     await evaluate(originalSettings == null ? 'localStorage.removeItem("bili_settings")' : `localStorage.setItem('bili_settings',${JSON.stringify(originalSettings)})`);

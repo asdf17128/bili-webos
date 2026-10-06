@@ -218,7 +218,7 @@ export default function DiagPanel() {
       lines.push('app v' + APP_VERSION);
       lines.push('route=' + ascii(route));
       const last = getPlaybackReport();
-      if (last) lines.push('last: host=' + ascii(last.host) + ' route=' + ascii(last.route) + ' buffer=' + last.buffer + 's stalls=' + last.stalls + ' retries=' + last.retries + ' age=' + Math.round((Date.now() - last.at) / 1000) + 's');
+      if (last) lines.push('last: host=' + ascii(last.host) + ' route=' + ascii(last.route) + ' buffer=' + last.buffer + 's startup=' + (last.startupMs == null ? '?' : last.startupMs + 'ms') + ' stalls=' + last.stalls + ' retries=' + last.retries + ' age=' + Math.round((Date.now() - last.at) / 1000) + 's');
       const auto = getAutoCdnStatus();
       if (last?.route === 'auto' && auto?.candidates?.length) lines.push('auto: preferred=' + ascii(auto.preferred) + ' measured=' + auto.candidates.filter(c => c.ok !== null).length + '/' + auto.candidates.length);
       const ua = navigator.userAgent.match(/Chrom\w+\/[\d.]+/);

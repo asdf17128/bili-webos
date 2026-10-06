@@ -1,0 +1,332 @@
+=== [1/6] Service syntax (ES5 / Node 0.12) ===
+OK: all service files parse as ES5
+
+=== [2/6] Static gates (design spec + logic) ===
+OK: no <16px inline text
+OK: no aspect-ratio CSS
+OK: no inset shorthand
+PASS  feed card (cid present) → auto-resume
+PASS  history row (progress 300) → at/300
+PASS  选集 pick → none/0
+PASS  连播 advance strips stale progress → none/0
+PASS  cast seekTs → at
+PASS  explicit intent passes through normalize
+PASS  playFresh always auto
+PASS  全新三连 → 三项全亮
+PASS  之前已赞已投(接口只回 fav)→ 仍然三项全亮
+PASS  本地状态是空的(relation 请求失败)→ 三连后照样全亮
+PASS  投币数封顶 2
+PASS  计数:已赞过 → like 不再 +1
+PASS  计数:本次新增收藏 → favorite +1
+PASS  计数:本次投 2 币 → coin +2
+PASS  校准:服务端还没同步(全 false)也不会把已亮的按灭
+PASS  校准:服务端说已赞已投已藏 → 从暗变亮
+PASS  校准:字段名以实测为准(favorite 不是 fav)
+PASS  未登录时:提示先登录
+PASS  已登录时:提示多半是账号被风控,建议换账号
+PASS  已登录时:不能再劝"先试试登录"
+PASS  -352 同样提示风控
+PASS  两种情况都给出换 CDN 线路这条后路
+PASS  -10403 提示地区限制
+PASS  -404 提示稿件失效
+PASS  -403 提示权限/大会员
+PASS  未知码返回 null(调用方回落默认文案)
+PASS  code=0 也返回 null
+PASS  解码错误(code 3)要降档
+PASS  网络错误(code 2)不降档,交给重试
+PASS  格式错误(code 4)不降档
+PASS  投屏流不走这套降档(它有自己的 variant 阶梯)
+PASS  没有 error 对象时不降档
+PASS  原画 → 蓝光
+PASS  蓝光 → 超清
+PASS  已在最低档 → null(不再退)
+PASS  阶梯为空 → null(不乱退)
+PASS  当前档不在表里 → 回到最高档重来
+PASS  MEDIA_ERR_DECODE 常量就是 3
+✔ TS-first API ordering still selects fMP4 with matching original-quality metadata (1.069ms)
+✔ explicit fallback selects TS without reducing quality (0.071667ms)
+✔ rooms missing usable fMP4 AVC keep working through TS (0.060833ms)
+✔ FLV-only and missing HLS URL responses are errors rather than endless loading (0.176041ms)
+✔ failed API response is not mistaken for an empty room (0.055709ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 60.101834
+(node:39441) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ cached measurements promote a faster mirror, retaining exact native signed URLs (1.202ms)
+✔ Akamai-only and live URLs are never mirror templates (0.558375ms)
+✔ similar measurements preserve incumbent, all-failed restores original order (0.098459ms)
+✔ cache expires, survives restart, strips private fields and handles corrupt storage (0.108291ms)
+✔ untrusted cache host cannot insert a new destination into requests (0.178291ms)
+✔ native .cn hosts are measured once; uncacheable hosts cannot monopolize probes (1.39725ms)
+✔ two completed samples rank by slower transfer; every candidate is visited (0.559208ms)
+✔ loading/buffer gate and manual choice prevent probes and automatic override (0.167ms)
+✔ buffer loss aborts active probe without poisoning cache (0.398583ms)
+✔ late result after source change or exit cannot update routing/cache (0.277792ms)
+✔ partial/timeout sample is failure and banned winner yields to healthy fallback (0.202458ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 65.285917
+PASS en.js: covers all 248 source keys (+51 dynamic/extra)
+PASS es.js: covers all 248 source keys (+51 dynamic/extra)
+PASS zh
+PASS en
+PASS es
+  ✓ parse: null/garbage input → []
+  ✓ parse: drops empty/invalid cues, keeps valid ones
+  ✓ parse: sorts unsorted bodies by from
+  ✓ pick: inside / boundary / gap / before / after
+  ✓ pick: overlapping earlier cue still live is found
+  ✓ pick: sweep never crashes and matches linear scan (1000 cues)
+  ✓ isAiLan / AI_LEAD
+  ✓ lan name: known enum localized, unknown falls back to lan_doc/lan
+  ✓ match: exact lan wins regardless of track order
+  ✓ match: language family bridges region/ai variants, human preferred
+  ✓ match: no same-language track / no saved lan → null (caller falls back)
+  ✓ lan names covered by every i18n dictionary
+PASS test-subtitle (12 groups)
+  ✓ batch: line limit splits 250 → 100/100/50
+  ✓ batch: char limit forces a split (one giant line alone in its batch)
+  ✓ batch: empty input → no ranges
+  ✓ orderRanges: playhead batch first, wraps, tolerates out-of-range
+  ✓ translate: all batches issued (concurrent), preserves order+timings
+  ✓ translate: cache hit → zero engine calls
+  ✓ translate: stale cache (wrong length) ignored, re-fetched
+  ✓ translate: onPartial per batch, playhead first, translated-only
+  ✓ translate: transient batch failure recovered by retry round
+  ✓ translate: short/failed/garbage engine response throws (caller falls back)
+  ✓ cache: LRU evicts beyond 8 entries (oldest first)
+  ✓ translate: null store tolerated
+PASS test-subtranslate (12 groups)
+  ✓ window + dedup: unique texts once, dupes filled, out-of-window skipped
+  ✓ global text cache: repeated memes translate once across videos
+  ✓ engine failure leaves item untranslated; next tick retries
+  ✓ batch cap honored; stop() makes it inert
+PASS test-dmtranslate (4 groups)
+PASS test-aigc (9 asserts)
+PASS test-casturl (17 asserts)
+✔ Dolby signaling preserves the base layer for high or unknown frame rates (0.678083ms)
+✔ parses Bilibili Profile 8 Level 9 dvvC signaling (0.284666ms)
+✔ rejects truncated and non-box Dolby markers (0.081416ms)
+✔ proxy media URLs preserve ranges and reject non-network protocols (0.162625ms)
+✔ Dolby init probing is bounded and requires a complete body (0.338625ms)
+✔ strict video selection never disguises a lower quality as 4K (0.09775ms)
+✔ automatic video fallback reports the quality it actually selected (0.061208ms)
+✔ true Dolby audio wins over Hi-Res and AAC (0.140291ms)
+✔ Hi-Res-only video selects FLAC and never pretends AAC is EC-3 (0.077542ms)
+✔ unsupported premium codecs fall back to the highest AAC representation (0.413583ms)
+✔ unsupported EC-3 falls through to supported Hi-Res FLAC (0.060209ms)
+✔ runtime audio fallbacks remain Dolby to Hi-Res to AAC without duplicates (0.523459ms)
+✔ Dolby signaling failure retries the same audio ladder on the base layer (0.090375ms)
+✔ AAC-only playback is attempted once (0.033041ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 66.563291
+PASS favorites/collections mapping, pagination, cross-page playback, duplicates, network failure and end of list
+PASS test-searchhistory (5 asserts)
+
+> test
+> node --test service/com.biliwebos.app.service/test/*.test.js
+
+✔ parse play command into video intent (0.708791ms)
+✔ parse play command into live intent (0.067292ms)
+✔ parse playurl command via nva_ext payload into video intent (0.338375ms)
+✔ unsupported playurl payload is ignored without clobbering active session (0.630458ms)
+✔ reporting state and progress produces outbound NVA events (0.13725ms)
+✔ parse seek command with seekTs field (0.051833ms)
+✔ description xml exposes AVTransport and NirvanaControl services (0.886958ms)
+✔ default device profile matches official-style bilibili renderer fields (0.087791ms)
+✔ ssdp packets advertise media renderer and nirvana service (0.109666ms)
+✔ ssdp search response points to description xml and echoes the requested ST (0.921375ms)
+✔ ssdp search response falls back to rootdevice when ST is empty (0.162375ms)
+✔ complete API response: identity (2.104791ms)
+✔ complete API response: gzip (1.857834ms)
+✔ complete API response: deflate (0.507541ms)
+✔ complete API response: raw-deflate (0.821042ms)
+✔ partial API response settles exactly once on error (0.454667ms)
+✔ partial API response settles exactly once on aborted (0.326542ms)
+✔ partial API response settles exactly once on close (0.277958ms)
+✔ invalid compressed API response rejects (0.33125ms)
+✔ decode command frame with json body (0.85225ms)
+✔ encode json reply and command frames (0.16925ms)
+✔ encode empty reply frame (0.610584ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 68.643375
+
+OK: version 2.2.1 consistent (appinfo == src/version.js)
+=== [3/6] Service on REAL Node 0.12.2 + Node 8 (docker) ===
+Testing Node 0.12.2
+fetch OK on real Node v0.12.2: status=200
+api code=-101 (expect -101 anonymous or 0)
+getDiagnostics OK: node=v0.12.2 buvid=true dm=true
+ranking on real Node v0.12.2: code=0 count=100
+Testing Node 8
+fetch OK on real Node v8.17.0: status=200
+api code=-101 (expect -101 anonymous or 0)
+getDiagnostics OK: node=v8.17.0 buvid=false dm=true
+ranking on real Node v8.17.0: code=0 count=100
+
+=== [4/6] App build ===
+✓ built in 6.72s
+OK: production bundles parse as ES2016 (Chromium 53)
+=== [UX] Browser interaction regressions ===
+PASS long-press menu requires release then a new confirmation and can reopen
+PASS loading retains a usable sidebar focus
+PASS pointer hover does not scroll the grid
+PASS wheel still moves a row that the pointer already highlights
+PASS sidebar keeps scroll; Right restores the same card
+PASS OK intentionally refreshes the current sidebar section
+PASS passing follow in sidebar never opens login
+PASS native search editing keeps Backspace and caret arrows
+PASS feed failure offers a focusable retry
+PASS retry recovers a failed feed
+PASS remote retry restores first card (immediate response)
+PASS remote retry restores first card (0ms response)
+PASS remote retry restores first card (300ms response)
+PASS retry does not steal focus after the user returns to sidebar
+PASS immediate short-feed retry remains navigable with resume shelf and prefetch
+PASS failed retry remains reachable and a later retry recovers
+PASS rapid sidebar traversal commits only the settled section
+PASS switching sections restores the cached feed and scroll
+PASS slow content never steals focus after navigating away
+PASS latest search wins even if an older response arrives last
+PASS search network failures have their own retry state
+PASS login isolates navigation and provides retry / cancel
+PASS favorites empty response resolves loading
+PASS favorites failures can be retried
+PASS favorites return to the selected folder and fit the viewport
+PASS late favorite-folder responses never replace the current folder
+PASS favorites last row accounts for the folder header height
+PASS subscriptions show folders and collections, paginate and keep remote focus
+PASS empty subscriptions stop loading and keep tabs reachable
+PASS subscription request failure exposes retry and preserves the mode
+PASS loading player can be cancelled without moving background focus
+PASS visual / deep scrolling / large text (zh)
+PASS visual / deep scrolling / large text (en)
+PASS visual / deep scrolling / large text (es)
+PASS design: drawer overlays without shifting content or losing the card
+PASS design: reopening navigation keeps the bottom item visible
+PASS design: resume shelf uses unfinished history and supports remote navigation
+PASS design: resume and a two-column large-text feed share a safe viewport
+PASS design: late history preserves a deep card position
+PASS design: history failure leaves discovery usable
+PASS design: search has connected trending and recent columns
+PASS late title height changes keep a deep focused card in place
+PASS design: mixed title lengths keep card and resume metadata aligned
+PASS design: card metadata stays inside compact cards
+PASS design: settings remain readable with large text (zh)
+PASS design: settings remain readable with large text (en)
+PASS design: settings remain readable with large text (es)
+PASS leaving search preserves the next page first focus cell
+PASS settings font rows follow visual order in both directions
+PASS font pickers update their own setting and resume at the same row
+PASS library native scrolling keeps the last large card visible
+PASS settings matrix: 2 columns, scale 1, applies and persists
+PASS settings matrix: 2 columns, scale 1.12, applies and persists
+PASS settings matrix: 2 columns, scale 1.25, applies and persists
+PASS settings matrix: 3 columns, scale 1, applies and persists
+PASS settings matrix: 3 columns, scale 1.12, applies and persists
+PASS settings matrix: 3 columns, scale 1.25, applies and persists
+PASS settings matrix: 4 columns, scale 1, applies and persists
+PASS settings matrix: 4 columns, scale 1.12, applies and persists
+PASS settings matrix: 4 columns, scale 1.25, applies and persists
+PASS diagnostic network failures finish visibly and remain scannable
+61/61 passed; evidence: /tmp/bili-tv-ux
+PASS auxiliary requests wait for real media data: frame-ready
+PASS auxiliary requests wait for real media data: frame-cancel
+PASS startup overlaps independent requests and preserves resume: startup-overlap
+PASS startup overlaps independent requests and preserves resume: startup-part
+PASS unverified Dolby frame rate keeps the original base layer: dolby-120
+PASS unverified Dolby frame rate keeps the original base layer: dolby-unknown
+PASS comment rail renders one state and keeps controls unobscured
+PASS buffer exhaustion is visible and retried without skipping video
+PASS actual manifest and codec fallback: premium
+PASS actual manifest and codec fallback: premium-fallback
+PASS actual manifest and codec fallback: dolby
+PASS actual manifest and codec fallback: dolby-fallback
+PASS cancelled load stops retries and releases the player
+PASS leaving while video information is pending prevents later streaming
+PASS network failure stops after two outer attempts instead of trying every quality
+PASS transient network failure can recover on the second attempt
+PASS actual danmaku and subtitle font sizes: small
+PASS actual danmaku and subtitle font sizes: normal
+PASS actual danmaku and subtitle font sizes: large
+PASS actual danmaku and subtitle font sizes: largest
+PASS Luna requests time out, cancel their bridge and ignore late success
+21/21 passed
+PASS late-video lookup has bounded work
+PASS dense comments have a bounded number of animation layers
+PASS forward seek clears the old screen and backward seek replays
+PASS paused animations freeze and resume; hidden layer resets
+PASS translation retries preserve original indices and do not flash Chinese
+PASS font scales, animation cleanup and repeat render do not duplicate
+PASS legacy off stops home
+PASS repeat stays on current home
+PASS legacy off stops playlist
+PASS repeat stays on current playlist
+PASS legacy off stops watchlater
+PASS repeat stays on current watchlater
+PASS legacy off stops parts
+PASS repeat stays on current parts
+PASS legacy off stops season
+PASS repeat stays on current season
+PASS legacy off stops paged
+PASS repeat stays on current paged
+PASS next advances playlist
+PASS next advances watchlater
+PASS next advances parts
+PASS next advances season
+PASS next advances paged
+PASS next keeps related countdown
+PASS explicit stop overrides legacy on
+PASS repeat rejection stops with replay controls
+PASS watch later removal still occurs once while repeating
+PASS pending playlist respects leave
+PASS pending playlist respects stop
+PASS playlist request failure stops without related countdown
+PASS stop does not skip an unavailable playlist video
+PASS settings picker persists modes and cancels with Back
+26/26 passed
+PASS one request selects fast HLS without lowering saved quality
+PASS loading remains until actual playing event
+PASS unsupported fast HLS falls back to TS at the same quality
+PASS startup timeout cannot remain black indefinitely
+PASS decode fallback keeps the original quality preference
+PASS exit cancels a queued live retry
+PASS startup budget preserves every decoder quality rung
+PASS late stream response after exit cannot attach media
+PASS empty play info ends with retryable error
+9/9 live loading tests passed
+PASS selected CDN ordering, exhausted-buffer recovery, pause/seek/end and retry budget
+PASS real HTTP range probes: success, ignored/wrong/short Range, short body, valid EOF, stalled body timeout, cancellation
+PASS cached fastest route reaches actual media request without reloading
+PASS cold start stays immediate then spare-buffer probes improve later requests
+PASS pending load and low buffer do not trigger probes; pause enables them
+PASS manual CDN keeps priority and avoids automatic probes
+PASS all probe failures retain original media route
+PASS network reconnect invalidates stale cached winner
+PASS exit cancels in-flight probe without caching a failure
+7/7 passed
+
+=== --no-tv: done ===

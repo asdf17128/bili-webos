@@ -489,6 +489,7 @@ html, body, #root {
   will-change: transform;
   animation: danmaku-scroll linear forwards;
 }
+.danmaku-paused .danmaku-item { animation-play-state: paused; }
 @keyframes danmaku-scroll {
   from { transform: translateX(1920px); }
   to { transform: translateX(-100%); }

@@ -1,0 +1,27 @@
+PASS legacy off stops home
+PASS repeat stays on current home
+PASS legacy off stops playlist
+PASS repeat stays on current playlist
+PASS legacy off stops watchlater
+PASS repeat stays on current watchlater
+PASS legacy off stops parts
+PASS repeat stays on current parts
+PASS legacy off stops season
+PASS repeat stays on current season
+PASS legacy off stops paged
+PASS repeat stays on current paged
+PASS next advances playlist
+PASS next advances watchlater
+PASS next advances parts
+PASS next advances season
+PASS next advances paged
+PASS next keeps related countdown
+PASS explicit stop overrides legacy on
+PASS repeat rejection stops with replay controls
+PASS watch later removal still occurs once while repeating
+PASS pending playlist respects leave
+PASS pending playlist respects stop
+PASS playlist request failure stops without related countdown
+PASS stop does not skip an unavailable playlist video
+PASS settings picker persists modes and cancels with Back
+26/26 passed

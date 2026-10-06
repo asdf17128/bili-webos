@@ -4,6 +4,7 @@ import { apiFetch, wbiFetch, getRecommend, getServiceDiagnostics, mediaProxyBase
 import { withHost } from '../player/cdn';
 import { diagnosticHosts, probeRange } from '../player/cdnProbe';
 import { getPlaybackReport } from '../player/playbackHealth';
+import { getAutoCdnStatus } from '../player/cdnAuto';
 import { getErrors } from '../utils/errlog';
 import { apiErrorHint } from '../utils/apiHint';
 import { storage } from '../utils/storage';
@@ -218,6 +219,8 @@ export default function DiagPanel() {
       lines.push('route=' + ascii(route));
       const last = getPlaybackReport();
       if (last) lines.push('last: host=' + ascii(last.host) + ' route=' + ascii(last.route) + ' buffer=' + last.buffer + 's stalls=' + last.stalls + ' retries=' + last.retries + ' age=' + Math.round((Date.now() - last.at) / 1000) + 's');
+      const auto = getAutoCdnStatus();
+      if (last?.route === 'auto' && auto?.candidates?.length) lines.push('auto: preferred=' + ascii(auto.preferred) + ' measured=' + auto.candidates.filter(c => c.ok !== null).length + '/' + auto.candidates.length);
       const ua = navigator.userAgent.match(/Chrom\w+\/[\d.]+/);
       lines.push('ua ' + (ua ? ua[0] : ascii(navigator.userAgent).slice(0, 40)) + (window.webOS ? ' TV' : ' browser'));
       if (svc) lines.push('svc node=' + svc.nodeVersion + ' buvid=' + (svc.buvid ? 'Y' : 'N') + ' dm=' + (svc.danmakuModule ? 'Y' : 'N') + ' up=' + svc.uptimeSec + 's');

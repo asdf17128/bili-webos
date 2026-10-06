@@ -123,6 +123,7 @@ Login information is stored on your TV and used to access your Bilibili account.
 
 ### In development / 开发中（尚未发布）
 
+- DASH video has **automatic CDN selection** and an HWO1 option. It measures small media ranges while paused or with at least 15 seconds buffered, caches host health, and applies the choice to subsequent requests without restarting playback. Manual choices take priority; native Akamai signatures remain intact. Overseas performance still needs testing on the affected networks.
 - Live playback prefers the faster-starting fMP4 HLS source at the saved quality, with TS fallback. Stream and quality metadata share one request; loading remains visible until playback starts, with bounded retries and a manual retry button on failure.
 - Playback recovery and diagnostics now account for exhausted buffers and the selected CDN route. Reports include the last playback node and stall count.
 - Favorites has a **Subscriptions** tab for followed folders and creator collections, with pagination and playback across pages.
@@ -130,6 +131,8 @@ Login information is stored on your TV and used to access your Bilibili account.
 - Dolby initialization metadata and supported E-AC-3 / FLAC audio tracks are selected independently. Decoder failures during loading fall back; E-AC-3 alone is not a guarantee of Atmos output. Selection/parsing adapted from [PR #17](https://github.com/asdf17128/bili-webos/pull/17). The source-specific 4K120 frame transform from that PR is not included.
 
 开发分支已补充缓冲耗尽恢复、按所选 CDN 测速和最近播放节点记录；收藏页增加 **订阅**，支持别人的收藏夹、UP 主合集及跨页连播。webOS 4.x 的布局和旧服务运行时兼容基于社区 [#34](https://github.com/asdf17128/bili-webos/issues/34) 补丁。
+
+点播新增 **CDN 自动择优**及 **华为云 HWO1** 选项：暂停或缓冲达到 15 秒后，用小块媒体测速并缓存节点健康状态，后续分片自动采用较快的可用线路，无需重载视频。手动选择优先，保留原始签名地址与失败回退。首次无缓存播放仍立即使用原线路；本轮已在 C4 验证实际分片选路，海外网络效果仍待当地实测，见 [CDN 验证记录](docs/TESTCASES.md#点播-cdn-自动择优2026-10-06)。直播不套用点播域名替换策略。
 
 直播保留所选画质，优先使用本机实测起播更快的 fMP4 HLS 源，不兼容或启动超时则回退 TS；取流与画质列表合并为一次请求，真正播放后才结束加载提示，失败可按确认重试。LG C4 三个直播间的播放进度开始推进由约 7.5–9.3 秒缩短至 2.0–3.3 秒；这是本机、本次网络的小样本结果，详见 [直播实测记录](docs/TESTCASES.md#直播起播优化与回归2026-10-06)。
 

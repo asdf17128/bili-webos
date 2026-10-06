@@ -1,0 +1,6 @@
+[
+  {
+    "name": "retry recovers a failed feed",
+    "pass": true
+  }
+]

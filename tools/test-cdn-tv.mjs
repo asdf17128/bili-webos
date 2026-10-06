@@ -15,10 +15,10 @@ const output = process.env.UX_OUTPUT || '/tmp/bili-issues-diagnostics';
 mkdirSync(output, { recursive: true });
 const conn = new Client();
 const results = [];
-let originalSettings = null, originalBadCdn = null;
+let originalSettings = null, originalBadCdn = null, originalHealth = null;
 let server, ws;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-const overall = setTimeout(() => { console.error('TV UX check timed out'); process.exit(1); }, 240000);
+const overall = setTimeout(() => { console.error('TV UX check timed out'); process.exit(1); }, 360000);
 try {
   await new Promise((resolve, reject) => {
     conn.on('ready', resolve).on('error', reject);
@@ -76,8 +76,9 @@ try {
   };
   originalSettings = await evaluate('localStorage.getItem("bili_settings")');
   originalBadCdn = await evaluate('localStorage.getItem("bili_test_badcdn")');
+  originalHealth = await evaluate('localStorage.getItem("bili_cdn_health_v1")');
   try {
-    await evaluate(`localStorage.setItem('bili_settings',JSON.stringify({...JSON.parse(localStorage.getItem('bili_settings')||'{}'),language:'zh'}))`);
+    await evaluate(`localStorage.removeItem('bili_cdn_health_v1');localStorage.setItem('bili_settings',JSON.stringify({...JSON.parse(localStorage.getItem('bili_settings')||'{}'),language:'zh',cdnRoute:'auto'}))`);
     await call('Page.reload');
     await wait('!!window.__openVideo');
     await evaluate(`localStorage.setItem('bili_test_badcdn','1');window.__openVideo({bvid:'BV1xx411c7Xg',resumeMode:'none'})`);
@@ -86,6 +87,25 @@ try {
     const banned = await evaluate('window.__cdnBanned()');
     check('unreachable primary CDN is banned', banned.includes('upos-sz-mirrorbad.bilivideo.com'), banned.join(','));
     await evaluate('localStorage.removeItem("bili_test_badcdn")');
+    await wait('window.__cdnAuto?.()?.candidates?.length >= 3 && window.__cdnAuto().candidates.every(c=>c.ok!==null)', 90000);
+    const auto = await evaluate('window.__cdnAuto()');
+    check('automatic routing measures real candidate ranges', auto.candidates.some(c=>c.host==='upos-sz-mirrorhwo1.bilivideo.com') && auto.candidates.some(c=>c.ok), JSON.stringify(auto));
+    check('automatic selection points to a measured healthy route', auto.candidates.some(c=>c.host===auto.preferred && c.ok));
+    const cache = await evaluate('localStorage.getItem("bili_cdn_health_v1")');
+    check('CDN health persists without media URLs or credentials', !!cache && !/upsig|hdnts|SESSDATA|https?:|upgcxcode/.test(cache));
+    // Observe actual Shaka response hosts, then seek beyond the current buffer
+    // to obtain a fresh media request without reloading the player/manifest.
+    const target = await evaluate(`(() => {
+      window.__cdnActualHosts=[];
+      window.__cdnTestPlayer=window.__shakaPlayer;
+      window.__shakaPlayer.getNetworkingEngine().registerResponseFilter((type,r)=>{
+        if(type!==1)return;const u=new URL(r.uri||r.originalUri);const match=u.pathname.match(/^\\/proxy\\/([^/]+)/);
+        window.__cdnActualHosts.push(match?match[1]:u.hostname);
+      });
+      const v=document.querySelector('video');const at=Math.min(v.duration-10,v.currentTime+45);v.currentTime=at;return at;
+    })()`);
+    await wait(`document.querySelector('video')?.currentTime > ${target + 0.3} && window.__cdnActualHosts?.includes(window.__cdnAuto()?.preferred)`, 40000);
+    check('selected route delivers actual media and playback continues', await evaluate('window.__shakaPlayer===window.__cdnTestPlayer'), (await evaluate('window.__cdnActualHosts')).join(','));
     for (let i=0;i<7 && await evaluate('!!document.querySelector(".player-page")');i++) await key('GoBack');
     await evaluate(`localStorage.setItem('bili_settings',JSON.stringify({...JSON.parse(localStorage.getItem('bili_settings')||'{}'),cdnRoute:'ali'}));document.querySelector('[data-focus-id="sidebar-13-0"]').click()`);
     await wait('!!document.querySelector(".config-page")');
@@ -104,8 +124,9 @@ try {
     check('TV QR retains selected route and last playback evidence', body.includes('route=ali') && /last: host=.+stalls=/.test(body));
     check('TV QR body is ASCII and contains no signed media URL', /^[\x00-\x7f]*$/.test(body) && !/upsig|SESSDATA|hdnts/i.test(body));
   } finally {
-    if (originalSettings != null) await evaluate(`localStorage.setItem('bili_settings',${JSON.stringify(originalSettings)})`);
+    await evaluate(originalSettings == null ? 'localStorage.removeItem("bili_settings")' : `localStorage.setItem('bili_settings',${JSON.stringify(originalSettings)})`);
     await evaluate(originalBadCdn == null ? 'localStorage.removeItem("bili_test_badcdn")' : `localStorage.setItem('bili_test_badcdn',${JSON.stringify(originalBadCdn)})`);
+    await evaluate(originalHealth == null ? 'localStorage.removeItem("bili_cdn_health_v1")' : `localStorage.setItem('bili_cdn_health_v1',${JSON.stringify(originalHealth)})`);
     await call('Page.reload');
   }
 } catch (error) { console.error(error.message); results.push({ name: 'completion', pass: false, detail: error.message }); process.exitCode = 1; }

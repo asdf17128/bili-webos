@@ -383,3 +383,28 @@ danmaku 断言改为设置感知(测试前强开、测后还原用户偏好);徽
 保留测试工具首次失败：先前按固定“画质”文案找按钮，实际按钮显示“原画”，导致 [两项失败](ux-evidence/2026-10-06-live-startup/tv-live-and-first-quality.json)；修正导航后又选到仅提供一档的房间，[两项失败](ux-evidence/2026-10-06-live-startup/tv-single-quality.json)。最终使用实际提供两档的房间并确认真实播放才得到 3/3，工具现将单档房间的切换覆盖记为跳过。
 
 新增确定性直播用例已接入 `tools/verify.sh --ux`；本轮分别运行相关层，未把此前的整条门禁日志当作当前全部通过。保留 DLNA 原有重连预算；没有改变服务代码，没有把现有 C4 测试当作旧硬件验收。完整模拟仍有上述 -352 失败，旧电视/海外/杜比输出边界同前，PR 保持草稿，未发版。
+### 点播 CDN 自动择优（2026-10-06）
+
+基线 `13f7b72`，开发版 2.1.1，已部署 LG C4 / Chromium 120。新增 HWO1 镜像候选与手动选项；自动模式在暂停或缓冲不少于 15 秒时，逐节点测两块 256KiB 的真实媒体，以较慢样本排序，15% 门槛避免频繁切换。后续媒体请求应用结果，不重载播放器或清空已缓冲内容。成功缓存 4 小时、失败 15 分钟，首选超过 15 分钟复测，网络重连清空缓存；仅保存主机、时间与健康/速度，不保存媒体地址或签名。
+
+**行为边界**：首次无缓存立即使用原线路，不等待测速；持续低缓冲时需暂停才有测速窗口，不能保证第一次起播就加速。手动选线优先，原始主备 URL 保留。仅普通 `.bilivideo.com/upgcxcode/` 片源合成固定镜像候选；Akamai-only 片源保留原生签名，不沿用此前盲目跨域改写。`.bilivideo.cn` 可测原生地址但不改写，直播选源不使用这套策略。
+
+研究参考：[chrisliu298 的美国 HWO1 样本](https://github.com/chrisliu298/bilibili-cdn-fix)、[realzza v0.4.0 的海外重定向修正](https://github.com/realzza/bilibili-accelerator/releases/tag/v0.4.0)、[stabruriss 的双 Range 测速与缓存策略](https://github.com/stabruriss/bilibili-accelerator/blob/main/README.en.md)。这些社区结果用于确定候选与方法，不代表本应用的海外实测结论。
+
+| Case / 本轮验证 | 结果与事实佐证 |
+| --- | --- |
+| C-CDN-AUTO-01：缓存结果改变实际请求 | 相同 React 场景下，恢复旧 `PlayerPage.jsx` 后 **0/1**：仍请求 Ali；新过滤器 **1/1**：请求 HWO1，播放器 load 次数仍为 1。[改前](ux-evidence/2026-10-06-cdn-auto/before.json)、[改后](ux-evidence/2026-10-06-cdn-auto/after-control.json) |
+| C-CDN-AUTO-02：冷启动、门控与取消 | 生产 React 请求过滤器 + 最小 Shaka 测试替身 **7/7**：冷启动沿原路线、测完影响后续真实 fetch；加载/低缓冲不测、暂停可测；手动不覆盖；全失败仍有原路；online 清缓存；退出中止不污染缓存。[结果](ux-evidence/2026-10-06-cdn-auto/browser.json)。该层不证明真实 Shaka 解码 |
+| C-CDN-AUTO-03：缓存、签名与样本有效性 | 纯逻辑 **11/11**，包括原生 Akamai/直播不改写、两次采样取较慢值、15% 门槛、TTL/损坏缓存、拒绝任意缓存域名插入、取消/迟到响应、超时与坏节点。[结果](ux-evidence/2026-10-06-cdn-auto/unit.log)。真实 HTTP Range 测试覆盖忽略/错位/短 Range、短 body、合法 EOF、超时和取消：[结果](ux-evidence/2026-10-06-cdn-auto/probes.log) |
+| C-CDN-AUTO-04：候选不会饿死其他节点 | 复查发现 `.bilivideo.cn` 候选不能写入缓存，会重复占据队列。正对照 10 次 tick 产生 **20 次**请求，修复后仅 **2 次**，其他节点也测到。未知主机保留为播放回退，但不进入无法缓存的测速队列。[修复前失败](ux-evidence/2026-10-06-cdn-auto/cache-host-before.log)，修复后见 11 项单测 |
+| C-CDN-AUTO-05：真实媒体与失败回退 | C4 首轮 **10/10**，队列边界修复并重新部署后再次 **10/10**：注入不存在主机，实际播放成功且坏节点拉黑；候选真实测速；持久化无 URL/凭据；seek 到缓冲区外后实际 Shaka 响应来自所选节点，播放推进且实例不变；诊断手选 Ali、1x/4x 吞吐与截图 QR 解码均通过。[首轮](ux-evidence/2026-10-06-cdn-auto/device-cdn.json)、[最终部署复验](ux-evidence/2026-10-06-cdn-auto/device-cdn-final.json) |
+| C-CDN-AUTO-06：遥控选线和持久化 | C4 **5/5**：方向键到 CDN 行、打开选项、选择 HWO1、重载后保持、切回自动并恢复焦点。结束恢复测试前设置。[结果](ux-evidence/2026-10-06-cdn-auto/device-settings.json)、[已目视检查的弹窗](ux-evidence/2026-10-06-cdn-auto/tv-cdn-picker.png) |
+| 播放与导航回归 | 点播加载/画质/评论 **15/15**，直播加载失败路径 **9/9**，C4 导航/实际播放/拖动/续播/设置焦点 **29/29**。[点播](ux-evidence/2026-10-06-cdn-auto/vod.json)、[直播](ux-evidence/2026-10-06-cdn-auto/live.json)、[真机导航](ux-evidence/2026-10-06-cdn-auto/device-navigation.json) |
+| 广覆盖浏览器门禁 | `verify.sh --no-tv --ux` 前置静态、服务 **22/22**、媒体选择 **13/13**、真实 Node 0.12.2/8、244 项 en/es 翻译与 ES2016 构建通过；浏览器 **53/54**，首页失败后重试的焦点等待超时。定向复测 **1/1**，未确定间歇失败根因，不能宣称完整门禁通过。[完整首轮日志](ux-evidence/2026-10-06-cdn-auto/verify-first.log)、[浏览器首轮](ux-evidence/2026-10-06-cdn-auto/browser-full-first.json)、[定向复验](ux-evidence/2026-10-06-cdn-auto/focus-recheck.json)。脚本在此退出，后续点播/直播/Range/自动选路层已独立运行，结果见上 |
+| Chromium + 真实服务桥和 B 站网络 | **54 通过 / 1 失败 / 2 跳过**。游戏分区没有卡片，真实 API 复核 **-352**；模拟环境认证失效，关注与稍后再看跳过。直播、点播、主节点失败回退通过。[结果](ux-evidence/2026-10-06-cdn-auto/simulator.json)、[日志](ux-evidence/2026-10-06-cdn-auto/simulator.log)、[接口复核](ux-evidence/2026-10-06-cdn-auto/simulator-ranking-recheck.json)。这是浏览器模拟，不是 LG 官方模拟器 |
+
+**本机测量，不能外推海外**：首轮 8 个候选中 cosov 约 0.55Mbps、aliov 1.06Mbps、HWO1 6.34Mbps、Ali 9.66Mbps，原生节点约 10.54Mbps；实际后续选中 Ali（有 15% 门槛，且音视频可用候选不一定相同）。最终复验 HWO1 约 13.80Mbps、Ali 13.03Mbps，cosov/aliov 未在单块 4 秒期限内完成；实际分片来自 HWO1。这种变化说明固定“海外线路”不能代替测量，也不能把小块测速当作长期吞吐承诺。
+
+构建与验证身份见 [environment.json](ux-evidence/2026-10-06-cdn-auto/environment.json)，记录首轮和最终 6 个 bundle SHA256、最终相关源码 SHA256；[最终部署](ux-evidence/2026-10-06-cdn-auto/deploy-final.log)、[最终语法检查](ux-evidence/2026-10-06-cdn-auto/build-syntax.log)。队列边界修复后重跑 11 项逻辑、7 项 React 和 10 项真机 CDN，其余回归为本轮首个部署版本。诊断截图已查看并用 jsQR 解码，含账号信息，只留本地；公开截图仅保留选项弹窗。测试结束确认电视回到 `auto`、坏节点注入关闭，原设置及缓存已恢复。
+
+**仍待验收**：海外报告者实际网络、首页重试间歇焦点失败、游戏接口风控；旧硬件与杜比输出边界沿用前述报告。本轮不声称“海外直播已解决”或“全量全绿”，PR 保持草稿，未合并、未发版。

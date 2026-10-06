@@ -455,6 +455,31 @@ async function main(call, relaunchApp) {
     else warn('Pagination loads more', `still ${s.cards} (few follows or end reached)`);
   }
 
+  async function testCdnSettings() {
+    console.log('\n[CDN settings remote selection and persistence]');
+    await reload();
+    await goto('config');
+    for (let i = 0; i < 12 && (await probe()).focus !== 'content-7-0'; i++) await key('down');
+    check('CDN row is reachable by remote', (await probe()).focus === 'content-7-0');
+    await key('ok');
+    const picker = await evalJSON('JSON.stringify(document.querySelector(".settings-picker")?.innerText || "")');
+    check('CDN picker includes automatic and HWO1 routes', picker.includes('自动择优') && picker.includes('华为云 HWO1'));
+    await keyN('up', 7);
+    await keyN('down', 6);
+    const clip = await evalJSON('JSON.stringify((() => { const r=document.querySelector(".settings-picker").getBoundingClientRect(); return {x:r.x,y:r.y,width:r.width,height:r.height,scale:1}; })())');
+    const shot = await call('Page.captureScreenshot', { format: 'png', clip });
+    writeFileSync(`${output}/tv-cdn-picker.png`, Buffer.from(shot.data, 'base64'));
+    await key('ok');
+    const saved = () => evalJSON('JSON.stringify(JSON.parse(localStorage.getItem("bili_settings") || "{}").cdnRoute)');
+    check('Remote HWO1 selection is saved', await saved() === 'hwo1');
+    await reload(); await goto('config');
+    const label = await evalJSON('JSON.stringify(document.querySelector("[data-focus-id=content-7-0]")?.innerText || "")');
+    check('HWO1 remains selected after reload', label.includes('华为云 HWO1') && await saved() === 'hwo1');
+    for (let i = 0; i < 12 && (await probe()).focus !== 'content-7-0'; i++) await key('down');
+    await key('ok'); await keyN('up', 7); await key('ok');
+    check('Remote can restore automatic routing', await saved() === 'auto' && (await probe()).focus === 'content-7-0');
+  }
+
   async function testSettingsAutoCheck() {
     console.log('\n[Settings auto update-check]');
     await reload();
@@ -650,7 +675,7 @@ async function main(call, relaunchApp) {
 
   const tests = [
     testNavAndHome, testVideoPlayback, testCommentRail, testBangumiPlayback, testLiveAndDanmaku, testLiveRelay, testLiveQuality, testSearch,
-    testFollowPagination, testAccountLibrary, testSettingsAutoCheck, testHotAndPartition, testWatchLater,
+    testFollowPagination, testAccountLibrary, testSettingsAutoCheck, testCdnSettings, testHotAndPartition, testWatchLater,
   ];
   try {
     for (const t of tests) {

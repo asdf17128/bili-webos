@@ -229,6 +229,8 @@ export default {
   "网络诊断": "Diagnóstico de red",
   "联系 / 反馈：": "Contacto: ",
   "腾讯云海外": "Tencent Cloud (extranjero)",
+  "自动择优": "Automática (mejor ruta)",
+  "华为云 HWO1": "Huawei Cloud HWO1",
   "阿里云海外": "Alibaba Cloud (extranjero)",
   "CDN 测速": "Prueba de velocidad CDN",
   "单连接(1x) {s} MB/s · 4 并发(4x) {p} MB/s (x{r})": "1 conexión(1x) {s} MB/s · paralelo(4x) {p} MB/s (x{r})",

@@ -1,0 +1,2 @@
+PASS selected CDN ordering, exhausted-buffer recovery, pause/seek/end and retry budget
+PASS real HTTP range probes: success, ignored/wrong/short Range, short body, valid EOF, stalled body timeout, cancellation

@@ -128,3 +128,15 @@ release 必须挂**三件**资产,少一件都会静默出事:
 真机运行 `node tools/_cdp.mjs tools/probe-live-startup.js`。可先用 `tools/eval.mjs` 设置 `window.__startupCases=[{roomid:13171605,format:'default'}]` 与 `window.__startupObserveMs=30000`；房间必须当时在播。`default` 保持生产选源，`ts`/`fmp4` 仅从真实 API 响应筛选指定格式，供同画质 A/B 对照，结束恢复请求包装与监听。报告区分接口耗时、`playing` 事件和实际播放时间推进，不包含签名播放 URL。原生视频合成层可能既无法截图，也不触发已暴露的 `requestVideoFrameCallback`，不能把时间推进称作逐帧像素测量。
 
 `TV_LIVE_ROOM=13171605 TV_TEST_FILTER=testLiveQuality node tools/test-ui.mjs` 用遥控器切换画质并切回，等待实际播放事件；选择当前提供多档画质的房间，只有一档时报告跳过。按钮文字是当前画质（例如“原画”），不能按固定“画质”文案寻找。真机测试结束恢复设置。详细对照见 `docs/TESTCASES.md`。
+
+### 点播自动 CDN 专项
+
+- `node --test app/src/player/cdnAuto.test.js`：缓存时效、两次测速取较慢值、15% 切换门槛、手动优先、低缓冲/退出取消、迟到响应与原生签名保护。静态门禁已包含。
+- `CDN_TEST_OUTPUT=/tmp/bili-cdn-auto node tools/test-cdn-auto.mjs`：真实 React 请求过滤器配合最小 Shaka 测试替身，检查最终发出的媒体请求、冷启动/缓存命中、暂停门控、全失败回退、网络重连与退出取消；`CDN_FILTER` 可筛选。不是实际解码测试，已加入 `verify.sh --ux`。
+- `node tools/test-playback-health.mjs`：本地真实 HTTP 服务器覆盖完整 206、忽略 Range、错位/短 Range、短响应体、合法 EOF、超时及取消。自动测速只接受完整样本，不把超时前的部分下载当作成功。
+- `UX_OUTPUT=/tmp/bili-cdn-tv node tools/test-cdn-tv.mjs`：真机实际解码、坏节点回退、后台测量、缓存隐私、所选节点的实际媒体响应和二维码像素解码。完成测速后 seek 到缓冲区外以确保发生新请求，同时确认播放器实例未重载。结束恢复偏好、缓存和坏节点标记。
+- `TV_TEST_FILTER=testCdnSettings TV_OUTPUT=/tmp/bili-cdn-settings node tools/test-ui.mjs`：仅用遥控按键选中 HWO1、重载核对持久化、切回自动；最后恢复原设置。截图只取弹窗，避免包含账号信息。
+
+自动模式不等待测速再起播。每个候选串行测两块 256KiB，单块超时 4 秒；完整一轮最多 12 个候选、6MiB 成功样本。暂停或缓冲不少于 15 秒才开始，低缓冲、seek、换源和退出取消，不把主动取消写为失败。成功缓存 4 小时、失败 15 分钟，当前首选超过 15 分钟复测；网络 online 事件清空缓存。缓存仅保存 host/耗时折算速度/时间/成功状态。`window.__cdnAuto()` 查看无签名诊断，实际请求节点另见播放报告。
+
+新增镜像仅使用普通 `.bilivideo.com/upgcxcode/` 地址作为模板。Akamai-only 片源保留 API 原生 URL，不合成跨域签名；直播走自己的取流路径。`.bilivideo.cn` 可作为原生候选测速，但不作为改写模板。未知域名保留原生回退、不进入无法缓存的测速队列。

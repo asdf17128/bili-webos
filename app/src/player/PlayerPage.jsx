@@ -22,7 +22,8 @@ import { translateCues } from './subTranslate';
 import { createDmTranslator } from './dmTranslate';
 import { titleMT, useTitlesMT } from '../utils/titlemt';
 import { t, getLocale } from '../i18n';
-import { CDN_ROUTES, FALLBACK_MIRRORS, isUposUrl, withHost, cdnHostOf, isBanned, demoteBanned, onShakaRetry, testBadCdnEnabled, TEST_BAD_HOST } from './cdn';
+import { CDN_ROUTES, withHost, cdnHostOf, isBanned, onShakaRetry, playbackCdnUrls } from './cdn';
+import { createAutoCdnRouter } from './cdnAuto';
 
 // Proxy + resize card thumbnails (same as VideoCard): the proxy adds the
 // Referer B站 image CDN needs, and @672w webp keeps the TV's image decoder from
@@ -74,6 +75,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   useTitlesMT(); // re-render when list-title translations land (no-op on zh)
   const videoRef = useRef(null);
   const shakaRef = useRef(null);
+  const cdnAutoRef = useRef(null);
   const [playing, setPlaying] = useState(false);
   const [streamFormat, setStreamFormat] = useState({ video: '', audio: '' });
   const probeRequestsRef = useRef(new Set());
@@ -496,10 +498,24 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       // 以前它们没走代理、被电视浏览器直连 CDN(没 Referer),等于失败转移
       // 形同虚设(#29)。拉黑的 host 直接剔掉(至少留一个)。
       const ne = player.getNetworkingEngine();
+      cdnAutoRef.current = createAutoCdnRouter({
+        getRoute: () => storage.getSettings().cdnRoute,
+        proxyBase: mediaProxyBase,
+        canProbe: () => {
+          const v = videoRef.current;
+          return !loadingRef.current && !loadErrorRef.current && !nativeModeRef.current &&
+            v && v.readyState >= 2 && v.currentTime > 0 && !v.seeking && !v.ended &&
+            (v.paused || bufferedAhead(v) >= 15);
+        },
+      });
       ne.registerRequestFilter((type, request) => {
         const proxyBase = mediaProxyBase();
+        // Shaka can reuse proxied URIs; audio/video keep their own signed paths.
+        let urls = request.uris.map(u => u?.startsWith(proxyBase + '/proxy/')
+          ? 'https://' + u.slice((proxyBase + '/proxy/').length) : u);
+        if (type === 1) urls = cdnAutoRef.current?.order(urls) || urls;
         const kept = [];
-        for (const u of request.uris) {
+        for (const u of urls) {
           if (!u || !u.startsWith('http') || u.startsWith(proxyBase)) { kept.push(u); continue; }
           let x;
           try { x = new URL(u); } catch { kept.push(u); continue; }
@@ -508,7 +524,11 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         const alive = kept.filter(u => !isBanned(cdnHostOf(u)));
         request.uris = alive.length ? alive : kept;
       });
-      ne.addEventListener('retry', onShakaRetry);
+      ne.addEventListener('retry', e => {
+        onShakaRetry(e);
+        const error = e.error || e.detail?.error;
+        cdnAutoRef.current?.failed(cdnHostOf(error?.data?.[0]));
+      });
       ne.registerResponseFilter((type, response) => {
         if (type === 1) updatePlaybackReport({ host: cdnHostOf(response.uri || response.originalUri) });
       });
@@ -522,6 +542,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     });
     return () => {
       mounted = false;
+      cdnAutoRef.current?.dispose(); cdnAutoRef.current = null;
       player?.destroy();
       if (window.__shakaPlayer === player) delete window.__shakaPlayer;
     };
@@ -538,6 +559,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     if (!video?.bvid && !video?.aid && !isBangumi) return;
     setLoading(true);
     setBuffering(false);
+    cdnAutoRef.current?.setSource(null);
     startPlaybackReport(storage.getSettings().cdnRoute);
     setLoadError(false);
     nativeModeRef.current = false; // fresh video always starts on DASH
@@ -948,6 +970,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     };
     const selected = selectVideoRepresentation(dash, wantQn, { allowFallback: true, isTypeSupported: supported });
     if (!selected.representation) throw new Error('No video representation');
+    cdnAutoRef.current?.setSource(selected.representation);
     const audio = listPreferredAudio(dash, supported);
     if (!audio.length && hasAudioRepresentations(dash)) throw Object.assign(new Error('Unsupported audio codec'), { category: 4 });
     let dolby = null, dolbyCodec = null;
@@ -975,7 +998,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             : (QUALITY_MAP[selected.actualQn] || String(selected.actualQn)),
           audio: attempt.audioLabel,
         };
-        loadedStreamRef.current = { mpd, format, quality: selected.actualQn };
+        loadedStreamRef.current = { mpd, format, quality: selected.actualQn, representation: selected.representation };
         setStreamFormat(format); setCurrentQuality(selected.actualQn);
         updatePlaybackReport({ quality: selected.actualQn, videoCodec: attempt.dolbyCodec || selected.representation.codecs, audioCodec: attempt.audioCodec });
         return selected.actualQn;
@@ -1037,39 +1060,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   // on a non-standard port), while a stable origin CDN (upos / *.bilivideo.com
   // on :443) sits in backupUrl. Order origin FIRST so Shaka prefers it and only
   // falls back to PCDN if the origin is unreachable.
-  // Forceable CDN mirror hosts (#10) live in cdn.js — swapping the host among
-  // B站's upos mirrors is a stability lever; the signed query stays valid.
+  // Preserve native signed URLs and append eligible UPOS mirror fallbacks.
   function buildBaseUrls(rep) {
-    let urls = [];
-    const primary = rep.baseUrl || rep.base_url;
-    if (primary) urls.push(primary);
-    const backups = rep.backupUrl || rep.backup_url || [];
-    for (let i = 0; i < backups.length; i++) {
-      if (backups[i]) urls.push(backups[i]);
-    }
-    const seen = {};
-    urls = urls.filter(u => (seen[u] ? false : (seen[u] = true)));
-    const isPcdn = (u) => /mcdn\.|szbdyd|\bxy[\dx]+xy\b|:\d{4,5}\//i.test(u);
-    urls.sort((a, b) => (isPcdn(a) ? 1 : 0) - (isPcdn(b) ? 1 : 0));
-    // 设置 → CDN线路: put ONE URL rewritten to the chosen mirror host in front
-    // (after the pcdn sort — Chromium 68's sort isn't stable), keeping all the
-    // originals behind it as Shaka failover targets.
-    const routeHost = CDN_ROUTES[storage.getSettings().cdnRoute];
-    const firstUpos = urls.find(isUposUrl);
-    if (routeHost && firstUpos) {
-      const forced = withHost(firstUpos, routeHost);
-      if (forced) urls = [forced].concat(urls.filter(u => u !== forced));
-    }
-    // 兜底镜像(#29):无条件追加在末尾。playurl 给海外用户的主备常常全是
-    // 同一家(Akamai),全挂就没退路;这两个副本让 Shaka 还有得滑。
-    if (firstUpos) {
-      for (const host of FALLBACK_MIRRORS) {
-        const alt = withHost(firstUpos, host);
-        if (alt && urls.indexOf(alt) === -1 && !urls.some(u => cdnHostOf(u) === host)) urls.push(alt);
-      }
-    }
-    if (testBadCdnEnabled() && firstUpos) urls.unshift(withHost(firstUpos, TEST_BAD_HOST));
-    urls = demoteBanned(urls);
+    const urls = playbackCdnUrls(rep, storage.getSettings().cdnRoute);
     return urls
       .map(u => `<BaseURL>${escapeXml(u)}</BaseURL>`)
       .join('\n          ') || '<BaseURL></BaseURL>';
@@ -1743,6 +1736,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     const wasPaused = videoRef.current.paused;
     const previous = loadedStreamRef.current;
     setLoading(true); setBuffering(false);
+    cdnAutoRef.current?.setSource(null);
     try {
       const cid = video.cid || cidRef.current;
       const res = isBangumi ? await getBangumiPlayUrl({ epid: video.epid, cid }, qn) : await getPlayUrl(video, cid, qn);
@@ -1761,6 +1755,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       // A failed decoder load can unload the old stream; restore it at the
       // captured position, including the user's paused state.
       if (previous) {
+        cdnAutoRef.current?.setSource(previous.representation);
         const url = URL.createObjectURL(new Blob([previous.mpd], { type: 'application/dash+xml' }));
         try {
           await player.load(url, pos);

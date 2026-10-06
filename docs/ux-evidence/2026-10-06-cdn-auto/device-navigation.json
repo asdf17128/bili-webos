@@ -1,0 +1,130 @@
+[
+  {
+    "name": "new TV build renders with visible focus",
+    "pass": true,
+    "detail": "content-0-0"
+  },
+  {
+    "name": "gallery rail renders vector icons and collapses while browsing",
+    "pass": true
+  },
+  {
+    "name": "Back to sidebar preserves exact scroll offset",
+    "pass": true,
+    "detail": "translateY(-1250px) -> translateY(-1250px)"
+  },
+  {
+    "name": "expanded drawer does not move the content surface",
+    "pass": true
+  },
+  {
+    "name": "Right restores the exact card",
+    "pass": true,
+    "detail": "content-3-1"
+  },
+  {
+    "name": "OK explicitly refreshes and resets to row zero",
+    "pass": true,
+    "detail": "content-0-0"
+  },
+  {
+    "name": "deep grid card stays fully inside its real viewport",
+    "pass": true,
+    "detail": "content-10-0"
+  },
+  {
+    "name": "real video starts",
+    "pass": true,
+    "detail": "t=0.7s ready=4"
+  },
+  {
+    "name": "OK pauses actual playback",
+    "pass": true
+  },
+  {
+    "name": "OK resumes actual playback",
+    "pass": true
+  },
+  {
+    "name": "scrub keeps playback near the original position before confirmation",
+    "pass": true
+  },
+  {
+    "name": "Back cancels pending scrub without leaving playback",
+    "pass": true
+  },
+  {
+    "name": "OK commits scrub to its new position",
+    "pass": true,
+    "detail": "2.4 -> 12.4"
+  },
+  {
+    "name": "player uses the shared icon control shelf",
+    "pass": true
+  },
+  {
+    "name": "speed popup opens on the selected option",
+    "pass": true
+  },
+  {
+    "name": "speed Back closes only its popup and restores the control",
+    "pass": true
+  },
+  {
+    "name": "quality popup opens on the selected option",
+    "pass": true
+  },
+  {
+    "name": "quality Back closes only its popup and restores the control",
+    "pass": true
+  },
+  {
+    "name": "leaving playback restores card and scroll",
+    "pass": true,
+    "detail": "content-10-0"
+  },
+  {
+    "name": "resume shelf is reachable directly above the first feed row",
+    "pass": true
+  },
+  {
+    "name": "continue watching starts at the displayed saved position",
+    "pass": true,
+    "detail": "saved=28s actual=28.0s"
+  },
+  {
+    "name": "leaving a resumed video restores the resume card",
+    "pass": true,
+    "detail": "content--1-0"
+  },
+  {
+    "name": "ended video exposes replay and the navigable related panel",
+    "pass": true
+  },
+  {
+    "name": "replay remains reachable with the remote after playback ends",
+    "pass": true,
+    "detail": "t=0.0"
+  },
+  {
+    "name": "search presents its native input and two discovery columns",
+    "pass": true
+  },
+  {
+    "name": "preferences use the two-column layout",
+    "pass": true
+  },
+  {
+    "name": "settings move in the same order as the screen in both directions",
+    "pass": true,
+    "detail": "弹幕 -> 看完移出稍后再看 -> 播完自动播放下一个 -> 每行视频 -> 弹幕字号 -> 字幕字号 -> 界面字号 -> CDN 线路"
+  },
+  {
+    "name": "all font pickers open for the selected row and cancel without changing settings",
+    "pass": true
+  },
+  {
+    "name": "bottom navigation focus remains visible when the drawer opens",
+    "pass": true
+  }
+]

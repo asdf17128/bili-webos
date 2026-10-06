@@ -5,8 +5,8 @@ import { createStallMonitor } from '../app/src/player/playbackHealth.js';
 import { diagnosticHosts } from '../app/src/player/cdnProbe.js';
 import { CDN_ROUTES } from '../app/src/player/cdn.js';
 
-for (const route of ['ali', 'cos', 'cosov', 'aliov', 'ks3']) {
-  const hosts = diagnosticHosts('https://upos-sz-mirrorcosov.bilivideo.com/a', route);
+for (const route of ['ali', 'cos', 'cosov', 'aliov', 'ks3', 'hwo1']) {
+  const hosts = diagnosticHosts('https://upos-sz-mirrorcosov.bilivideo.com/upgcxcode/a.m4s', route);
   assert.equal(hosts[0], CDN_ROUTES[route]);
   assert.equal(new Set(hosts).size, hosts.length);
 }
@@ -32,9 +32,14 @@ const server = createServer((req, res) => {
   if (req.method === 'OPTIONS') { res.end(); return; }
   const headers = { 'Content-Range': 'bytes 0-31/1000', 'Content-Length': '32' };
   if (req.url === '/wrong') headers['Content-Range'] = 'bytes 32-63/1000';
+  if (req.url === '/short-body') headers['Content-Length'] = '16';
+  if (req.url === '/short-range' || req.url === '/eof') {
+    headers['Content-Range'] = req.url === '/eof' ? 'bytes 0-15/16' : 'bytes 0-15/1000';
+    headers['Content-Length'] = '16';
+  }
   res.writeHead(req.url === '/ignored' ? 200 : 206, headers);
   if (req.url === '/slow' || req.url === '/cancel') { res.flushHeaders(); return; }
-  res.end(Buffer.alloc(32));
+  res.end(Buffer.alloc(Number(headers['Content-Length'])));
 });
 await new Promise(r => server.listen(0, '127.0.0.1', r));
 const browser = await chromium.launch();
@@ -45,7 +50,7 @@ try {
     const { probeRange } = await import('/src/player/cdnProbe.js');
     const base = `http://127.0.0.1:${port}`;
     const active = new Set(), results = {};
-    for (const path of ['ok', 'ignored', 'wrong', 'slow']) {
+    for (const path of ['ok', 'ignored', 'wrong', 'slow', 'short-body', 'short-range', 'eof']) {
       try { results[path] = await probeRange(base + '/' + path, 0, 31, { timeoutMs: 150, active }); }
       catch (e) { results[path] = e.message; }
     }
@@ -60,7 +65,10 @@ try {
   assert.match(result.ignored, /HTTP 200/);
   assert.match(result.wrong, /Invalid range/);
   assert.match(result.slow, /Timeout/);
+  assert.match(result['short-body'], /Incomplete range/);
+  assert.match(result['short-range'], /Invalid range/);
+  assert.equal(result.eof.bytes, 16);
   assert.equal(result.cancel, 'Cancelled');
   assert.equal(result.remaining, 0);
-  console.log('PASS real HTTP range probes: success, ignored/wrong Range, stalled body timeout, cancellation');
+  console.log('PASS real HTTP range probes: success, ignored/wrong/short Range, short body, valid EOF, stalled body timeout, cancellation');
 } finally { await browser.close(); server.closeAllConnections(); await new Promise(r => server.close(r)); }

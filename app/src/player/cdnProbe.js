@@ -1,6 +1,7 @@
-import { CDN_ROUTES, FALLBACK_MIRRORS, cdnHostOf } from './cdn.js';
+import { CDN_ROUTES, FALLBACK_MIRRORS, cdnHostOf, canMirror } from './cdn.js';
 
 export function diagnosticHosts(url, route) {
+  if (!canMirror(url)) return [cdnHostOf(url)];
   return Array.from(new Set([CDN_ROUTES[route], cdnHostOf(url), ...FALLBACK_MIRRORS].filter(Boolean)));
 }
 
@@ -11,7 +12,7 @@ export function probeRange(url, start, end, { timeoutMs = 15000, active = new Se
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     const t0 = Date.now();
-    let bytes = 0, settled = false;
+    let bytes = 0, settled = false, expectedBytes = 0;
     const finish = (error, timedOut = false) => {
       if (settled) return;
       settled = true; active.delete(xhr);
@@ -27,10 +28,12 @@ export function probeRange(url, start, end, { timeoutMs = 15000, active = new Se
       if (xhr.readyState !== 2) return;
       const range = xhr.getResponseHeader('content-range') || '';
       const match = /^bytes (\d+)-(\d+)\/(\d+|\*)$/i.exec(range);
-      if (xhr.status !== 206 || !match || Number(match[1]) !== start || Number(match[2]) < start || Number(match[2]) > end) {
+      const total = match && Number(match[3]);
+      if (xhr.status !== 206 || !match || Number(match[1]) !== start || Number(match[2]) < start || Number(match[2]) > end ||
+          (Number(match[2]) !== end && Number(match[2]) !== total - 1) || (total && Number(match[2]) >= total)) {
         finish(new Error('Invalid range response (HTTP ' + xhr.status + ')'));
         xhr.abort();
-      }
+      } else expectedBytes = Number(match[2]) - start + 1;
     };
     xhr.onprogress = e => {
       bytes = e.loaded;
@@ -38,7 +41,7 @@ export function probeRange(url, start, end, { timeoutMs = 15000, active = new Se
     };
     xhr.onload = () => {
       bytes = xhr.response ? xhr.response.byteLength : 0;
-      finish(!bytes ? new Error('Empty range response') : bytes > end - start + 1 ? new Error('Oversized range response') : null);
+      finish(!bytes ? new Error('Empty range response') : bytes !== expectedBytes ? new Error('Incomplete range response') : null);
     };
     xhr.ontimeout = () => finish(bytes ? null : new Error('Timeout'), true);
     xhr.onerror = () => finish(new Error('Connection failed'));

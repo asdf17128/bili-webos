@@ -115,4 +115,6 @@ release 必须挂**三件**资产,少一件都会静默出事:
 
 ## 模拟与真机报告
 
-`test-sim.mjs` 使用 Chromium 和真实服务桥，`SIM_OUTPUT` 指定 JSON/截图目录；`test-ui.mjs` 使用电视 CDP，`TV_OUTPUT` 指定结果目录，`TV_TEST_FILTER` 可按测试函数名定向复测。两者均将跳过项与通过项分开记录。默认不增删真实账号稍后再看；独立测试账号才启用 `SIM_ACCOUNT_WRITES=1` 或 `TV_ACCOUNT_WRITES=1`。认证以 API 的实际登录状态为准，本地 Cookie 的存在不代表有效登录。
+`test-sim.mjs` 使用 Chromium 和真实服务桥，`SIM_OUTPUT` 指定 JSON/截图目录；`test-ui.mjs` 使用电视 CDP，`TV_OUTPUT` 指定结果目录，`TV_TEST_FILTER` 可按测试函数名定向复测。两者均将跳过项与通过项分开记录。认证以 API 的实际登录状态为准，本地 Cookie 的存在不代表有效登录。
+
+账号增删默认关闭。模拟套件的 `SIM_ACCOUNT_WRITES=1` 仅用于独立测试账号。真机的 `TV_ACCOUNT_WRITES=1` 使用有保护的测试流程：先取得完整原列表，只允许加入原列表不存在的固定测试视频；Luna 请求校验精确 aid，拒绝其他条目及批量清除；长按菜单也核对事件中的 aid，最后在 `finally` 清理测试视频并比对原列表顺序和成员。用户已授权账号测试时可启用；测试视频已存在、列表已满或原列表读取不完整时不写入。账号页面截图仅保存在本地，不提交到公共仓库。

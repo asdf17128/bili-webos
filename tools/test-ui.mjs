@@ -41,8 +41,11 @@ const PROBE = `JSON.stringify({
   commentCards: document.querySelectorAll('.comment-card').length,
   tabRow: !!document.querySelector('.panel-tab-row'),
   panelText: (document.querySelector('.panel-tab-row')?.innerText || ''),
+  activePanelTab: Array.from(document.querySelectorAll('.panel-tab-row > div')).find(e => e.style.background === 'rgb(59, 61, 70)')?.textContent || '',
+  upApi: window.__smokeUpResponse || null,
   danmakuBox: !!document.querySelector('.danmaku-container'),
   danmakuItems: document.querySelectorAll('.danmaku-item').length,
+  liveRelay: window.__tvLiveRelay || null,
   checkUpdate: (function(){var r=Array.from(document.querySelectorAll('.settings-row')).find(function(x){return x.innerText.indexOf('检查更新')>=0});return r?(r.querySelector('.settings-row-value')?.innerText||'').trim():null})(),
   liveBadge: Array.from(document.querySelectorAll('.video-card-duration')).some(function(e){return e.innerText.indexOf('直播')>=0}),
   recentLive: (function(){try{return JSON.parse(localStorage.getItem('bili_recentLive')||'[]').length}catch(e){return -1}})(),
@@ -76,7 +79,8 @@ async function main(call, relaunchApp) {
   await call('Page.enable');
 
   const evalJSON = async (expr) => {
-    const r = await call('Runtime.evaluate', { expression: expr, returnByValue: true });
+    const r = await call('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true });
+    if (r.exceptionDetails) throw new Error(r.exceptionDetails.text || 'TV evaluation failed');
     try { return JSON.parse(r?.result?.value); } catch { return {}; }
   };
   const probe = () => evalJSON(PROBE);
@@ -251,12 +255,16 @@ async function main(call, relaunchApp) {
     s = await waitFor(x => x.tabRow, { timeout: 4000 });
     check('Player tab row visible', s.tabRow);
     check('相关推荐 + UP主投稿 tabs present', s.panelText.includes('相关推荐') && s.panelText.includes('UP主投稿'), s.panelText.replace(/\n/g, ' '));
-    check('相关推荐 has cards (recommended w/ upload time)', s.relatedCards > 0, `${s.relatedCards} cards`);
+    // Multi-part videos initially select 合集, so one fixed Right press is not
+    // proof of visiting UP主投稿. Assert the selected label and its own response.
+    for (let i = 0; i < 3 && !(await probe()).activePanelTab.startsWith('相关推荐'); i++) await key('right');
+    s = await waitFor(x => x.activePanelTab.startsWith('相关推荐') && x.relatedCards > 0, { timeout: 12000 });
+    check('相关推荐 has cards (recommended w/ upload time)', s.activePanelTab.startsWith('相关推荐') && s.relatedCards > 0, `${s.relatedCards} cards`);
     // Switch to UP主投稿 tab → uploader's own videos load.
     await key('right');
-    s = await waitFor(x => x.relatedCards > 0, { timeout: 21000 });
+    s = await waitFor(x => x.activePanelTab.startsWith('UP主投稿') && x.upApi != null && (x.upApi.code !== 0 || x.relatedCards > 0), { timeout: 21000 });
     const api = await evalJSON('JSON.stringify(window.__smokeUpResponse)');
-    check('UP主投稿 tab loads videos', s.relatedCards > 0, `${s.relatedCards} cards; API=${JSON.stringify(api)}`);
+    check('UP主投稿 tab loads videos', s.activePanelTab.startsWith('UP主投稿') && api?.code === 0 && s.relatedCards > 0, `${s.relatedCards} cards; API=${JSON.stringify(api)}`);
     await exitPlayer();
   }
 
@@ -346,6 +354,55 @@ async function main(call, relaunchApp) {
     check('Search returns a results grid', s.cards > 0, `${s.cards} results`);
   }
 
+  async function testLiveRelay() {
+    console.log('\n[Real-time live danmaku on a current recommended room]');
+    await exitPlayer();
+    const rec = await serviceFetch('https://api.live.bilibili.com/xlive/web-interface/v1/webMain/getMoreRecList?platform=web&page=1&page_size=12');
+    const rooms = (rec.data?.recommend_room_list || rec.data?.list || []).slice().sort((a,b) => (b.online || 0) - (a.online || 0));
+    let roomid;
+    for (const room of rooms.slice(0, 3)) {
+      const init = await serviceFetch('https://api.live.bilibili.com/room/v1/Room/room_init?id=' + (room.roomid || room.room_id));
+      if (init.code === 0 && init.data?.live_status === 1) { roomid = init.data.room_id; break; }
+    }
+    if (!roomid) { warn('Live relay fixture skipped', 'no current live room found'); return; }
+    await evalJSON(`JSON.stringify((() => {const s=JSON.parse(localStorage.getItem('bili_settings')||'{}');s.danmaku=true;localStorage.setItem('bili_settings',JSON.stringify(s));return true;})())`);
+    await reload();
+    await evalJSON(`JSON.stringify((() => {
+      const original = window.webOS.service.request;
+      window.__tvLiveRelay = { tokenCode: null, frames: 0, events: 0, subscribed: false };
+      window.webOS.service.request = function(uri, options) {
+        const token = options?.parameters?.url?.includes('/getDanmuInfo');
+        const subscription = options?.method === 'danmakuSubscribe';
+        if (subscription) window.__tvLiveRelay.subscribed = true;
+        if (token || subscription) {
+          const success = options.onSuccess;
+          options = { ...options, onSuccess(res) {
+            if (token) { try { window.__tvLiveRelay.tokenCode = JSON.parse(res.body).code; } catch {} }
+            if (res.danmaku) window.__tvLiveRelay.frames++;
+            if (res.event) window.__tvLiveRelay.events++;
+            success?.(res);
+          }};
+        }
+        return original.call(this, uri, options);
+      };
+      return true;
+    })())`);
+    await evalJSON(`JSON.stringify(window.__openLive({roomid:${Number(roomid)},title:'直播弹幕实测'}))`);
+    let s = await waitFor(x => x.v && x.v.t > 2, { timeout: 25000, interval: 500 });
+    check('Recommended live room advances playback', s.v && s.v.t > 2);
+    s = await waitFor(x => x.danmakuItems > 0 || (x.liveRelay?.tokenCode != null && x.liveRelay.tokenCode !== 0), { timeout: 25000, interval: 500 });
+    check('Live danmaku token API succeeds', s.liveRelay?.tokenCode === 0, `code=${s.liveRelay?.tokenCode}`);
+    check('TV starts the live danmaku subscription', s.liveRelay?.subscribed === true);
+    if (s.liveRelay?.frames > 0) {
+      check('Real-time danmaku reaches the TV overlay', s.danmakuItems > 0, `${s.liveRelay.frames} frames, ${s.danmakuItems} DOM items`);
+      const shot = await call('Page.captureScreenshot', { format: 'png' });
+      writeFileSync(`${output}/tv-live-realtime.png`, Buffer.from(shot.data, 'base64'));
+    } else warn('Real-time danmaku receipt', `${s.liveRelay?.events || 0} relay events but no chat frames in observation window`);
+    await exitPlayer();
+    // Remove instrumentation and re-read the suite's restored settings later.
+    await reload();
+  }
+
   async function testFollowPagination() {
     console.log('\n[Follow list + pagination]');
     const nav = await serviceFetch('https://api.bilibili.com/x/web-interface/nav');
@@ -372,6 +429,37 @@ async function main(call, relaunchApp) {
     check('Update-check resolved (latest/new/version)', /已是最新|发现新版|v?\d+\.\d+\.\d+/.test(s.checkUpdate || ''), s.checkUpdate);
   }
 
+  async function testAccountLibrary() {
+    console.log('\n[Authenticated favorites, subscriptions and watch-later list]');
+    const nav = await serviceFetch('https://api.bilibili.com/x/web-interface/nav');
+    check('Account API confirms valid login', nav.code === 0 && nav.data?.isLogin === true);
+    if (nav.code !== 0 || !nav.data?.isLogin) return;
+    await reload();
+    await goto('favorites');
+    const own = await serviceFetch('https://api.bilibili.com/x/v3/fav/folder/created/list-all?up_mid=' + nav.data.mid);
+    const folders = own.data?.list || [];
+    await waitFor(x => x.cards > 0, { timeout: 12000 });
+    let library = await evalJSON('JSON.stringify({folders:document.querySelectorAll(".folder-selector .fav-chip").length,cards:document.querySelectorAll(".video-card").length})');
+    check('Own favorites match the account folder response', own.code === 0 && library.folders === folders.length, `${library.folders}/${folders.length} folders`);
+    if (folders[0]?.media_count > 0) check('Favorite folder renders videos', library.cards > 0, `${library.cards} cards`);
+    await key('right'); await key('ok'); // 我的收藏 → 订阅
+    const subscriptions = await serviceFetch('https://api.bilibili.com/x/v3/fav/folder/collected/list?up_mid=' + nav.data.mid + '&pn=1&ps=20&platform=web');
+    const expected = subscriptions.data?.list || [];
+    await sleep(2000);
+    library = await evalJSON('JSON.stringify({tab:document.querySelector(".library-tabs [aria-selected=true]")?.textContent,folders:document.querySelectorAll(".folder-selector .fav-chip").length,cards:document.querySelectorAll(".video-card").length,empty:document.body.innerText.includes("暂无订阅")})');
+    check('Subscriptions tab matches the account response', subscriptions.code === 0 && library.tab === '订阅' && library.folders === expected.length, `${library.folders}/${expected.length} folders`);
+    if (!expected.length) check('Empty subscriptions end loading', library.empty);
+    else if (expected[0].media_count > 0) check('Subscribed folder renders videos', library.cards > 0, `${library.cards} cards`);
+    await goto('settings');
+    await key('right');
+    const list = await serviceFetch('https://api.bilibili.com/x/v2/history/toview');
+    const count = (list.data?.list || []).length;
+    const s = await waitFor(x => x.chipActive?.includes('稍后再看') && x.cards === count, { timeout: 12000 });
+    check('Watch Later list matches the authenticated API', list.code === 0 && s.chipActive?.includes('稍后再看') && s.cards === count, `${s.cards}/${count} cards`);
+    const shot = await call('Page.captureScreenshot', { format: 'png' });
+    writeFileSync(`${output}/account-library-private.png`, Buffer.from(shot.data, 'base64'));
+  }
+
   async function testHotAndPartition() {
     console.log('\n[热门 / 分区]');
     await reload();
@@ -384,90 +472,127 @@ async function main(call, relaunchApp) {
     check('分区(游戏) loads content', s.cards > 0 || s.imgs > 3, `${s.cards} cards / ${s.imgs} imgs`);
   }
 
-  // 稍后再看(issue #19)。真机专测长按:遥控器的 OK 是"按住 = 连发 keyDown,
-  // 松手才 keyUp",浏览器里模拟不出这个时序,所以这条只有在电视上跑才算数。
-  // 写操作净零:加什么删什么,删之前先核对卡片身份。
+  // Explicit opt-in for a bounded UI round trip. Snapshot the full original list,
+  // permit writes only for an absent fixture aid, and restore it even on failure.
   async function testWatchLater() {
-    console.log('\n[稍后再看 / Watch Later]');
+    console.log('\n[Watch Later: guarded add / long-press remove / restore]');
     const nav = await serviceFetch('https://api.bilibili.com/x/web-interface/nav');
     if (nav.code !== 0 || !nav.data?.isLogin) { warn('Watch Later skipped', 'API session is logged out'); return; }
-    if (process.env.TV_ACCOUNT_WRITES !== '1') { warn('Watch Later writes skipped', 'set TV_ACCOUNT_WRITES=1 only with a disposable test account'); return; }
-    await exitPlayer();
-    await goto('recommend');
-    await key('ok');                       // 进网格
-    await key('ok');                       // 播第一个视频
-    let s = await waitFor(x => x.v && x.v.t > 0.2, { timeout: 20000 });
-    if (!s.v) { warn('Watch Later', '视频没起来,跳过'); return; }
-    const title = await evalJSON(`JSON.stringify((document.querySelector('.player-title')||{}).innerText||'')`);
-    await key('up');                       // 呼出控制栏
-    s = await waitFor(x => (x.btns || []).length > 0, { timeout: 6000 });
-    check('播放器控制栏有「稍后再看」', (s.btns || []).some(b => b.includes('稍后再看')), (s.btns || []).join(' | '));
-
-    for (let i = 0; i < 10; i++) {
+    if (process.env.TV_ACCOUNT_WRITES !== '1') { warn('Watch Later writes skipped', 'explicit opt-in required for guarded fixture round trip'); return; }
+    const getList = async () => {
+      const res = await serviceFetch('https://api.bilibili.com/x/v2/history/toview');
+      if (res.code !== 0) throw new Error('Watch Later list API failed: ' + res.code);
+      const list = res.data?.list || [];
+      if (res.data?.count != null && res.data.count !== list.length) throw new Error('Incomplete list; no writes allowed');
+      return list;
+    };
+    const original = await getList();
+    const ids = list => list.map(v => String(v.aid));
+    const baseline = ids(original);
+    const fixture = (await serviceFetch('https://api.bilibili.com/x/web-interface/view?bvid=BV1xx411c7Xg')).data;
+    if (!fixture?.aid || !fixture?.bvid) throw new Error('Fixture unavailable');
+    if (baseline.includes(String(fixture.aid)) || original.length >= 100) {
+      warn('Watch Later writes skipped', 'fixture already saved or queue full; original list preserved'); return;
+    }
+    const aid = String(fixture.aid);
+    await reload();
+    await evalJSON(`JSON.stringify((() => {
+      const original = window.webOS.service.request;
+      window.__tvSmokeOriginalRequest = original;
+      window.__tvSmokeMenuAid = null;
+      window.__tvSmokeWrites = { add: 0, del: 0, blocked: 0 };
+      window.__tvSmokeMenuHandler = e => { window.__tvSmokeMenuAid = String(e.detail?.aid || ''); };
+      window.addEventListener('card-menu', window.__tvSmokeMenuHandler);
+      window.webOS.service.request = function(uri, options) {
+        const p = options?.parameters;
+        const path = p?.url ? new URL(p.url).pathname : '';
+        const operation = path === '/x/v2/history/toview/add' ? 'add' : path === '/x/v2/history/toview/del' ? 'del' : null;
+        if (operation) {
+          const form = new URLSearchParams(p.body || '');
+          if (form.get('aid') !== ${JSON.stringify(aid)} || form.has('viewed')) {
+            window.__tvSmokeWrites.blocked++;
+            options.onFailure?.({errorText:'Test guard rejected non-fixture mutation'});
+            return {cancel(){}};
+          }
+          window.__tvSmokeWrites[operation]++;
+        }
+        return original.call(this, uri, options);
+      };
+      return true;
+    })())`);
+    try {
+      await evalJSON(`JSON.stringify(window.__openVideo({bvid:${JSON.stringify(fixture.bvid)},resumeMode:'none'}))`);
+      let s = await waitFor(x => x.v && x.v.t > 0.2, { timeout: 22000 });
+      if (!s.v) throw new Error('Fixture playback did not start');
+      await key('up');
+      for (let i = 0; i < 15 && !(await probe()).focusedBtn.includes('稍后再看'); i++) await key('right');
       s = await probe();
-      if ((s.focusedBtn || '').includes('稍后再看')) break;
+      if (!s.focusedBtn.includes('稍后再看') || s.focusedBtn.includes('已稍后再看')) throw new Error('Fixture add button is not in the expected state');
+      await key('ok');
+      s = await waitFor(x => x.focusedBtn.includes('已稍后再看'), { timeout: 10000 });
+      check('Player confirms fixture added to Watch Later', s.focusedBtn.includes('已稍后再看'));
+      const afterAdd = ids(await getList());
+      check('Add changes only the absent fixture', afterAdd.includes(aid) && afterAdd.length === baseline.length + 1 && baseline.every(id => afterAdd.includes(id)));
+      if (!afterAdd.includes(aid)) throw new Error('Fixture was not added');
+      await exitPlayer();
+      await goto('settings');
       await key('right');
+      s = await waitFor(x => x.chipActive?.includes('稍后再看') && x.cards === afterAdd.length, { timeout: 12000 });
+      check('Watch Later UI reflects the added fixture', s.chipActive?.includes('稍后再看') && s.cards === afterAdd.length);
+      await key('down');
+      for (let i = 0; i < 4; i++) {
+        const title = await evalJSON('JSON.stringify(document.querySelector(".video-card.focused .video-card-title")?.textContent)');
+        if (title === fixture.title) break;
+        await key('left');
+      }
+      const title = await evalJSON('JSON.stringify(document.querySelector(".video-card.focused .video-card-title")?.textContent)');
+      if (title !== fixture.title) throw new Error('Fixture is not focused; refusing removal');
+      const m = KEYMAP.ok;
+      await call('Input.dispatchKeyEvent', { type: 'keyDown', key: m.key, windowsVirtualKeyCode: m.vk, nativeVirtualKeyCode: m.vk });
+      await sleep(400);
+      check('Holding OK shows progress', (await probe()).holding === true);
+      await sleep(700);
+      await call('Input.dispatchKeyEvent', { type: 'keyUp', key: m.key, windowsVirtualKeyCode: m.vk, nativeVirtualKeyCode: m.vk });
+      s = await waitFor(x => x.menu.some(v => v.includes('移除')), { timeout: 7000 });
+      const menuAid = await evalJSON('JSON.stringify(window.__tvSmokeMenuAid)');
+      check('Long-press menu targets the fixture aid', menuAid === aid && s.menu.some(v => v.includes('移除')));
+      if (menuAid !== aid || !s.menu.some(v => v.includes('移除'))) throw new Error('Menu identity mismatch; refusing removal');
+      check('Opening the menu leaves the list unchanged', JSON.stringify(ids(await getList())) === JSON.stringify(afterAdd));
+      const shot = await call('Page.captureScreenshot', { format: 'png' });
+      writeFileSync(`${output}/watchlater-menu-private.png`, Buffer.from(shot.data, 'base64'));
+      await key('ok');
+      s = await waitFor(x => x.cards === baseline.length && x.menu.length === 0, { timeout: 10000 });
+      check('Menu removal updates Watch Later UI', s.cards === baseline.length && s.menu.length === 0);
+      check('Menu removal restores the original API list', JSON.stringify(ids(await getList())) === JSON.stringify(baseline));
+      if (baseline.length) {
+        await key('down'); await key('up');
+        s = await probe();
+        check('Returning from grid preserves Watch Later tab and focus', s.chipActive?.includes('稍后再看') && s.chipFocused?.includes('稍后再看'));
+      }
+      const writes = await evalJSON('JSON.stringify(window.__tvSmokeWrites)');
+      check('UI writes were limited to one fixture add and remove', writes.add === 1 && writes.del === 1 && writes.blocked === 0, JSON.stringify(writes));
+    } finally {
+      try {
+        if (ids(await getList()).includes(aid)) {
+          const code = await evalJSON(`new Promise(resolve => {
+            const auth=JSON.parse(localStorage.getItem('bili_auth') || '{}');
+            window.webOS.service.request('luna://com.biliwebos.app.service/', {method:'fetch',parameters:{
+              url:'https://api.bilibili.com/x/v2/history/toview/del',method:'POST',contentType:'application/x-www-form-urlencoded',
+              body:new URLSearchParams({aid:${JSON.stringify(aid)},csrf:auth.bili_jct || ''}).toString()},
+              onSuccess(res){try{resolve(JSON.stringify(JSON.parse(res.body).code));}catch{resolve('-1');}},onFailure(){resolve('-1');}});
+          })`);
+          if (code !== 0) throw new Error('Fixture cleanup failed: ' + code);
+        }
+        check('Final original Watch Later order and membership preserved', JSON.stringify(ids(await getList())) === JSON.stringify(baseline), `${baseline.length} original items`);
+      } finally {
+        await evalJSON(`JSON.stringify((() => {
+          window.webOS.service.request = window.__tvSmokeOriginalRequest;
+          window.removeEventListener('card-menu', window.__tvSmokeMenuHandler);
+          delete window.__tvSmokeOriginalRequest; delete window.__tvSmokeMenuHandler;
+          return true;
+        })())`);
+      }
     }
-    const onBtn = ((await probe()).focusedBtn || '').includes('稍后再看');
-    if (!onBtn) { fail('走到「稍后再看」按钮', '走不到'); return; }
-    await key('ok');
-    s = await waitFor(x => (x.focusedBtn || '').includes('已稍后再看'), { timeout: 8000 });
-    const added = (s.focusedBtn || '').includes('已稍后再看');
-    check('OK 加入后按钮翻成「已稍后再看」', added, s.focusedBtn);
-
-    await exitPlayer();
-    await goto('settings');                // 侧栏「我的」
-    s = await waitFor(x => (x.chips || []).length >= 2, { timeout: 8000 });
-    check('「我的」页有 观看历史 / 稍后再看 两个 tab', (s.chips || []).some(c => c.includes('稍后再看')), (s.chips || []).join(' | '));
-
-    // 焦点在 chip 行:右移到「稍后再看」= 选中即切换
-    await key('right');
-    s = await waitFor(x => (x.cardTexts || []).length > 0, { timeout: 10000 });
-    const seen = (s.cardTexts || []).some(c => title && c.includes(title.slice(0, 8)));
-    check('刚加入的视频出现在稍后再看里', seen || !title, `${(s.cardTexts || []).length} 张 · ${title.slice(0, 14)}`);
-
-    if (!added) return;
-    await key('down');                     // 进网格
-    // 焦点未必落在第一张:chip 在第几列,进网格就落第几列。必须把焦点走到
-    // 目标卡上,并且**用被聚焦的那张卡**做身份断言 —— 2026-08-06 就是因为
-    // 断言读了列表第一张、长按打在第二张,把 owner 真存的视频删掉了。
-    const key8 = title.slice(0, 8);
-    let onTarget = false;
-    for (let i = 0; i < 8 && !onTarget; i++) {
-      s = await probe();
-      if ((s.focusedCard || '').includes(key8)) { onTarget = true; break; }
-      await key('left');
-    }
-    s = await probe();
-    check('待移除的是刚加的那个,不是 owner 原有条目(读的是被聚焦的卡)',
-      onTarget && (s.focusedCard || '').includes(key8), (s.focusedCard || '(无焦点卡)').slice(0, 40));
-    if (!onTarget) return;   // 焦点不在目标上就绝不长按
-
-    // 长按:keyDown 持续 1.1s(过 800ms 阈值)再 keyUp
-    const m = KEYMAP.ok;
-    await call('Input.dispatchKeyEvent', { type: 'keyDown', key: m.key, windowsVirtualKeyCode: m.vk, nativeVirtualKeyCode: m.vk });
-    await sleep(400);
-    const mid = await probe();
-    check('按住时卡片出现长按进度条', mid.holding === true);
-    await sleep(700);
-    await call('Input.dispatchKeyEvent', { type: 'keyUp', key: m.key, windowsVirtualKeyCode: m.vk, nativeVirtualKeyCode: m.vk });
-    // 长按现在**弹菜单**,不再直接删(owner 2026-08-09)
-    s = await waitFor(x => (x.menu || []).length > 0, { timeout: 6000 });
-    check('长按弹出卡片菜单(不是直接删)', (s.menu || []).some(x => x.includes('移除')), (s.menu || []).join(' | '));
-    check('只开菜单不会动数据', (s.cardTexts || []).some(c => c.includes(key8)));
-    if (!(s.menu || []).some(x => x.includes('移除'))) return;
-    // 菜单里第一项就是「从稍后再看移除」,直接 OK
-    await key('ok');
-    s = await waitFor(x => !(x.cardTexts || []).some(c => c.includes(key8)), { timeout: 9000 });
-    check('菜单 → 移除,列表里没了', !(s.cardTexts || []).some(c => c.includes(key8)), `${(s.cardTexts || []).length} 张剩余`);
-
-    // 回归:进网格再上来,tab 不能被切回观看历史(owner 2026-08-09 报的 bug)
-    await key('down'); await sleep(600);
-    await key('up'); await sleep(900);
-    s = await probe();
-    check('从网格返回仍停在稍后再看(tab 不复位)', (s.chipActive || '').includes('稍后再看'),
-      `active=${s.chipActive} focus=${s.chipFocused}`);
-    check('返回时焦点落在当前 tab 的 chip 上', (s.chipFocused || '').includes('稍后再看'), s.chipFocused);
   }
 
   async function testBangumiPlayback() {
@@ -488,8 +613,8 @@ async function main(call, relaunchApp) {
   }
 
   const tests = [
-    testNavAndHome, testVideoPlayback, testCommentRail, testBangumiPlayback, testLiveAndDanmaku, testSearch,
-    testFollowPagination, testSettingsAutoCheck, testHotAndPartition, testWatchLater,
+    testNavAndHome, testVideoPlayback, testCommentRail, testBangumiPlayback, testLiveAndDanmaku, testLiveRelay, testSearch,
+    testFollowPagination, testAccountLibrary, testSettingsAutoCheck, testHotAndPartition, testWatchLater,
   ];
   try {
     for (const t of tests) {

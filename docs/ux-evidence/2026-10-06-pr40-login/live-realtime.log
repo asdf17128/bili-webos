@@ -1,0 +1,11 @@
+[Environment] Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.270 Safari/537.36 WebAppManager
+
+[Real-time live danmaku on a current recommended room]
+  ✅ Recommended live room advances playback
+  ✅ Live danmaku token API succeeds: code=0
+  ✅ TV starts the live danmaku subscription
+  ✅ Real-time danmaku reaches the TV overlay: 1 frames, 1 DOM items
+
+====================================================
+Results: 4 passed, 0 failed, 0 warned
+====================================================

@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Player confirms fixture added to Watch Later",
+    "status": "pass"
+  },
+  {
+    "name": "Add changes only the absent fixture",
+    "status": "pass"
+  },
+  {
+    "name": "Watch Later UI reflects the added fixture",
+    "status": "pass"
+  },
+  {
+    "name": "Holding OK shows progress",
+    "status": "pass"
+  },
+  {
+    "name": "Long-press menu targets the fixture aid",
+    "status": "pass"
+  },
+  {
+    "name": "Opening the menu leaves the list unchanged",
+    "status": "pass"
+  },
+  {
+    "name": "Menu removal updates Watch Later UI",
+    "status": "pass"
+  },
+  {
+    "name": "Menu removal restores the original API list",
+    "status": "pass"
+  },
+  {
+    "name": "UI writes were limited to one fixture add and remove",
+    "status": "pass",
+    "detail": "{\"add\":1,\"del\":1,\"blocked\":0}"
+  },
+  {
+    "name": "Final original Watch Later order and membership preserved",
+    "status": "pass",
+    "detail": "0 original items"
+  }
+]

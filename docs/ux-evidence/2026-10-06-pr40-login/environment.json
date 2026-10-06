@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-06",
+  "appCommit": "60b64690adb16b21cd665b76dc97c297eeb81b6f",
+  "appSourceSha256": "fbdc4674129cb1e4e93377a2a2bb6f30c8d543f30419ad3754815410457193bf",
+  "appChangedThisRun": false,
+  "device": "LG C4 / Chromium 120",
+  "authentication": {
+    "code": 0,
+    "isLogin": true
+  },
+  "privateScreenshots": "kept locally; omitted from public evidence"
+}

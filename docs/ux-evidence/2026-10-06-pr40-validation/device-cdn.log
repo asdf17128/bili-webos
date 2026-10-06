@@ -1,0 +1,6 @@
+PASS unreachable primary CDN falls back and starts actual playback
+PASS unreachable primary CDN is banned upos-sz-mirrorbad.bilivideo.com
+PASS diagnostics measure the selected Ali route 视频 CDN — ali 0.2s · bd 0.2s · cosov 2.6s · estgoss 0.3s
+PASS diagnostics report single and concurrent throughput
+PASS TV QR retains selected route and last playback evidence
+PASS TV QR body is ASCII and contains no signed media URL

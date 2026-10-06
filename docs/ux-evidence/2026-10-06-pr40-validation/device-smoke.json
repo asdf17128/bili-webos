@@ -1,0 +1,149 @@
+[
+  {
+    "name": "Home loads video cards",
+    "status": "pass",
+    "detail": "20 cards"
+  },
+  {
+    "name": "No broken thumbnails",
+    "status": "pass",
+    "detail": "0 broken / 12 imgs"
+  },
+  {
+    "name": "OK entered content (focus in grid)",
+    "status": "pass",
+    "detail": "content-0-0"
+  },
+  {
+    "name": "Back returns focus to sidebar",
+    "status": "pass",
+    "detail": "sidebar-1-0"
+  },
+  {
+    "name": "Video starts playing",
+    "status": "pass",
+    "detail": "t=0.3s ready=4"
+  },
+  {
+    "name": "Playback advances (no immediate freeze)",
+    "status": "pass",
+    "detail": "0.3s → 4.3s"
+  },
+  {
+    "name": "Player tab row visible",
+    "status": "pass"
+  },
+  {
+    "name": "相关推荐 + UP主投稿 tabs present",
+    "status": "pass",
+    "detail": "相关推荐 UP主投稿 · 枫泽雨畔"
+  },
+  {
+    "name": "相关推荐 has cards (recommended w/ upload time)",
+    "status": "pass",
+    "detail": "12 cards"
+  },
+  {
+    "name": "UP主投稿 tab loads videos",
+    "status": "fail",
+    "detail": "0 cards"
+  },
+  {
+    "name": "Comment rail loads real comments",
+    "status": "pass",
+    "detail": "3 cards"
+  },
+  {
+    "name": "Comment rail shows content without JSX or empty-state leakage",
+    "status": "pass"
+  },
+  {
+    "name": "Comment controls fit without overlapping metadata",
+    "status": "pass",
+    "detail": "{\"present\":true,\"sourceLeak\":false,\"empty\":false,\"controlsRight\":1500,\"railLeft\":1501,\"duplicate\":false}"
+  },
+  {
+    "name": "Season info loads (episode list)",
+    "status": "pass",
+    "detail": "38 eps"
+  },
+  {
+    "name": "PGC playurl returns DASH (bangumi playable)",
+    "status": "pass",
+    "detail": "6 video reps"
+  },
+  {
+    "name": "HDR/Dolby rep present + selectable by id",
+    "status": "pass",
+    "detail": "accept=[125,120,112,80,64,32,16]"
+  },
+  {
+    "name": "Live list loads",
+    "status": "pass",
+    "detail": "12 rooms"
+  },
+  {
+    "name": "Live stream plays",
+    "status": "pass",
+    "detail": "t=0.2s ready=4 (第1个房间)"
+  },
+  {
+    "name": "Danmaku layer mounted",
+    "status": "pass"
+  },
+  {
+    "name": "Danmaku rendering",
+    "status": "skip",
+    "detail": "no items yet (quiet room?) — layer present"
+  },
+  {
+    "name": "Live room recorded to recentLive",
+    "status": "pass",
+    "detail": "8 stored"
+  },
+  {
+    "name": "Live shows in 我的 → 最近观看 with 直播 badge",
+    "status": "pass",
+    "detail": "cards=8"
+  },
+  {
+    "name": "Search recommendations render (热门/历史)",
+    "status": "pass",
+    "detail": "23 rows"
+  },
+  {
+    "name": "Search returns a results grid",
+    "status": "pass",
+    "detail": "20 results"
+  },
+  {
+    "name": "Follow list and pagination skipped",
+    "status": "skip",
+    "detail": "API session is logged out"
+  },
+  {
+    "name": "Auto update-check populated",
+    "status": "pass",
+    "detail": "已是最新 (v2.1.1)"
+  },
+  {
+    "name": "Update-check resolved (latest/new/version)",
+    "status": "pass",
+    "detail": "已是最新 (v2.1.1)"
+  },
+  {
+    "name": "热门 loads content",
+    "status": "pass",
+    "detail": "20 cards / 12 imgs"
+  },
+  {
+    "name": "分区(游戏) loads content",
+    "status": "pass",
+    "detail": "100 cards / 12 imgs"
+  },
+  {
+    "name": "Watch Later skipped",
+    "status": "skip",
+    "detail": "API session is logged out"
+  }
+]

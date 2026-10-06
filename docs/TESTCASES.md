@@ -309,3 +309,26 @@ danmaku 断言改为设置感知(测试前强开、测后还原用户偏好);徽
 现有 LG C4 开发版已部署，播放/遥控器 [26/26](ux-evidence/2026-10-06-issues/device.json)，设置 [12/12](ux-evidence/2026-10-06-issues/device-settings.json)。保留侧栏确认主动刷新，Back/右键往返保持位置；浏览器覆盖 2/3/4 列 × 三档界面字号。此轮发现 #27 加入自动播放行后旧测试行号过时，已修正夹具后重跑。已查看电视播放及诊断截图、订阅页截图。
 
 边界：未执行会改动账号稍后再看的旧模拟器全套，不是新版本发布验收；未在海外问题用户的网络、webOS 4 实机、杜比/Atmos 音响链路上验收。旧服务只验证启动、API 和模块加载，直播弹幕实收与 DLNA 仍需旧硬件验证。未包含 PR #17 的特定 4K120 片源帧变换，不关闭这些仍需现场验证的 issue。
+
+### PR #40 补充模拟与真机回归（同日，尚未全量验收通过）
+
+用户要求复核后，对 `45d2b6e` 及随后发现的评论栏修复重新验证。这里的模拟环境为 **Chromium + 真实 service.js 桥 + 真实 B 站网络**，不是 LG 官方模拟器；确定性浏览器用例另使用隔离夹具。真机为现有 LG C4，本轮 UA 为 Chromium 120。构建身份见 [build.json](ux-evidence/2026-10-06-pr40-validation/build.json)。
+
+| 层级 / 命令 | 本轮结果 | 证据与边界 |
+| --- | --- | --- |
+| `bash tools/verify.sh --no-tv --ux` 的静态、单元、旧 Node 与构建层 | 通过 | 服务 22/22、媒体选择 13/13；真实 Node 0.12.2/8 完成 API 请求与弹幕模块加载；生产 6 个 JS bundle 均按 ES2016 解析。首轮整体在浏览器焦点断言失败处停止，不能把这份日志称为整条门禁全绿 |
+| `node tools/test-tv-ux.mjs` | **54/54** | [结果](ux-evidence/2026-10-06-pr40-validation/browser.json)。首轮重试恢复的固定 100ms 焦点断言偶发失败，单独连续 12 次通过；改为最长 2 秒的状态等待后整套复验通过 |
+| `node tools/test-player-loading.mjs` | **15/15** | [结果](ux-evidence/2026-10-06-pr40-validation/player.json)，含新评论栏复现。真实 HTTP Range/超时/取消另通过 [探针测试](ux-evidence/2026-10-06-pr40-validation/http-probes.log) |
+| `SIM_STRICT=1 node tools/test-sim.mjs` | **55 通过 / 0 失败 / 2 跳过** | [结果](ux-evidence/2026-10-06-pr40-validation/simulator.json)、[日志](ux-evidence/2026-10-06-pr40-validation/simulator.log)。实际点播、直播、评论/楼中楼、风控错误入口、坏 CDN 回退、诊断测速、字号均执行；关注及稍后再看因 API 登录失效跳过 |
+| `node tools/test-tv-ux-device.mjs` | **26/26** | [结果](ux-evidence/2026-10-06-pr40-validation/device-navigation.json)：实际播放、暂停/恢复、快进确认/取消、重播、弹层与列表返回 |
+| `node tools/test-tv-settings.mjs` | **12/12** | [结果](ux-evidence/2026-10-06-pr40-validation/device-settings.json)：2/3/4 列、大字号、重启持久化及深列表可见。首轮 CDP 重载曾停在 `document.readyState=loading` 的空文档，重新启动 app 后复验通过；保留 [首轮日志](ux-evidence/2026-10-06-pr40-validation/settings-first-run.log)，未断言其根因 |
+| `node tools/test-cdn-tv.mjs` | **6/6** | [结果](ux-evidence/2026-10-06-pr40-validation/device-cdn.json)：不可达节点回退后实际起播、坏节点拉黑、所选线路单连接/并发测速，以及从真机截图解码二维码。已查看 [诊断截图](ux-evidence/2026-10-06-pr40-validation/tv-diagnostics.png)，测试结束恢复设置及注入标记 |
+| `node tools/test-ui.mjs` 真机广覆盖 | **26 通过 / 1 失败 / 3 跳过** | [结果](ux-evidence/2026-10-06-pr40-validation/device-smoke.json)、[日志](ux-evidence/2026-10-06-pr40-validation/device-smoke.log)。UP 主投稿列表失败；定向复测捕获真实 API `code=-352`，见 [复测](ux-evidence/2026-10-06-pr40-validation/device-uploader-recheck.json)。关注、稍后再看因未登录跳过，直播期间未观察到实时弹幕，不能算通过 |
+
+**C-COMMENT-RENDER**：实际截图发现评论栏把 `comments.length === 0 ? (` 显示为文本，并把“暂无评论”与已加载评论同时显示；底部视频信息与控制条重叠。基线代码也存在。恢复 JSX 条件表达式，控制条限制在视频一侧，控制条显示时去掉重复信息。新增相同场景改前失败、改后通过：[正对照](ux-evidence/2026-10-06-pr40-validation/comments-before.json)、[修复后](ux-evidence/2026-10-06-pr40-validation/comments-after.json)；查看 [改前截图](ux-evidence/2026-10-06-pr40-validation/comments-before.png)、[模拟实播截图](ux-evidence/2026-10-06-pr40-validation/comments-after.png)、[真机截图](ux-evidence/2026-10-06-pr40-validation/tv-comments.png)。视频黑色区域可能属于截图无法读取的媒体合成层，播放进度另有断言。
+
+模拟套件原来用“评论数 > 5”判断成功；本轮真实接口只返回 3 条，但全部已渲染。现在读取同一次 API 响应核对数量，并检查错误代码文本、空态及控件布局。仅看 DOM 数量不足以代替截图检查。
+
+账号状态必须调用 `/x/web-interface/nav` 确认，不能以本地还保存 SESSDATA 就当作已登录。两套广覆盖测试现在默认不执行稍后再看增删，只有独立测试账号可显式启用 `SIM_ACCOUNT_WRITES=1` / `TV_ACCOUNT_WRITES=1`；跳过项不会算通过。真机广覆盖测试结束恢复原始设置。
+
+**发布阻断项仍在**：UP 主投稿真机风控失败、有效登录下的账号功能、未实收的直播弹幕，以及先前列出的旧电视整机/海外网络/杜比输出验证。PR 保持草稿，未合并、未发版。

@@ -61,6 +61,7 @@ async function run(name, mode, fn, scale) {
   if(u.pathname.endsWith('/v2'))data={subtitle:{subtitles:[{lan:'zh-CN',lan_doc:'中文',subtitle_url:'https://aisubtitle.hdslb.com/test.json'}]}};
   if(u.pathname.endsWith('/test.json'))return route.fulfill({json:{body:[{from:0,to:20,content:'字幕字号验证'}]}});
   if(u.pathname.endsWith('/list.so'))return route.fulfill({contentType:'text/xml',body:'<i><d p="1,1,28,16777215,0,0,0,0">弹幕字号验证</d></i>'});
+  if(u.pathname.endsWith('/x/v2/reply')) data={page:{count:3},replies:Array.from({length:3},(_,i)=>({rpid:i+1,member:{uname:'测试用户'},content:{message:'评论内容 '+i},like:1}))};
   return route.fulfill({json:{code:0,data}});
  });
  try {await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>!!window.__openVideo);await fn(page,calls);results.push({name,pass:true});console.log('PASS',name);}
@@ -68,6 +69,23 @@ async function run(name, mode, fn, scale) {
  finally{await context.close();}
 }
 const open=page=>page.evaluate(()=>window.__openVideo({bvid:'BVtest',resumeMode:'none'}));
+await run('comment rail renders one state and keeps controls unobscured','comments',async page=>{
+ await open(page);await page.waitForFunction(()=>window.__probe.loads===1);
+ await page.keyboard.press('ArrowUp');
+ await page.locator('.player-btn').filter({hasText:'评论'}).click();
+ await page.waitForFunction(()=>document.querySelectorAll('.comment-card').length===3);
+ const text=await page.locator('.comment-rail-body').innerText();
+ assert.ok(!text.includes('comments.length'), 'JSX expression must not leak as visible text');
+ assert.ok(!text.includes('暂无评论'), 'empty state must not accompany loaded comments');
+ const layout=await page.evaluate(()=>{
+   const controls=document.querySelector('.player-controls').getBoundingClientRect();
+   const rail=document.querySelector('.comment-rail-body').getBoundingClientRect();
+   return {controlsRight:controls.right,railLeft:rail.left,duplicate:!!document.querySelector('.player-comment-metadata')};
+ });
+ assert.ok(layout.controlsRight<=layout.railLeft,JSON.stringify(layout));
+ assert.equal(layout.duplicate,false,'metadata must not overlap visible controls');
+ await page.screenshot({path:`${output}/comment-rail.png`});
+});
 await run('buffer exhaustion is visible and retried without skipping video','stall',async page=>{
  await page.clock.install();
  await open(page);await page.waitForFunction(()=>window.__probe.loads===1);

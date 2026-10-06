@@ -2204,8 +2204,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         style={showCommentRail ? { width: RAIL_VW, height: RAIL_VH } : undefined} />
       {/* Same treatment as the live layout: 16:9 in a 1500-wide column leaves
           ~236px, so it carries the video's own metadata instead of black. */}
-      {showCommentRail && (
-        <div style={{
+      {showCommentRail && !showControls && (
+        <div className="player-comment-metadata" style={{
           position: 'absolute', top: RAIL_VH, left: 0, width: RAIL_VW, height: 1080 - RAIL_VH,
           padding: '20px 44px', boxSizing: 'border-box', zIndex: 20,
           display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 10,
@@ -2237,7 +2237,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           </div>
           <div className="comment-rail-body" style={{ flex: 1, overflow: 'hidden', padding: '10px 14px 20px' }}>
 
-            comments.length === 0 ? (
+            {comments.length === 0 ? (
               <div style={{ color: '#888', fontSize: 18, padding: '20px 4px' }}>
                 {commentsLoading ? t('加载评论…') : t('暂无评论')}
               </div>
@@ -2296,7 +2296,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                   );
                 })}
               </div>
-            
+            )}
           </div>
         </div>
       )}
@@ -2463,7 +2463,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       )}
 
       {/* Controls bar */}
-      <div className={`player-controls ${showControls ? '' : 'hidden'}`}>
+      <div className={`player-controls ${showControls ? '' : 'hidden'}`} style={showCommentRail ? { right: RAIL_W } : undefined}>
         <div className="player-title">{titleMT(cleanTitle(videoTitle))}</div>
         {(metaOwner || metaPubdate > 0 || argueMsg || aigcMsg) && (
           <div style={{ fontSize: 18, color: '#999', marginBottom: 4 }}>

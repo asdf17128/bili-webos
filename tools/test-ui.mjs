@@ -11,7 +11,7 @@
 // Exit code is non-zero if any hard check fails (CI-friendly). "⚠️" lines are
 // soft (network/timing dependent, e.g. a quiet live room with no danmaku yet).
 import { Client } from 'ssh2';
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import http from 'http';
 import net from 'net';
 import { WebSocket } from 'ws';
@@ -38,6 +38,7 @@ const PROBE = `JSON.stringify({
   v: (function(){var v=document.querySelector('video');return v?{t:+v.currentTime.toFixed(1),ready:v.readyState,paused:v.paused}:null})(),
   cards: document.querySelectorAll('.video-card').length,
   relatedCards: document.querySelectorAll('.related-card').length,
+  commentCards: document.querySelectorAll('.comment-card').length,
   tabRow: !!document.querySelector('.panel-tab-row'),
   panelText: (document.querySelector('.panel-tab-row')?.innerText || ''),
   danmakuBox: !!document.querySelector('.danmaku-container'),
@@ -62,9 +63,12 @@ const PROBE = `JSON.stringify({
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 let passed = 0, failed = 0, warned = 0;
-const ok = (n, d) => { passed++; console.log(`  ✅ ${n}${d ? ': ' + d : ''}`); };
-const fail = (n, d) => { failed++; console.log(`  ❌ ${n}${d ? ': ' + d : ''}`); };
-const warn = (n, d) => { warned++; console.log(`  ⚠️  ${n}${d ? ': ' + d : ''}`); };
+const output = process.env.TV_OUTPUT || '/tmp/bili-tv-smoke';
+mkdirSync(output, { recursive: true });
+const results = [];
+const ok = (n, d) => { results.push({ name: n, status: 'pass', detail: d }); passed++; console.log(`  ✅ ${n}${d ? ': ' + d : ''}`); };
+const fail = (n, d) => { results.push({ name: n, status: 'fail', detail: d }); failed++; console.log(`  ❌ ${n}${d ? ': ' + d : ''}`); };
+const warn = (n, d) => { results.push({ name: n, status: 'skip', detail: d }); warned++; console.log(`  ⚠️  ${n}${d ? ': ' + d : ''}`); };
 const check = (n, cond, d) => (cond ? ok(n, d) : fail(n, d));
 
 async function main(call, relaunchApp) {
@@ -76,6 +80,8 @@ async function main(call, relaunchApp) {
     try { return JSON.parse(r?.result?.value); } catch { return {}; }
   };
   const probe = () => evalJSON(PROBE);
+  const originalSettings = await evalJSON('JSON.stringify(localStorage.getItem("bili_settings"))');
+  console.log('[Environment] ' + await evalJSON('JSON.stringify(navigator.userAgent)'));
 
   // Fetch a B站 API URL through the app's own JS service (injects login
   // cookies) and return the parsed JSON. Used by the bangumi API checks.
@@ -194,9 +200,6 @@ async function main(call, relaunchApp) {
     await setLang('zh');
     await reload();
   }
-  const restoreLang = async () => {
-    if (langWas !== 'zh') { await setLang(typeof langWas === 'string' ? langWas : undefined); await reload(); }
-  };
 
   async function testNavAndHome() {
     console.log('\n[Navigation + Home]');
@@ -215,6 +218,24 @@ async function main(call, relaunchApp) {
   async function testVideoPlayback() {
     console.log('\n[Video playback + player panel]');
     await reload();
+    await evalJSON(`JSON.stringify((() => {
+      const original = window.webOS.service.request;
+      window.__smokeUpResponse = null;
+      window.webOS.service.request = function(uri, options) {
+        if (options?.parameters?.url?.includes('/x/space/wbi/arc/search')) {
+          const success = options.onSuccess;
+          options = { ...options, onSuccess(response) {
+            try {
+              const body = typeof response.body === 'string' ? JSON.parse(response.body) : response.body;
+              window.__smokeUpResponse = { code: body?.code, count: body?.data?.list?.vlist?.length };
+            } catch { window.__smokeUpResponse = { error: 'invalid response' }; }
+            success(response);
+          }};
+        }
+        return original.call(this, uri, options);
+      };
+      return true;
+    })())`);
     await goto('recommend');
     await key('ok'); // play first card
     let s = await waitFor(x => x.v && x.v.t > 0, { timeout: 18000, interval: 500 });
@@ -233,8 +254,37 @@ async function main(call, relaunchApp) {
     check('相关推荐 has cards (recommended w/ upload time)', s.relatedCards > 0, `${s.relatedCards} cards`);
     // Switch to UP主投稿 tab → uploader's own videos load.
     await key('right');
-    s = await waitFor(x => x.relatedCards > 0, { timeout: 8000 });
-    check('UP主投稿 tab loads videos', s.relatedCards > 0, `${s.relatedCards} cards`);
+    s = await waitFor(x => x.relatedCards > 0, { timeout: 21000 });
+    const api = await evalJSON('JSON.stringify(window.__smokeUpResponse)');
+    check('UP主投稿 tab loads videos', s.relatedCards > 0, `${s.relatedCards} cards; API=${JSON.stringify(api)}`);
+    await exitPlayer();
+  }
+
+  async function testCommentRail() {
+    console.log('\n[Comment rail rendering and control layout]');
+    await exitPlayer();
+    await evalJSON('JSON.stringify(window.__openVideo({bvid:"BV1xx411c7Xg",progress:10,resumeMode:"at"}))');
+    await waitFor(x => x.v && x.v.t > 1, { timeout: 25000 });
+    await key('up');
+    for (let i = 0; i < 15; i++) {
+      if (((await probe()).focusedBtn || '').includes('评论')) break;
+      await key('right');
+    }
+    await key('ok');
+    const s = await waitFor(x => x.commentCards > 0, { timeout: 12000 });
+    check('Comment rail loads real comments', s.commentCards > 0, `${s.commentCards} cards`);
+    const layout = await evalJSON(`JSON.stringify((() => {
+      const body = document.querySelector('.comment-rail-body');
+      const text = body?.innerText || '';
+      return { present: !!body, sourceLeak: text.includes('comments.length'), empty: text.includes('暂无评论'),
+        controlsRight: document.querySelector('.player-controls')?.getBoundingClientRect().right,
+        railLeft: body?.getBoundingClientRect().left, duplicate: !!document.querySelector('.player-comment-metadata') };
+    })())`);
+    check('Comment rail shows content without JSX or empty-state leakage', layout.present && !layout.sourceLeak && !layout.empty);
+    check('Comment controls fit without overlapping metadata', !layout.duplicate && layout.controlsRight <= layout.railLeft,
+      JSON.stringify(layout));
+    const shot = await call('Page.captureScreenshot', { format: 'png' });
+    writeFileSync(`${output}/tv-comments.png`, Buffer.from(shot.data, 'base64'));
     await exitPlayer();
   }
 
@@ -266,6 +316,8 @@ async function main(call, relaunchApp) {
     s = await waitFor(x => x.danmakuItems > 0, { timeout: 9000, interval: 700 });
     if (s.danmakuItems > 0) ok('Danmaku rendering', `${s.danmakuItems} on screen`);
     else warn('Danmaku rendering', 'no items yet (quiet room?) — layer present');
+    const shot = await call('Page.captureScreenshot', { format: 'png' });
+    writeFileSync(`${output}/tv-live.png`, Buffer.from(shot.data, 'base64'));
     await exitPlayer();
     // Live-in-history: the room we just watched is recorded locally.
     s = await probe();
@@ -296,6 +348,8 @@ async function main(call, relaunchApp) {
 
   async function testFollowPagination() {
     console.log('\n[Follow list + pagination]');
+    const nav = await serviceFetch('https://api.bilibili.com/x/web-interface/nav');
+    if (nav.code !== 0 || !nav.data?.isLogin) { warn('Follow list and pagination skipped', 'API session is logged out'); return; }
     await reload();
     let s = await goto('follow');
     s = await waitFor(x => x.cards > 0, { timeout: 10000, interval: 500 });
@@ -335,6 +389,9 @@ async function main(call, relaunchApp) {
   // 写操作净零:加什么删什么,删之前先核对卡片身份。
   async function testWatchLater() {
     console.log('\n[稍后再看 / Watch Later]');
+    const nav = await serviceFetch('https://api.bilibili.com/x/web-interface/nav');
+    if (nav.code !== 0 || !nav.data?.isLogin) { warn('Watch Later skipped', 'API session is logged out'); return; }
+    if (process.env.TV_ACCOUNT_WRITES !== '1') { warn('Watch Later writes skipped', 'set TV_ACCOUNT_WRITES=1 only with a disposable test account'); return; }
     await exitPlayer();
     await goto('recommend');
     await key('ok');                       // 进网格
@@ -431,15 +488,25 @@ async function main(call, relaunchApp) {
   }
 
   const tests = [
-    testNavAndHome, testVideoPlayback, testBangumiPlayback, testLiveAndDanmaku, testSearch,
+    testNavAndHome, testVideoPlayback, testCommentRail, testBangumiPlayback, testLiveAndDanmaku, testSearch,
     testFollowPagination, testSettingsAutoCheck, testHotAndPartition, testWatchLater,
   ];
-  for (const t of tests) {
-    try { await t(); }
-    catch (e) { fail(t.name, 'threw: ' + (e?.message || e)); }
+  try {
+    for (const t of tests) {
+      if (process.env.TV_TEST_FILTER && !new RegExp(process.env.TV_TEST_FILTER).test(t.name)) continue;
+      try { await t(); }
+      catch (e) { fail(t.name, 'threw: ' + (e?.message || e)); }
+    }
+  } finally {
+    try {
+      await evalJSON(`JSON.stringify(${originalSettings == null ? 'localStorage.removeItem("bili_settings")' : 'localStorage.setItem("bili_settings",' + JSON.stringify(originalSettings) + ')' })`);
+      await reload();
+    } catch (e) {
+      fail('Restore original settings', e?.message || String(e));
+    } finally {
+      writeFileSync(`${output}/results.json`, JSON.stringify(results, null, 2));
+    }
   }
-
-  await restoreLang(); // put the user's language back
 
   console.log(`\n${'='.repeat(52)}`);
   console.log(`Results: ${passed} passed, ${failed} failed, ${warned} warned`);

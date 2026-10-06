@@ -1,0 +1,31 @@
+[
+  {
+    "name": "Video starts playing",
+    "status": "pass",
+    "detail": "t=0.5s ready=4"
+  },
+  {
+    "name": "Playback advances (no immediate freeze)",
+    "status": "pass",
+    "detail": "0.5s → 4.5s"
+  },
+  {
+    "name": "Player tab row visible",
+    "status": "pass"
+  },
+  {
+    "name": "相关推荐 + UP主投稿 tabs present",
+    "status": "pass",
+    "detail": "相关推荐 UP主投稿 · 流夜一动不动"
+  },
+  {
+    "name": "相关推荐 has cards (recommended w/ upload time)",
+    "status": "pass",
+    "detail": "12 cards"
+  },
+  {
+    "name": "UP主投稿 tab loads videos",
+    "status": "fail",
+    "detail": "0 cards; API={\"code\":-352}"
+  }
+]

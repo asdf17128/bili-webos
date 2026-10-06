@@ -112,3 +112,7 @@ release 必须挂**三件**资产,少一件都会静默出事:
 服务代码以 ES5 解析；`tools/test-node8/test.sh` 使用校验过 SHA256 的官方 Node 0.12.2 Linux 二进制和真实 Node 8，在 x86 Docker 容器内分别启动服务。Apple Silicon 下，0.12.2 经显式 ELF loader 启动，避免旧 CLI 与模拟环境的参数兼容问题。缓存保存在临时目录，可用 `BILI_NODE012_DIR` 指定。
 
 `UX_LEGACY_LAYOUT=1 node tools/test-tv-ux.mjs` 可在现代浏览器强制启用降级 CSS；这只能验证布局，不能代替 Chromium 53 或旧电视的解码实测。
+
+## 模拟与真机报告
+
+`test-sim.mjs` 使用 Chromium 和真实服务桥，`SIM_OUTPUT` 指定 JSON/截图目录；`test-ui.mjs` 使用电视 CDP，`TV_OUTPUT` 指定结果目录，`TV_TEST_FILTER` 可按测试函数名定向复测。两者均将跳过项与通过项分开记录。默认不增删真实账号稍后再看；独立测试账号才启用 `SIM_ACCOUNT_WRITES=1` 或 `TV_ACCOUNT_WRITES=1`。认证以 API 的实际登录状态为准，本地 Cookie 的存在不代表有效登录。

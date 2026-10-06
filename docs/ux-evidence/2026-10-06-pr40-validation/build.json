@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-06",
+  "baseCommit": "45d2b6e0f17249692c339d55c8bdaaecd8c4065c",
+  "note": "PlayerPage comment-rail fix included in this tested tree; hashes identify deployed build. No release created.",
+  "appVersion": "2.1.1",
+  "appSourceSha256": "fbdc4674129cb1e4e93377a2a2bb6f30c8d543f30419ad3754815410457193bf",
+  "productionBundles": {
+    "PlayerPage-legacy-B7SiVZFX.js": "377a3b7920acd725577766a7b95f1c9f63c34b3f11d054e1949b0a6e117281d7",
+    "shaka-player.compiled-legacy-01vuRLq-.js": "e7555409c7b44282543f08a2c96f3b10f4925540208e22735c90e90c84138b0f",
+    "LivePlayerPage-legacy-BEoO2WI_.js": "ecffe538acafb13d68e1374e560e40afaf9b1fb208ed4a90c3558ad564c3b033",
+    "index-legacy-Fi8WegfY.js": "874b72659449af66d49a3c12128c2626fb4b408849a2bfb471434074ca8b88ec",
+    "polyfills-legacy-yMOIK_tn.js": "31b30f8657d8428be6851291eae363434f47b46f24f30f1e0ebf7ed0ccf8b14c",
+    "react-vendor-legacy-B2h5bzJ7.js": "35b6eec340e5d94be0db7cb0978d708b51ed326b6b5144b1afb1d9a2d28cad7c"
+  }
+}

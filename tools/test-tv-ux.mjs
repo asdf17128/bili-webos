@@ -208,7 +208,7 @@ await test('retry recovers a failed feed', async ({ page, options }) => {
   await page.getByText('重试', { exact: true }).click();
   await ready(page);
   assert.equal(await page.locator('.video-card').count(), 30);
-  await page.waitForTimeout(100);
+  await page.waitForFunction(() => !!document.querySelector('.video-card.focused'), undefined, { timeout: 2000 });
   assert.match(await focused(page) || '', /^content-/);
 }, { feedError: true });
 await test('rapid sidebar traversal commits only the settled section', async ({ page, calls }) => {

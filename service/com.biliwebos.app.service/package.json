@@ -3,7 +3,7 @@
   "main": "service.js",
   "version": "1.3.2",
   "dependencies": {
-    "ws": "^7.5.11",
+    "ws": "^8.21.0",
     "ws-legacy": "npm:ws@1.1.5"
   }
 }

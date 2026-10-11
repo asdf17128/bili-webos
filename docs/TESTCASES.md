@@ -535,3 +535,27 @@ C4 在故意注入坏 CDN 的验证中，媒体就绪 **2116ms**，首个媒体�
 已验证测试 IPK：657324 bytes，SHA256 `808d0a320cfbfbc37af39bd84e038ab96c5f0af5900bf6282dc7ecd13baf3c93`。解包确认 webOS 版本 2.2.3、实际前端含 c9-test.1，不含 SSH/口令/账号存储文件。C9 本机效果仍待报告者测试。
 
 **同版本覆盖与回退验证：** C4 从正式版 2.2.3 覆盖安装测试包，设置页与 QR 显示 `c9-test.1`，完整回归期间账号接口验证登录有效。专项后覆盖安装下载哈希已核对的正式 IPK，设置页恢复 `v2.2.3` 且无测试标记，账号存储仍在；电视最终留在正式版，原设置已恢复。本地待分发 IPK 恢复为上列测试包哈希。
+
+
+## 2026-10-11：issue 跟进、点播恢复与 UP 关注（待发布）
+
+测试构建为 `2.2.3 recovery-test.1`，正式版本和 Homebrew 仍为 v2.2.3。核对全部 8 个开放 issue、近期回复和 PR #46 后，本轮处理 #34 的关注入口、C9 已验证的起播改动、#23 新回复涉及的风控提示，以及此前 App 重启才恢复的播放器退出错误态问题。未将网络/DNS 根因、#33 的实际 Dolby/Atmos 输出或 #39 的授权范围记作已解决。
+
+- **C-PLAY-RECOVER-01：网络恢复后重建播放器并保留位置。** 真实 React + 受控媒体事件模拟耗尽缓冲、播放时间不再前进。旧版自动/手动恢复均失败，退出通过（[1/3 正对照](ux-evidence/2026-10-11-followup/recovery-before.json)）；新版在不发送 online 事件时仍恢复原 cid=3 / 47s，销毁旧解码器。退出取消定时器；持续断网仅两次自动重建，随后保留手动重试。含播放器关注入口共 [5/5](ux-evidence/2026-10-11-followup/recovery-after.json)。这验证应用恢复行为，不证明此前 EAI_AGAIN 的根因已消失，也不是 20 分钟故障的耐久复现。
+- **C-FOLLOW-01：显式操作、失败保留状态、迟到成功仍同步。** 长按菜单和播放控制栏支持关注/取消关注；真实 React 验证关系查询失败后先读再写、未登录提示、服务拒绝、重复 OK、关注与取消后的首页标记、关闭菜单后成功返回。写入使用隔离 API，未修改真实账号列表。播放器大字号、旧 CSS 降级布局及菜单截图已查看：[菜单](ux-evidence/2026-10-11-followup/mock-follow-menu.png)、[控制栏](ux-evidence/2026-10-11-followup/mock-player-large-text.png)。旧 CSS 降级由现代 Chromium 执行，不冒充 Chrome 53 硬件仿真。
+- **C-PLAY-RECOVER-02 / C-FOLLOW-02：C4 真机。** Luna 回调注入临时解析失败后恢复真实取流，实际视频从 47s 附近解码且时间继续推进。真实登录关系 API 返回 code=0；遥控器可选中关注，写入在网络发送前拦截为 -352，提示失败且关系不变。[7/7](ux-evidence/2026-10-11-followup/tv-recovery-follow.json)。没有将模拟的写入拒绝算作服务器写入成功验收。
+- **C-WS-01：兼容旧运行时的接收上限。** PR #46 的 ws 8 方案不能直接替换 Node 8 服务；ws 7.5.11 已在上游修复范围内。开发工具升级 ws 8.22.0，旧 Node 0.12 的 ws 1.1.5 路径加入分片/队列限额，并限制 payload、禁用 WebSocket 压缩。旧接收器无保护时累积 4100 个空分片；保护后跨包/单包过多分片与排队块被 1009 拒绝，4500 个正常消息及正常分片仍成功。4 项单测通过，实际 Node 0.12.2 / 8.17.0 均执行旧解析器限额检查。ws 1.1.5 使用本地保护，不声称升级到上游修补版。[上游公告](https://github.com/websockets/ws/security/advisories/GHSA-96hv-2xvq-fx4p)。
+- **C-ERR-02：风控提示与本地桥接就绪。** -351/-352 分登录状态建议官方客户端对照或登录，不仅凭错误码判断封号、不建议用 CDN 绕过 API 校验。本地 HTTP 探针使用 `curl -fsS --noproxy '*'`，防止代理 502 被旧 `curl -s` 当作服务就绪。
+
+| 验证层 | 最终结果与范围 |
+|---|---|
+| 本地完整门禁 | `verify.sh --no-tv --ux` 退出 0：交互 **66/66**、加载 **34/34**、弹幕 **6/6**、片尾 **26/26**、直播 **9/9**、CDN React **7/7**；服务单测 **26/26**、真实 Node **0.12.2 / 8.17.0**、en/es 各 **275 keys**、ES5 / ES2016、生产构建及真实 HTTP Range 失败路径通过。[摘要](ux-evidence/2026-10-11-followup/local-gate.json)、[交互](ux-evidence/2026-10-11-followup/ux.json)、[加载](ux-evidence/2026-10-11-followup/loading.json) |
+| C4 综合 | **53 通过 / 0 失败 / 3 跳过**：安静直播间未收到弹幕、所选直播仅一个画质、未授权的稍后再看写入；另选推荐直播已收到 **2 帧 / 2 个 DOM 弹幕**。覆盖登录读取、点播/直播实播、库、搜索、分区、诊断。[结果](ux-evidence/2026-10-11-followup/tv-full.json) |
+| C4 专项 | 片尾 **13/13**；CDN 故障转移、实际分段加载及扫码诊断 **16/16**；遥控/焦点/续播/标准与大字号控制栏复测 **31/31**。[片尾](ux-evidence/2026-10-11-followup/tv-playback-end.json)、[CDN](ux-evidence/2026-10-11-followup/tv-cdn.json)、[遥控复测](ux-evidence/2026-10-11-followup/tv-navigation-recheck.json) |
+| 真实网络模拟 | 真实 service bridge + 电脑 Chromium **54 通过 / 0 失败 / 3 跳过**；匿名会话的账号写入/关注标记未验收。[结果](ux-evidence/2026-10-11-followup/simulator.json) |
+
+失败记录保留：首次 C4 遥控运行在“Back 取消快进预览”失败（11 项已通过，失败条目及 completion 重复记录同一断言）；未改产品或测试脚本即完整复测 31/31。首次运行未记录按键到达时间，**不能确定是 1s 自动提交窗口的测试时序还是其他原因**，不将单次复测解释为根因已修复。[首轮结果](ux-evidence/2026-10-11-followup/tv-navigation-first-attempt.json)。首次模拟门禁因回环探针错误没有启动桥接服务；修正后实际网络运行又发现游客菜单旧断言只允许“取消”，更新为“关注/取消且无账号写动作”后最终通过。真机专项的初次脚本转义与 mouseenter 焦点定位错误已修正，最终使用 CDP 遥控按键验证真实焦点。上述准备/工具失败不计为产品通过。
+
+C9 社区独立验证：[#34 回报](https://github.com/asdf17128/bili-webos/issues/34#issuecomment-6030725380) 在上海移动、BV1TSYA6GEQg、c9-test.1，自动 loadeddata 为 **7740 / 6988 / 6433ms**，手动腾讯为 **5405 / 5871 / 5434ms**，六次无卡住且 net-retry=0。本轮整合该测试包的显式 DASH MIME 与诊断；本地 C4 验证不能替代报告者的 C9。
+
+安装包 **660604 bytes**，SHA256 `e0f620ac36fb9c11dd74a0bb0d0da14f2529aec7c9af9b09b4daccbe080df154`，包内含旧接收器限额及两条 ws 运行时依赖，未包含账号/SSH/口令文件。[产物身份](ux-evidence/2026-10-11-followup/package.json)。电视留在测试构建，最终首页无播放器、原设置逐字段恢复；真实账号截图、日志和签名媒体地址仅留本地。未发布正式版或更新 Homebrew。

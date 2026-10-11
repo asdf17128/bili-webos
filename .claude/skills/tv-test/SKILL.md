@@ -148,3 +148,11 @@ bash tools/verify.sh --full   # 额外跑真机 UI smoke(test-ui.mjs,~3分钟)
 - 真实 Shaka 4.16.24 对无扩展名 Blob 的 `load(url)` 会 HEAD 探测 MIME；Chromium Blob HEAD 返回 HTTP_ERROR，4 次失败后改 GET。Blob 自带 type 不等于播放器知道格式，生成 DASH 时给 `load` 第三个参数 `application/dash+xml`，并覆盖画质回滚入口。
 - `tools/test-manifest-mime.mjs` 用真实网络栈、相同空 MPD 的同一终止解析错误作正对照，仅证明多余探测；不能将测试耗时当电视出画面提速。Shaka retry 事件包含清单与媒体，错误 data 布局按 code 不同；报告需分类，不能把全部次数标为媒体/CDN失败。
 - 第一条媒体响应可能是 SegmentBase 索引；公共 segmentappended 才表示媒体写入完成，但仍不等于画面上屏。记录首个节点，不能用后台测速后的最后节点推断起播选路。
+
+
+## 2026-10-11：恢复与关注测试
+
+- 本机回环就绪探针须绕过代理并要求 HTTP 成功。`curl -s` 收到代理 502 仍退出 0，会把未启动服务当成正常；使用 `--noproxy '*' -f`，不要把连锁失败当产品回归。
+- 恢复测试要保留原 cid/位置，覆盖 DNS 恢复但没有 online 事件、长期断网预算耗尽和退出取消。只把加载改成重试按钮不足以证明恢复。
+- 真机合成 mouseenter 不保证触发 React onMouseEnter；本次测试已改用 CDP 遥控方向键逐项选择，并验证实际 focused 控件再按 OK。
+- 关注等写入须明确区分隔离 API 成功路径、真实关系读取和真机拒绝路径。菜单关闭后服务器才确认成功，仍应更新同账号的全局缓存；不能向已切换账号的缓存回写。

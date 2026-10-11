@@ -6,7 +6,10 @@
 // Node v0.12, where it throws a SyntaxError at require(). Fall back to the
 // vendored ws@1 (supports Node 0.10+), same on/send/close API we use here.
 var WebSocket;
-try { WebSocket = require('ws'); } catch (e) { WebSocket = require('ws-legacy'); }
+try { WebSocket = require('ws'); } catch (e) {
+  WebSocket = require('ws-legacy');
+  require('./wsLegacyLimits')(WebSocket.Receiver);
+}
 var zlib = require('zlib');
 
 var OP_HEARTBEAT = 2;
@@ -112,6 +115,9 @@ function connectDanmaku(opts, onDanmaku) {
     var port = opts.port || 443;
     var url = 'wss://' + host + (port !== 443 ? ':' + port : '') + '/sub';
     ws = new WebSocket(url, {
+      maxPayload: 4 * 1024 * 1024,
+      maxFragments: 4096,
+      perMessageDeflate: false,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Origin': 'https://live.bilibili.com',

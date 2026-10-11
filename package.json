@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "ssh2": "^1.17.0",
-    "ws": "^8.20.0"
+    "ws": "^8.22.0"
   },
   "scripts": {
     "test": "node --test service/com.biliwebos.app.service/test/*.test.js",

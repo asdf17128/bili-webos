@@ -1,0 +1,126 @@
+[
+  {
+    "name": "new TV build renders with visible focus",
+    "status": "pass"
+  },
+  {
+    "name": "gallery rail renders vector icons and collapses while browsing",
+    "status": "pass"
+  },
+  {
+    "name": "Back to sidebar preserves exact scroll offset",
+    "status": "pass"
+  },
+  {
+    "name": "expanded drawer does not move the content surface",
+    "status": "pass"
+  },
+  {
+    "name": "Right restores the exact card",
+    "status": "pass"
+  },
+  {
+    "name": "OK explicitly refreshes and resets to row zero",
+    "status": "pass"
+  },
+  {
+    "name": "deep grid card stays fully inside its real viewport",
+    "status": "pass"
+  },
+  {
+    "name": "real video starts",
+    "status": "pass"
+  },
+  {
+    "name": "OK pauses actual playback",
+    "status": "pass"
+  },
+  {
+    "name": "OK resumes actual playback",
+    "status": "pass"
+  },
+  {
+    "name": "scrub keeps playback near the original position before confirmation",
+    "status": "pass"
+  },
+  {
+    "name": "Back cancels pending scrub without leaving playback",
+    "status": "pass"
+  },
+  {
+    "name": "OK commits scrub to its new position",
+    "status": "pass"
+  },
+  {
+    "name": "player uses the shared icon control shelf",
+    "status": "pass"
+  },
+  {
+    "name": "speed popup opens on the selected option",
+    "status": "pass"
+  },
+  {
+    "name": "speed Back closes only its popup and restores the control",
+    "status": "pass"
+  },
+  {
+    "name": "quality popup opens on the selected option",
+    "status": "pass"
+  },
+  {
+    "name": "quality Back closes only its popup and restores the control",
+    "status": "pass"
+  },
+  {
+    "name": "leaving playback restores card and scroll",
+    "status": "pass"
+  },
+  {
+    "name": "resume shelf is reachable directly above the first feed row",
+    "status": "pass"
+  },
+  {
+    "name": "continue watching starts at the displayed saved position",
+    "status": "pass"
+  },
+  {
+    "name": "leaving a resumed video restores the resume card",
+    "status": "pass"
+  },
+  {
+    "name": "ended video exposes replay and the navigable related panel",
+    "status": "pass"
+  },
+  {
+    "name": "recommendations keep progress and controls separated at scale 1",
+    "status": "pass"
+  },
+  {
+    "name": "recommendations keep progress and controls separated at scale 1.25",
+    "status": "pass"
+  },
+  {
+    "name": "replay remains reachable with the remote after playback ends",
+    "status": "pass"
+  },
+  {
+    "name": "search presents its native input and two discovery columns",
+    "status": "pass"
+  },
+  {
+    "name": "preferences use the two-column layout",
+    "status": "pass"
+  },
+  {
+    "name": "settings move in the same order as the screen in both directions",
+    "status": "pass"
+  },
+  {
+    "name": "all font pickers open for the selected row and cancel without changing settings",
+    "status": "pass"
+  },
+  {
+    "name": "bottom navigation focus remains visible when the drawer opens",
+    "status": "pass"
+  }
+]

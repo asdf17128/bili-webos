@@ -1,6 +1,17 @@
 // REAL Node 8 — URL global genuinely absent. Evaluate the real service.js and
 // drive the exact code path that broke on webOS 5.
 require('./service.js');
+// Exercise the Node 0.12 parser guard on both real runtimes, not just modern
+// Node's unit tests. Keep small valid messages working after every final frame.
+var LegacyReceiver = require('ws-legacy').Receiver;
+require('./wsLegacyLimits')(LegacyReceiver);
+var receiver = new LegacyReceiver({}, 4 * 1024 * 1024);
+var limited = false;
+receiver.onerror = function (error, code) { limited = code === 1009; };
+var frames = new Buffer(8200); frames.fill(0); frames[0] = 2;
+receiver.add(frames);
+if (!limited) { console.log('FAIL legacy fragment guard'); process.exit(1); }
+console.log('legacy fragment guard OK on ' + process.version);
 var svc = require('webos-service').last;
 svc.methods['fetch']({
   payload: { url: 'https://api.bilibili.com/x/web-interface/nav' },

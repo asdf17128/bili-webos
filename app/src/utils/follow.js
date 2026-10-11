@@ -5,6 +5,7 @@
 // 实测本人账号 pn=6/7/8 都正常返回(共 370 个关注),于是第 251 个之后的 UP
 // 永远没有标。现在拉到拉完为止。
 import { getNavInfo, getFollowings } from '../api/client';
+import { storage } from './storage';
 
 const PS = 50;
 const MAX_PAGES = 40;              // 兜底:2000 个关注,超出的极少数人接受不完整
@@ -14,13 +15,29 @@ const LS_KEY = 'bili_followed';
 
 let followedSet = null;
 let loadedAt = 0;
+let revision = 0;
+let account = '';
+function ensureAccount() {
+  const next = storage.getAuth()?.SESSDATA || '';
+  if (next !== account) { account = next; followedSet = null; loadedAt = 0; revision++; }
+}
+
+export function updateFollowedMid(mid, followed) {
+  ensureAccount();
+  revision++;
+  followedSet = new Set(getFollowedSet());
+  if (followed) followedSet.add(Number(mid));
+  else followedSet.delete(Number(mid));
+  saveToDisk(followedSet);
+  window.dispatchEvent(new CustomEvent('follow-changed', { detail: { mid: Number(mid), followed } }));
+}
 
 // 冷启动时先用本地缓存把标显示出来,再在后台刷新 —— 否则每次开机都要等
 // 8 次请求跑完,期间所有卡片都是"未关注"的样子。
 function loadFromDisk() {
   try {
     const raw = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
-    if (!raw || !Array.isArray(raw.mids)) return null;
+    if (!raw || !Array.isArray(raw.mids) || !storage.getAuth()?.DedeUserID || raw.owner !== String(storage.getAuth().DedeUserID)) return null;
     if (Date.now() - (raw.ts || 0) > DISK_TTL) return null;
     return new Set(raw.mids);
   } catch (e) { return null; }
@@ -28,16 +45,19 @@ function loadFromDisk() {
 
 function saveToDisk(set) {
   try {
-    localStorage.setItem(LS_KEY, JSON.stringify({ ts: Date.now(), mids: Array.from(set) }));
+    localStorage.setItem(LS_KEY, JSON.stringify({ owner: String(storage.getAuth()?.DedeUserID || ''), ts: Date.now(), mids: Array.from(set) }));
   } catch (e) { /* 存不下就算了,不影响功能 */ }
 }
 
 export function getFollowedSet() {
+  ensureAccount();
   if (!followedSet) followedSet = loadFromDisk() || null;
   return followedSet || new Set();
 }
 
 export async function loadFollowedMids(force) {
+  ensureAccount();
+  const startRevision = revision;
   if (!force && followedSet && (Date.now() - loadedAt) < TTL) return followedSet;
   if (!followedSet) followedSet = loadFromDisk();     // 先给出旧数据,下面再刷新
 
@@ -48,13 +68,15 @@ export async function loadFollowedMids(force) {
     if (!mid) return followedSet || set;
     for (let pn = 1; pn <= MAX_PAGES; pn++) {
       const res = await getFollowings(mid, pn, PS);
+      if (res?.code !== 0) throw new Error('followings unavailable');
       const list = (res?.data?.list) || [];
       // mid 统一成数字:接口两边都给 number,但万一将来变字符串,
       // Set.has 会静默失配(这类 bug 最难查),这里定死类型。
       list.forEach(u => { const m = Number(u.mid); if (m) set.add(m); });
       if (list.length < PS) break;
     }
-    if (set.size) {
+    ensureAccount();
+    if (startRevision === revision) {
       followedSet = set;
       loadedAt = Date.now();
       saveToDisk(set);

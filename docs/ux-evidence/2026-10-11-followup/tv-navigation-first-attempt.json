@@ -1,0 +1,54 @@
+[
+  {
+    "name": "new TV build renders with visible focus",
+    "status": "pass"
+  },
+  {
+    "name": "gallery rail renders vector icons and collapses while browsing",
+    "status": "pass"
+  },
+  {
+    "name": "Back to sidebar preserves exact scroll offset",
+    "status": "pass"
+  },
+  {
+    "name": "expanded drawer does not move the content surface",
+    "status": "pass"
+  },
+  {
+    "name": "Right restores the exact card",
+    "status": "pass"
+  },
+  {
+    "name": "OK explicitly refreshes and resets to row zero",
+    "status": "pass"
+  },
+  {
+    "name": "deep grid card stays fully inside its real viewport",
+    "status": "pass"
+  },
+  {
+    "name": "real video starts",
+    "status": "pass"
+  },
+  {
+    "name": "OK pauses actual playback",
+    "status": "pass"
+  },
+  {
+    "name": "OK resumes actual playback",
+    "status": "pass"
+  },
+  {
+    "name": "scrub keeps playback near the original position before confirmation",
+    "status": "pass"
+  },
+  {
+    "name": "Back cancels pending scrub without leaving playback",
+    "status": "fail"
+  },
+  {
+    "name": "completion",
+    "status": "fail"
+  }
+]

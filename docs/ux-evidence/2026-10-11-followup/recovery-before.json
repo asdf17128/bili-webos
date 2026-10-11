@@ -1,0 +1,14 @@
+[
+  {
+    "name": "outage recovery: automatic",
+    "status": "fail"
+  },
+  {
+    "name": "outage recovery: manual",
+    "status": "fail"
+  },
+  {
+    "name": "outage recovery: exit",
+    "status": "pass"
+  }
+]

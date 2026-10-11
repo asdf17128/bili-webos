@@ -571,12 +571,12 @@ async function main() {
     await page.keyboard.up('Enter');
     await sleep(2500);
     const homeMenu = await page.evaluate(() => [...document.querySelectorAll('.cardmenu-item')].map(x => x.textContent.trim()));
-    // A clean logged-out profile deliberately has only Cancel; account actions
-    // are rendered only when a local session exists (CardMenu's contract).
+    // Guests may see the creator-follow entry, which prompts login without
+    // submitting writes. Watch Later still requires a local session.
     check('首页卡片长按菜单符合登录状态',
       homeMenu.includes('取消') && (storedAuth
         ? homeMenu.some(x => x.includes('稍后再看'))
-        : homeMenu.length === 1), homeMenu.join(' | '));
+        : homeMenu.every(x => x === '取消' || x === '关注 UP 主')), homeMenu.join(' | '));
     const noPlay = await page.evaluate(() => !document.querySelector('.player-page'));
     check('长按不会误触发播放', noPlay);
     await key('Escape'); await sleep(900);
@@ -628,7 +628,7 @@ async function main() {
 
     console.log('\n[取流失败 → 直达网络诊断]');
     // issue #23:用户被风控拦住时,原来只看到一句"视频加载失败"。现在要给
-    // ① 说得清的原因(按登录状态分流:已登录还被拦 = 多半是账号被风控)
+    // ① 说得清的原因(按登录状态分流:已登录时建议对照官方客户端，不直接断言账号被封)
     // ② 一个能按下去的出路(OK 直达网络诊断)
     await page.route('**/luna/fetch', async route => {
       const body = route.request().postData() || '';

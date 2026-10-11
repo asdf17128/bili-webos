@@ -121,6 +121,18 @@ Login information is stored on your TV and used to access your Bilibili account.
 
 [MIT 开源项目](LICENSE)，再发布源码或修改后的安装包时请保留版权与许可声明。第三方依赖和随附资源保留各自许可；代码许可不授予哔哩哔哩、LG 等第三方商标的使用权，也不代表官方认可。本项目由社区独立开发，与哔哩哔哩及 LG 无隶属关系。
 
+### In development / 本分支待发布
+
+- 点播网络错误或持续卡顿后可在原分 P、原进度重试；网络恢复后最多自动重建播放器两次，耗尽后仍可按 OK 手动重试，返回键退出即取消。
+- 播放控制栏和视频卡片长按菜单增加 **关注 UP 主 / 取消关注 UP 主**；成功后同步首页标记，失败不改变状态，重复按键不会重复提交。
+- 整合 C9 测试包的显式 DASH 格式及首段诊断。社区 C9 用户在上海移动同片源各测试三次：自动 6.43–7.74 秒、手动腾讯 5.41–5.87 秒，六次均无卡住、网络重试为零。[用户实测](https://github.com/asdf17128/bili-webos/issues/34#issuecomment-6030725380)。这不代表所有机型或网络的起播时间。
+- 风控提示建议用官方客户端对照同一账号，不凭一个错误码断言账号被封，也不将媒体 CDN 切换当成 API 风控的解法。
+- 开发工具升级到已修补的 ws 8.22；电视服务保留兼容 Node 8 的 ws 7.5.11，Node 0.12 路径补上分片和接收队列上限。
+
+测试构建显示 `2.2.3 recovery-test.1`；正式版和 Homebrew 仍为 v2.2.3。验证范围及限制见 [测试登记](docs/TESTCASES.md)。
+
+This development branch adds bounded playback recovery and creator-follow shortcuts, incorporates the C9-tested DASH startup fix, and improves verification-error guidance. Stable distribution remains v2.2.3.
+
 ### v2.2.3 — player layout and startup diagnostics / 播放器布局与起播诊断
 
 - 修复推荐列表展开后挤压进度条的问题，控制按钮和推荐标签按内容高度排列；从列表返回时，遥控焦点自动回到可见区域。

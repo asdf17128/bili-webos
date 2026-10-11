@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { getToView, addToView, delToView, getVideoInfo } from '../api/client';
 import { storage } from '../utils/storage';
 import { t } from '../i18n';
+import { useUpFollow } from '../hooks/useUpFollow';
 
 // 卡片长按菜单。任何列表里的卡片长按 OK 都弹它 —— 首页/分区/搜索/收藏/稍后再看,
 // 以及播放器底部的相关推荐。
@@ -37,12 +38,18 @@ export default function CardMenu({ video, onClose }) {
 
   // aid 必须现查:列表接口只认 aid,而卡片上多数只有 bvid。
   const [aid, setAid] = useState(video?.aid || null);
+  const [mid, setMid] = useState(video?.owner?.mid || null);
+  const follow = useUpFollow(mid);
   useEffect(() => {
     let dead = false;
     (async () => {
       let a = video?.aid;
-      if (!a && video?.bvid) {
-        try { a = (await getVideoInfo(video.bvid))?.data?.aid; } catch (e) { /* 保持 null */ }
+      if ((!a || !video?.owner?.mid) && video?.bvid) {
+        try {
+          const d = (await getVideoInfo(video.bvid))?.data;
+          a = a || d?.aid;
+          if (!dead) setMid(d?.owner?.mid || video?.owner?.mid || null);
+        } catch (e) { /* 保持 null */ }
       }
       if (dead) return;
       setAid(a || null);
@@ -59,10 +66,12 @@ export default function CardMenu({ video, onClose }) {
       ? { key: 'del', label: t('从稍后再看移除') }
       : { key: 'add', label: inList === null ? t('稍后再看') : t('加入稍后再看') });
   }
+  if (follow.available) items.push({ key: 'follow', label: follow.label });
   items.push({ key: 'close', label: t('取消') });
 
   const run = async (key) => {
     if (key === 'close') { onClose(); return; }
+    if (key === 'follow') { await follow.toggle(); return; }
     if (!aid || busy) return;
     setBusy(true);
     try {
@@ -94,7 +103,7 @@ export default function CardMenu({ video, onClose }) {
       e.stopPropagation();
       if (k === 'ArrowUp') setIdx(i => Math.max(0, i - 1));
       else if (k === 'ArrowDown') setIdx(i => Math.min(items.length - 1, i + 1));
-      else if (k === 'Enter') { if (armedRef.current) run(items[idx]?.key); }   // 没松过手就不认
+      else if (k === 'Enter') { if (armedRef.current && !e.repeat) { armedRef.current = false; run(items[idx]?.key); } }
       else onClose();
     };
     window.addEventListener('keyup', onUp, true);
@@ -103,7 +112,7 @@ export default function CardMenu({ video, onClose }) {
       window.removeEventListener('keyup', onUp, true);
       window.removeEventListener('keydown', onKey, true);
     };
-  }, [idx, items.length, aid, busy, inList]);
+  }, [idx, items.length, aid, busy, inList, follow.toggle]);
 
   return (
     <div className="cardmenu-mask" onClick={onClose}>
@@ -119,6 +128,7 @@ export default function CardMenu({ video, onClose }) {
               {it.label}
             </div>
           ))}
+        {follow.message && <div className="cardmenu-status" role="status" style={{ fontSize: 20, padding: '12px 28px', lineHeight: 1.5 }}>{follow.message}</div>}
       </div>
     </div>
   );

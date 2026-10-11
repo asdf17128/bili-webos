@@ -192,7 +192,13 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend', 
   useEffect(() => {
     let alive = true;
     if (storage.getAuth()?.SESSDATA) loadFollowedMids().then(set => { if (alive && set?.size) setFollowedMids(set); });
-    return () => { alive = false; };
+    const changed = e => setFollowedMids(previous => {
+      const next = new Set(previous || []);
+      if (e.detail.followed) next.add(Number(e.detail.mid)); else next.delete(Number(e.detail.mid));
+      return next;
+    });
+    window.addEventListener('follow-changed', changed);
+    return () => { alive = false; window.removeEventListener('follow-changed', changed); };
   }, []);
 
   return <section className="browse-page">

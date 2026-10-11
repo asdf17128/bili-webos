@@ -320,4 +320,20 @@ export default {
   "B站 风控拦截 · 先试试登录(设置 → 扫码登录);海外网络可在设置里换 CDN 线路": "Blocked by Bilibili risk control · try signing in first (Settings → QR sign-in); on overseas networks try switching the CDN route",
   "去网络诊断": "Run network check",
   "OK 打开网络诊断 · 返回键退出": "OK to run the network check · Back to exit",
+
+  // Issue follow-up: recovery and creator follow actions.
+  "关注状态读取失败，请重试": "Could not read follow status. Try again.",
+  "请先登录后关注 UP 主": "Sign in to follow this creator",
+  "正在读取关注状态": "Checking follow status…",
+  "已关注 UP 主": "Creator followed",
+  "已取消关注": "Unfollowed",
+  "关注操作失败，请重试": "Could not update follow status. Try again.",
+  "处理中…": "Working…",
+  "取消关注 UP 主": "Unfollow creator",
+  "关注 UP 主": "Follow creator",
+  "重试播放": "Retry playback",
+  "正在等待网络恢复，也可按 OK 立即重试": "Waiting for the network. Press OK to retry now.",
+  "自动重试已停止，按 OK 重试或返回退出": "Auto retry stopped. Press OK to retry or Back to exit.",
+  "B站 风控校验未通过 · 请先在官方客户端检查同一账号是否正常，再重试或提交网络诊断": "Bilibili verification failed. Check this account in the official app, then retry or share network diagnostics.",
+  "B站 风控校验未通过 · 可先扫码登录后重试，仍失败请提交网络诊断": "Bilibili verification failed. Sign in with the QR code and retry. If it persists, share network diagnostics.",
 };

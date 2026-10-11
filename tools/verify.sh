@@ -131,12 +131,12 @@ NODE
 if [ -n "$UX" ]; then
   echo "=== [UX] Browser interaction regressions ==="
   UX_VITE_PID=""
-  if ! curl -s --max-time 2 http://127.0.0.1:5173 >/dev/null 2>&1; then
+  if ! curl -fsS --noproxy '*' --max-time 2 http://127.0.0.1:5173 >/dev/null 2>&1; then
     (cd app && exec node node_modules/vite/bin/vite.js --host 127.0.0.1 --strictPort > /tmp/bili-ux-vite.log 2>&1) &
     UX_VITE_PID=$!
     trap '[ -z "$UX_VITE_PID" ] || kill "$UX_VITE_PID" 2>/dev/null || true' EXIT
     for i in $(seq 1 20); do
-      curl -s --max-time 2 http://127.0.0.1:5173 >/dev/null 2>&1 && break
+      curl -fsS --noproxy '*' --max-time 2 http://127.0.0.1:5173 >/dev/null 2>&1 && break
       sleep 1
     done
   fi
@@ -157,22 +157,22 @@ if [ -n "$SIM" ]; then
   # Bring up the pieces the suite needs, remember what WE started so a dev
   # session already running isn't killed underneath the user.
   STARTED_SVC=""; STARTED_VITE=""
-  if ! curl -s --max-time 3 http://127.0.0.1:9528/ping >/dev/null 2>&1; then
+  if ! curl -fsS --noproxy '*' --max-time 3 http://127.0.0.1:9528/ping >/dev/null 2>&1; then
     (node tools/dev-service.mjs > /tmp/verify-dev-service.log 2>&1 &)
     STARTED_SVC=1
     for i in $(seq 1 20); do
-      curl -s --max-time 2 http://127.0.0.1:9528/ping >/dev/null 2>&1 && break
+      curl -fsS --noproxy '*' --max-time 2 http://127.0.0.1:9528/ping >/dev/null 2>&1 && break
       sleep 1
     done
-    curl -s --max-time 2 http://127.0.0.1:9528/ping >/dev/null 2>&1 \
+    curl -fsS --noproxy '*' --max-time 2 http://127.0.0.1:9528/ping >/dev/null 2>&1 \
       && echo "  bridge ready after ${i}s" \
       || { echo "  bridge FAILED to start — see /tmp/verify-dev-service.log"; tail -3 /tmp/verify-dev-service.log; }
   fi
-  if ! curl -s --max-time 2 http://127.0.0.1:5173 >/dev/null 2>&1; then
+  if ! curl -fsS --noproxy '*' --max-time 2 http://127.0.0.1:5173 >/dev/null 2>&1; then
     (cd app && npm run dev > /tmp/verify-vite.log 2>&1 &)
     STARTED_VITE=1
     for i in $(seq 1 25); do
-      curl -s --max-time 2 http://127.0.0.1:5173 >/dev/null 2>&1 && break
+      curl -fsS --noproxy '*' --max-time 2 http://127.0.0.1:5173 >/dev/null 2>&1 && break
       sleep 1
     done
   fi

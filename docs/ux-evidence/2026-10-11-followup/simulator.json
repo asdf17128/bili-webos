@@ -1,0 +1,230 @@
+[
+  {
+    "name": "dev-service bridge up (same code path as the TV)",
+    "status": "pass"
+  },
+  {
+    "name": "Home renders cards",
+    "status": "pass"
+  },
+  {
+    "name": "Sidebar present",
+    "status": "pass"
+  },
+  {
+    "name": "No broken thumbnails",
+    "status": "pass"
+  },
+  {
+    "name": "Row 0: focused card fully visible, no peek",
+    "status": "pass"
+  },
+  {
+    "name": "Deep row: card visible + previous row peeks",
+    "status": "pass"
+  },
+  {
+    "name": "Back to top: no clipping",
+    "status": "pass"
+  },
+  {
+    "name": "Top ↑ wraps to the last item",
+    "status": "pass"
+  },
+  {
+    "name": "分区(游戏) loads content",
+    "status": "pass"
+  },
+  {
+    "name": "Search page shows an input + recommendations",
+    "status": "pass"
+  },
+  {
+    "name": "Settings rows render",
+    "status": "pass"
+  },
+  {
+    "name": "No 音量均衡 row (feature parked)",
+    "status": "pass"
+  },
+  {
+    "name": "Video plays",
+    "status": "pass"
+  },
+  {
+    "name": "Control bar has the expected buttons",
+    "status": "pass"
+  },
+  {
+    "name": "评论按钮打开前就带数量",
+    "status": "pass"
+  },
+  {
+    "name": "控制栏首尾循环(暂停 ←→ 评论)",
+    "status": "pass"
+  },
+  {
+    "name": "Not logged in",
+    "status": "skip"
+  },
+  {
+    "name": "Comment rail: video shrinks, rail docks right",
+    "status": "pass"
+  },
+  {
+    "name": "Comment rail renders the comments returned by the API",
+    "status": "pass"
+  },
+  {
+    "name": "Comment rail never displays JSX or a contradictory empty state",
+    "status": "pass"
+  },
+  {
+    "name": "Controls fit beside comments without duplicate metadata",
+    "status": "pass"
+  },
+  {
+    "name": "楼中楼 expands on OK",
+    "status": "pass"
+  },
+  {
+    "name": "Back closes the rail first, focus returns",
+    "status": "pass"
+  },
+  {
+    "name": "view 被拦时 pagelist 兜底照样播 (C-ERR-03)",
+    "status": "pass"
+  },
+  {
+    "name": "关掉自动连播后片尾无倒计时 (C-UI-15)",
+    "status": "pass"
+  },
+  {
+    "name": "MPD 末尾带兜底镜像 cosov+estgoss (C-CDN-01)",
+    "status": "pass"
+  },
+  {
+    "name": "主 CDN 挂了照样播,坏节点被拉黑 (C-CDN-02)",
+    "status": "pass"
+  },
+  {
+    "name": "Left the VOD player before live",
+    "status": "pass"
+  },
+  {
+    "name": "Live stream plays",
+    "status": "pass"
+  },
+  {
+    "name": "Live control bar: danmaku / quality / chat",
+    "status": "pass"
+  },
+  {
+    "name": "Chat rail defaults to off",
+    "status": "pass"
+  },
+  {
+    "name": "直播:按「下」也能呼出控制栏(与点播一致)",
+    "status": "pass"
+  },
+  {
+    "name": "直播:控制栏开着时按「上」能收起",
+    "status": "pass"
+  },
+  {
+    "name": "直播:按「下」同样能收起(开关对称)",
+    "status": "pass"
+  },
+  {
+    "name": "Live quality ladder opens",
+    "status": "pass"
+  },
+  {
+    "name": "Chat rail opens from the control bar",
+    "status": "pass"
+  },
+  {
+    "name": "聊天栏打开即有历史消息(不是空屏等实时)",
+    "status": "pass"
+  },
+  {
+    "name": "Back closes the chat rail, stays in the room",
+    "status": "pass"
+  },
+  {
+    "name": "Back again leaves the live room",
+    "status": "pass"
+  },
+  {
+    "name": "Watch Later skipped",
+    "status": "skip"
+  },
+  {
+    "name": "首页卡片长按菜单符合登录状态",
+    "status": "pass"
+  },
+  {
+    "name": "长按不会误触发播放",
+    "status": "pass"
+  },
+  {
+    "name": "按住不放:菜单弹出但不会自己确认",
+    "status": "pass"
+  },
+  {
+    "name": "松手本身也不算确认",
+    "status": "pass"
+  },
+  {
+    "name": "Follow badges skipped",
+    "status": "skip"
+  },
+  {
+    "name": "取流被拒时给出风控提示(不是泛泛的加载失败)",
+    "status": "pass"
+  },
+  {
+    "name": "风控提示对应客户端保存的登录状态",
+    "status": "pass"
+  },
+  {
+    "name": "错误页有「去网络诊断」按钮",
+    "status": "pass"
+  },
+  {
+    "name": "OK 直达网络诊断(退出播放器 + 面板自动展开)",
+    "status": "pass"
+  },
+  {
+    "name": "诊断「CDN 测速」给出单连接与 4 并发吞吐 (C-DIAG-02)",
+    "status": "pass"
+  },
+  {
+    "name": "设置里有「界面字号」",
+    "status": "pass"
+  },
+  {
+    "name": "特大档字号确实放大了",
+    "status": "pass"
+  },
+  {
+    "name": "侧栏文字没有溢出",
+    "status": "pass"
+  },
+  {
+    "name": "特大档:深行卡片完整可见",
+    "status": "pass"
+  },
+  {
+    "name": "特大档:回到顶部不裁切",
+    "status": "pass"
+  },
+  {
+    "name": "设置里有「看完移出稍后再看」开关",
+    "status": "pass"
+  },
+  {
+    "name": "No uncaught page errors",
+    "status": "pass"
+  }
+]

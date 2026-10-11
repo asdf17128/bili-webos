@@ -7,19 +7,13 @@
 // 两处共用一份映射(诊断面板 + 播放器),免得两边文案漂移。
 import { t } from '../i18n/index.js';
 
-// ctx.loggedIn:同一个错误码,登录与否给的建议完全不同 —— 这是 issue #23
-// 实证出来的:那位用户换个账号就能播,说明拦的是**账号**不是网络,而当时的
-// 提示却在劝他"登录一下试试",正好指反了方向。
+// An error code alone cannot identify an account restriction. CDN selection
+// changes media requests, not API verification (#23 / ranking Referer evidence).
 export function apiErrorHint(code, ctx) {
-  // -351/-352 = 风控校验失败。三种成因,按可操作性排序:
-  //   ① 没登录 —— B站 对匿名请求更严,登录多半就好
-  //   ② 登录了但这个账号被风控 —— 换个账号能立刻验证(issue #23 就是这种)
-  //   ③ 网络受限(海外/机房)—— 换 CDN 线路有时能绕开
-  // 实测排除过的:buvid 是否经 ExClimbWuzhi 激活,与结果无关。
   if (code === -351 || code === -352) {
     return ctx && ctx.loggedIn
-      ? t('B站 风控拦截 · 多半是当前账号被风控:换个账号登录即可验证;也可在设置里换 CDN 线路')
-      : t('B站 风控拦截 · 先试试登录(设置 → 扫码登录);海外网络可在设置里换 CDN 线路');
+      ? t('B站 风控校验未通过 · 请先在官方客户端检查同一账号是否正常，再重试或提交网络诊断')
+      : t('B站 风控校验未通过 · 可先扫码登录后重试，仍失败请提交网络诊断');
   }
   // -412 = 请求被拦截。2026-09-02(issue #25)实测:海外 IP + 匿名时 B站 把
   // view 接口整个拦了(连 HTML 拦截页都返回)。登录通常可解;我们对 view

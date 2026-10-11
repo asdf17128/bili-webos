@@ -42,7 +42,7 @@ async function run(name, mode, fn, scale) {
  await context.addInitScript(({mode,scale})=>{
    delete window.webOS;window.__mode=mode;window.__probe={loads:0,destroyed:0,retries:0,mpds:[],positions:[],mimes:[]};
    localStorage.setItem('bili_settings',JSON.stringify({language:'zh',uiScale:scale?.ui||1,gridCols:3,subtitle:true,danmaku:true,subtitleScale:scale?.sub||1,danmakuScale:scale?.dm||1}));
-   if(mode.startsWith('layout'))localStorage.setItem('bili_auth',JSON.stringify({SESSDATA:'fixture'}));
+   if(mode.startsWith('layout')||mode.startsWith('follow'))localStorage.setItem('bili_auth',JSON.stringify({SESSDATA:'fixture'}));
    localStorage.setItem('bili_perfopt',JSON.stringify({prefetchPage:false,warmPlayer:false}));
    HTMLMediaElement.prototype.play=function(){if(this.readyState>=2)this.dispatchEvent(new Event('playing'));return Promise.resolve()};
    if (/premium|dolby/.test(mode)) MediaSource.isTypeSupported=type=>!type.includes('av01');
@@ -62,6 +62,8 @@ async function run(name, mode, fn, scale) {
   if(u.port==='9528')return route.abort();
   if(calls.fail)return route.abort();
   let data={};
+  if(u.pathname.endsWith('/x/relation'))data={attribute:0};
+  if(u.pathname.endsWith('/x/relation/modify')) { calls.follow=(calls.follow||0)+1; const form=new URLSearchParams(route.request().postData()); assert.equal(form.get('fid'),'1'); assert.equal(form.get('act'),'1'); }
   if(u.pathname.endsWith('/nav'))data={wbi_img:{img_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png',sub_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png'}};
   if(u.pathname.endsWith('/view')){calls.info++;calls.events.push({type:'view',at:Date.now()});if(mode==='slow-info')await new Promise(r=>setTimeout(r,1200));data={aid:1,cid:2,bvid:'BVtest',pages:mode==='startup-part'?[{cid:2},{cid:3}]:[{cid:2}],title:mode.startsWith('layout')?'日本有钱人的小别墅能有多离谱！超迷你设计成这样就问你敢住吗':'加载回归',owner:{mid:1,name:mode.startsWith('layout')?'11区小豪的故事':'测试'},pubdate:1790323200,stat:{}};}
   if(u.pathname.endsWith('/playurl')){
@@ -192,6 +194,56 @@ await run('buffer exhaustion is visible and retried without skipping video','sta
  const count=await page.evaluate(()=>window.__probe.retries);
  await page.clock.runFor(5000);
  assert.equal(await page.evaluate(()=>window.__probe.retries),count);
+});
+// Real React player, controlled decoder: no online event is emitted when a
+// temporary DNS failure ends. Preserve both the current part and position.
+for (const action of ['automatic', 'manual', 'exit']) await run('outage recovery: '+action,'recovery',async(page,calls)=>{
+ await page.clock.install();
+ await page.evaluate(()=>window.__openVideo({bvid:'BVtest',cid:3,resumeMode:'at',progress:47}));
+ await page.waitForFunction(()=>window.__probe.loads===1);await page.waitForTimeout(200);
+ await page.evaluate(()=>{
+  const v=document.querySelector('video');window.__paused=false;
+  Object.defineProperty(v,'currentTime',{configurable:true,get:()=>47});
+  Object.defineProperty(v,'paused',{configurable:true,get:()=>window.__paused});
+  Object.defineProperty(v,'readyState',{configurable:true,get:()=>1});
+  v.pause=function(){window.__paused=true;this.dispatchEvent(new Event('pause'));};
+  v.dispatchEvent(new Event('waiting'));
+ });
+ await page.clock.runFor(2000);await page.clock.fastForward(31000);
+ assert.equal(await page.getByText('播放暂时中断，请检查网络或切换线路',{exact:true}).isVisible(),true);
+ if(action==='exit'){
+  await page.keyboard.press('Escape');await page.clock.fastForward(25000);
+  assert.equal(await page.locator('video').count(),0);assert.equal(await page.evaluate(()=>window.__probe.loads),1);return;
+ }
+ if(action==='manual')await page.keyboard.press('Enter');
+ else await page.clock.fastForward(9000);
+ await page.waitForFunction(()=>window.__probe.loads===2);
+ assert.equal(await page.getByText('播放暂时中断，请检查网络或切换线路',{exact:true}).count(),0);
+ assert.equal(await page.evaluate(()=>window.__probe.positions[1]),47);
+ assert.equal(calls.events.filter(x=>x.type==='playurl').pop().cid,'3');
+ assert.ok(await page.evaluate(()=>window.__probe.destroyed)>=1);
+});
+await run('creator follow from player control bar','follow',async(page,calls)=>{
+ await open(page);await page.waitForFunction(()=>window.__probe.loads===1);await page.waitForTimeout(200);
+ assert.equal(calls.follow||0,0);
+ await page.keyboard.press('ArrowUp');
+ await page.getByText('关注 UP 主',{exact:true}).click();
+ await page.getByText('取消关注 UP 主',{exact:true}).waitFor();
+ assert.equal(calls.follow,1);
+});
+await run('outage recovery: permanent outage has a finite retry budget','network',async(page,calls)=>{
+ await page.clock.install();await open(page);
+ await page.getByText('重试播放',{exact:true}).waitFor();
+ for (const delay of [8100,16100]) {
+  await page.clock.fastForward(delay);await page.getByText('重试播放',{exact:true}).waitFor();
+ }
+ await page.getByText('自动重试已停止，按 OK 重试或返回退出',{exact:true}).waitFor();
+ const count=await page.evaluate(()=>window.__probe.loads);
+ await page.clock.fastForward(120000);
+ assert.equal(await page.evaluate(()=>window.__probe.loads),count);
+ assert.equal(count,6,'two initial attempts and two bounded recovery rounds');
+ await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
+ await page.waitForFunction(()=>!document.querySelector('video'));
 });
 for (const mode of ['premium', 'premium-fallback', 'dolby', 'dolby-fallback']) {
  await run('actual manifest and codec fallback: '+mode,mode,async page=>{

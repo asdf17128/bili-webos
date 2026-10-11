@@ -26,6 +26,11 @@ import { titleMT, useTitlesMT } from '../utils/titlemt';
 import { t, getLocale } from '../i18n';
 import { CDN_ROUTES, withHost, cdnHostOf, isBanned, onShakaRetry, playbackCdnUrls } from './cdn';
 import { createAutoCdnRouter } from './cdnAuto';
+import { useUpFollow } from '../hooks/useUpFollow';
+
+function isNetworkFailure(err) {
+  return err?.category === 1 || /network|fetch|timeout|EAI_AGAIN|ENOTFOUND|ECONN|socket|upstream/i.test(String(err?.message || ''));
+}
 
 // Proxy + resize card thumbnails (same as VideoCard): the proxy adds the
 // Referer B站 image CDN needs, and @672w webp keeps the TV's image decoder from
@@ -73,7 +78,18 @@ function CoinIcon() {
   );
 }
 
-export default function PlayerPage({ video, onBack, onPlayNext }) {
+// Remount the player, not the app: releases requests, decoder and transient
+// state while the page behind it keeps its focus and scroll position.
+export default function RecoverablePlayer(props) {
+  const [attempt, setAttempt] = useState({ key: 0, used: 0, video: null });
+  const retry = useCallback((snapshot, automatic) => {
+    setAttempt(old => ({ key: old.key + 1, used: automatic ? old.used + 1 : 0, video: snapshot }));
+  }, []);
+  return <PlayerPage {...props} key={attempt.key} video={attempt.video || props.video}
+    onRetry={retry} autoRetryDelay={attempt.used < 2 ? 8000 * (attempt.used + 1) : 0} />;
+}
+
+function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   useTitlesMT(); // re-render when list-title translations land (no-op on zh)
   const videoRef = useRef(null);
   const shakaRef = useRef(null);
@@ -133,6 +149,9 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const loadErrorRef = useRef(false);
   loadErrorRef.current = loadError;
   const [errorMsg, setErrorMsg] = useState('');
+  const [recoverable, setRecoverable] = useState(false);
+  const [errorAction, setErrorAction] = useState(0);
+  const retryingRef = useRef(false);
   const [ended, setEnded] = useState(false);
   const [relatedVideos, setRelatedVideos] = useState([]);
   // Multi-part (分P) videos: the parts replace 相关推荐 with a 选集 list, and
@@ -185,6 +204,8 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
   const videoAidRef = useRef(null);
   const startTimeRef = useRef(Date.now());
   const upMidRef = useRef(null);
+  const [ownerMid, setOwnerMid] = useState(video?.owner?.mid || null);
+  const follow = useUpFollow(ownerMid, showControls && !loading);
   const upLoadingRef = useRef(false);
   const upPnRef = useRef(1);
   const upSeenRef = useRef(new Set());
@@ -256,6 +277,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     ...(subTracks.length > 0 ? ['subtitle'] : []),
     'speed',
     'quality',
+    ...(follow.available ? ['follow'] : []),
     'comments',
   ];
   const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2];
@@ -581,6 +603,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       trace.fail();
       console.error('Player initialization failed:', err?.message || err);
       setLoading(false); setLoadError(true);
+      setRecoverable(isNetworkFailure(err));
     });
     return () => {
       mounted = false;
@@ -792,6 +815,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       }
       // Reset the "UP主投稿" tab (regular videos only).
       upMidRef.current = isBangumi ? null : ownerMid;
+      setOwnerMid(isBangumi ? null : ownerMid);
       upPnRef.current = 1;
       upSeenRef.current = new Set();
       setUpVideos([]);
@@ -1050,12 +1074,14 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       // don't dead-end on the error screen, just skip to the next item (#11).
       const pl = video?.playlist;
       const idx = video?.playlistIndex;
-      if (getPlaybackMode(storage.getSettings()) === 'next' && pl && Array.isArray(pl) && typeof idx === 'number' && idx + 1 < pl.length && onPlayNext) {
+      const networkFailure = isNetworkFailure(err);
+      if (!networkFailure && getPlaybackMode(storage.getSettings()) === 'next' && pl && Array.isArray(pl) && typeof idx === 'number' && idx + 1 < pl.length && onPlayNext) {
         onPlayNext(playAdvance({ ...pl[idx + 1], playlist: pl, playlistIndex: idx + 1 }));
         return;
       }
       setLoading(false);
       setLoadError(true);
+      setRecoverable(networkFailure);
       castReportState({ playState: 'error', error: err?.message || 'load-failed' }).catch(() => {});
     }
   }, [video, queueOrApplySeek, selectSubtitle, makeMtTrack]);
@@ -1290,6 +1316,24 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     return () => clearInterval(hb);
   }, [video?.bvid]);
 
+  const retryPlayback = useCallback((automatic = false) => {
+    if (retryingRef.current || !mountedRef.current) return;
+    retryingRef.current = true;
+    const v = videoRef.current;
+    const progress = v?.currentTime > 0 ? v.currentTime : video.progress || 0;
+    onRetry({ ...video, cid: cidRef.current || video.cid, progress, resumeMode: 'at' }, automatic);
+  }, [video, onRetry]);
+
+  useEffect(() => {
+    if (!loadError || !recoverable || !autoRetryDelay) return;
+    // Resolver failures need not change navigator.onLine. A bounded timer is
+    // required as well as the browser's network-restoration notification.
+    const retry = () => retryPlayback(true);
+    const timer = setTimeout(retry, autoRetryDelay);
+    window.addEventListener('online', retry);
+    return () => { clearTimeout(timer); window.removeEventListener('online', retry); };
+  }, [loadError, recoverable, autoRetryDelay, retryPlayback]);
+
   // Count stalls even when all buffered data has been exhausted (#35).
   useEffect(() => {
     const sample = createStallMonitor();
@@ -1312,6 +1356,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
         logErr('playback-stall', '30s without progress; buffer=' + bufferedAhead(v).toFixed(1));
         v?.pause();
         setErrorMsg(t('播放暂时中断，请检查网络或切换线路'));
+        setRecoverable(true);
         setLoadError(true);
       }
     }, 1000);
@@ -1641,11 +1686,13 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
       doFav();
     } else if (btn === 'later') {
       doToView();
+    } else if (btn === 'follow') {
+      follow.toggle().then(message => { if (mountedRef.current && message) showPlayerToast(message); });
     }
     // 'like' never routes here: its press/release runs the long-press machinery
     // (keydown/keyup + mousedown/mouseup on the button itself).
     hideControlsLater();
-  }, [subOptions, subLan, subTracks, fetchSubBody, hideControlsLater, doCoin, doFav, doToView, showPlayerToast, anchorFor, qualities, currentQuality, comments]);
+  }, [subOptions, subLan, subTracks, fetchSubBody, hideControlsLater, doCoin, doFav, doToView, showPlayerToast, anchorFor, qualities, currentQuality, comments, follow.toggle]);
 
   // Load more related videos
   const loadingRelatedRef = useRef(false);
@@ -1949,10 +1996,19 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
     const handler = (e) => {
       // 加载失败页优先于所有分支:此时整屏只剩一个动作(去网络诊断)。
       // 放后面会被 focusArea==='none' 的"OK 呼出控制条"先吃掉(2026-08-21 实测)。
+      if (loadErrorRef.current && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+        e.preventDefault();
+        if (recoverable) setErrorAction(['ArrowRight', 'ArrowDown'].includes(e.key) ? 1 : 0);
+        return true;
+      }
       if (loadErrorRef.current && e.key === 'Enter') {
         e.preventDefault();
-        window.dispatchEvent(new CustomEvent('goto-diag'));
+        if (recoverable && errorAction === 0) retryPlayback();
+        else window.dispatchEvent(new CustomEvent('goto-diag'));
         return true;
+      }
+      if (loadErrorRef.current && (e.keyCode === 461 || ['Backspace', 'GoBack', 'Escape'].includes(e.key))) {
+        e.preventDefault(); onBack(); return true;
       }
       // End-screen countdown: OK plays the up-next video immediately; any
       // other key cancels autoplay and continues as normal navigation.
@@ -2093,7 +2149,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
             if (!e.repeat) startLikeHold();
             return true;
           }
-          pressControl(CONTROLS[focusIdx]);
+          if (CONTROLS[focusIdx] !== 'follow' || !e.repeat) pressControl(CONTROLS[focusIdx]);
           return true;
         }
         return false;
@@ -2278,7 +2334,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
 
     setCustomKeyHandler(handler);
     return () => setCustomKeyHandler(null);
-  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, showSpeedPanel, applySpeed, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, comments, loadUpVideos, loadComments, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody, pressControl, startLikeHold, pressComment, showCommentRail]);
+  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, showSpeedPanel, applySpeed, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, comments, loadUpVideos, loadComments, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody, pressControl, startLikeHold, pressComment, showCommentRail, recoverable, errorAction, retryPlayback]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -2427,12 +2483,16 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
           </div>
           {/* 出错时给一条**能按下去的出路**,而不是只让用户"按返回键"。
               OK = 直接跳到 设置 → 网络诊断 并自动展开(owner 2026-08-21)。 */}
-          <button className="player-btn focused" style={{ marginTop: 6 }}
+          {recoverable && <button className={`player-btn${errorAction === 0 ? ' focused' : ''}`}
+            onMouseEnter={() => setErrorAction(0)} onClick={() => retryPlayback()}>{t('重试播放')}</button>}
+          <button className={`player-btn${!recoverable || errorAction === 1 ? ' focused' : ''}`} style={{ marginTop: 6 }}
+            onMouseEnter={() => setErrorAction(1)}
             onClick={() => { window.dispatchEvent(new CustomEvent('goto-diag')); }}>
             {t('去网络诊断')}
           </button>
           <div style={{ fontSize: 18, color: '#aaa' }}>
-            {errorMsg ? t('OK 打开网络诊断 · 返回键退出') : t('该视频源节点异常,请按返回键重试或换一个视频')}
+            {recoverable ? (autoRetryDelay ? t('正在等待网络恢复，也可按 OK 立即重试') : t('自动重试已停止，按 OK 重试或返回退出'))
+              : errorMsg ? t('OK 打开网络诊断 · 返回键退出') : t('该视频源节点异常,请按返回键重试或换一个视频')}
           </div>
         </div>
       )}
@@ -2607,6 +2667,7 @@ export default function PlayerPage({ video, onBack, onPlayNext }) {
                   // B站同款金币(金圆盘+B字)——emoji 的 🪙 像块石头(owner)。
                   btn === 'coin' ? formatCount(stat.coin) :
                     btn === 'fav' ? formatCount(stat.favorite) :
+                      btn === 'follow' ? follow.label :
                       btn === 'later' ? (inToView ? t('已稍后再看') : t('稍后再看')) :
                       btn === 'danmaku' ? (danmakuEnabled ? t('弹幕 开') : t('弹幕 关')) :
                         btn === 'subtitle' ? (subLan == null ? t('字幕 关')

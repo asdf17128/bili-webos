@@ -1,0 +1,54 @@
+{
+  "command": "bash tools/verify.sh --no-tv --ux",
+  "exitCode": 0,
+  "serviceES5": "pass",
+  "productionES2016": "pass",
+  "productionBuild": "pass",
+  "versionConsistency": "2.2.3",
+  "realNodeRuntimes": [
+    "0.12.2",
+    "8.17.0"
+  ],
+  "realRuntimeChecks": [
+    "legacy WebSocket fragment guard",
+    "fetch",
+    "getDiagnostics",
+    "ranking API"
+  ],
+  "serviceUnitTests": {
+    "passed": 26,
+    "failed": 0
+  },
+  "i18n": {
+    "en": 275,
+    "es": 275,
+    "missing": 0
+  },
+  "browserSuites": {
+    "ux": 66,
+    "loading": 34,
+    "danmaku": 6,
+    "playbackEnd": 26,
+    "liveLoading": 9,
+    "cdnAuto": 7
+  },
+  "additionalChecks": [
+    "play intent",
+    "triple action state",
+    "API risk hints",
+    "live quality and stream selection",
+    "CDN routing logic",
+    "startup trace",
+    "media selection",
+    "subtitle parsing and translation",
+    "danmaku translation",
+    "AIGC badge",
+    "cast URL mapping",
+    "library playlists",
+    "search history",
+    "real Blob MIME positive control",
+    "playback stall recovery",
+    "real HTTP Range probes"
+  ],
+  "scope": "Browser UI tests use isolated APIs/media doubles. Real Node and HTTP checks are separate; this is not legacy TV hardware emulation."
+}

@@ -59,7 +59,7 @@ bash tools/verify.sh --full     # 六层:语法→静态规范/逻辑→真Node0
    (如动了播放器 → C-PLAY-03~08;动了焦点 → C-FOCUS-*;动了投屏 → C-CAST-01 需手机);
 4. 涉及 UI 的改动:真机截图**当用户视角逐像素过目**(v1.2.7 黑封面就是只看断言没看图);
 5. 发布节奏:改动攒批、部署给 owner 过目、点头再发(feedback_release_pace)。
-6. **每个 release 必须上传 `version.json` 资产**(`{"version":"x.y.z"}`)——
+6. **每个正式 release 必须上传 `version.json` 资产**(`{"version":"x.y.z"}`)——
    app 每日一次的版本检查拉它,其 download_count 即日活代理
    (`gh api repos/asdf17128/bili-webos/releases --jq '...download_count'`);
    忘传则当日计数断档(app 侧静默容错,次日重试)。
@@ -157,3 +157,34 @@ release 必须挂**三件**资产,少一件都会静默出事:
 `app/src/player/startupTrace.test.js` 已进入静态门禁。`tools/test-player-loading.mjs` 覆盖并发阶段、媒体响应与就绪间隔、失败/退出、无记录及诊断接口全失败；`LOADING_FILTER='player shelf|startup|diagnostics'` 可定向运行。读取 Vite 单例模块时使用实际加载的含 HMR 时间戳 URL。
 
 `tools/test-tv-ux-device.mjs` 额外检查推荐展开时标准/特大字号进度条和按钮边界，并保存真机截图；`tools/test-cdn-tv.mjs` 从真实电视二维码读取阶段与媒体事件，将不含账号内容的摘录保存为 `startup-report.txt`。阶段耗时可以并行，不作求和；总起播仍以 loadeddata 为界，不等同于逐帧上屏。未发生的事件保留为空，网络重试单列于播放中卡顿恢复次数。
+
+
+### C9 起播测试包（不更新正式通道）
+
+`node tools/release.mjs v2.2.3-c9-test.1 --test --notes-file docs/C9-TEST.md` 仅供已授权的测试分发。`--dry-run` 输出计划；真正分发要求独立分支已提交并推送、tag 与 `TEST_BUILD` 一致、当前 latest 仍是对应基础版。新建不可覆盖的 prerelease，显式 `latest=false`，只上传带测试标记的 IPK 和 SHA256，不上传稳定版 metadata。上传后匿名下载校验 IPK，并比较操作前后稳定版 tag / version.json / Homebrew manifest 的哈希。包含非空 `TEST_BUILD` 的代码禁止走正式发布入口。
+
+webOS 安装版本保持 2.2.3，设置/诊断显示 `2.2.3 c9-test.1`；同版本覆盖与回滚由真机安装验证。该测试分支随后收到 C9 回传，改动已整合进 v2.3.0；保留此节作为测试包分发流程。
+
+`tools/test-manifest-mime.mjs` 使用真实 Shaka 4.16.24 和 Chromium Blob 网络栈，固定空 MPD 使两组都到达同一个解析错误；对照无 MIME 的 4 次 HEAD 失败与显式 DASH 的零次重试。它证明网络路径，不测视频解码或 C9 性能。已加入 `verify.sh --ux`；PlayerPage 的失败恢复路径另由加载回归测试覆盖。
+
+扩展起播报告：`dispatch` 是各阶段首次派发时间；`first-host` 是首次媒体请求（可能是索引）及首次响应的节点，不随后续后台测速覆盖；`vappend/aappend` 是 Shaka 公共 `segmentappended` 事件（写入完成，不代表画面已上屏）；`buffer` 为相应时点的缓冲毫秒与 readyState；`net-retry` 按请求类型/协议/错误码/主机聚合，最多四组，多余计入 other。不保留路径、签名、响应体或请求头。
+
+
+### 2026-10-11：网络恢复、UP 关注与旧 WebSocket 接收限制
+
+- `LOADING_FILTER='outage recovery|creator follow' node tools/test-player-loading.mjs`：真实 React + 受控解码器，覆盖无 online 事件的恢复、原分 P/进度、手动重试、退出取消、长期断网的两次重建预算和播放器关注入口。
+- `UX_FILTER='creator follow' node tools/test-tv-ux.mjs`：受信遥控/指针输入，隔离账号写入；包括关注/取消关注、服务拒绝、关系查询失败、未登录、连续 OK、菜单关闭后的成功回写与首页标记。
+- `node tools/test-recovery-follow-tv.mjs`：Luna 回调注入临时解析失败，恢复后使用真实取流/解码；真实关系 API 读取，关注写入在请求发出前拦截并模拟拒绝。不会修改真实关注列表；结束恢复包装器和设置。后者不计为服务器关注写入验收。
+- `wsLegacyLimits.test.js`：旧接收器 4100 个空分片的正对照、单次 socket chunk 中的过多分片、队列上限及正常多消息；Node 0.12/8 管线也执行真实旧接收器限额检查。服务 v7 已含 CVE-2026-48779 上游补丁；遗留 v1.1.5 保留版本以支持 0.12，使用本地限额保护而非声称升级到上游修补版。
+- 本地服务就绪探针用 `curl -fsS --noproxy '*'`。本机代理返回 HTTP 502 时，原来的 `curl -s` 仍退出 0，导致模拟套件跳过启动桥接服务；HTTP 错误不能算就绪。
+
+
+### v2.3.0：请求期限与发布耐久验证
+
+`service/com.biliwebos.app.service/requestDeadline.js`在 socket 超时外覆盖 DNS/Agent 排队/响应头等待，保持 ES5。`requestDeadline.test.js` 含真实 HTTP lookup/连接池正对照；`test-node8/run8.js` 在 0.12.2/8.17.0 上执行真实排队测试。请求头收到后由调用方管理响应流，普通响应完成不破坏池中连接。
+
+`tools/test-scrub-tv.mjs` 使用 CDP 受信键、页内时间戳与原生 seeking 记录，三轮检查短延迟取消、OK 提交、迟到 Back。`test-tv-ux-device.mjs` 取消操作的两次按键之间不再插入状态读取。
+
+`tools/test-network-soak-tv.mjs` 临时设循环、实际播放 25 分钟，每分钟并行检查 B 站 API、直播 API 与 GitHub 更新请求，记录视频尺寸/进度/最长停滞和服务 uptime；原设置最终恢复。结果只保留状态、耗时与计数，不保存认证、账号信息或媒体地址。正常耐久运行不能代替 DNS 故障复现。每次完整耐久会主动下载 26 次 `version.json`，这些下载是测试流量，不应计作真实日活；失败的运行也会产生部分下载。
+
+`upstreamRequest.js` 仅对无体 GET/HEAD 在响应头前的 ECONNRESET/EPIPE 换新连接重试一次，与第一次请求共用总期限。单元测试用真实 HTTP 对端断连验证；POST、HTTP 错误、部分响应不能重发，取消句柄必须跟随当前尝试。旧运行时门禁包含断连→新连接成功。

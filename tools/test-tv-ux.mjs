@@ -26,14 +26,14 @@ async function fixture(options = {}) {
     localStorage.setItem('bili_proxyUrl', JSON.stringify('http://127.0.0.1:9527'));
     localStorage.setItem('bili_perfopt', JSON.stringify({ prefetchPage: !!options.prefetch, warmPlayer: false }));
     if (!localStorage.getItem('bili_settings')) localStorage.setItem('bili_settings', JSON.stringify({ language: options.language || 'zh', uiScale: options.scale || 1, gridCols: options.cols || 3 }));
-    if (options.auth) localStorage.setItem('bili_auth', JSON.stringify({ SESSDATA: 'ux-test-only', DedeUserID: '123' }));
+    if (options.auth) localStorage.setItem('bili_auth', JSON.stringify({ SESSDATA: 'ux-test-only', DedeUserID: '123', bili_jct: 'test-csrf' }));
     if (options.searchHistory) localStorage.setItem('bili_searchHistory', JSON.stringify(['电影配乐', '山野徒步', '周末厨房']));
   }, options);
   const page = await context.newPage();
   page.setDefaultTimeout(6500);
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
-  const calls = { feed: 0, qr: 0, popular: 0, folders: [] };
+  const calls = { feed: 0, qr: 0, popular: 0, folders: [], follows: [], following: false };
   await page.route('**/*', async route => {
     const url = new URL(route.request().url());
     if (url.origin === new URL(baseUrl).origin) {
@@ -57,6 +57,20 @@ async function fixture(options = {}) {
     if (url.port === '9528') return route.abort();
     let body = { code: 0, data: {} };
     if (url.pathname.endsWith('/nav')) body.data = { isLogin: !!options.auth, mid: 123, uname: 'UX Test', wbi_img: { img_url: 'https://example.com/abcdefghijklmnopqrstuvwxyz123456.png', sub_url: 'https://example.com/abcdefghijklmnopqrstuvwxyz123456.png' } };
+    if (url.pathname.endsWith('/x/relation')) {
+      if (options.relationError) return route.abort();
+      body.data = { attribute: calls.following ? 2 : 0 };
+    }
+    if (url.pathname.endsWith('/x/relation/modify')) {
+      const form = Object.fromEntries(new URLSearchParams(route.request().postData()));
+      assert.equal(form.csrf, 'test-csrf'); assert.equal(form.fid, '1');
+      calls.follows.push(form);
+      if (options.followDelay) await new Promise(r => setTimeout(r, options.followDelay));
+      if (options.followError) body = {code:-352};
+      else calls.following = form.act === '1';
+    }
+    if (url.pathname.endsWith('/view')) body.data = {aid:100,cid:2,owner:{mid:1,name:'测试UP'}};
+    if (url.pathname.endsWith('/followings')) body.data = {list:[]};
     if (url.pathname.includes('/top/feed/rcmd')) {
       calls.feed++;
       if (options.feedDelay) await new Promise(r => setTimeout(r, options.feedDelay));
@@ -118,6 +132,51 @@ async function test(name, fn, options) {
 }
 const focused = page => page.evaluate(() => document.querySelector('[data-focus-id].focused')?.getAttribute('data-focus-id'));
 const ready = page => page.waitForSelector('.video-card');
+
+await test('creator follow completes after menu closes',async({page,calls})=>{
+ await ready(page);await page.locator('.video-card').first().hover();
+ await page.keyboard.down('Enter');await page.waitForTimeout(1100);await page.keyboard.up('Enter');
+ await page.getByText('关注 UP 主',{exact:true}).click();await page.keyboard.press('Escape');
+ await page.locator('.video-card').first().locator('.followed-badge').waitFor();
+ assert.equal(calls.follows.length,1);assert.equal(await page.locator('.cardmenu').count(),0);
+},{auth:true,followDelay:600});
+
+for (const scenario of ['success', 'failure', 'read-failure', 'guest']) await test('creator follow menu: '+scenario, async ({page,calls,options}) => {
+ await ready(page);
+ const card=page.locator('.video-card').first();
+ await card.hover();
+ await page.keyboard.down('Enter');await page.waitForTimeout(1100);await page.keyboard.up('Enter');
+ await page.getByText('关注 UP 主',{exact:true}).waitFor();
+ if(scenario==='read-failure') {
+  await page.getByText('关注状态读取失败，请重试',{exact:true}).waitFor();
+  options.relationError=false;
+  await page.getByText('关注 UP 主',{exact:true}).click();await page.waitForTimeout(300);
+  assert.equal(calls.follows.length,0,'unknown relationship is read before any write');
+ }
+ await page.getByText('关注 UP 主',{exact:true}).hover();
+ await page.keyboard.press('Enter');
+ if(scenario==='guest') {
+  await page.getByText('请先登录后关注 UP 主',{exact:true}).waitFor();assert.equal(calls.follows.length,0);return;
+ }
+ if(scenario==='failure') {
+  await page.getByText('关注操作失败，请重试',{exact:true}).waitFor();
+  assert.equal(await page.getByText('关注 UP 主',{exact:true}).count(),1);
+  assert.equal(await card.locator('.followed-badge').count(),0);
+  options.followError=false;
+  await page.getByText('关注 UP 主',{exact:true}).click();
+ }
+ // Repeat while the first request is pending must not submit a second toggle.
+ await page.keyboard.down('Enter');await page.waitForTimeout(120);await page.keyboard.up('Enter');
+ await page.getByText('取消关注 UP 主',{exact:true}).waitFor();
+ assert.equal(calls.follows.length,scenario==='failure'?2:1);
+ assert.equal(await card.locator('.followed-badge').count(),1);
+ await page.screenshot({path:output+'/follow-'+scenario+'.png'});
+ await page.getByText('取消关注 UP 主',{exact:true}).click();
+ await page.getByText('已取消关注',{exact:true}).waitFor();
+ assert.equal(await card.locator('.followed-badge').count(),0);
+ await page.keyboard.press('Escape');assert.equal(await page.locator('.cardmenu').count(),0);
+ await page.keyboard.press('ArrowRight');assert.notEqual(await focused(page),'content-0-0');
+}, {auth:scenario!=='guest',followDelay:500,followError:scenario==='failure',relationError:scenario==='read-failure'});
 
 await test('long-press menu requires release then a new confirmation and can reopen', async ({ page }) => {
   await ready(page); await page.waitForTimeout(700);

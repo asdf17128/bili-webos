@@ -1,0 +1,53 @@
+{
+  "events": [
+    {
+      "observedAtSampleMinute": 9,
+      "retry": {
+        "tag": "retry:api.live.bilibili.com",
+        "detail": "socket hang up"
+      },
+      "liveApi": {
+        "status": 200,
+        "code": 0,
+        "durationMs": 176
+      },
+      "playback": {
+        "timeSeconds": 544.75,
+        "readyState": 4,
+        "paused": false
+      },
+      "service": {
+        "uptimeSeconds": 793,
+        "readRetries": 1,
+        "requestErrors": 1,
+        "baselineRequestErrors": 1,
+        "dnsErrors": 0
+      },
+      "scope": "One real pre-header peer reset was retried successfully; does not establish the cause of the historical all-request outage."
+    },
+    {
+      "observedAtSampleMinute": 16,
+      "retry": {
+        "tag": "retry:api.live.bilibili.com",
+        "detail": "socket hang up"
+      },
+      "liveApi": {
+        "status": 200,
+        "code": 0,
+        "durationMs": 224
+      },
+      "playback": {
+        "timeSeconds": 963.3,
+        "readyState": 4,
+        "paused": false
+      },
+      "service": {
+        "uptimeSeconds": 1212,
+        "readRetries": 2,
+        "requestErrors": 1,
+        "baselineRequestErrors": 1,
+        "dnsErrors": 0
+      }
+    }
+  ]
+}

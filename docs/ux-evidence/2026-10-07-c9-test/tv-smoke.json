@@ -1,0 +1,226 @@
+[
+  {
+    "name": "Home loads video cards",
+    "status": "pass"
+  },
+  {
+    "name": "No broken thumbnails",
+    "status": "pass"
+  },
+  {
+    "name": "OK entered content (focus in grid)",
+    "status": "pass"
+  },
+  {
+    "name": "Back returns focus to sidebar",
+    "status": "pass"
+  },
+  {
+    "name": "Video starts playing",
+    "status": "pass"
+  },
+  {
+    "name": "Playback advances (no immediate freeze)",
+    "status": "pass"
+  },
+  {
+    "name": "Player tab row visible",
+    "status": "pass"
+  },
+  {
+    "name": "相关推荐 + UP主投稿 tabs present",
+    "status": "pass"
+  },
+  {
+    "name": "相关推荐 has cards (recommended w/ upload time)",
+    "status": "pass"
+  },
+  {
+    "name": "UP主投稿 tab loads videos",
+    "status": "pass"
+  },
+  {
+    "name": "Comment rail loads real comments",
+    "status": "pass"
+  },
+  {
+    "name": "Comment rail shows content without JSX or empty-state leakage",
+    "status": "pass"
+  },
+  {
+    "name": "Comment controls fit without overlapping metadata",
+    "status": "pass"
+  },
+  {
+    "name": "Season info loads (episode list)",
+    "status": "pass"
+  },
+  {
+    "name": "PGC playurl returns DASH (bangumi playable)",
+    "status": "pass"
+  },
+  {
+    "name": "HDR/Dolby rep present + selectable by id",
+    "status": "pass"
+  },
+  {
+    "name": "Live list loads",
+    "status": "pass"
+  },
+  {
+    "name": "Live stream plays",
+    "status": "pass"
+  },
+  {
+    "name": "Danmaku layer mounted",
+    "status": "pass"
+  },
+  {
+    "name": "Danmaku rendering",
+    "status": "pass"
+  },
+  {
+    "name": "Live room recorded to recentLive",
+    "status": "pass"
+  },
+  {
+    "name": "Live shows in 我的 → 最近观看 with 直播 badge",
+    "status": "pass"
+  },
+  {
+    "name": "Recommended live room advances playback",
+    "status": "pass"
+  },
+  {
+    "name": "Live danmaku token API succeeds",
+    "status": "pass"
+  },
+  {
+    "name": "TV starts the live danmaku subscription",
+    "status": "pass"
+  },
+  {
+    "name": "Real-time danmaku reaches the TV overlay",
+    "status": "pass"
+  },
+  {
+    "name": "Live quality popup opens",
+    "status": "pass"
+  },
+  {
+    "name": "Live quality switch skipped",
+    "status": "skip"
+  },
+  {
+    "name": "Search recommendations render (热门/历史)",
+    "status": "pass"
+  },
+  {
+    "name": "Search returns a results grid",
+    "status": "pass"
+  },
+  {
+    "name": "Follow list loads",
+    "status": "pass"
+  },
+  {
+    "name": "Pagination loads more",
+    "status": "pass"
+  },
+  {
+    "name": "Account API confirms valid login",
+    "status": "pass"
+  },
+  {
+    "name": "Own favorites match the account folder response",
+    "status": "pass"
+  },
+  {
+    "name": "Favorite folder renders videos",
+    "status": "pass"
+  },
+  {
+    "name": "Subscriptions tab matches the account response",
+    "status": "pass"
+  },
+  {
+    "name": "Subscribed folder renders videos",
+    "status": "pass"
+  },
+  {
+    "name": "Watch Later list matches the authenticated API",
+    "status": "pass"
+  },
+  {
+    "name": "Auto update-check populated",
+    "status": "pass"
+  },
+  {
+    "name": "Update-check resolved (latest/new/version)",
+    "status": "pass"
+  },
+  {
+    "name": "CDN row is reachable by remote",
+    "status": "pass"
+  },
+  {
+    "name": "CDN picker includes automatic and HWO1 routes",
+    "status": "pass"
+  },
+  {
+    "name": "Remote HWO1 selection is saved",
+    "status": "pass"
+  },
+  {
+    "name": "HWO1 remains selected after reload",
+    "status": "pass"
+  },
+  {
+    "name": "Remote can restore automatic routing",
+    "status": "pass"
+  },
+  {
+    "name": "Controlled feed failure exposes remote retry",
+    "status": "pass"
+  },
+  {
+    "name": "Immediate retry puts remote focus on the first new card",
+    "status": "pass"
+  },
+  {
+    "name": "Remote navigation works immediately after retry",
+    "status": "pass"
+  },
+  {
+    "name": "热门 loads content",
+    "status": "pass"
+  },
+  {
+    "name": "分区(游戏) API and grid return content",
+    "status": "pass"
+  },
+  {
+    "name": "分区(动画) API and grid return content",
+    "status": "pass"
+  },
+  {
+    "name": "分区(音乐) API and grid return content",
+    "status": "pass"
+  },
+  {
+    "name": "分区(知识) API and grid return content",
+    "status": "pass"
+  },
+  {
+    "name": "分区(娱乐) API and grid return content",
+    "status": "pass"
+  },
+  {
+    "name": "分区(鬼畜) API and grid return content",
+    "status": "pass"
+  },
+  {
+    "name": "Watch Later writes skipped",
+    "status": "skip"
+  }
+]

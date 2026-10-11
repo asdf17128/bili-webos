@@ -1,0 +1,83 @@
+PASS player shelf separates progress, controls and recommendation tabs: layout-legacy scale=1
+PASS player shelf separates progress, controls and recommendation tabs: layout-legacy scale=1.4
+PASS player shelf separates progress, controls and recommendation tabs: layout-modern scale=1
+PASS player shelf separates progress, controls and recommendation tabs: layout-modern scale=1.4
+PASS auxiliary requests wait for real media data: frame-ready
+PASS auxiliary requests wait for real media data: frame-cancel
+PASS failed resume metadata is retried for subtitles after media data
+PASS startup overlaps independent requests and preserves resume: startup-overlap
+PASS startup overlaps independent requests and preserves resume: startup-part
+PASS unverified Dolby frame rate keeps the original base layer: dolby-120
+PASS unverified Dolby frame rate keeps the original base layer: dolby-unknown
+PASS comment rail renders one state and keeps controls unobscured
+PASS buffer exhaustion is visible and retried without skipping video
+PASS actual manifest and codec fallback: premium
+PASS actual manifest and codec fallback: premium-fallback
+PASS actual manifest and codec fallback: dolby
+PASS actual manifest and codec fallback: dolby-fallback
+PASS cancelled load stops retries and releases the player
+PASS leaving while video information is pending prevents later streaming
+PASS failed quality load restores original stream with explicit DASH MIME
+PASS network failure stops after two outer attempts instead of trying every quality
+PASS transient network failure can recover on the second attempt
+PASS actual danmaku and subtitle font sizes: small
+PASS actual danmaku and subtitle font sizes: normal
+PASS actual danmaku and subtitle font sizes: large
+PASS actual danmaku and subtitle font sizes: largest
+PASS startup report separates slow media readiness and stays visible when diagnostics APIs fail
+PASS diagnostics without a previous video explains how to obtain startup evidence
+PASS Luna requests time out, cancel their bridge and ignore late success
+29/29 passed
+PASS late-video lookup has bounded work
+PASS dense comments have a bounded number of animation layers
+PASS forward seek clears the old screen and backward seek replays
+PASS paused animations freeze and resume; hidden layer resets
+PASS translation retries preserve original indices and do not flash Chinese
+PASS font scales, animation cleanup and repeat render do not duplicate
+PASS legacy off stops home
+PASS repeat stays on current home
+PASS legacy off stops playlist
+PASS repeat stays on current playlist
+PASS legacy off stops watchlater
+PASS repeat stays on current watchlater
+PASS legacy off stops parts
+PASS repeat stays on current parts
+PASS legacy off stops season
+PASS repeat stays on current season
+PASS legacy off stops paged
+PASS repeat stays on current paged
+PASS next advances playlist
+PASS next advances watchlater
+PASS next advances parts
+PASS next advances season
+PASS next advances paged
+PASS next keeps related countdown
+PASS explicit stop overrides legacy on
+PASS repeat rejection stops with replay controls
+PASS watch later removal still occurs once while repeating
+PASS pending playlist respects leave
+PASS pending playlist respects stop
+PASS playlist request failure stops without related countdown
+PASS stop does not skip an unavailable playlist video
+PASS settings picker persists modes and cancels with Back
+26/26 passed
+PASS one request selects fast HLS without lowering saved quality
+PASS loading remains until actual playing event
+PASS unsupported fast HLS falls back to TS at the same quality
+PASS startup timeout cannot remain black indefinitely
+PASS decode fallback keeps the original quality preference
+PASS exit cancels a queued live retry
+PASS startup budget preserves every decoder quality rung
+PASS late stream response after exit cannot attach media
+PASS empty play info ends with retryable error
+9/9 live loading tests passed
+PASS selected CDN ordering, exhausted-buffer recovery, pause/seek/end and retry budget
+PASS real HTTP range probes: success, ignored/wrong/short Range, short body, valid EOF, stalled body timeout, cancellation
+PASS cached fastest route reaches actual media request without reloading
+PASS cold start stays immediate then spare-buffer probes improve later requests
+PASS pending load and low buffer do not trigger probes; pause enables them
+PASS manual CDN keeps priority and avoids automatic probes
+PASS all probe failures retain original media route
+PASS network reconnect invalidates stale cached winner
+PASS exit cancels in-flight probe without caching a failure
+7/7 passed

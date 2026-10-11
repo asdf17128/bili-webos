@@ -575,6 +575,14 @@ export async function getFollowings(vmid, pn, ps) {
   return apiFetch('/x/relation/followings', { vmid: vmid, pn: pn || 1, ps: ps || 50, order: 'desc' });
 }
 
+export function getUpRelation(mid) {
+  return apiFetch('/x/relation', { fid: mid });
+}
+
+export function setUpFollow(mid, follow) {
+  return biliWrite('/x/relation/modify', { fid: mid, act: follow ? 1 : 2, re_src: 11 });
+}
+
 // Latest released version from GitHub (direct fetch — github API sends CORS *,
 // so it doesn't need the B站 proxy, and no B站 cookies leak to github).
 export async function getLatestVersion() {

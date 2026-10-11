@@ -318,4 +318,20 @@ export default {
   "B站 风控拦截 · 先试试登录(设置 → 扫码登录);海外网络可在设置里换 CDN 线路": "Bloqueado por el control de riesgo · inicia sesión primero (Ajustes → código QR); en redes del extranjero cambia la ruta CDN",
   "去网络诊断": "Diagnóstico de red",
   "OK 打开网络诊断 · 返回键退出": "OK para el diagnóstico · Atrás para salir",
+
+  // Issue follow-up: recovery and creator follow actions.
+  "关注状态读取失败，请重试": "No se pudo consultar el seguimiento. Inténtalo de nuevo.",
+  "请先登录后关注 UP 主": "Inicia sesión para seguir a este creador",
+  "正在读取关注状态": "Consultando seguimiento…",
+  "已关注 UP 主": "Creador seguido",
+  "已取消关注": "Has dejado de seguirlo",
+  "关注操作失败，请重试": "No se pudo cambiar el seguimiento. Inténtalo de nuevo.",
+  "处理中…": "Procesando…",
+  "取消关注 UP 主": "Dejar de seguir",
+  "关注 UP 主": "Seguir al creador",
+  "重试播放": "Reintentar reproducción",
+  "正在等待网络恢复，也可按 OK 立即重试": "Esperando la conexión. Pulsa OK para reintentar.",
+  "自动重试已停止，按 OK 重试或返回退出": "Reintentos automáticos agotados. Pulsa OK o Atrás para salir.",
+  "B站 风控校验未通过 · 请先在官方客户端检查同一账号是否正常，再重试或提交网络诊断": "La verificación de Bilibili falló. Comprueba la cuenta en la app oficial y reintenta o comparte el diagnóstico.",
+  "B站 风控校验未通过 · 可先扫码登录后重试，仍失败请提交网络诊断": "La verificación de Bilibili falló. Inicia sesión con el código QR y reintenta. Si persiste, comparte el diagnóstico.",
 };

@@ -1,0 +1,30 @@
+[
+  {
+    "name": "TV surfaces injected resolver failure with a retry action",
+    "status": "pass"
+  },
+  {
+    "name": "TV automatic recovery decodes real media at the saved position",
+    "status": "pass"
+  },
+  {
+    "name": "TV recovered playback time continues moving",
+    "status": "pass"
+  },
+  {
+    "name": "TV reads real authenticated relationship API",
+    "status": "pass"
+  },
+  {
+    "name": "TV remote focuses the creator follow action",
+    "status": "pass"
+  },
+  {
+    "name": "TV follow failure is visible and real account writes are blocked",
+    "status": "pass"
+  },
+  {
+    "name": "TV follow state stays unchanged after rejection",
+    "status": "pass"
+  }
+]

@@ -9,6 +9,7 @@ import assert from 'node:assert/strict';
 import { tvPassphrase } from './_tvpass.mjs';
 import jsQR from 'jsqr';
 import { PNG } from 'pngjs';
+import { BUILD_VERSION } from '../app/src/version.js';
 
 const output = process.env.UX_OUTPUT || '/tmp/bili-issues-diagnostics';
 
@@ -124,8 +125,11 @@ try {
     check('TV QR retains selected route and last playback evidence', body.includes('route=ali') && /last: host=.+stalls=/.test(body));
     check('TV QR reports actual media readiness time', /startup=[1-9][0-9]*ms/.test(body));
     check('TV QR includes measured startup stages and media milestones', /startup ready.*engine=/.test(body) && /since-open:.*response=[0-9]+ms.*data=[0-9]+ms/.test(body) && /media: req=[1-9]/.test(body));
+    check('startup report separates CDN failures from Blob MIME probes', /net-retry=[1-9].*media\/http\/1001/.test(body) && !/manifest\/blob/.test(body), body.match(/net-retry=.*/)?.[0]);
+    check('first request host and completed audio/video appends are captured', /first-host: request=upos-sz-mirrorbad.bilivideo.com/.test(body) && /vappend=[0-9]+ms/.test(body) && /aappend=[0-9]+ms/.test(body) && /buffer:.*data=[0-9]+ms\/r[234]/.test(body));
+    check('test build is identified in QR', body.includes('app v' + BUILD_VERSION));
     check('startup timing is visible without scanning', /最近一次起播.*[0-9]+\.[0-9]+s/.test(reportText) && /首个媒体响应/.test(reportText));
-    writeFileSync(output+'/startup-report.txt',body.split('\n').filter(line=>/^(startup |since-open:|media:|format:|ua )/.test(line)).join('\n'));
+    writeFileSync(output+'/startup-report.txt',body.split('\n').filter(line=>/^(app |startup |since-open:|media:|dispatch:|first-host:|buffer:|net-retry=|format:|ua )/.test(line)).join('\n'));
     check('TV QR body is ASCII and contains no signed media URL', /^[\x00-\x7f]*$/.test(body) && !/upsig|SESSDATA|hdnts/i.test(body));
   } finally {
     await evaluate(originalSettings == null ? 'localStorage.removeItem("bili_settings")' : `localStorage.setItem('bili_settings',${JSON.stringify(originalSettings)})`);

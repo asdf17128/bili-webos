@@ -9,7 +9,7 @@ import { getAutoCdnStatus } from '../player/cdnAuto';
 import { getErrors } from '../utils/errlog';
 import { apiErrorHint } from '../utils/apiHint';
 import { storage } from '../utils/storage';
-import { APP_VERSION } from '../version';
+import { BUILD_VERSION } from '../version';
 import { t } from '../i18n';
 
 // 网络诊断 (#10/#13): one screen that tells us WHY the app fails on a TV we
@@ -217,7 +217,7 @@ export default function DiagPanel() {
       const ascii = s => String(s).replace(/[^\x20-\x7e]/g, '').trim();
       const KEY = { '后台服务': 'svc', 'API 连通': 'api', '推荐流(风控)': 'rcmd', '视频信息 view': 'view', '取流 playurl': 'playurl', '视频 CDN': 'cdn', 'CDN 测速': 'cdnspeed', '图片代理': 'imgproxy' };
       const lines = [];
-      lines.push('app v' + APP_VERSION);
+      lines.push('app v' + BUILD_VERSION);
       lines.push('route=' + ascii(route));
       const last = lastPlayback;
       if (last) lines.push('last: host=' + ascii(last.host) + ' route=' + ascii(last.route) + ' buffer=' + last.buffer + 's startup=' + (last.startupMs == null ? '?' : last.startupMs + 'ms') + ' stalls=' + last.stalls + ' retries=' + last.retries + ' age=' + Math.round((Date.now() - last.at) / 1000) + 's');
@@ -236,7 +236,7 @@ export default function DiagPanel() {
         .concat(getErrors().slice(-5).map(e => 'A:' + ascii(e.tag) + ' ' + ascii(e.d).slice(0, 60)));
       lines.push(...Array.from(new Set(recent)).slice(-4));
       const body = lines.join('\n');
-      const url = REPO_ISSUE_URL + '?title=' + encodeURIComponent('[diag] v' + APP_VERSION) +
+      const url = REPO_ISSUE_URL + '?title=' + encodeURIComponent('[diag] v' + BUILD_VERSION) +
         '&body=' + encodeURIComponent(body).replace(/%20/g, '+');
       if (!dead) setReportUrl(url);
     })();

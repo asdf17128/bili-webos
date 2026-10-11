@@ -1,0 +1,39 @@
+{
+  "recovery-before": {
+    "fail": 2,
+    "pass": 1
+  },
+  "recovery-after": {
+    "pass": 5
+  },
+  "ux": {
+    "pass": 66
+  },
+  "loading": {
+    "pass": 34
+  },
+  "tv-recovery-follow": {
+    "pass": 7
+  },
+  "tv-full": {
+    "pass": 53,
+    "skip": 3
+  },
+  "tv-navigation-first-attempt": {
+    "pass": 11,
+    "fail": 2
+  },
+  "tv-navigation-recheck": {
+    "pass": 31
+  },
+  "tv-playback-end": {
+    "pass": 13
+  },
+  "tv-cdn": {
+    "pass": 16
+  },
+  "simulator": {
+    "pass": 54,
+    "skip": 3
+  }
+}

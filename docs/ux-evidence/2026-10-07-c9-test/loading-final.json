@@ -1,0 +1,118 @@
+[
+  {
+    "name": "player shelf separates progress, controls and recommendation tabs: layout-legacy scale=1",
+    "pass": true
+  },
+  {
+    "name": "player shelf separates progress, controls and recommendation tabs: layout-legacy scale=1.4",
+    "pass": true
+  },
+  {
+    "name": "player shelf separates progress, controls and recommendation tabs: layout-modern scale=1",
+    "pass": true
+  },
+  {
+    "name": "player shelf separates progress, controls and recommendation tabs: layout-modern scale=1.4",
+    "pass": true
+  },
+  {
+    "name": "auxiliary requests wait for real media data: frame-ready",
+    "pass": true
+  },
+  {
+    "name": "auxiliary requests wait for real media data: frame-cancel",
+    "pass": true
+  },
+  {
+    "name": "failed resume metadata is retried for subtitles after media data",
+    "pass": true
+  },
+  {
+    "name": "startup overlaps independent requests and preserves resume: startup-overlap",
+    "pass": true
+  },
+  {
+    "name": "startup overlaps independent requests and preserves resume: startup-part",
+    "pass": true
+  },
+  {
+    "name": "unverified Dolby frame rate keeps the original base layer: dolby-120",
+    "pass": true
+  },
+  {
+    "name": "unverified Dolby frame rate keeps the original base layer: dolby-unknown",
+    "pass": true
+  },
+  {
+    "name": "comment rail renders one state and keeps controls unobscured",
+    "pass": true
+  },
+  {
+    "name": "buffer exhaustion is visible and retried without skipping video",
+    "pass": true
+  },
+  {
+    "name": "actual manifest and codec fallback: premium",
+    "pass": true
+  },
+  {
+    "name": "actual manifest and codec fallback: premium-fallback",
+    "pass": true
+  },
+  {
+    "name": "actual manifest and codec fallback: dolby",
+    "pass": true
+  },
+  {
+    "name": "actual manifest and codec fallback: dolby-fallback",
+    "pass": true
+  },
+  {
+    "name": "cancelled load stops retries and releases the player",
+    "pass": true
+  },
+  {
+    "name": "leaving while video information is pending prevents later streaming",
+    "pass": true
+  },
+  {
+    "name": "failed quality load restores original stream with explicit DASH MIME",
+    "pass": true
+  },
+  {
+    "name": "network failure stops after two outer attempts instead of trying every quality",
+    "pass": true
+  },
+  {
+    "name": "transient network failure can recover on the second attempt",
+    "pass": true
+  },
+  {
+    "name": "actual danmaku and subtitle font sizes: small",
+    "pass": true
+  },
+  {
+    "name": "actual danmaku and subtitle font sizes: normal",
+    "pass": true
+  },
+  {
+    "name": "actual danmaku and subtitle font sizes: large",
+    "pass": true
+  },
+  {
+    "name": "actual danmaku and subtitle font sizes: largest",
+    "pass": true
+  },
+  {
+    "name": "startup report separates slow media readiness and stays visible when diagnostics APIs fail",
+    "pass": true
+  },
+  {
+    "name": "diagnostics without a previous video explains how to obtain startup evidence",
+    "pass": true
+  },
+  {
+    "name": "Luna requests time out, cancel their bridge and ignore late success",
+    "pass": true
+  }
+]

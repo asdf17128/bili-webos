@@ -142,3 +142,26 @@ bash tools/verify.sh --full   # 额外跑真机 UI smoke(test-ui.mjs,~3分钟)
 - 高推荐列表放进限高的纵向 flex 容器，会把 6px 进度条压成 0px。正对照需包含真实按钮数量、多行推荐、长标题和大字号，同时检查进度条高度、各行边界与返回按钮后的可见焦点。垂直内容可用普通流与显式 margin，避免旧引擎的 flex 压缩和 gap 缺失；强制旧 CSS 的现代浏览器测试仍不是 Chromium 53 整机验证。
 - 起播阶段从请求发出时计时，不能等并发任务被 await 时才起表；并行时长不可相加。Shaka load、首个分片响应、loadedmetadata、loadeddata、playing 分开记录，loadeddata 不是逐帧上屏测量。未知值用缺失标记；取消/失败保留部分数据，退出后的迟到任务不能覆盖下一条视频。
 - Vite HMR 给模块 URL 添加时间戳。测试直接 import 无时间戳路径会得到另一份模块内存，误把真实播放报告读成 null；读取实际已加载的 resource URL 或从产品 UI 观察，不能以重复模块的空状态判产品失败。
+
+## 2026-10-07：Blob DASH 的隐式 MIME 探测
+
+- 真实 Shaka 4.16.24 对无扩展名 Blob 的 `load(url)` 会 HEAD 探测 MIME；Chromium Blob HEAD 返回 HTTP_ERROR，4 次失败后改 GET。Blob 自带 type 不等于播放器知道格式，生成 DASH 时给 `load` 第三个参数 `application/dash+xml`，并覆盖画质回滚入口。
+- `tools/test-manifest-mime.mjs` 用真实网络栈、相同空 MPD 的同一终止解析错误作正对照，仅证明多余探测；不能将测试耗时当电视出画面提速。Shaka retry 事件包含清单与媒体，错误 data 布局按 code 不同；报告需分类，不能把全部次数标为媒体/CDN失败。
+- 第一条媒体响应可能是 SegmentBase 索引；公共 segmentappended 才表示媒体写入完成，但仍不等于画面上屏。记录首个节点，不能用后台测速后的最后节点推断起播选路。
+
+
+## 2026-10-11：恢复与关注测试
+
+- 本机回环就绪探针须绕过代理并要求 HTTP 成功。`curl -s` 收到代理 502 仍退出 0，会把未启动服务当成正常；使用 `--noproxy '*' -f`，不要把连锁失败当产品回归。
+- 恢复测试要保留原 cid/位置，覆盖 DNS 恢复但没有 online 事件、长期断网预算耗尽和退出取消。只把加载改成重试按钮不足以证明恢复。
+- 真机合成 mouseenter 不保证触发 React onMouseEnter；本次测试已改用 CDP 遥控方向键逐项选择，并验证实际 focused 控件再按 OK。
+- 关注等写入须明确区分隔离 API 成功路径、真实关系读取和真机拒绝路径。菜单关闭后服务器才确认成功，仍应更新同账号的全局缓存；不能向已切换账号的缓存回写。
+
+
+## 2026-10-11：请求总超时与快进时序
+
+- Node ClientRequest.setTimeout 依赖已分配 socket；真实 http.request 的未完成 lookup 与满 Agent 队列需要独立的响应头总期限。正对照让 lookup 不完成，旧 socket timeout 不触发；新期限保证恰好一次错误回调并销毁请求。收到 headers 后清除总期限，保留流的空闲超时；正常完成后的 close 不能再销毁已归还连接池的请求 socket。真实 Node 0.12/8 都要测排队路径。
+- 快进取消必须记录电视上的 keydown 到达时间及原生 seeking 事件。即便同一 CDP 会话，按键之间的任意状态查询/固定等待也可能超过 1s 自动提交窗口；减少控制回合，在输入之后读完整记录。分别覆盖 <1s Back 取消、OK 立即提交和 >1s Back 前已自动提交，不能用更宽的进度容差隐藏误提交。此前无时序记录的失败不能事后断言原因已证明。
+- 长时间网络验证将连续实际播放与定时 API 读取分开记录，并检查服务 uptime 单调增加，防止后台重启掩盖故障。单次 25 分钟成功不等于复现并修复所有 DNS/路由器故障。
+
+- 长播中的单个 socket hang up 不能归类为全网断线：同步记录主站、直播、更新源、实际解码和 service uptime。读取请求仅在 headers 前的连接重置/EPIPE 允许一次新连接重试，沿用原总期限；必须覆盖 POST 不重发、部分响应不重发、取消重试和旧 Node 运行时。保留抓到真实失败的耐久记录，改后重新完整计时，不能跳过失败样本。

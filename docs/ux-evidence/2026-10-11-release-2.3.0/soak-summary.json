@@ -1,0 +1,15 @@
+{
+  "durationMs": 1505141,
+  "checksPassed": 27,
+  "checksFailed": 0,
+  "apiChecks": 78,
+  "apiChecksPassed": 78,
+  "readRetriesRecovered": 2,
+  "newFinalRequestErrors": 0,
+  "dnsErrors": 0,
+  "serviceRestarted": false,
+  "naturalEnds": 1,
+  "settingsRestored": true,
+  "baselineRequestErrors": 1,
+  "baselineError": "CDN header timeout before the endurance run; playback fallback succeeded."
+}

@@ -1,0 +1,66 @@
+[
+  {
+    "name": "unreachable primary CDN falls back and starts actual playback",
+    "status": "pass"
+  },
+  {
+    "name": "unreachable primary CDN is banned",
+    "status": "pass"
+  },
+  {
+    "name": "automatic routing measures real candidate ranges",
+    "status": "pass"
+  },
+  {
+    "name": "automatic selection points to a measured healthy route",
+    "status": "pass"
+  },
+  {
+    "name": "CDN health persists without media URLs or credentials",
+    "status": "pass"
+  },
+  {
+    "name": "selected route delivers actual media and playback continues",
+    "status": "pass"
+  },
+  {
+    "name": "diagnostics measure the selected Ali route",
+    "status": "pass"
+  },
+  {
+    "name": "diagnostics report single and concurrent throughput",
+    "status": "pass"
+  },
+  {
+    "name": "TV QR retains selected route and last playback evidence",
+    "status": "pass"
+  },
+  {
+    "name": "TV QR reports actual media readiness time",
+    "status": "pass"
+  },
+  {
+    "name": "TV QR includes measured startup stages and media milestones",
+    "status": "pass"
+  },
+  {
+    "name": "startup report separates CDN failures from Blob MIME probes",
+    "status": "pass"
+  },
+  {
+    "name": "first request host and completed audio/video appends are captured",
+    "status": "pass"
+  },
+  {
+    "name": "test build is identified in QR",
+    "status": "pass"
+  },
+  {
+    "name": "startup timing is visible without scanning",
+    "status": "pass"
+  },
+  {
+    "name": "TV QR body is ASCII and contains no signed media URL",
+    "status": "pass"
+  }
+]

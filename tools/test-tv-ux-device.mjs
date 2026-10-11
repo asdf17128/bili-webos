@@ -50,10 +50,10 @@ try {
     if (result.exceptionDetails) throw new Error(result.exceptionDetails.text);
     return result.result?.value;
   };
-  const key = async name => {
+  const key = async (name, settleMs = 280) => {
     const vk = { ArrowUp: 38, ArrowDown: 40, ArrowLeft: 37, ArrowRight: 39, Enter: 13, GoBack: 461 }[name];
     for (const type of ['keyDown', 'keyUp']) await call('Input.dispatchKeyEvent', { type, key: name, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk });
-    await sleep(280);
+    if (settleMs) await sleep(settleMs);
   };
   const state = () => evaluate(`(() => {
     const grid = document.querySelector('.video-grid');
@@ -116,10 +116,23 @@ try {
     check('OK resumes actual playback', true);
     const seekOrigin = (await state()).video.t;
     const seekKey = seekOrigin > 20 ? 'ArrowLeft' : 'ArrowRight';
-    await key(seekKey);
-    check('scrub keeps playback near the original position before confirmation', Math.abs((await state()).video.t - seekOrigin) < 3);
-    await key('GoBack');
-    check('Back cancels pending scrub without leaving playback', Math.abs((await state()).video.t - seekOrigin) < 4);
+    // Observe on the TV itself. A state round trip between keys can consume
+    // the whole 1s auto-commit window; a late Back is no longer cancellation.
+    await evaluate(`(() => {
+      window.__scrubCheck=[];
+      window.__scrubInput=e=>window.__scrubCheck.push({key:e.key,at:performance.now(),t:document.querySelector('video')?.currentTime});
+      document.addEventListener('keydown',window.__scrubInput,true);
+    })()`);
+    await key(seekKey, 0);
+    await key('GoBack', 0);
+    const scrub = await evaluate(`(() => {
+      document.removeEventListener('keydown',window.__scrubInput,true);
+      const events=window.__scrubCheck;delete window.__scrubInput;delete window.__scrubCheck;
+      return {events,t:document.querySelector('video')?.currentTime};
+    })()`);
+    const scrubStart=scrub.events.find(e=>e.key===seekKey), scrubBack=scrub.events.find(e=>e.key==='GoBack');
+    check('scrub keeps playback near the original position before confirmation', scrubBack && Math.abs(scrubBack.t-seekOrigin)<3, JSON.stringify(scrub));
+    check('Back cancels pending scrub without leaving playback', scrubStart && scrubBack && scrubBack.at-scrubStart.at<1000 && Math.abs(scrub.t-seekOrigin)<4, JSON.stringify(scrub));
     const commitOrigin = (await state()).video.t;
     await key(seekKey); await key('Enter'); await sleep(1000);
     const committed = (await state()).video.t;

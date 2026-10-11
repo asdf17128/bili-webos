@@ -17,6 +17,13 @@ import { createHash } from 'crypto';
 
 const TAG = process.argv[2];
 const CHECK_ONLY = TAG === '--check';
+const TEST_ONLY = process.argv.includes('--test');
+// Isolated test distribution never writes stable-channel metadata.
+if (TEST_ONLY) {
+  const { distributeTestBuild } = await import('./test-package.mjs');
+  await distributeTestBuild(TAG, process.argv.slice(3));
+  process.exit(0);
+}
 if (!CHECK_ONLY && !/^v\d+\.\d+\.\d+$/.test(TAG || '')) {
   console.error('用法: node tools/release.mjs v1.7.1 [--notes-file notes.md]');
   console.error('     node tools/release.mjs --check     # 只体检线上,不发版');
@@ -55,6 +62,10 @@ if (CHECK_ONLY) {
   if (problems.length) { console.error('❌ ' + problems.join(' · ')); process.exit(1); }
   console.log(`✅ 线上体检通过:latest = ${v} · manifest ${m.version} · ipk 可下载`);
   process.exit(0);
+}
+
+if (/TEST_BUILD = '[^']+'/.test(readFileSync('app/src/version.js', 'utf8'))) {
+  throw new Error('Test build cannot be published to the stable channel; use --test.');
 }
 
 // 1. 版本号一致性:appinfo / version.js / tag 三处必须相同

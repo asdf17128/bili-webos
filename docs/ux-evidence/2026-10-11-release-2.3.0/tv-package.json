@@ -1,0 +1,26 @@
+{
+  "installedVersion": "2.3.0",
+  "uploadedPackageSha256": "c75d3bbf4c7add9d4a6d6d24e8e86896bf232408786061aa5393ecedaeb10222",
+  "files": [
+    {
+      "name": "service.js",
+      "sha256": "bcd34ed415509a70439899bd91d7f9e4ef43cb7a34b5415171ec27bdebf2b2c8",
+      "matchesSource": true
+    },
+    {
+      "name": "requestDeadline.js",
+      "sha256": "97721e9425df247bd4bf13223889ce09d5b2172cdb4e799791fd8a7797d2e6cd",
+      "matchesSource": true
+    },
+    {
+      "name": "upstreamRequest.js",
+      "sha256": "d18f9859f82d05e9fe129870e9117db37d768e6394cb47267bc7e9394a78e2a7",
+      "matchesSource": true
+    },
+    {
+      "name": "wsLegacyLimits.js",
+      "sha256": "590759b69d296dd394f0ff14f209cba2fdf8a8c37eb51b9264534a663ba53648",
+      "matchesSource": true
+    }
+  ]
+}

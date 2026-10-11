@@ -1,0 +1,55 @@
+[
+  {
+    "explicit": false,
+    "requests": [
+      {
+        "type": 0,
+        "method": "HEAD",
+        "scheme": "blob"
+      },
+      {
+        "type": 0,
+        "method": "GET",
+        "scheme": "blob"
+      },
+      {
+        "type": 0,
+        "method": "GET",
+        "scheme": "blob"
+      }
+    ],
+    "retries": [
+      {
+        "code": 1002,
+        "scheme": "blob"
+      },
+      {
+        "code": 1002,
+        "scheme": "blob"
+      },
+      {
+        "code": 1002,
+        "scheme": "blob"
+      },
+      {
+        "code": 1002,
+        "scheme": "blob"
+      }
+    ],
+    "error": 4004,
+    "ms": 483
+  },
+  {
+    "explicit": true,
+    "requests": [
+      {
+        "type": 0,
+        "method": "GET",
+        "scheme": "blob"
+      }
+    ],
+    "retries": [],
+    "error": 4004,
+    "ms": 2
+  }
+]

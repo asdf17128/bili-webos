@@ -14,6 +14,7 @@ var path = require('path');
 var os = require('os');
 var childProcess = require('child_process');
 var biliReferer = require('./biliReferer');
+var upstreamRequest = require('./upstreamRequest');
 // The WHATWG URL GLOBAL only exists on Node 10+. webOS 5 runs Node 8, where
 // every `new URL(...)` threw ReferenceError — caught by the surrounding
 // try/catch and turned into "Invalid URL"/400 for EVERY api/proxy call. That
@@ -201,10 +202,8 @@ function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity,
     agent: keepAliveAgent
   };
 
-  var done = false;
-  var req = https.request(options, function (res) {
-    if (done) return;
-    done = true;
+  return upstreamRequest(https.request.bind(https), options, body, function (err, res) {
+    if (err) { logSvcErr('req:' + hostname, err.message); callback(err); return; }
     // 上游响应流出错(节点中途掐断)只记日志;调用方通过 pipe 的 close 处理。
     res.on('error', function (e) {
       if (!res.clientCancelled) logSvcErr('res:' + hostname, e && e.message);
@@ -221,19 +220,7 @@ function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity,
       saveCookies();
     }
     callback(null, res);
-  });
-
-  // Without a timeout a stuck CDN socket hangs forever and the segment never
-  // returns, freezing playback permanently. Bail out so the caller can fail
-  // the request and Shaka can retry.
-  req.setTimeout(10000, function () { req.destroy(new Error('Upstream timeout')); });
-  req.on('error', function (err) {
-    if (done) return; done = true;
-    logSvcErr('req:' + hostname, err.message);
-    callback(err);
-  });
-  if (body) req.write(body);
-  req.end();
+  }, 10000, function (err) { logSvcErr('retry:' + hostname, err.message); });
 }
 
 // API response reader handles successful completion and truncated bodies.
@@ -565,7 +552,7 @@ var localServer = http.createServer(function (req, res) {
     return;
   }
 
-  makeRequest(parsed, req.method, null, null, req.headers['range'], true, function (err, proxyRes) {
+  var upstream = makeRequest(parsed, req.method, null, null, req.headers['range'], true, function (err, proxyRes) {
     if (err) {
       logSvcErr('proxy:' + hostname, err.message);
       // 带 CORS 头:没有它页面看到的是 CORS 错而不是 502,Shaka 分不清是
@@ -608,6 +595,9 @@ var localServer = http.createServer(function (req, res) {
     proxyRes.on('error', function () { res.destroy(); });
     res.on('close', function () { proxyRes.clientCancelled = true; proxyRes.destroy(); });
   });
+  // Close before upstream headers (e.g. cancelled range probe) must also free
+  // its DNS/connection-pool slot, not wait for a response that may never come.
+  res.on('close', function () { upstream.cancel(); });
 });
 
 localServer.on('clientError', function (err, socket) {

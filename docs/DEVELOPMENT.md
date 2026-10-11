@@ -163,7 +163,7 @@ release 必须挂**三件**资产,少一件都会静默出事:
 
 `node tools/release.mjs v2.2.3-c9-test.1 --test --notes-file docs/C9-TEST.md` 仅供已授权的测试分发。`--dry-run` 输出计划；真正分发要求独立分支已提交并推送、tag 与 `TEST_BUILD` 一致、当前 latest 仍是对应基础版。新建不可覆盖的 prerelease，显式 `latest=false`，只上传带测试标记的 IPK 和 SHA256，不上传稳定版 metadata。上传后匿名下载校验 IPK，并比较操作前后稳定版 tag / version.json / Homebrew manifest 的哈希。包含非空 `TEST_BUILD` 的代码禁止走正式发布入口。
 
-webOS 安装版本保持 2.2.3，设置/诊断显示 `2.2.3 c9-test.1`；同版本覆盖与回滚由真机安装验证。测试分支未合并，待 C9 回传再决定正式版。
+webOS 安装版本保持 2.2.3，设置/诊断显示 `2.2.3 c9-test.1`；同版本覆盖与回滚由真机安装验证。该测试分支随后收到 C9 回传，改动已整合进 v2.3.0；保留此节作为测试包分发流程。
 
 `tools/test-manifest-mime.mjs` 使用真实 Shaka 4.16.24 和 Chromium Blob 网络栈，固定空 MPD 使两组都到达同一个解析错误；对照无 MIME 的 4 次 HEAD 失败与显式 DASH 的零次重试。它证明网络路径，不测视频解码或 C9 性能。已加入 `verify.sh --ux`；PlayerPage 的失败恢复路径另由加载回归测试覆盖。
 
@@ -177,3 +177,14 @@ webOS 安装版本保持 2.2.3，设置/诊断显示 `2.2.3 c9-test.1`；同版�
 - `node tools/test-recovery-follow-tv.mjs`：Luna 回调注入临时解析失败，恢复后使用真实取流/解码；真实关系 API 读取，关注写入在请求发出前拦截并模拟拒绝。不会修改真实关注列表；结束恢复包装器和设置。后者不计为服务器关注写入验收。
 - `wsLegacyLimits.test.js`：旧接收器 4100 个空分片的正对照、单次 socket chunk 中的过多分片、队列上限及正常多消息；Node 0.12/8 管线也执行真实旧接收器限额检查。服务 v7 已含 CVE-2026-48779 上游补丁；遗留 v1.1.5 保留版本以支持 0.12，使用本地限额保护而非声称升级到上游修补版。
 - 本地服务就绪探针用 `curl -fsS --noproxy '*'`。本机代理返回 HTTP 502 时，原来的 `curl -s` 仍退出 0，导致模拟套件跳过启动桥接服务；HTTP 错误不能算就绪。
+
+
+### v2.3.0：请求期限与发布耐久验证
+
+`service/com.biliwebos.app.service/requestDeadline.js`在 socket 超时外覆盖 DNS/Agent 排队/响应头等待，保持 ES5。`requestDeadline.test.js` 含真实 HTTP lookup/连接池正对照；`test-node8/run8.js` 在 0.12.2/8.17.0 上执行真实排队测试。请求头收到后由调用方管理响应流，普通响应完成不破坏池中连接。
+
+`tools/test-scrub-tv.mjs` 使用 CDP 受信键、页内时间戳与原生 seeking 记录，三轮检查短延迟取消、OK 提交、迟到 Back。`test-tv-ux-device.mjs` 取消操作的两次按键之间不再插入状态读取。
+
+`tools/test-network-soak-tv.mjs` 临时设循环、实际播放 25 分钟，每分钟并行检查 B 站 API、直播 API 与 GitHub 更新请求，记录视频尺寸/进度/最长停滞和服务 uptime；原设置最终恢复。结果只保留状态、耗时与计数，不保存认证、账号信息或媒体地址。正常耐久运行不能代替 DNS 故障复现。每次完整耐久会主动下载 26 次 `version.json`，这些下载是测试流量，不应计作真实日活；失败的运行也会产生部分下载。
+
+`upstreamRequest.js` 仅对无体 GET/HEAD 在响应头前的 ECONNRESET/EPIPE 换新连接重试一次，与第一次请求共用总期限。单元测试用真实 HTTP 对端断连验证；POST、HTTP 错误、部分响应不能重发，取消句柄必须跟随当前尝试。旧运行时门禁包含断连→新连接成功。

@@ -123,6 +123,9 @@ try {
     check('TV follow failure is visible and real account writes are blocked',true);
     check('TV follow state stays unchanged after rejection',await evaluate(`Array.from(document.querySelectorAll('.player-control')).find(x=>x.textContent.includes('关注 UP 主')).textContent.includes('取消')===${(relation.attribute&2)!==0}`));
     await capture('tv-follow-rejected');
+    await evaluate("window.__openVideo({bvid:'BV1xx411c7Xg',resumeMode:'at',progress:73})");
+    await wait("document.querySelector('video')?.currentTime>73.5 && document.querySelector('video')?.currentTime<80 && document.querySelector('video')?.readyState>=2",30000);
+    check('TV new play intent replaces the recovered position',true);
   } finally {
     await evaluate(`window.__restoreFollowTest?.();delete window.__restoreFollowTest;delete window.__followTest;`);
     await evaluate(originalSettings == null ? 'localStorage.removeItem("bili_settings")' : `localStorage.setItem('bili_settings',${JSON.stringify(originalSettings)})`);

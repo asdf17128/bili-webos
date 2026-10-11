@@ -1,0 +1,37 @@
+{
+  "commands": [
+    {
+      "command": "verify.sh --full --ux",
+      "exitCode": 0,
+      "note": "Before final service-only fresh-connection retry; app source unchanged afterwards."
+    },
+    {
+      "command": "verify.sh --full",
+      "exitCode": 0,
+      "note": "Final service source, packaged and deployed."
+    }
+  ],
+  "ux": {
+    "passed": 66,
+    "failed": 0
+  },
+  "loading": {
+    "passed": 35,
+    "failed": 0
+  },
+  "service": {
+    "passed": 41,
+    "failed": 0
+  },
+  "nodeRuntimes": [
+    "0.12.2",
+    "8.17.0"
+  ],
+  "legacySyntax": "ES5",
+  "productionSyntax": "ES2016",
+  "i18nKeysPerLocale": 275,
+  "danmaku": 6,
+  "playbackEnd": 26,
+  "live": 9,
+  "cdnReact": 7
+}

@@ -1,0 +1,266 @@
+[
+  {
+    "name": "creator follow completes after menu closes",
+    "status": "pass"
+  },
+  {
+    "name": "creator follow menu: success",
+    "status": "pass"
+  },
+  {
+    "name": "creator follow menu: failure",
+    "status": "pass"
+  },
+  {
+    "name": "creator follow menu: read-failure",
+    "status": "pass"
+  },
+  {
+    "name": "creator follow menu: guest",
+    "status": "pass"
+  },
+  {
+    "name": "long-press menu requires release then a new confirmation and can reopen",
+    "status": "pass"
+  },
+  {
+    "name": "loading retains a usable sidebar focus",
+    "status": "pass"
+  },
+  {
+    "name": "pointer hover does not scroll the grid",
+    "status": "pass"
+  },
+  {
+    "name": "wheel still moves a row that the pointer already highlights",
+    "status": "pass"
+  },
+  {
+    "name": "sidebar keeps scroll; Right restores the same card",
+    "status": "pass"
+  },
+  {
+    "name": "OK intentionally refreshes the current sidebar section",
+    "status": "pass"
+  },
+  {
+    "name": "passing follow in sidebar never opens login",
+    "status": "pass"
+  },
+  {
+    "name": "native search editing keeps Backspace and caret arrows",
+    "status": "pass"
+  },
+  {
+    "name": "feed failure offers a focusable retry",
+    "status": "pass"
+  },
+  {
+    "name": "retry recovers a failed feed",
+    "status": "pass"
+  },
+  {
+    "name": "remote retry restores first card (immediate response)",
+    "status": "pass"
+  },
+  {
+    "name": "remote retry restores first card (0ms response)",
+    "status": "pass"
+  },
+  {
+    "name": "remote retry restores first card (300ms response)",
+    "status": "pass"
+  },
+  {
+    "name": "retry does not steal focus after the user returns to sidebar",
+    "status": "pass"
+  },
+  {
+    "name": "immediate short-feed retry remains navigable with resume shelf and prefetch",
+    "status": "pass"
+  },
+  {
+    "name": "failed retry remains reachable and a later retry recovers",
+    "status": "pass"
+  },
+  {
+    "name": "rapid sidebar traversal commits only the settled section",
+    "status": "pass"
+  },
+  {
+    "name": "switching sections restores the cached feed and scroll",
+    "status": "pass"
+  },
+  {
+    "name": "slow content never steals focus after navigating away",
+    "status": "pass"
+  },
+  {
+    "name": "latest search wins even if an older response arrives last",
+    "status": "pass"
+  },
+  {
+    "name": "search network failures have their own retry state",
+    "status": "pass"
+  },
+  {
+    "name": "login isolates navigation and provides retry / cancel",
+    "status": "pass"
+  },
+  {
+    "name": "favorites empty response resolves loading",
+    "status": "pass"
+  },
+  {
+    "name": "favorites failures can be retried",
+    "status": "pass"
+  },
+  {
+    "name": "favorites return to the selected folder and fit the viewport",
+    "status": "pass"
+  },
+  {
+    "name": "late favorite-folder responses never replace the current folder",
+    "status": "pass"
+  },
+  {
+    "name": "favorites last row accounts for the folder header height",
+    "status": "pass"
+  },
+  {
+    "name": "subscriptions show folders and collections, paginate and keep remote focus",
+    "status": "pass"
+  },
+  {
+    "name": "empty subscriptions stop loading and keep tabs reachable",
+    "status": "pass"
+  },
+  {
+    "name": "subscription request failure exposes retry and preserves the mode",
+    "status": "pass"
+  },
+  {
+    "name": "loading player can be cancelled without moving background focus",
+    "status": "pass"
+  },
+  {
+    "name": "visual / deep scrolling / large text (zh)",
+    "status": "pass"
+  },
+  {
+    "name": "visual / deep scrolling / large text (en)",
+    "status": "pass"
+  },
+  {
+    "name": "visual / deep scrolling / large text (es)",
+    "status": "pass"
+  },
+  {
+    "name": "design: drawer overlays without shifting content or losing the card",
+    "status": "pass"
+  },
+  {
+    "name": "design: reopening navigation keeps the bottom item visible",
+    "status": "pass"
+  },
+  {
+    "name": "design: resume shelf uses unfinished history and supports remote navigation",
+    "status": "pass"
+  },
+  {
+    "name": "design: resume and a two-column large-text feed share a safe viewport",
+    "status": "pass"
+  },
+  {
+    "name": "design: late history preserves a deep card position",
+    "status": "pass"
+  },
+  {
+    "name": "design: history failure leaves discovery usable",
+    "status": "pass"
+  },
+  {
+    "name": "design: search has connected trending and recent columns",
+    "status": "pass"
+  },
+  {
+    "name": "late title height changes keep a deep focused card in place",
+    "status": "pass"
+  },
+  {
+    "name": "design: mixed title lengths keep card and resume metadata aligned",
+    "status": "pass"
+  },
+  {
+    "name": "design: card metadata stays inside compact cards",
+    "status": "pass"
+  },
+  {
+    "name": "design: settings remain readable with large text (zh)",
+    "status": "pass"
+  },
+  {
+    "name": "design: settings remain readable with large text (en)",
+    "status": "pass"
+  },
+  {
+    "name": "design: settings remain readable with large text (es)",
+    "status": "pass"
+  },
+  {
+    "name": "leaving search preserves the next page first focus cell",
+    "status": "pass"
+  },
+  {
+    "name": "settings font rows follow visual order in both directions",
+    "status": "pass"
+  },
+  {
+    "name": "font pickers update their own setting and resume at the same row",
+    "status": "pass"
+  },
+  {
+    "name": "library native scrolling keeps the last large card visible",
+    "status": "pass"
+  },
+  {
+    "name": "settings matrix: 2 columns, scale 1, applies and persists",
+    "status": "pass"
+  },
+  {
+    "name": "settings matrix: 2 columns, scale 1.12, applies and persists",
+    "status": "pass"
+  },
+  {
+    "name": "settings matrix: 2 columns, scale 1.25, applies and persists",
+    "status": "pass"
+  },
+  {
+    "name": "settings matrix: 3 columns, scale 1, applies and persists",
+    "status": "pass"
+  },
+  {
+    "name": "settings matrix: 3 columns, scale 1.12, applies and persists",
+    "status": "pass"
+  },
+  {
+    "name": "settings matrix: 3 columns, scale 1.25, applies and persists",
+    "status": "pass"
+  },
+  {
+    "name": "settings matrix: 4 columns, scale 1, applies and persists",
+    "status": "pass"
+  },
+  {
+    "name": "settings matrix: 4 columns, scale 1.12, applies and persists",
+    "status": "pass"
+  },
+  {
+    "name": "settings matrix: 4 columns, scale 1.25, applies and persists",
+    "status": "pass"
+  },
+  {
+    "name": "diagnostic network failures finish visibly and remain scannable",
+    "status": "pass"
+  }
+]

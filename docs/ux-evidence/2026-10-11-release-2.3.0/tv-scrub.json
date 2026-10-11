@@ -1,0 +1,308 @@
+[
+  {
+    "name": "cancel before deadline 0/200",
+    "pass": true,
+    "detail": {
+      "gap": 279.4000000022352,
+      "trace": [
+        {
+          "event": "ArrowRight",
+          "at": 5350.5,
+          "t": 30
+        },
+        {
+          "event": "GoBack",
+          "at": 5629.900000002235,
+          "t": 30.25
+        }
+      ]
+    }
+  },
+  {
+    "name": "player remains open 0/cancel/200",
+    "pass": true
+  },
+  {
+    "name": "cancel before deadline 0/600",
+    "pass": true,
+    "detail": {
+      "gap": 651.2000000029802,
+      "trace": [
+        {
+          "event": "ArrowRight",
+          "at": 8143.5,
+          "t": 30
+        },
+        {
+          "event": "GoBack",
+          "at": 8794.70000000298,
+          "t": 30.35
+        }
+      ]
+    }
+  },
+  {
+    "name": "player remains open 0/cancel/600",
+    "pass": true
+  },
+  {
+    "name": "OK commits preview 0",
+    "pass": true,
+    "detail": {
+      "gap": 284.4000000022352,
+      "trace": [
+        {
+          "event": "ArrowRight",
+          "at": 11346.800000000745,
+          "t": 30
+        },
+        {
+          "event": "Enter",
+          "at": 11631.20000000298,
+          "t": 30.05
+        },
+        {
+          "event": "seeking",
+          "at": 11638.300000000745,
+          "t": 40
+        }
+      ]
+    }
+  },
+  {
+    "name": "player remains open 0/commit/200",
+    "pass": true
+  },
+  {
+    "name": "late Back follows automatic commit 0",
+    "pass": true,
+    "detail": {
+      "gap": 1422.1000000014901,
+      "trace": [
+        {
+          "event": "ArrowRight",
+          "at": 14136.800000000745,
+          "t": 30
+        },
+        {
+          "event": "seeking",
+          "at": 15143.800000000745,
+          "t": 40
+        },
+        {
+          "event": "GoBack",
+          "at": 15558.900000002235,
+          "t": 40
+        }
+      ]
+    }
+  },
+  {
+    "name": "player remains open 0/auto-before-late-Back/1300",
+    "pass": true
+  },
+  {
+    "name": "cancel before deadline 1/200",
+    "pass": true,
+    "detail": {
+      "gap": 241.39999999850988,
+      "trace": [
+        {
+          "event": "ArrowRight",
+          "at": 18105.400000002235,
+          "t": 30
+        },
+        {
+          "event": "GoBack",
+          "at": 18346.800000000745,
+          "t": 30
+        }
+      ]
+    }
+  },
+  {
+    "name": "player remains open 1/cancel/200",
+    "pass": true
+  },
+  {
+    "name": "cancel before deadline 1/600",
+    "pass": true,
+    "detail": {
+      "gap": 693.6999999992549,
+      "trace": [
+        {
+          "event": "ArrowRight",
+          "at": 20835.20000000298,
+          "t": 30
+        },
+        {
+          "event": "GoBack",
+          "at": 21528.900000002235,
+          "t": 30.45
+        }
+      ]
+    }
+  },
+  {
+    "name": "player remains open 1/cancel/600",
+    "pass": true
+  },
+  {
+    "name": "OK commits preview 1",
+    "pass": true,
+    "detail": {
+      "gap": 323.6000000014901,
+      "trace": [
+        {
+          "event": "ArrowRight",
+          "at": 24040.800000000745,
+          "t": 30
+        },
+        {
+          "event": "Enter",
+          "at": 24364.400000002235,
+          "t": 30.05
+        },
+        {
+          "event": "seeking",
+          "at": 24372.20000000298,
+          "t": 40
+        }
+      ]
+    }
+  },
+  {
+    "name": "player remains open 1/commit/200",
+    "pass": true
+  },
+  {
+    "name": "late Back follows automatic commit 1",
+    "pass": true,
+    "detail": {
+      "gap": 1374.8999999985099,
+      "trace": [
+        {
+          "event": "ArrowRight",
+          "at": 26911.400000002235,
+          "t": 30
+        },
+        {
+          "event": "seeking",
+          "at": 27919.20000000298,
+          "t": 40
+        },
+        {
+          "event": "GoBack",
+          "at": 28286.300000000745,
+          "t": 40
+        }
+      ]
+    }
+  },
+  {
+    "name": "player remains open 1/auto-before-late-Back/1300",
+    "pass": true
+  },
+  {
+    "name": "cancel before deadline 2/200",
+    "pass": true,
+    "detail": {
+      "gap": 281.3999999985099,
+      "trace": [
+        {
+          "event": "ArrowRight",
+          "at": 30805.70000000298,
+          "t": 30
+        },
+        {
+          "event": "GoBack",
+          "at": 31087.10000000149,
+          "t": 30.05
+        }
+      ]
+    }
+  },
+  {
+    "name": "player remains open 2/cancel/200",
+    "pass": true
+  },
+  {
+    "name": "cancel before deadline 2/600",
+    "pass": true,
+    "detail": {
+      "gap": 699.3999999985099,
+      "trace": [
+        {
+          "event": "ArrowRight",
+          "at": 33532.70000000298,
+          "t": 30
+        },
+        {
+          "event": "GoBack",
+          "at": 34232.10000000149,
+          "t": 30.4
+        }
+      ]
+    }
+  },
+  {
+    "name": "player remains open 2/cancel/600",
+    "pass": true
+  },
+  {
+    "name": "OK commits preview 2",
+    "pass": true,
+    "detail": {
+      "gap": 246.80000000074506,
+      "trace": [
+        {
+          "event": "ArrowRight",
+          "at": 36741.800000000745,
+          "t": 30
+        },
+        {
+          "event": "Enter",
+          "at": 36988.60000000149,
+          "t": 30
+        },
+        {
+          "event": "seeking",
+          "at": 37007,
+          "t": 40
+        }
+      ]
+    }
+  },
+  {
+    "name": "player remains open 2/commit/200",
+    "pass": true
+  },
+  {
+    "name": "late Back follows automatic commit 2",
+    "pass": true,
+    "detail": {
+      "gap": 1454.3999999985099,
+      "trace": [
+        {
+          "event": "ArrowRight",
+          "at": 39490.20000000298,
+          "t": 30
+        },
+        {
+          "event": "seeking",
+          "at": 40501.10000000149,
+          "t": 40
+        },
+        {
+          "event": "GoBack",
+          "at": 40944.60000000149,
+          "t": 40
+        }
+      ]
+    }
+  },
+  {
+    "name": "player remains open 2/auto-before-late-Back/1300",
+    "pass": true
+  }
+]

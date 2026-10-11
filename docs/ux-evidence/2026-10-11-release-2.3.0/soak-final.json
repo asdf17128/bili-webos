@@ -1,0 +1,1020 @@
+[
+  {
+    "name": "continuous playback and APIs minute 0",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 58
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 86
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 2724
+        }
+      ],
+      "service": {
+        "uptime": 252,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 0,
+        "requestErrors": 1,
+        "ms": 7
+      },
+      "t": 3.35,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1004,
+      "elapsedMs": 2748
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 1",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 75
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 115
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 4264
+        }
+      ],
+      "service": {
+        "uptime": 313,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 0,
+        "requestErrors": 1,
+        "ms": 5
+      },
+      "t": 64.9,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1005,
+      "elapsedMs": 64287
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 2",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 63
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 86
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 1917
+        }
+      ],
+      "service": {
+        "uptime": 371,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 0,
+        "requestErrors": 1,
+        "ms": 6
+      },
+      "t": 122.55,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1005,
+      "elapsedMs": 121965
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 3",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 64
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 83
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 2395
+        }
+      ],
+      "service": {
+        "uptime": 432,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 0,
+        "requestErrors": 1,
+        "ms": 4
+      },
+      "t": 183,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1011,
+      "elapsedMs": 182418
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 4",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 96
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 84
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 2448
+        }
+      ],
+      "service": {
+        "uptime": 492,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 0,
+        "requestErrors": 1,
+        "ms": 5
+      },
+      "t": 243.05,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1011,
+      "elapsedMs": 242477
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 5",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 69
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 150
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 1782
+        }
+      ],
+      "service": {
+        "uptime": 551,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 0,
+        "requestErrors": 1,
+        "ms": 4
+      },
+      "t": 302.4,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1011,
+      "elapsedMs": 301628
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 6",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 53
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 132
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 2069
+        }
+      ],
+      "service": {
+        "uptime": 612,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 0,
+        "requestErrors": 1,
+        "ms": 5
+      },
+      "t": 362.9,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1011,
+      "elapsedMs": 362099
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 7",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 78
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 110
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 2119
+        }
+      ],
+      "service": {
+        "uptime": 672,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 0,
+        "requestErrors": 1,
+        "ms": 9
+      },
+      "t": 422.95,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1011,
+      "elapsedMs": 422151
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 8",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 55
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 82
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 1651
+        }
+      ],
+      "service": {
+        "uptime": 731,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 0,
+        "requestErrors": 1,
+        "ms": 4
+      },
+      "t": 482.5,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1011,
+      "elapsedMs": 481679
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 9",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 89
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 176
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 3910
+        }
+      ],
+      "service": {
+        "uptime": 793,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 1,
+        "requestErrors": 1,
+        "ms": 5
+      },
+      "t": 544.75,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1011,
+      "elapsedMs": 543958
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 10",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 46
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 126
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 2172
+        }
+      ],
+      "service": {
+        "uptime": 852,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 1,
+        "requestErrors": 1,
+        "ms": 5
+      },
+      "t": 603.05,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1011,
+      "elapsedMs": 602225
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 11",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 93
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 90
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 1778
+        }
+      ],
+      "service": {
+        "uptime": 911,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 1,
+        "requestErrors": 1,
+        "ms": 9
+      },
+      "t": 662.65,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1011,
+      "elapsedMs": 661834
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 12",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 54
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 96
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 1683
+        }
+      ],
+      "service": {
+        "uptime": 971,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 1,
+        "requestErrors": 1,
+        "ms": 4
+      },
+      "t": 722.55,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1011,
+      "elapsedMs": 721724
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 13",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 73
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 94
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 1518
+        }
+      ],
+      "service": {
+        "uptime": 1031,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 1,
+        "requestErrors": 1,
+        "ms": 6
+      },
+      "t": 782.35,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1011,
+      "elapsedMs": 781543
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 14",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 64
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 87
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 1983
+        }
+      ],
+      "service": {
+        "uptime": 1091,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 1,
+        "requestErrors": 1,
+        "ms": 5
+      },
+      "t": 842.85,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1011,
+      "elapsedMs": 842012
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 15",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 64
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 82
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 3946
+        }
+      ],
+      "service": {
+        "uptime": 1153,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 1,
+        "requestErrors": 1,
+        "ms": 6
+      },
+      "t": 904.8,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1011,
+      "elapsedMs": 903991
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 16",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 47
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 224
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 2426
+        }
+      ],
+      "service": {
+        "uptime": 1212,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 2,
+        "requestErrors": 1,
+        "ms": 12
+      },
+      "t": 963.3,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1011,
+      "elapsedMs": 962458
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 17",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 46
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 157
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 1970
+        }
+      ],
+      "service": {
+        "uptime": 1271,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 2,
+        "requestErrors": 1,
+        "ms": 4
+      },
+      "t": 1022.8,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1011,
+      "elapsedMs": 1021992
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 18",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 76
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 96
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 2417
+        }
+      ],
+      "service": {
+        "uptime": 1332,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 2,
+        "requestErrors": 1,
+        "ms": 5
+      },
+      "t": 1083.25,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1011,
+      "elapsedMs": 1082510
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 19",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 61
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 86
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 1704
+        }
+      ],
+      "service": {
+        "uptime": 1391,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 2,
+        "requestErrors": 1,
+        "ms": 4
+      },
+      "t": 1142.55,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1026,
+      "elapsedMs": 1141724
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 20",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 60
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 82
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 2057
+        }
+      ],
+      "service": {
+        "uptime": 1452,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 2,
+        "requestErrors": 1,
+        "ms": 7
+      },
+      "t": 1202.9,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 0,
+      "longestGap": 1026,
+      "elapsedMs": 1202136
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 21",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 60
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 92
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 2069
+        }
+      ],
+      "service": {
+        "uptime": 1512,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 2,
+        "requestErrors": 1,
+        "ms": 8
+      },
+      "t": 48.1,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 1,
+      "longestGap": 1026,
+      "elapsedMs": 1262217
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 22",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 43
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 94
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 3140
+        }
+      ],
+      "service": {
+        "uptime": 1573,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 2,
+        "requestErrors": 1,
+        "ms": 6
+      },
+      "t": 109.05,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 1,
+      "longestGap": 1026,
+      "elapsedMs": 1323177
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 23",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 129
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 141
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 1807
+        }
+      ],
+      "service": {
+        "uptime": 1631,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 2,
+        "requestErrors": 1,
+        "ms": 5
+      },
+      "t": 167.7,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 1,
+      "longestGap": 1026,
+      "elapsedMs": 1381840
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 24",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 49
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 87
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 2921
+        }
+      ],
+      "service": {
+        "uptime": 1692,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 2,
+        "requestErrors": 1,
+        "ms": 8
+      },
+      "t": 228.85,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 1,
+      "longestGap": 1026,
+      "elapsedMs": 1442986
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 25",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 99
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 78
+        },
+        {
+          "status": 200,
+          "version": "2.2.3",
+          "ms": 5116
+        }
+      ],
+      "service": {
+        "uptime": 1754,
+        "node": "v16.20.2",
+        "dnsErrors": 0,
+        "readRetries": 2,
+        "requestErrors": 1,
+        "ms": 5
+      },
+      "t": 291.05,
+      "ready": 4,
+      "paused": false,
+      "width": 640,
+      "height": 480,
+      "ends": 1,
+      "longestGap": 1026,
+      "elapsedMs": 1505141
+    }
+  },
+  {
+    "name": "original settings restored",
+    "pass": true
+  }
+]

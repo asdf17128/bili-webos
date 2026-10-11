@@ -81,10 +81,15 @@ function CoinIcon() {
 // Remount the player, not the app: releases requests, decoder and transient
 // state while the page behind it keeps its focus and scroll position.
 export default function RecoverablePlayer(props) {
-  const [attempt, setAttempt] = useState({ key: 0, used: 0, video: null });
+  const [attempt, setAttempt] = useState({ source: props.video, key: 0, used: 0, video: null });
   const retry = useCallback((snapshot, automatic) => {
-    setAttempt(old => ({ key: old.key + 1, used: automatic ? old.used + 1 : 0, video: snapshot }));
-  }, []);
+    setAttempt(old => ({ source: props.video, key: old.key + 1, used: automatic ? old.used + 1 : 0, video: snapshot }));
+  }, [props.video]);
+  // The parent can send a new play intent for the same bvid/cid (e.g. cast
+  // with a different position). Discard the retry snapshot before commit.
+  if (attempt.source !== props.video) {
+    setAttempt({ source: props.video, key: attempt.key + 1, used: 0, video: null });
+  }
   return <PlayerPage {...props} key={attempt.key} video={attempt.video || props.video}
     onRetry={retry} autoRetryDelay={attempt.used < 2 ? 8000 * (attempt.used + 1) : 0} />;
 }

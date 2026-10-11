@@ -1,0 +1,26 @@
+[
+  {
+    "name": "outage recovery: automatic",
+    "status": "pass"
+  },
+  {
+    "name": "outage recovery: manual",
+    "status": "pass"
+  },
+  {
+    "name": "outage recovery: exit",
+    "status": "pass"
+  },
+  {
+    "name": "outage recovery: new-intent",
+    "status": "pass"
+  },
+  {
+    "name": "creator follow from player control bar",
+    "status": "pass"
+  },
+  {
+    "name": "outage recovery: permanent outage has a finite retry budget",
+    "status": "pass"
+  }
+]

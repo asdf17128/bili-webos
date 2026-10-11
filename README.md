@@ -68,7 +68,7 @@ Press **Back** to open the sidebar without resetting the list. Press **Right** t
 
 Homebrew's catalog can take time to catch up with a new release. The latest package is always available from GitHub Releases.
 
-Requires **webOS 5.0 or later**. Scan the login QR code with the Bilibili mobile app to access your subscriptions, favorites and history.
+Supports **webOS 5.0 and later**, with community-tested compatibility for **C9 / webOS 4.x**. Codec support depends on the TV. Scan the login QR code with the Bilibili mobile app to access your subscriptions, favorites and history.
 
 ## 中文
 
@@ -93,7 +93,7 @@ BiliTV 是为 LG webOS 电视打造的免费、开源哔哩哔哩客户端。从
 
 **直接安装最新版：** 在 [发布页](https://github.com/asdf17128/bili-webos/releases/latest) 下载 `.ipk`，按照 [Developer Mode 指南](https://www.webosbrew.org/devmode/)连接电视，再用 [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop) 安装，无需编译。
 
-Homebrew 目录更新可能晚于 GitHub 发布；想立即体验新版，可以直接下载发布页的安装包。需要 **webOS 5.0 或更新版本**，登录后可同步关注、收藏与观看历史。
+Homebrew 目录更新可能晚于 GitHub 发布；想立即体验新版，可以直接下载发布页的安装包。支持 **webOS 5.0 及更新版本**，并提供已由社区验证的 **C9 / webOS 4.x** 兼容；具体解码能力取决于电视。登录后可同步关注、收藏与观看历史。
 
 ### 几个顺手的操作
 
@@ -101,7 +101,7 @@ Homebrew 目录更新可能晚于 GitHub 发布；想立即体验新版，可以
 |---|---|
 | 方向键／指针／滚轮 | 选择内容、浏览列表 |
 | 卡片上短按 OK | 开始播放 |
-| 卡片上长按 OK | 打开稍后再看菜单 |
+| 卡片上长按 OK | 打开关注 UP 主、稍后再看等操作菜单 |
 | 列表里按返回 | 回侧栏，保留列表位置；按右回到原卡片 |
 | 当前栏目侧栏按 OK | 主动刷新，看看新内容 |
 | 播放时按左右 | 预览快进／快退位置；OK 确认，返回取消 |
@@ -121,17 +121,18 @@ Login information is stored on your TV and used to access your Bilibili account.
 
 [MIT 开源项目](LICENSE)，再发布源码或修改后的安装包时请保留版权与许可声明。第三方依赖和随附资源保留各自许可；代码许可不授予哔哩哔哩、LG 等第三方商标的使用权，也不代表官方认可。本项目由社区独立开发，与哔哩哔哩及 LG 无隶属关系。
 
-### In development / 本分支待发布
+### v2.3.0 — playback recovery and creator follow / 播放恢复与 UP 关注
 
+- 服务请求为 DNS 查询、连接池排队和响应头增加总超时；提前退出会释放尚未建立的代理请求。读取请求在收到响应前断开时换新连接重试一次，避免网络故障后长期等待；写入操作不会重发。
 - 点播网络错误或持续卡顿后可在原分 P、原进度重试；网络恢复后最多自动重建播放器两次，耗尽后仍可按 OK 手动重试，返回键退出即取消。
 - 播放控制栏和视频卡片长按菜单增加 **关注 UP 主 / 取消关注 UP 主**；成功后同步首页标记，失败不改变状态，重复按键不会重复提交。
 - 整合 C9 测试包的显式 DASH 格式及首段诊断。社区 C9 用户在上海移动同片源各测试三次：自动 6.43–7.74 秒、手动腾讯 5.41–5.87 秒，六次均无卡住、网络重试为零。[用户实测](https://github.com/asdf17128/bili-webos/issues/34#issuecomment-6030725380)。这不代表所有机型或网络的起播时间。
 - 风控提示建议用官方客户端对照同一账号，不凭一个错误码断言账号被封，也不将媒体 CDN 切换当成 API 风控的解法。
 - 开发工具升级到已修补的 ws 8.22；电视服务保留兼容 Node 8 的 ws 7.5.11，Node 0.12 路径补上分片和接收队列上限。
 
-测试构建显示 `2.2.3 recovery-test.1`；正式版和 Homebrew 仍为 v2.2.3。验证范围及限制见 [测试登记](docs/TESTCASES.md)。
+验证范围及限制见 [测试登记](docs/TESTCASES.md)。DNS 服务器或路由器故障仍需恢复网络；应用现在能释放超时请求，并在网络恢复后于原进度重试播放。
 
-This development branch adds bounded playback recovery and creator-follow shortcuts, incorporates the C9-tested DASH startup fix, and improves verification-error guidance. Stable distribution remains v2.2.3.
+This release adds bounded playback recovery and creator-follow shortcuts, incorporates the C9-tested DASH startup fix, and improves verification-error guidance. Request deadlines also cover DNS lookup and connection-pool queues; cancelled proxy requests release their upstream resources. Interrupted reads retry once over a fresh connection within the same deadline, without replaying writes.
 
 ### v2.2.3 — player layout and startup diagnostics / 播放器布局与起播诊断
 

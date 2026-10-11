@@ -197,7 +197,7 @@ await run('buffer exhaustion is visible and retried without skipping video','sta
 });
 // Real React player, controlled decoder: no online event is emitted when a
 // temporary DNS failure ends. Preserve both the current part and position.
-for (const action of ['automatic', 'manual', 'exit']) await run('outage recovery: '+action,'recovery',async(page,calls)=>{
+for (const action of ['automatic', 'manual', 'exit', 'new-intent']) await run('outage recovery: '+action,'recovery',async(page,calls)=>{
  await page.clock.install();
  await page.evaluate(()=>window.__openVideo({bvid:'BVtest',cid:3,resumeMode:'at',progress:47}));
  await page.waitForFunction(()=>window.__probe.loads===1);await page.waitForTimeout(200);
@@ -222,6 +222,11 @@ for (const action of ['automatic', 'manual', 'exit']) await run('outage recovery
  assert.equal(await page.evaluate(()=>window.__probe.positions[1]),47);
  assert.equal(calls.events.filter(x=>x.type==='playurl').pop().cid,'3');
  assert.ok(await page.evaluate(()=>window.__probe.destroyed)>=1);
+ if(action==='new-intent'){
+  await page.evaluate(()=>window.__openVideo({bvid:'BVtest',cid:3,resumeMode:'at',progress:73}));
+  await page.waitForFunction(()=>window.__probe.loads===3);
+  assert.equal(await page.evaluate(()=>window.__probe.positions[2]),73);
+ }
 });
 await run('creator follow from player control bar','follow',async(page,calls)=>{
  await open(page);await page.waitForFunction(()=>window.__probe.loads===1);await page.waitForTimeout(200);

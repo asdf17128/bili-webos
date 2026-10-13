@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-13",
+  "build": "2.3.0 bugfix-test.1",
+  "released": false,
+  "installedOnOwnerTV": true,
+  "packageBytes": 664680,
+  "packageSha256": "679733ab3af156a47283fd8b98ffb08808778024b3e8d4c545450e0238b8eaff",
+  "serviceSha256": "81904add59fe8f021c5ba2185ae76f5a7a7a6dee7b1cdab2b71ae0b3ca671276",
+  "remotePackageAndServiceHashesMatch": true,
+  "sessionChecks": 12,
+  "proxyPortChecks": 5,
+  "screenshots": "Private files under /tmp/bili-tv-bugfix-20261013; not committed",
+  "limits": [
+    "LG C4 Chromium 120: legacy API removed by CDP, not a webOS 4.x device",
+    "Alternate port uses temporary TV loopback relay and injected Luna metadata; actual production bind conflict tested locally",
+    "Issue 48 CDN 403 on reporter network remains unconfirmed"
+  ],
+  "smoke": {
+    "passed": 53,
+    "failed": 0,
+    "skipped": 3
+  },
+  "frontendHashMatches": true,
+  "originalAccountAndSettingsRestored": true
+}

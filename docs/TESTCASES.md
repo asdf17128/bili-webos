@@ -596,3 +596,22 @@ C9 社区独立验证：[#34 回报](https://github.com/asdf17128/bili-webos/iss
 工具纠错保留：[首次脚本结果](ux-evidence/2026-10-13-simulator-bugfixes/harness-first-attempt.json)、[时钟脚本结果](ux-evidence/2026-10-13-simulator-bugfixes/harness-clock-attempt.json)。游客点击“关注”本来就直接打开扫码页，不能断言它停在中间空态；Vite HMR 下须导入应用实际加载的模块 URL，否则读取到另一份默认代理端口；Playwright clock 替换 performance 后不能再依赖资源计时查找模块，应提前保存引用。上述纠错没有放宽后台清除、旧响应隔离、实际端口或图片解码断言。截图还需等 image-ready 的 opacity 到 1，不能把解码完成前后的淡入占位当最终画面。
 
 **最终本地验收：** `bash tools/verify.sh --no-tv --ux` 退出 **0**；交互 **68/68**、会话/端口专项 **9/9**、独立代理 **3/3**、服务单测 **41/41**、加载 **35/35**、片尾 **26/26**、直播加载 **9/9**、CDN React **7/7**、弹幕 **6/6**；ES5 服务、真实 Node **0.12.2 / 8.17.0**、生产构建与 ES2016 语法门禁均通过。随后使用隔离匿名状态目录运行真实 service bridge + Chrome + B站网络，实际点播/直播、评论、质量选择、故障回退和大字号等 **54 通过 / 0 失败 / 3 跳过**；跳过的是匿名账号下的点赞投币收藏、稍后再看与关注标记，不计为验收成功。真实网络浏览器播放不能代替电视硬件验证。完整结果：[本地门禁](ux-evidence/2026-10-13-simulator-bugfixes/verify-local.txt)、[专项](ux-evidence/2026-10-13-simulator-bugfixes/session-after.json)、[真实网络模拟](ux-evidence/2026-10-13-simulator-bugfixes/real-network-simulator.json)、[摘要](ux-evidence/2026-10-13-simulator-bugfixes/summary.json)。应用版本仍为 **2.3.0**，没有制作或发布新版本。
+
+
+## 2026-10-13：bugfix-test.1 真机补验（未发布）
+
+用户重新授权操作电视后，公共 Luna launch 返回成功，CDP 报告页面可见、首页 20 张卡片、8 张已解码封面、0 张破图；已查看电视实际页面截图。LG C4 当前 Chromium 120，不能把应用页面截图解释成面板电源状态查询。
+
+- **C-AUTH-LOGOUT-01 真机正对照：** 正式版 2.3.0 通过遥控器到达退出行，显示“已退出登录”后 service diagnostics 仍为 loggedIn=true，同一断言真实失败。安装修复包后，模拟 clearCookies 失败会显示失败并允许重试；真正退出后服务内存、`/media/internal/bili_cookies.json` 与前端都没有账号凭据，B站 nav 返回 **-101**；重启仍为游客。结束用同一 nav 账号身份验证原账号已恢复，设置原值保持，临时凭据备份删除。
+- **C-IMG-LEGACY-01 真机 API 缺失验证：** 真机页面加载前删除 `IntersectionObserverEntry.prototype.isIntersecting`，通过显式注入标记及属性检查确认删除生效；首页封面解码，遥控向下滚动后的焦点卡封面继续加载。它验证 C4 上的旧 API 条件，不代替 webOS 4.x 设备验收。会话/封面专项共 **12/12** 通过。
+- **C-PROXY-PORT-01 真机网络链路：** 原服务在 7654，临时电视回环转发器在 **43517**。注入启动时的 Luna 端口应答后，前端首批封面全部走 43517；真实 Shaka 播放的 **18 次媒体响应均为 206**，解码宽度非零且 currentTime 持续推进。结束移除注入，首页恢复使用 7654，临时转发器关闭。专项 **5/5**；并未制造电视服务 EADDRINUSE，真实占用/避让已由上一轮本地生产服务测试覆盖。报告者 #48 的 CDN 403 仍不能据此宣称解决。
+
+保留测试工具失败：[第一次](ux-evidence/2026-10-13-tv-bugfixes/injection-first-attempt.json)、[第二次](ux-evidence/2026-10-13-tv-bugfixes/injection-second-attempt.json)。第二次已等待新文档，仍显示注入标记不存在、属性仍在；增加 `Page.enable` 后，同一属性缺失与解码断言全部通过。不能把未生效的注入算产品失败，也不能去掉属性缺失断言来通过测试。
+
+证据：[正式包退出失败](ux-evidence/2026-10-13-tv-bugfixes/logout-before.json)、[修复包会话与封面](ux-evidence/2026-10-13-tv-bugfixes/session-after.json)、[电视代理端口](ux-evidence/2026-10-13-tv-bugfixes/proxy-port.json)、[安装包与服务哈希](ux-evidence/2026-10-13-tv-bugfixes/package.json)。电视页面截图及账号内容只保存在本机 `/tmp/bili-tv-bugfix-20261013`。
+
+测试包 **2.3.0 bugfix-test.1**，**664680 bytes**，SHA256 `679733ab3af156a47283fd8b98ffb08808778024b3e8d4c545450e0238b8eaff`；SSH 核对上传 IPK 及实际安装的 service.js 哈希均与本地一致。仅安装用户开发电视，未发布 GitHub Release、未更新 Homebrew。
+
+**真机常规回归最终结果：53 通过 / 0 失败 / 3 跳过。** 点播真实时间推进、评论与 UP 投稿、番剧取流、直播实际解码、关注分页、认证收藏/订阅读取、搜索、CDN 遥控选择及重启持久化、失败立即重试后的焦点、热门与六个分区均通过。3 项跳过为当前直播间暂无实时弹幕、直播只有单一画质、未授权执行本轮稍后再看增删；不计为通过。原设置已恢复。真实账号写入仅有普通播放产生的历史，本轮没有修改关注/投币/收藏/稍后再看。见[完整真机回归](ux-evidence/2026-10-13-tv-bugfixes/smoke.json)。
+
+安装后的前端主 bundle SHA256 也已通过 SSH 与本地逐字节哈希匹配，并确认含 `bugfix-test.1` 标记，见[前端身份](ux-evidence/2026-10-13-tv-bugfixes/frontend-hashes.json)。电视最后回到首页，保留已验证的测试包；GitHub Release、稳定版 metadata 与 Homebrew 均未改动。

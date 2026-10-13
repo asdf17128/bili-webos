@@ -174,3 +174,11 @@ bash tools/verify.sh --full   # 额外跑真机 UI smoke(test-ui.mjs,~3分钟)
 - 动态避让端口必须经过真实端口占用测试，等服务实际 listening 后再协商地址，核对封面解码和 Range 响应。现代 Node 的 server.listening 属性不能用于未验证的旧 Node；用 listening/close 事件状态并在真实旧运行时验证。
 - Playwright clock 会替换 performance；需要通过资源 URL 找到 Vite 实际模块时，在安装时钟前缓存引用。图片 naturalWidth>0 只证明解码，截图应等图片加载类及淡入完成。
 - 本地真实服务验证使用隔离 Cookie/配置目录；仅在文件系统与上游边界替换依赖，保留生产 handler 和真实 HTTP socket。模拟 API/媒体字节不等于硬件解码，不应据此关闭未复现的 CDN 403 报告。
+
+
+## 2026-10-13：真机新文档注入与退出验证
+
+- 在电视 CDP 使用 Page.addScriptToEvaluateOnNewDocument 前先 Page.enable，并在注入代码内写可读标记。这轮未开启 Page 域时脚本返回 identifier，但刷新后的注入标记不存在、目标 API 仍在；开启后同一删除属性与图片解码断言通过。不能只凭注册成功就认为故障条件已生效。
+- Page.reload 应答可能早于新文档；旧 DOM 已满足 ready 条件时会产生假结果。先在旧 window 写唯一标记，再等标记消失和新文档 ready，然后等待真实图片/内容。
+- 真实退出测试先在内存和权限 0600 的私有备份中保留恢复所需状态，finally 恢复并向服务端核对相同账号，成功后删除备份。公开报告只写布尔状态/响应码/哈希，用户历史、Cookie 和账号截图留在本地。
+- 动态端口可通过设备回环转发器和 Luna 元数据注入验证真实媒体请求及解码；明确它与生产服务端口占用回退的测试边界。结束移除新文档脚本、重载并关闭转发器。

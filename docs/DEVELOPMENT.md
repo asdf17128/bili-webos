@@ -188,3 +188,11 @@ webOS 安装版本保持 2.2.3，设置/诊断显示 `2.2.3 c9-test.1`；同版�
 `tools/test-network-soak-tv.mjs` 临时设循环、实际播放 25 分钟，每分钟并行检查 B 站 API、直播 API 与 GitHub 更新请求，记录视频尺寸/进度/最长停滞和服务 uptime；原设置最终恢复。结果只保留状态、耗时与计数，不保存认证、账号信息或媒体地址。正常耐久运行不能代替 DNS 故障复现。每次完整耐久会主动下载 26 次 `version.json`，这些下载是测试流量，不应计作真实日活；失败的运行也会产生部分下载。
 
 `upstreamRequest.js` 仅对无体 GET/HEAD 在响应头前的 ECONNRESET/EPIPE 换新连接重试一次，与第一次请求共用总期限。单元测试用真实 HTTP 对端断连验证；POST、HTTP 错误、部分响应不能重发，取消句柄必须跟随当前尝试。旧运行时门禁包含断连→新连接成功。
+
+
+### 2026-10-13：真机退出登录与动态代理端口
+
+- 已获设备验证授权后，用 `UX_OUTPUT=/tmp/bili-session-tv node tools/test-session-tv.mjs` 验证真实遥控退出、失败提示、前端/服务/磁盘清理、B站匿名响应、重启持久化和旧观察器 API。脚本会暂时退出当前账号，在 finally 恢复原 Cookie、前端认证与设置；私有恢复文件权限 0600，确认原账号恢复后删除，截图只留本地。`--baseline` 可对旧包复现；不要把含凭据的恢复文件提交仓库。
+- `UX_OUTPUT=/tmp/bili-proxy-port-tv node tools/test-proxy-port-tv.mjs` 在电视上启动临时回环 TCP 转发器，注入 Luna 返回的端口，验证生产前端的封面及真实 Shaka 媒体请求跟随端口、206 响应及解码进度。finally 移除注入、重载并关闭临时转发器。它测的是电视前端端口协商；生产服务的 EADDRINUSE 自动换端口另由 `test-session-proxy.mjs` 在真实本机 socket 上验证。
+- 两脚本须在同一电视上串行执行。CDP 先 `Page.enable` 再注册新文档脚本，注入必须有可读标记；Page.reload 返回不代表新文档已就绪，使用文档代次标记等待新页面，避免把旧 DOM 当重启成功。
+- 当前分支以 `TEST_BUILD=bugfix-test.1` 区分设备测试包，数值版本保持 2.3.0。安装与测试不等于发布，未调用 release 工具、未推送测试包或更新 Homebrew。

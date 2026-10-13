@@ -1,0 +1,47 @@
+[
+  {
+    "name": "temporary TV loopback relay binds a distinct port",
+    "pass": true,
+    "detail": {
+      "originalPort": 7654,
+      "relayPort": 43517
+    }
+  },
+  {
+    "name": "TV startup negotiates the injected service port before covers",
+    "pass": true,
+    "detail": {
+      "injected": {
+        "calls": 1,
+        "port": 43517
+      },
+      "ports": [
+        43517
+      ]
+    }
+  },
+  {
+    "name": "TV decodes actual media through the alternate port",
+    "pass": true,
+    "detail": {
+      "responses": 18,
+      "statuses": [
+        206
+      ],
+      "port": 43517
+    }
+  },
+  {
+    "name": "playback advances after port negotiation",
+    "pass": true
+  },
+  {
+    "name": "original TV media port restored after removing injection",
+    "pass": true,
+    "detail": {
+      "ports": [
+        7654
+      ]
+    }
+  }
+]

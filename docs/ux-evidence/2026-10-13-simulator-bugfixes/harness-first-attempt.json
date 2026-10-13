@@ -1,0 +1,20 @@
+[
+  {
+    "name": "logout clears service, persisted disk, UI and reload",
+    "pass": false,
+    "error": "locator.waitFor: Timeout 5500ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('关注的精彩，登录后继续', { exact: true }) to be visible\u001b[22m\n"
+  },
+  {
+    "name": "logout fences late service Set-Cookie and response body",
+    "pass": true
+  },
+  {
+    "name": "logout disk failure is visible and retry clears credentials",
+    "pass": true
+  },
+  {
+    "name": "occupied 7654 uses negotiated port for covers and video Range",
+    "pass": false,
+    "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   bytes: 0,\n-   bytes: 4,\n    diag: 7655,\n+   range: null,\n+   status: 503\n-   range: 'bytes 0-3/4',\n-   status: 206\n  }\n"
+  }
+]

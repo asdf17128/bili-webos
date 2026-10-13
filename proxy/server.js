@@ -54,8 +54,12 @@ function isBiliHost(host) {
 import { existsSync, readFileSync as readSync, writeFileSync as writeSync } from 'node:fs';
 const COOKIE_FILE = new URL('./cookies.json', import.meta.url).pathname;
 let storedCookies = {};
+let cookieGeneration = 0;
 try { if (existsSync(COOKIE_FILE)) storedCookies = JSON.parse(readSync(COOKIE_FILE, 'utf-8')); } catch {}
-function saveCookies() { try { writeSync(COOKIE_FILE, JSON.stringify(storedCookies)); } catch {} }
+function saveCookies() {
+  try { writeSync(COOKIE_FILE, JSON.stringify(storedCookies)); return true; }
+  catch { return false; }
+}
 
 function parseCookies(cookieStr) {
   const cookies = {};
@@ -121,15 +125,19 @@ const server = http.createServer((req, res) => {
 
   // Clear cookies (logout)
   if (path === '/cookies/clear') {
-    storedCookies = {};
-    saveCookies();
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ ok: true }));
+    cookieGeneration++;
+    const anonymous = {};
+    for (const key of ['buvid3', 'buvid4', 'b_nut']) if (storedCookies[key]) anonymous[key] = storedCookies[key];
+    storedCookies = anonymous;
+    const ok = saveCookies();
+    res.writeHead(ok ? 200 : 500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok }));
     return;
   }
 
   // Proxy: /proxy/api.bilibili.com/x/web-interface/popular?ps=20
   if (path.startsWith('/proxy/')) {
+    const generation = cookieGeneration;
     const targetPath = path.slice(7); // Remove "/proxy/"
     const slashIdx = targetPath.indexOf('/');
     const hostWithPort = slashIdx > 0 ? targetPath.slice(0, slashIdx) : targetPath;
@@ -189,9 +197,13 @@ const server = http.createServer((req, res) => {
     }
 
     const proxyReq = https.request(options, (proxyRes) => {
+      if (generation !== cookieGeneration) {
+        proxyRes.destroy();
+        res.writeHead(409); res.end('Account session changed'); return;
+      }
       // Capture set-cookie from Bilibili and store them
       const setCookieHeaders = proxyRes.headers['set-cookie'];
-      if (setCookieHeaders) {
+      if (isBiliHost(hostname) && setCookieHeaders) {
         const newCookies = {};
         setCookieHeaders.forEach(sc => {
           const parts = sc.split(';')[0];

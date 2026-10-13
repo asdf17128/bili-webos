@@ -2,6 +2,11 @@
 // ADDING A LANGUAGE: copy this file to <code>.js, translate values, register
 // it in index.js DICTS. That's all.
 export default {
+  "正在退出登录…": "Signing out…",
+  "退出登录失败，请重试": "Sign out failed. Please try again.",
+  "正在连接服务…": "Connecting to service…",
+  "连接服务失败，请重试": "Could not connect to service. Please retry.",
+
   "最近一次起播": "Last video startup",
   "先播放一个视频，再打开诊断查看起播耗时": "Play a video, then reopen diagnostics to see startup timing",
   "阶段耗时（并行执行，不相加）": "Stage durations (overlap; do not add)",

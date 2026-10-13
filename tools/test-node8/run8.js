@@ -53,6 +53,23 @@ receiver.add(frames);
 if (!limited) { console.log('FAIL legacy fragment guard'); process.exit(1); }
 console.log('legacy fragment guard OK on ' + process.version);
 var svc = require('webos-service').last;
+// These processes run in disposable containers. Check real persistence and
+// the startup listener handshake, including Node 0.12 without server.listening.
+var testFs = require('fs');
+try { testFs.mkdirSync('/media'); } catch (e) {}
+try { testFs.mkdirSync('/media/internal'); } catch (e) {}
+svc.methods.setCookies({ payload: { cookies: { SESSDATA: 'isolated-runtime-test', bili_jct: 'test-only' } }, respond: function () {} });
+svc.methods.clearCookies({ respond: function (r) {
+  var saved = JSON.parse(testFs.readFileSync('/media/internal/bili_cookies.json', 'utf8'));
+  if (!r.returnValue || saved.SESSDATA || saved.bili_jct) { console.log('FAIL persisted logout'); process.exit(1); }
+  console.log('persisted logout OK on ' + process.version);
+} });
+var pingPassed = false;
+svc.methods.ping({ respond: function (r) {
+  pingPassed = r.returnValue && r.localProxyPort === 7654;
+  if (!pingPassed) { console.log('FAIL ready proxy handshake'); process.exit(1); }
+  console.log('ready proxy handshake OK on ' + process.version);
+} });
 svc.methods['fetch']({
   payload: { url: 'https://api.bilibili.com/x/web-interface/nav' },
   respond: function (r) {
@@ -76,7 +93,7 @@ svc.methods['fetch']({
           try { data = JSON.parse(ranking.body); } catch (e) {}
           var count = data && data.data && data.data.list && data.data.list.length || 0;
           console.log('ranking on real Node ' + process.version + ': code=' + (data && data.code) + ' count=' + count);
-          process.exit(retryPassed && ranking.returnValue !== false && data && data.code === 0 && count > 0 ? 0 : 1);
+          process.exit(pingPassed && retryPassed && ranking.returnValue !== false && data && data.code === 0 && count > 0 ? 0 : 1);
         }
       });
     }});

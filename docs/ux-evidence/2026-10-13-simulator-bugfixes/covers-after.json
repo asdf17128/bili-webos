@@ -1,0 +1,10 @@
+[
+  {
+    "name": "cover compatibility: legacyIntersection loads visible and scrolled cards",
+    "pass": true
+  },
+  {
+    "name": "cover compatibility: noIntersection loads visible and scrolled cards",
+    "pass": true
+  }
+]

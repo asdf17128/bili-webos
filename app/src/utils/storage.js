@@ -1,5 +1,6 @@
 // Persistent storage for auth tokens and settings
 const PREFIX = 'bili_';
+let authGeneration = 0;
 
 export const storage = {
   get(key) {
@@ -22,6 +23,8 @@ export const storage = {
   },
 
   // Auth helpers
+  getAuthGeneration() { return authGeneration; },
+  invalidateAuthRequests() { authGeneration++; },
   getAuth() {
     return this.get('auth') || null;
   },
@@ -31,6 +34,7 @@ export const storage = {
   },
 
   clearAuth() {
+    this.invalidateAuthRequests();
     this.remove('auth');
   },
 

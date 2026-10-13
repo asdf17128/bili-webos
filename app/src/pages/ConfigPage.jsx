@@ -15,7 +15,7 @@ const UI_SCALES = [
   { v: 1.25, label: '特大' },
 ];
 
-export default function ConfigPage({ onLogout, user }) {
+export default function ConfigPage({ onLogout, user, loggingOut = false }) {
   const [proxyUrl] = useState(storage.getProxyUrl());
   const [updateMsg, setUpdateMsg] = useState('');
   const [hasUpdate, setHasUpdate] = useState(false);
@@ -249,7 +249,7 @@ export default function ConfigPage({ onLogout, user }) {
 
   const { props: logoutProps } = useFocusable({
     id: 'content-11-0', row: 11, col: 0, group: 'content',
-    onSelect: () => { if (user) { storage.clearAuth(); onLogout(); } },
+    onSelect: () => { if (user && !loggingOut) onLogout(); },
   });
 
   const dmScaleLabel = (DM_SCALES.find(s => s.v === danmakuScale) || DM_SCALES[0]).label;
@@ -353,8 +353,8 @@ export default function ConfigPage({ onLogout, user }) {
       )}
 
       {user && (
-        <div className="settings-row settings-row-danger" {...logoutProps}>
-          <span>{t('退出登录')}</span>
+        <div className="settings-row settings-row-danger" {...logoutProps} aria-disabled={loggingOut} aria-busy={loggingOut}>
+          <span>{t(loggingOut ? '正在退出登录…' : '退出登录')}</span>
           <span className="settings-row-value">{user.uname}</span>
         </div>
       )}

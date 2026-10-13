@@ -580,3 +580,19 @@ C9 社区独立验证：[#34 回报](https://github.com/asdf17128/bili-webos/iss
 证据：[完整目录](ux-evidence/2026-10-11-release-2.3.0)、[耐久摘要](ux-evidence/2026-10-11-release-2.3.0/soak-summary.json)、[最终耐久](ux-evidence/2026-10-11-release-2.3.0/soak-final.json)、[第 19 分钟失败](ux-evidence/2026-10-11-release-2.3.0/soak-before-retry.json)。每次完整耐久主动请求 26 次 version.json；这部分下载属于测试，不是真实日活。
 
 正式 IPK **663408 bytes**，SHA256 `c75d3bbf4c7add9d4a6d6d24e8e86896bf232408786061aa5393ecedaeb10222`。解包确认版本 **2.3.0**、没有测试标记、服务文件与源码一致；电视已安装相同包，SSH 逐文件比对服务代码和上传 IPK 哈希一致。见 [包身份](ux-evidence/2026-10-11-release-2.3.0/package.json) 与 [电视安装核对](ux-evidence/2026-10-11-release-2.3.0/tv-package.json)。
+
+
+## 2026-10-13：仅本地验证的退出登录、封面与端口修复（未发布）
+
+- **C-AUTH-LOGOUT-01：前后端同步退出。** #34 报告退出后仍可进行账号操作；旧版只移除 localStorage，服务内存和磁盘保留 SESSDATA。真实 React 输入 → 生产 Luna handler → 隔离磁盘的正对照确认后台仍登录。修复后必须等后台持久化清除成功，再移除前端凭据、重建游客页面；刷新后仍是游客。保留 buvid3/buvid4/b_nut 匿名风控指纹。退出过程中阻止新的账号请求与重复确认，10s 无应答显示失败并允许重试；磁盘写失败不可显示成功。电视 Luna、开发桥和浏览器代理三种通路分别覆盖。
+- **C-AUTH-LOGOUT-02：隔离退出前的请求。** 对照在请求发出后执行 clearCookies，再让上游返回 Set-Cookie，旧服务重新登录。服务现在拒绝旧请求的响应头、重定向与晚到的完整响应体；前端用会话代次拒绝已由服务生成、但仍在 Luna/HTTP 通路上的旧响应。独立代理也有代次保护，真实本机 HTTP 验证迟到响应返回 409、不写 Cookie；清盘失败返回 500，可重试。所有账号数据均是隔离夹具，没有真实关注/收藏等账号写入。
+- **C-IMG-LEGACY-01：观察器存在但缺少 isIntersecting。** Chrome 51–57 的 IntersectionObserverEntry 缺少 isIntersecting，而 intersectionRatio 已存在；webOS 4.x 的 Chrome 53 会因此不创建图片。测试保留 Chromium 的真实可见性计算与滚动，只删除缺失属性；旧版可见/滚动卡片不加载，修复后用 intersectionRatio 回退并实际解码图片。完全没有 IntersectionObserver 的旧回退路径也继续通过。对照 **1/2 → 2/2**，这是 API 缺失模拟，不是旧电视整机验收。
+- **C-PROXY-PORT-01：绑定成功后协商媒体端口。** #48 诊断记录服务在 7655，前端却固定 7654。测试真实占用 7654，生产 service.js 自动绑定 7655；启动前等待 ping 的就绪应答，再构造第一批封面/播放器地址。修复前图片加载失败；修复后图片实际解码并完成淡入，媒体 Range 请求获得 206、正确 Content-Range 和 4 个夹具字节，旧端口命中为 0；诊断端口一致。非法端口显示启动失败，遥控 Enter 可重试。此测试不证明 #48 的 CDN HTTP 403 已全部解决，也不验证媒体硬件解码。
+
+脚本：`tools/test-session-proxy.mjs`、`tools/test-proxy-logout.mjs`、`tools/test-tv-ux.mjs`；均纳入 `verify.sh --no-tv --ux`。`tools/test-node8/run8.js` 额外在真实 Node 0.12.2 / 8.17.0 检查 Cookie 持久化清除及代理绑定握手，避免依赖旧 Node 不存在的 server.listening 属性。匿名真实网络模拟用 `BILI_DEV_STATE_DIR` 隔离服务文件，既不读取也不改写开发者的 Cookie 文件。
+
+证据：[修复前退出/端口 0/4](ux-evidence/2026-10-13-simulator-bugfixes/session-before.json)、[封面对照](ux-evidence/2026-10-13-simulator-bugfixes/covers-before.json)、[封面修复后](ux-evidence/2026-10-13-simulator-bugfixes/covers-after.json)、[旧 API 模式截图](ux-evidence/2026-10-13-simulator-bugfixes/legacy-covers.png)、[7655 实际图片截图](ux-evidence/2026-10-13-simulator-bugfixes/negotiated-covers.png)。图片与账号均为夹具；未操作电视，未部署、未发布、未更新 Homebrew。
+
+工具纠错保留：[首次脚本结果](ux-evidence/2026-10-13-simulator-bugfixes/harness-first-attempt.json)、[时钟脚本结果](ux-evidence/2026-10-13-simulator-bugfixes/harness-clock-attempt.json)。游客点击“关注”本来就直接打开扫码页，不能断言它停在中间空态；Vite HMR 下须导入应用实际加载的模块 URL，否则读取到另一份默认代理端口；Playwright clock 替换 performance 后不能再依赖资源计时查找模块，应提前保存引用。上述纠错没有放宽后台清除、旧响应隔离、实际端口或图片解码断言。截图还需等 image-ready 的 opacity 到 1，不能把解码完成前后的淡入占位当最终画面。
+
+**最终本地验收：** `bash tools/verify.sh --no-tv --ux` 退出 **0**；交互 **68/68**、会话/端口专项 **9/9**、独立代理 **3/3**、服务单测 **41/41**、加载 **35/35**、片尾 **26/26**、直播加载 **9/9**、CDN React **7/7**、弹幕 **6/6**；ES5 服务、真实 Node **0.12.2 / 8.17.0**、生产构建与 ES2016 语法门禁均通过。随后使用隔离匿名状态目录运行真实 service bridge + Chrome + B站网络，实际点播/直播、评论、质量选择、故障回退和大字号等 **54 通过 / 0 失败 / 3 跳过**；跳过的是匿名账号下的点赞投币收藏、稍后再看与关注标记，不计为验收成功。真实网络浏览器播放不能代替电视硬件验证。完整结果：[本地门禁](ux-evidence/2026-10-13-simulator-bugfixes/verify-local.txt)、[专项](ux-evidence/2026-10-13-simulator-bugfixes/session-after.json)、[真实网络模拟](ux-evidence/2026-10-13-simulator-bugfixes/real-network-simulator.json)、[摘要](ux-evidence/2026-10-13-simulator-bugfixes/summary.json)。应用版本仍为 **2.3.0**，没有制作或发布新版本。

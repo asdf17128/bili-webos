@@ -1,0 +1,26 @@
+Testing Node 0.12.2
+legacy fragment guard OK on v0.12.2
+persisted logout OK on v0.12.2
+[BiliService] Local proxy on port 7654
+ready proxy handshake OK on v0.12.2
+[BiliService] Cast server on 172.17.0.4:9958
+fresh GET retry OK on v0.12.2
+queued request deadline OK on v0.12.2
+fetch OK on real Node v0.12.2: status=200
+api code=-101 (expect -101 anonymous or 0)
+getDiagnostics OK: node=v0.12.2 buvid=false dm=true
+[service] buvid bootstrapped
+ranking on real Node v0.12.2: code=0 count=100
+Testing Node 8
+legacy fragment guard OK on v8.17.0
+persisted logout OK on v8.17.0
+[BiliService] Local proxy on port 7654
+ready proxy handshake OK on v8.17.0
+[BiliService] Cast server on 172.17.0.4:9958
+fresh GET retry OK on v8.17.0
+queued request deadline OK on v8.17.0
+fetch OK on real Node v8.17.0: status=200
+api code=-101 (expect -101 anonymous or 0)
+getDiagnostics OK: node=v8.17.0 buvid=false dm=true
+[service] buvid bootstrapped
+ranking on real Node v8.17.0: code=0 count=100

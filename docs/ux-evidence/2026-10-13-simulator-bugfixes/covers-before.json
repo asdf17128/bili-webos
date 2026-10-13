@@ -1,0 +1,11 @@
+[
+  {
+    "name": "cover compatibility: legacyIntersection loads visible and scrolled cards",
+    "pass": false,
+    "error": "page.waitForFunction: Timeout 4000ms exceeded."
+  },
+  {
+    "name": "cover compatibility: noIntersection loads visible and scrolled cards",
+    "pass": true
+  }
+]

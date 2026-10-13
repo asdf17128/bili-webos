@@ -68,6 +68,7 @@ var keepAliveAgent = new https.Agent({ keepAlive: true, maxSockets: 8, keepAlive
 // Cookie storage
 var COOKIE_FILE = path.join('/media/internal', 'bili_cookies.json');
 var storedCookies = {};
+var cookieGeneration = 0;
 try {
   if (fs.existsSync(COOKIE_FILE)) {
     storedCookies = JSON.parse(fs.readFileSync(COOKIE_FILE, 'utf-8'));
@@ -75,7 +76,8 @@ try {
 } catch (e) { }
 
 function saveCookies() {
-  try { fs.writeFileSync(COOKIE_FILE, JSON.stringify(storedCookies)); } catch (e) { }
+  try { fs.writeFileSync(COOKIE_FILE, JSON.stringify(storedCookies)); return true; }
+  catch (e) { logSvcErr('cookies-save', 'Cookie persistence failed'); return false; }
 }
 
 var CAST_CONFIG_FILE = path.join('/media/internal', 'bili_cast_config.json');
@@ -174,6 +176,7 @@ function isBiliHost(host) {
 // Content-Encoding — compressed bytes there corrupt the Range/Content-Length
 // and trigger Shaka's "Payload length does not match range requested bytes".
 function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity, callback) {
+  var generation = cookieGeneration;
   var hostname = parsedUrl.hostname;
   var port = parsedUrl.port ? parseInt(parsedUrl.port) : 443;
   var isCDN = hostname.indexOf('bilivideo') >= 0 || hostname.indexOf('akamaized') >= 0;
@@ -204,12 +207,16 @@ function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity,
 
   return upstreamRequest(https.request.bind(https), options, body, function (err, res) {
     if (err) { logSvcErr('req:' + hostname, err.message); callback(err); return; }
+    // Logout invalidates responses already on the wire, including redirects.
+    if (generation !== cookieGeneration) {
+      res.destroy(); callback(new Error('Account session changed')); return;
+    }
     // 上游响应流出错(节点中途掐断)只记日志;调用方通过 pipe 的 close 处理。
     res.on('error', function (e) {
       if (!res.clientCancelled) logSvcErr('res:' + hostname, e && e.message);
     });
     var setCookieHeaders = res.headers['set-cookie'];
-    if (setCookieHeaders) {
+    if (isBili && setCookieHeaders) {
       setCookieHeaders.forEach(function (sc) {
         var parts = sc.split(';')[0];
         var eqIdx = parts.indexOf('=');
@@ -337,6 +344,7 @@ function requestFollow(parsedUrl, method, body, contentType, range, hops, callba
 // ==================== Luna Bus Methods ====================
 
 service.register('fetch', function (message) {
+  var generation = cookieGeneration;
   var targetUrl = message.payload.url;
   if (!targetUrl) { message.respond({ returnValue: false, error: 'No URL' }); return; }
 
@@ -354,6 +362,9 @@ service.register('fetch', function (message) {
       if (err) { message.respond({ returnValue: false, error: err.message }); return; }
 
       decompressResponse(res, function (bodyError, data) {
+        if (generation !== cookieGeneration) {
+          message.respond({ returnValue: false, error: 'Account session changed' }); return;
+        }
         if (bodyError) {
           logSvcErr('body:' + parsed.hostname, bodyError.message);
           message.respond({ returnValue: false, error: bodyError.message });
@@ -388,8 +399,16 @@ service.register('setCookies', function (message) {
 });
 
 service.register('clearCookies', function (message) {
-  storedCookies = {};
-  saveCookies();
+  cookieGeneration++;
+  // Keep anonymous risk-control fingerprints; remove ALL account cookies.
+  var anonymous = {};
+  ['buvid3', 'buvid4', 'b_nut'].forEach(function (key) {
+    if (storedCookies[key]) anonymous[key] = storedCookies[key];
+  });
+  storedCookies = anonymous;
+  if (!saveCookies()) {
+    message.respond({ returnValue: false, error: 'Could not persist logout' }); return;
+  }
   message.respond({ returnValue: true });
 });
 
@@ -437,6 +456,7 @@ service.register('danmakuStop', function (message) {
 });
 
 service.register('ping', function (message) {
+  function respond() {
   message.respond({
     returnValue: true, status: 'ok',
     cookieKeys: Object.keys(storedCookies),
@@ -445,6 +465,15 @@ service.register('ping', function (message) {
     castHttpPort: castProfile.httpPort,
     castFriendlyName: getCastFriendlyName(),
   });
+  }
+  // Luna can arrive before the initial bind or EADDRINUSE fallback completes.
+  if (localProxyReady) { respond(); return; }
+  var timer = setTimeout(function () {
+    localServer.removeListener('listening', ready);
+    message.respond({ returnValue: false, error: 'Local proxy is not ready' });
+  }, 2000);
+  function ready() { clearTimeout(timer); respond(); }
+  localServer.once('listening', ready);
 });
 
 // One call = everything the 网络诊断 page needs to describe this service's
@@ -515,6 +544,7 @@ service.register('castSetConfig', function (message) {
 // For video segments, images, and HLS streams that browser fetches directly
 
 var LOCAL_PROXY_PORT = 7654;
+var localProxyReady = false;
 
 var localServer = http.createServer(function (req, res) {
   // 客户端(电视浏览器)中途断开是常态(换视频、拖进度条、诊断探针主动 abort),
@@ -600,6 +630,8 @@ var localServer = http.createServer(function (req, res) {
   res.on('close', function () { upstream.cancel(); });
 });
 
+localServer.on('listening', function () { localProxyReady = true; });
+localServer.on('close', function () { localProxyReady = false; });
 localServer.on('clientError', function (err, socket) {
   try { socket.destroy(); } catch (e) { }
 });

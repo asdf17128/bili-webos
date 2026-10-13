@@ -141,6 +141,8 @@ if [ -n "$UX" ]; then
     done
   fi
   node tools/test-tv-ux.mjs
+  node tools/test-session-proxy.mjs
+  node tools/test-proxy-logout.mjs
   node tools/test-manifest-mime.mjs
   node tools/test-player-loading.mjs
   node tools/test-danmaku-render.mjs

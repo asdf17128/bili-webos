@@ -51,7 +51,9 @@ export default React.memo(function VideoCard({ video, focusId, row, col, group, 
     const io = new IntersectionObserver((entries) => {
       const e = entries[entries.length - 1];
       if (!e) return;
-      if (e.isIntersecting) {
+      // Chrome 51–57 has IntersectionObserver but lacks isIntersecting.
+      // Preserve modern edge-touch semantics when the boolean is available.
+      if (typeof e.isIntersecting === 'boolean' ? e.isIntersecting : e.intersectionRatio > 0) {
         eagerT.current = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
         setEager(true);
         // 加载过就不用再盯着了 —— 100+ 个 observer 一直活着,会在每次滚动时

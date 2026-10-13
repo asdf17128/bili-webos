@@ -1,5 +1,10 @@
 // Spanish dictionary. Keys are the Chinese source strings (see index.js).
 export default {
+  "正在退出登录…": "Cerrando sesión…",
+  "退出登录失败，请重试": "No se pudo cerrar sesión. Inténtalo de nuevo.",
+  "正在连接服务…": "Conectando al servicio…",
+  "连接服务失败，请重试": "No se pudo conectar al servicio. Reintentar.",
+
   "最近一次起播": "Último inicio de vídeo",
   "先播放一个视频，再打开诊断查看起播耗时": "Reproduce un vídeo y vuelve a abrir el diagnóstico para ver los tiempos",
   "阶段耗时（并行执行，不相加）": "Duración por etapa (se superponen; no sumar)",

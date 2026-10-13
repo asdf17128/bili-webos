@@ -10,6 +10,59 @@ import { selectLivePlayback } from '../player/liveStream';
 const API_HOST = 'api.bilibili.com';
 const PASSPORT_HOST = 'passport.bilibili.com';
 const SERVICE_URI = 'luna://com.biliwebos.app.service/';
+let serviceProxyPort = 7654;
+let logoutPending = null;
+let loggingOut = false;
+
+function checkSession(generation) {
+  if (loggingOut || generation !== storage.getAuthGeneration()) throw new Error('Account session changed');
+}
+
+// Also bounds development bridge/proxy discovery on older browsers without
+// AbortController. A late response cannot settle the operation twice.
+function withDeadline(promise, timeout = 10000) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Request timeout')), timeout);
+    promise.then(r => { clearTimeout(timer); resolve(r); }, e => { clearTimeout(timer); reject(e); });
+  });
+}
+function fetchWithDeadline(url, options) { return withDeadline(fetch(url, options)); }
+function fetchJsonWithDeadline(url, options, timeout = 10000) {
+  return withDeadline(fetch(url, options).then(response => {
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    return response.json();
+  }), timeout);
+}
+
+export async function initializeMediaProxy() {
+  if (!hasLunaService() && !await devLunaAvailable()) return;
+  const status = await lunaRequest('ping', {}, false, {});
+  const port = status && status.localProxyPort;
+  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid local proxy port');
+  serviceProxyPort = port;
+}
+
+export function logout() {
+  if (logoutPending) return logoutPending;
+  loggingOut = true;
+  storage.invalidateAuthRequests();
+  logoutPending = (async () => {
+    try {
+      if (hasLunaService() || await devLunaAvailable()) {
+        await lunaRequest('clearCookies', {}, false, {});
+      } else {
+        const response = await fetchJsonWithDeadline(storage.getProxyUrl() + '/cookies/clear', { method: 'POST' });
+        if (!response.ok) throw new Error('Could not clear proxy cookies');
+      }
+      storage.clearAuth();
+      buvidEnsured = false; _buvid3 = '';
+    } finally {
+      storage.invalidateAuthRequests();
+      loggingOut = false; logoutPending = null;
+    }
+  })();
+  return logoutPending;
+}
 
 // Detect if running on webOS with Luna service available. webOSTV.js defines
 // window.webOS.service in ANY browser — only the real TV has the underlying
@@ -35,7 +88,7 @@ async function devLunaAvailable() {
   if (!import.meta.env.DEV) return false;
   if (devLunaUp !== null) return devLunaUp;
   try {
-    const r = await fetch(DEV_LUNA + '/ping', { cache: 'no-store' });
+    const r = await fetchWithDeadline(DEV_LUNA + '/ping', { cache: 'no-store' });
     devLunaUp = r.ok;
   } catch (e) { devLunaUp = false; }
   if (devLunaUp) console.info('[dev] using the real TV service via bridge :9528');
@@ -43,12 +96,10 @@ async function devLunaAvailable() {
 }
 
 async function devLunaCall(method, params) {
-  const r = await fetch(DEV_LUNA + '/luna/' + method, {
+  return fetchJsonWithDeadline(DEV_LUNA + '/luna/' + method, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params || {}),
-  });
-  if (!r.ok) throw new Error('bridge http ' + r.status);
-  return r.json();
+  }, 20000);
 }
 
 function devLunaSubscribe(method, params, onFrame) {
@@ -63,19 +114,21 @@ function devLunaSubscribe(method, params, onFrame) {
 // that same proxy on the Mac, so point there too and the media path matches
 // the TV byte for byte; without the bridge fall back to the standalone proxy.
 export function mediaProxyBase() {
-  if (typeof window !== 'undefined' && window.PalmServiceBridge) return 'http://127.0.0.1:7654';
-  if (import.meta.env.DEV && devLunaUp === true) return 'http://127.0.0.1:7654';
+  if (typeof window !== 'undefined' && window.PalmServiceBridge) return 'http://127.0.0.1:' + serviceProxyPort;
+  if (import.meta.env.DEV && devLunaUp === true) return 'http://127.0.0.1:' + serviceProxyPort;
   return storage.getProxyUrl();
 }
 
 // Luna service fetch (on TV)
 function lunaFetch(url, options) {
+  const generation = storage.getAuthGeneration();
   return new Promise(function(resolve, reject) {
     if (!hasLunaService()) {
       reject(new Error('Luna not available'));
       return;
     }
 
+    try { checkSession(generation); } catch (e) { reject(e); return; }
     var params = { url: url, method: options.method || 'GET' };
     if (options.body) params.body = options.body;
     if (options.contentType) params.contentType = options.contentType;
@@ -102,6 +155,7 @@ function lunaFetch(url, options) {
         parameters: params,
         onSuccess: function(res) {
           if (settled) return;
+          try { checkSession(generation); } catch (e) { fail(e); return; }
           settled = true; clearTimeout(timer);
           if (res.newCookies) {
             var auth = storage.getAuth() || {};
@@ -117,6 +171,8 @@ function lunaFetch(url, options) {
 
 // Proxy fetch (fallback for browser dev)
 function proxyFetchRaw(url, options) {
+  const generation = storage.getAuthGeneration();
+  checkSession(generation);
   var base = storage.getProxyUrl();
   var parsed = new URL(url);
   var proxyUrl = base + '/proxy/' + parsed.host + parsed.pathname + parsed.search;
@@ -128,6 +184,7 @@ function proxyFetchRaw(url, options) {
     },
     body: options.body,
   }).then(function(res) {
+    checkSession(generation);
     var setCookie = res.headers.get('X-Set-Cookie');
     if (setCookie) {
       try {
@@ -142,11 +199,14 @@ function proxyFetchRaw(url, options) {
 
 // Smart fetch: try Luna first, fallback to proxy
 async function smartFetch(host, path, options) {
+  const generation = storage.getAuthGeneration();
+  checkSession(generation);
   var url = 'https://' + host + path;
   var opts = options || {};
 
   if (hasLunaService()) {
     var res = await lunaFetch(url, opts);
+    checkSession(generation);
     if (!res.returnValue) {
       logErr('svc', host + path.split('?')[0] + ' :: ' + res.error);
       throw new Error(res.error);
@@ -159,11 +219,14 @@ async function smartFetch(host, path, options) {
   }
 
   // DEV with the bridge up: same path the TV takes (service.fetch)
-  if (await devLunaAvailable()) {
+  const bridge = await devLunaAvailable();
+  checkSession(generation);
+  if (bridge) {
     var br = await devLunaCall('fetch', {
       url: url, method: opts.method || 'GET', body: opts.body,
       contentType: opts.contentType, range: opts.range,
     });
+    checkSession(generation);
     if (br && br.newCookies) {
       var a2 = storage.getAuth() || {};
       storage.setAuth(Object.assign({}, a2, br.newCookies));
@@ -177,7 +240,9 @@ async function smartFetch(host, path, options) {
   var proxyRes = await proxyFetchRaw(url, opts);
   var ct = proxyRes.headers.get('content-type') || '';
   if (ct.indexOf('json') >= 0 || ct.indexOf('text/plain') >= 0) {
-    return proxyRes.json();
+    const data = await proxyRes.json();
+    checkSession(generation);
+    return data;
   }
   return proxyRes;
 }
@@ -195,7 +260,9 @@ export async function apiFetch(path, params, options) {
 // API fetch with WBI signature. options.host targets a non-default host (the
 // WBI signature is host-agnostic, so it works for api.live.bilibili.com too).
 export async function wbiFetch(path, params, options) {
+  const generation = storage.getAuthGeneration();
   var keys = await getWbiKeys(apiFetch);
+  checkSession(generation);
   var signedQuery = signWbi(params || {}, keys.imgKey, keys.subKey);
   return smartFetch((options && options.host) || API_HOST, path + '?' + signedQuery);
 }
@@ -212,37 +279,41 @@ export async function rawFetch(url, options) {
 function lunaRequest(method, parameters, subscribe, handlers) {
   handlers = handlers || {};
   return new Promise(function(resolve, reject) {
+    var settled = false, request;
+    var timer = setTimeout(function () {
+      fail(new Error(method + ' timeout'));
+      try { if (request && request.cancel) request.cancel(); } catch (e) { /* closed */ }
+    }, 10000);
+    function fail(err) {
+      if (settled) return;
+      settled = true; clearTimeout(timer);
+      if (handlers.onFailure) handlers.onFailure(err);
+      reject(new Error(err.errorText || err.error || err.message || (method + ' failed')));
+    }
+    function success(res) {
+      if (settled) return;
+      if (res && res.returnValue === false) { fail(res); return; }
+      settled = true; clearTimeout(timer);
+      if (handlers.onSuccess) handlers.onSuccess(res);
+      resolve(res);
+    }
     if (!hasLunaService()) {
       devLunaAvailable().then(function (up) {
+        if (settled) return;
         if (!up) {
-          if (handlers.allowMissing) { resolve(null); return; }
-          reject(new Error('Luna not available'));
-          return;
+          if (handlers.allowMissing) { success(null); return; }
+          fail(new Error('Luna not available')); return;
         }
-        devLunaCall(method, parameters || {}).then(function (r) {
-          if (handlers.onSuccess) handlers.onSuccess(r);
-          resolve(r);
-        }).catch(function (e) {
-          if (handlers.allowMissing) { resolve(null); return; }
-          reject(e);
-        });
-      });
+        devLunaCall(method, parameters || {}).then(success, fail);
+      }, fail);
       return;
     }
-
-    window.webOS.service.request(SERVICE_URI, {
-      method: method,
-      subscribe: !!subscribe,
-      parameters: parameters || {},
-      onSuccess: function(res) {
-        if (handlers.onSuccess) handlers.onSuccess(res);
-        resolve(res);
-      },
-      onFailure: function(err) {
-        if (handlers.onFailure) handlers.onFailure(err);
-        reject(new Error(err.errorText || err.error || (method + ' failed')));
-      },
-    });
+    try {
+      request = window.webOS.service.request(SERVICE_URI, {
+        method: method, subscribe: !!subscribe, parameters: parameters || {},
+        onSuccess: success, onFailure: fail,
+      });
+    } catch (e) { fail(e); }
   });
 }
 
@@ -304,12 +375,14 @@ let buvidEnsured = false;
 let _buvid3 = '';
 export function getBuvid3() { return _buvid3; }
 export async function ensureBuvid() {
+  const generation = storage.getAuthGeneration();
   if (buvidEnsured) return;
   try {
     const r = await apiFetch('/x/frontend/finger/spi');
     const b3 = r?.data?.b_3;
     const b4 = r?.data?.b_4;
     if (b3) {
+      checkSession(generation);
       _buvid3 = b3;
       await setServiceCookies({ buvid3: b3, buvid4: b4 || '' });
       // Dev browser: the service isn't there to hold the fingerprint, so hand

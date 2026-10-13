@@ -38,7 +38,23 @@ Module._resolveFilename = function (request, ...rest) {
 const requireCjs = Module.createRequire(path.join(SERVICE_DIR, 'service.js'));
 const fs = requireCjs('fs');
 const MAC_COOKIES = path.join(ROOT, 'proxy/cookies.json');
-if (!fs.existsSync('/media/internal')) {
+// Automated anonymous runs must not inherit or clear the developer's login.
+// Remap only service.js's filesystem boundary; production code is unchanged.
+const isolatedState = process.env.BILI_DEV_STATE_DIR;
+if (isolatedState) {
+  fs.mkdirSync(isolatedState, { recursive: true });
+  const stateFs = Object.create(fs);
+  const mapped = p => typeof p === 'string' && p.startsWith('/media/internal/') ? path.join(isolatedState, path.basename(p)) : p;
+  for (const method of ['existsSync', 'readFileSync', 'writeFileSync']) {
+    stateFs[method] = (p, ...args) => fs[method](mapped(p), ...args);
+  }
+  const originalLoad = Module._load;
+  Module._load = function (request, parent, ...args) {
+    if (request === 'fs' && parent?.filename === path.join(SERVICE_DIR, 'service.js')) return stateFs;
+    return originalLoad.call(this, request, parent, ...args);
+  };
+}
+if (!isolatedState && !fs.existsSync('/media/internal')) {
   try { fs.mkdirSync('/media/internal', { recursive: true }); }
   catch (e) {
     // Can't create it (permissions) — seed the service's in-memory jar from the
@@ -54,7 +70,7 @@ const methods = Object.keys(svc.methods).sort();
 console.log('[dev-service] registered methods:', methods.join(', '));
 
 // Seed cookies from the proxy jar so dev keeps the same login/buvid3.
-if (svc.methods.setCookies && fs.existsSync(MAC_COOKIES)) {
+if (!isolatedState && svc.methods.setCookies && fs.existsSync(MAC_COOKIES)) {
   try {
     const jar = JSON.parse(fs.readFileSync(MAC_COOKIES, 'utf-8'));
     svc.methods.setCookies({ payload: { cookies: jar }, respond() {} });

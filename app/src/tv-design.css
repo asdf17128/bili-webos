@@ -264,3 +264,8 @@ button, input { font-family: inherit; }
   .config-page > :first-child { flex: none; width: 440px; margin-right: 80px; }
   .config-page > * + * { flex: 1 1 0; min-width: 0; }
 }
+
+/* Service startup has native button focus before the remote navigator mounts. */
+.startup-state { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 28px; color: var(--tv-text, #fff); }
+.startup-state button { padding: 16px 40px; margin-top: 24px; background: #263548; color: #fff; border: 3px solid transparent; border-radius: 10px; font: inherit; }
+.startup-state button:focus { border-color: #fff; outline: none; }

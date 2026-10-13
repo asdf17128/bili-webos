@@ -1,0 +1,798 @@
+{
+  "at": "2026-10-13T04:37:27.498Z",
+  "provider": "Globalping",
+  "country": "PH",
+  "asns": [
+    17639,
+    9299
+  ],
+  "scope": "Anonymous API HTTPS and system-resolver DNS, not signed media delivery or throughput",
+  "measurements": [
+    {
+      "type": "http",
+      "target": "www.cloudflare.com",
+      "resolver": "system",
+      "id": "2nMFKJh18fH3wiaRW00021J6T",
+      "url": "https://globalping.io/measurements/2nMFKJh18fH3wiaRW00021J6T",
+      "status": "finished",
+      "results": [
+        {
+          "country": "PH",
+          "city": "Calamba",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "timings": {
+            "total": 77,
+            "dns": 50,
+            "tcp": 6,
+            "tls": 12,
+            "firstByte": 9,
+            "download": 0
+          },
+          "dnsStatus": "OK"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "timings": {
+            "total": 42,
+            "dns": 14,
+            "tcp": 7,
+            "tls": 11,
+            "firstByte": 9,
+            "download": 1
+          },
+          "dnsStatus": "OK"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "timings": {
+            "total": 212,
+            "dns": 11,
+            "tcp": 64,
+            "tls": 69,
+            "firstByte": 67,
+            "download": 1
+          },
+          "dnsStatus": "OK"
+        },
+        {
+          "country": "PH",
+          "city": "Taguig",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "timings": {
+            "total": 113,
+            "dns": 10,
+            "tcp": 23,
+            "tls": 48,
+            "firstByte": 29,
+            "download": 3
+          },
+          "dnsStatus": "OK"
+        }
+      ],
+      "missingAsns": []
+    },
+    {
+      "type": "http",
+      "target": "api.bilibili.com",
+      "resolver": "system",
+      "id": "29ZMG0yENGNzeIXKU00021J6T",
+      "url": "https://globalping.io/measurements/29ZMG0yENGNzeIXKU00021J6T",
+      "status": "finished",
+      "results": [
+        {
+          "country": "PH",
+          "city": "Calamba",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "apiCode": -101,
+          "timings": {
+            "total": 236,
+            "dns": 52,
+            "tcp": 35,
+            "tls": 43,
+            "firstByte": 104,
+            "download": 2
+          },
+          "dnsStatus": "OK"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "failed",
+          "statusCode": null,
+          "timings": {
+            "total": null,
+            "dns": null,
+            "tcp": null,
+            "tls": null,
+            "firstByte": null,
+            "download": null
+          },
+          "dnsStatus": null,
+          "transportError": "ECONNREFUSED",
+          "failureSource": "target"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "failed",
+          "statusCode": null,
+          "timings": {
+            "total": null,
+            "dns": null,
+            "tcp": null,
+            "tls": null,
+            "firstByte": null,
+            "download": null
+          },
+          "dnsStatus": null,
+          "transportError": "ECONNREFUSED",
+          "failureSource": "target"
+        },
+        {
+          "country": "PH",
+          "city": "Taguig",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "apiCode": -101,
+          "timings": {
+            "total": 131,
+            "dns": 3,
+            "tcp": 25,
+            "tls": 40,
+            "firstByte": 60,
+            "download": 3
+          },
+          "dnsStatus": "OK"
+        }
+      ],
+      "missingAsns": []
+    },
+    {
+      "type": "http",
+      "target": "api.bilibili.com",
+      "resolver": "1.1.1.1",
+      "id": "2j3j6fFCTm7NVzo5500021J6T",
+      "url": "https://globalping.io/measurements/2j3j6fFCTm7NVzo5500021J6T",
+      "status": "finished",
+      "results": [
+        {
+          "country": "PH",
+          "city": "Calamba",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "apiCode": -101,
+          "timings": {
+            "total": 218,
+            "dns": 18,
+            "tcp": 55,
+            "tls": 59,
+            "firstByte": 84,
+            "download": 2
+          },
+          "dnsStatus": "OK"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "failed",
+          "statusCode": null,
+          "timings": {
+            "total": null,
+            "dns": null,
+            "tcp": null,
+            "tls": null,
+            "firstByte": null,
+            "download": null
+          },
+          "dnsStatus": null,
+          "transportError": "ECONNREFUSED",
+          "failureSource": "resolver"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "failed",
+          "statusCode": null,
+          "timings": {
+            "total": null,
+            "dns": null,
+            "tcp": null,
+            "tls": null,
+            "firstByte": null,
+            "download": null
+          },
+          "dnsStatus": null,
+          "transportError": "ECONNREFUSED",
+          "failureSource": "resolver"
+        },
+        {
+          "country": "PH",
+          "city": "Taguig",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "failed",
+          "statusCode": null,
+          "timings": {
+            "total": null,
+            "dns": null,
+            "tcp": null,
+            "tls": null,
+            "firstByte": null,
+            "download": null
+          },
+          "dnsStatus": null,
+          "transportError": "ECONNREFUSED",
+          "failureSource": "resolver"
+        }
+      ],
+      "missingAsns": []
+    },
+    {
+      "type": "http",
+      "target": "www.cloudflare.com",
+      "resolver": "system",
+      "id": "2ueVkWRp13KiWPomF00021J6T",
+      "url": "https://globalping.io/measurements/2ueVkWRp13KiWPomF00021J6T",
+      "status": "finished",
+      "results": [
+        {
+          "country": "PH",
+          "city": "Calamba",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "timings": {
+            "total": 87,
+            "dns": 51,
+            "tcp": 6,
+            "tls": 20,
+            "firstByte": 8,
+            "download": 2
+          },
+          "dnsStatus": "OK"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "timings": {
+            "total": 32,
+            "dns": 1,
+            "tcp": 8,
+            "tls": 11,
+            "firstByte": 12,
+            "download": 0
+          },
+          "dnsStatus": "OK"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "timings": {
+            "total": 182,
+            "dns": 1,
+            "tcp": 59,
+            "tls": 62,
+            "firstByte": 59,
+            "download": 1
+          },
+          "dnsStatus": "OK"
+        },
+        {
+          "country": "PH",
+          "city": "Taguig",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "timings": {
+            "total": 101,
+            "dns": 3,
+            "tcp": 23,
+            "tls": 47,
+            "firstByte": 25,
+            "download": 3
+          },
+          "dnsStatus": "OK"
+        }
+      ],
+      "missingAsns": []
+    },
+    {
+      "type": "http",
+      "target": "api.bilibili.com",
+      "resolver": "system",
+      "id": "2jv6hcGkFt0srTupn00021J6T",
+      "url": "https://globalping.io/measurements/2jv6hcGkFt0srTupn00021J6T",
+      "status": "finished",
+      "results": [
+        {
+          "country": "PH",
+          "city": "Calamba",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "apiCode": -101,
+          "timings": {
+            "total": 237,
+            "dns": 51,
+            "tcp": 34,
+            "tls": 40,
+            "firstByte": 111,
+            "download": 1
+          },
+          "dnsStatus": "OK"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "failed",
+          "statusCode": null,
+          "timings": {
+            "total": null,
+            "dns": null,
+            "tcp": null,
+            "tls": null,
+            "firstByte": null,
+            "download": null
+          },
+          "dnsStatus": null,
+          "transportError": "ECONNREFUSED",
+          "failureSource": "target"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "failed",
+          "statusCode": null,
+          "timings": {
+            "total": null,
+            "dns": null,
+            "tcp": null,
+            "tls": null,
+            "firstByte": null,
+            "download": null
+          },
+          "dnsStatus": null,
+          "transportError": "ECONNREFUSED",
+          "failureSource": "target"
+        },
+        {
+          "country": "PH",
+          "city": "Taguig",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "apiCode": -101,
+          "timings": {
+            "total": 168,
+            "dns": 12,
+            "tcp": 33,
+            "tls": 48,
+            "firstByte": 72,
+            "download": 3
+          },
+          "dnsStatus": "OK"
+        }
+      ],
+      "missingAsns": []
+    },
+    {
+      "type": "http",
+      "target": "api.bilibili.com",
+      "resolver": "1.1.1.1",
+      "id": "2fkrEmPTvQFKEnan100021J6T",
+      "url": "https://globalping.io/measurements/2fkrEmPTvQFKEnan100021J6T",
+      "status": "finished",
+      "results": [
+        {
+          "country": "PH",
+          "city": "Calamba",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "apiCode": -101,
+          "timings": {
+            "total": 201,
+            "dns": 8,
+            "tcp": 51,
+            "tls": 58,
+            "firstByte": 84,
+            "download": 0
+          },
+          "dnsStatus": "OK"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "failed",
+          "statusCode": null,
+          "timings": {
+            "total": null,
+            "dns": null,
+            "tcp": null,
+            "tls": null,
+            "firstByte": null,
+            "download": null
+          },
+          "dnsStatus": null,
+          "transportError": "ECONNREFUSED",
+          "failureSource": "resolver"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "failed",
+          "statusCode": null,
+          "timings": {
+            "total": null,
+            "dns": null,
+            "tcp": null,
+            "tls": null,
+            "firstByte": null,
+            "download": null
+          },
+          "dnsStatus": null,
+          "transportError": "ECONNREFUSED",
+          "failureSource": "resolver"
+        },
+        {
+          "country": "PH",
+          "city": "Taguig",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "failed",
+          "statusCode": null,
+          "timings": {
+            "total": null,
+            "dns": null,
+            "tcp": null,
+            "tls": null,
+            "firstByte": null,
+            "download": null
+          },
+          "dnsStatus": null,
+          "transportError": "ECONNREFUSED",
+          "failureSource": "resolver"
+        }
+      ],
+      "missingAsns": []
+    },
+    {
+      "type": "http",
+      "target": "www.cloudflare.com",
+      "resolver": "system",
+      "id": "2kTIUYEKsvPWJV2jQ00021J6T",
+      "url": "https://globalping.io/measurements/2kTIUYEKsvPWJV2jQ00021J6T",
+      "status": "finished",
+      "results": [
+        {
+          "country": "PH",
+          "city": "Calamba",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "timings": {
+            "total": 94,
+            "dns": 58,
+            "tcp": 6,
+            "tls": 19,
+            "firstByte": 9,
+            "download": 2
+          },
+          "dnsStatus": "OK"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "timings": {
+            "total": 35,
+            "dns": 16,
+            "tcp": 5,
+            "tls": 7,
+            "firstByte": 6,
+            "download": 1
+          },
+          "dnsStatus": "OK"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "timings": {
+            "total": 218,
+            "dns": 15,
+            "tcp": 65,
+            "tls": 68,
+            "firstByte": 69,
+            "download": 1
+          },
+          "dnsStatus": "OK"
+        },
+        {
+          "country": "PH",
+          "city": "Taguig",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "timings": {
+            "total": 124,
+            "dns": 3,
+            "tcp": 32,
+            "tls": 54,
+            "firstByte": 32,
+            "download": 3
+          },
+          "dnsStatus": "OK"
+        }
+      ],
+      "missingAsns": []
+    },
+    {
+      "type": "http",
+      "target": "api.bilibili.com",
+      "resolver": "system",
+      "id": "28CebdOgVtMjEtL7K00021J6T",
+      "url": "https://globalping.io/measurements/28CebdOgVtMjEtL7K00021J6T",
+      "status": "finished",
+      "results": [
+        {
+          "country": "PH",
+          "city": "Calamba",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "apiCode": -101,
+          "timings": {
+            "total": 234,
+            "dns": 58,
+            "tcp": 34,
+            "tls": 40,
+            "firstByte": 101,
+            "download": 1
+          },
+          "dnsStatus": "OK"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "failed",
+          "statusCode": null,
+          "timings": {
+            "total": null,
+            "dns": null,
+            "tcp": null,
+            "tls": null,
+            "firstByte": null,
+            "download": null
+          },
+          "dnsStatus": null,
+          "transportError": "ECONNREFUSED",
+          "failureSource": "target"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "failed",
+          "statusCode": null,
+          "timings": {
+            "total": null,
+            "dns": null,
+            "tcp": null,
+            "tls": null,
+            "firstByte": null,
+            "download": null
+          },
+          "dnsStatus": null,
+          "transportError": "ECONNREFUSED",
+          "failureSource": "target"
+        },
+        {
+          "country": "PH",
+          "city": "Taguig",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "apiCode": -101,
+          "timings": {
+            "total": 148,
+            "dns": 3,
+            "tcp": 30,
+            "tls": 44,
+            "firstByte": 68,
+            "download": 3
+          },
+          "dnsStatus": "OK"
+        }
+      ],
+      "missingAsns": []
+    },
+    {
+      "type": "http",
+      "target": "api.bilibili.com",
+      "resolver": "1.1.1.1",
+      "id": "2JTXVhekdHuNmmfiX00021J6T",
+      "url": "https://globalping.io/measurements/2JTXVhekdHuNmmfiX00021J6T",
+      "status": "finished",
+      "results": [
+        {
+          "country": "PH",
+          "city": "Calamba",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "apiCode": -101,
+          "timings": {
+            "total": 250,
+            "dns": 36,
+            "tcp": 56,
+            "tls": 62,
+            "firstByte": 92,
+            "download": 4
+          },
+          "dnsStatus": "OK"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "failed",
+          "statusCode": null,
+          "timings": {
+            "total": null,
+            "dns": null,
+            "tcp": null,
+            "tls": null,
+            "firstByte": null,
+            "download": null
+          },
+          "dnsStatus": null,
+          "transportError": "ECONNREFUSED",
+          "failureSource": "resolver"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "failed",
+          "statusCode": null,
+          "timings": {
+            "total": null,
+            "dns": null,
+            "tcp": null,
+            "tls": null,
+            "firstByte": null,
+            "download": null
+          },
+          "dnsStatus": null,
+          "transportError": "ECONNREFUSED",
+          "failureSource": "resolver"
+        },
+        {
+          "country": "PH",
+          "city": "Taguig",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "failed",
+          "statusCode": null,
+          "timings": {
+            "total": null,
+            "dns": null,
+            "tcp": null,
+            "tls": null,
+            "firstByte": null,
+            "download": null
+          },
+          "dnsStatus": null,
+          "transportError": "ECONNREFUSED",
+          "failureSource": "resolver"
+        }
+      ],
+      "missingAsns": []
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "node18": "v18.20.8",
+  "portableImportsAndHelp": true,
+  "pythonWorkerOfflineContracts": true,
+  "missingPythonFailsWithReport": true,
+  "portableAnonymousChecks": 11,
+  "portableDirectoryHasNodeModules": false,
+  "portableLocation": {
+    "country": "HK",
+    "proxyConfigured": true
+  },
+  "archive": {
+    "name": "bili-network-check.zip",
+    "bytes": 19242,
+    "sha256": "701eb89f1e5a910a06985b7ebeec17f278f60136870638c3afc478fe80ce3c72",
+    "manifestFilesVerified": 10
+  },
+  "scope": "Tool validation and this computer proxy route only; no Philippines household or VIP decoding claim"
+}

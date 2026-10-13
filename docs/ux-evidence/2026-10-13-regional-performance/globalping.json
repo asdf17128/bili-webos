@@ -1,0 +1,934 @@
+{
+  "at": "2026-10-13T04:35:40.464Z",
+  "provider": "Globalping",
+  "country": "PH",
+  "asns": [
+    17639,
+    9299
+  ],
+  "scope": "Anonymous API HTTPS and system-resolver DNS, not signed media delivery or throughput",
+  "measurements": [
+    {
+      "type": "http",
+      "target": "api.bilibili.com",
+      "id": "2WvVbGT1sTf6Z3uuH00021J6R",
+      "url": "https://globalping.io/measurements/2WvVbGT1sTf6Z3uuH00021J6R",
+      "status": "finished",
+      "results": [
+        {
+          "country": "PH",
+          "city": "Calamba",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "apiCode": -101,
+          "timings": {
+            "total": 364,
+            "dns": 183,
+            "tcp": 34,
+            "tls": 44,
+            "firstByte": 103,
+            "download": 0
+          },
+          "dnsStatus": "OK"
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "failed",
+          "statusCode": null,
+          "timings": {
+            "total": null,
+            "dns": null,
+            "tcp": null,
+            "tls": null,
+            "firstByte": null,
+            "download": null
+          },
+          "dnsStatus": null
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "failed",
+          "statusCode": null,
+          "timings": {
+            "total": null,
+            "dns": null,
+            "tcp": null,
+            "tls": null,
+            "firstByte": null,
+            "download": null
+          },
+          "dnsStatus": null
+        },
+        {
+          "country": "PH",
+          "city": "Taguig",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 200,
+          "apiCode": -101,
+          "timings": {
+            "total": 175,
+            "dns": 10,
+            "tcp": 37,
+            "tls": 51,
+            "firstByte": 74,
+            "download": 3
+          },
+          "dnsStatus": "OK"
+        }
+      ],
+      "missingAsns": []
+    },
+    {
+      "type": "dns",
+      "target": "api.bilibili.com",
+      "id": "2wEtJWvrt89grZBX400021J6R",
+      "url": "https://globalping.io/measurements/2wEtJWvrt89grZBX400021J6R",
+      "status": "finished",
+      "results": [
+        {
+          "country": "PH",
+          "city": "Calamba",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 55
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "a.w.bilicdn1.com."
+            },
+            {
+              "type": "CNAME",
+              "value": "i.w.bilicdn1.com."
+            },
+            {
+              "type": "A",
+              "value": "164.52.1.62"
+            },
+            {
+              "type": "A",
+              "value": "103.151.151.133"
+            },
+            {
+              "type": "A",
+              "value": "164.52.1.60"
+            },
+            {
+              "type": "A",
+              "value": "103.151.151.134"
+            },
+            {
+              "type": "A",
+              "value": "164.52.1.61"
+            },
+            {
+              "type": "A",
+              "value": "164.52.1.59"
+            }
+          ]
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 0
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "a.w.bilicdn1.com."
+            },
+            {
+              "type": "CNAME",
+              "value": "i.w.bilicdn1.com."
+            },
+            {
+              "type": "A",
+              "value": "103.151.151.133"
+            },
+            {
+              "type": "A",
+              "value": "103.151.151.6"
+            },
+            {
+              "type": "A",
+              "value": "103.151.151.5"
+            },
+            {
+              "type": "A",
+              "value": "103.151.151.4"
+            },
+            {
+              "type": "A",
+              "value": "103.151.151.134"
+            }
+          ]
+        },
+        {
+          "country": "PH",
+          "city": "Taguig",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 0
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "a.w.bilicdn1.com."
+            },
+            {
+              "type": "CNAME",
+              "value": "i.w.bilicdn1.com."
+            },
+            {
+              "type": "A",
+              "value": "103.151.151.4"
+            },
+            {
+              "type": "A",
+              "value": "103.151.151.5"
+            },
+            {
+              "type": "A",
+              "value": "103.151.151.133"
+            },
+            {
+              "type": "A",
+              "value": "103.151.151.6"
+            },
+            {
+              "type": "A",
+              "value": "103.151.151.134"
+            }
+          ]
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 0
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "a.w.bilicdn1.com."
+            },
+            {
+              "type": "CNAME",
+              "value": "i.w.bilicdn1.com."
+            },
+            {
+              "type": "A",
+              "value": "103.151.151.5"
+            },
+            {
+              "type": "A",
+              "value": "103.151.151.6"
+            },
+            {
+              "type": "A",
+              "value": "103.151.151.4"
+            },
+            {
+              "type": "A",
+              "value": "103.151.151.134"
+            },
+            {
+              "type": "A",
+              "value": "103.151.151.133"
+            }
+          ]
+        }
+      ],
+      "missingAsns": []
+    },
+    {
+      "type": "dns",
+      "target": "upos-hz-mirrorakam.akamaized.net",
+      "id": "2sVzyjYUryGImwlzy00021J6R",
+      "url": "https://globalping.io/measurements/2sVzyjYUryGImwlzy00021J6R",
+      "status": "finished",
+      "results": [
+        {
+          "country": "PH",
+          "city": "Calamba",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 55
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "globalredir.upos-hz-mirrorakam.akadns.net."
+            },
+            {
+              "type": "CNAME",
+              "value": "a1893.dscw10.akamai.net."
+            },
+            {
+              "type": "A",
+              "value": "23.197.85.13"
+            },
+            {
+              "type": "A",
+              "value": "23.197.85.5"
+            },
+            {
+              "type": "A",
+              "value": "23.197.85.81"
+            },
+            {
+              "type": "A",
+              "value": "23.197.85.83"
+            },
+            {
+              "type": "A",
+              "value": "23.197.85.79"
+            },
+            {
+              "type": "A",
+              "value": "23.197.85.10"
+            },
+            {
+              "type": "A",
+              "value": "23.197.85.80"
+            },
+            {
+              "type": "A",
+              "value": "23.197.85.8"
+            },
+            {
+              "type": "A",
+              "value": "23.197.85.76"
+            }
+          ]
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 227
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "globalredir.upos-hz-mirrorakam.akadns.net."
+            },
+            {
+              "type": "CNAME",
+              "value": "a1893.dscw10.akamai.net."
+            },
+            {
+              "type": "A",
+              "value": "23.204.80.153"
+            },
+            {
+              "type": "A",
+              "value": "23.204.80.138"
+            },
+            {
+              "type": "A",
+              "value": "23.204.80.143"
+            },
+            {
+              "type": "A",
+              "value": "23.204.80.148"
+            },
+            {
+              "type": "A",
+              "value": "23.204.80.140"
+            },
+            {
+              "type": "A",
+              "value": "23.60.96.136"
+            },
+            {
+              "type": "A",
+              "value": "23.204.80.135"
+            },
+            {
+              "type": "A",
+              "value": "23.60.96.158"
+            },
+            {
+              "type": "A",
+              "value": "23.60.96.151"
+            }
+          ]
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 227
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "globalredir.upos-hz-mirrorakam.akadns.net."
+            },
+            {
+              "type": "CNAME",
+              "value": "a1893.dscw10.akamai.net."
+            },
+            {
+              "type": "A",
+              "value": "23.204.80.153"
+            },
+            {
+              "type": "A",
+              "value": "23.204.80.138"
+            },
+            {
+              "type": "A",
+              "value": "23.204.80.143"
+            },
+            {
+              "type": "A",
+              "value": "23.204.80.148"
+            },
+            {
+              "type": "A",
+              "value": "23.204.80.140"
+            },
+            {
+              "type": "A",
+              "value": "23.60.96.136"
+            },
+            {
+              "type": "A",
+              "value": "23.204.80.135"
+            },
+            {
+              "type": "A",
+              "value": "23.60.96.158"
+            },
+            {
+              "type": "A",
+              "value": "23.60.96.151"
+            }
+          ]
+        },
+        {
+          "country": "PH",
+          "city": "Taguig",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 10
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "globalredir.upos-hz-mirrorakam.akadns.net."
+            },
+            {
+              "type": "CNAME",
+              "value": "a1893.dscw38.akamai.net."
+            },
+            {
+              "type": "A",
+              "value": "202.138.179.81"
+            },
+            {
+              "type": "A",
+              "value": "202.138.179.72"
+            }
+          ]
+        }
+      ],
+      "missingAsns": []
+    },
+    {
+      "type": "dns",
+      "target": "upos-sz-mirrorcosov.bilivideo.com",
+      "id": "2KKwrSoJzWSMKFyt300021J6R",
+      "url": "https://globalping.io/measurements/2KKwrSoJzWSMKFyt300021J6R",
+      "status": "finished",
+      "results": [
+        {
+          "country": "PH",
+          "city": "Calamba",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 55
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "upos-sz-mirrorcosov.bilivideo.com.eo.dnse0.com."
+            },
+            {
+              "type": "CNAME",
+              "value": "cl-gl6137c8b4.gcdn.co."
+            },
+            {
+              "type": "A",
+              "value": "92.223.84.84"
+            }
+          ]
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 303
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "upos-sz-mirrorcosov.bilivideo.com.eo.dnse0.com."
+            },
+            {
+              "type": "CNAME",
+              "value": "cl-gl6137c8b4.gcdn.co."
+            },
+            {
+              "type": "A",
+              "value": "92.223.84.84"
+            }
+          ]
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 299
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "upos-sz-mirrorcosov.bilivideo.com.eo.dnse0.com."
+            },
+            {
+              "type": "CNAME",
+              "value": "cl-gl6137c8b4.gcdn.co."
+            },
+            {
+              "type": "A",
+              "value": "92.223.84.84"
+            }
+          ]
+        },
+        {
+          "country": "PH",
+          "city": "Taguig",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 10
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "upos-sz-mirrorcosov.bilivideo.com.eo.dnse0.com."
+            },
+            {
+              "type": "CNAME",
+              "value": "cl-gl6137c8b4.gcdn.co."
+            },
+            {
+              "type": "A",
+              "value": "92.223.76.254"
+            }
+          ]
+        }
+      ],
+      "missingAsns": []
+    },
+    {
+      "type": "dns",
+      "target": "upos-sz-estgoss.bilivideo.com",
+      "id": "2Px8Z1noHnZlG7DZu00021J6R",
+      "url": "https://globalping.io/measurements/2Px8Z1noHnZlG7DZu00021J6R",
+      "status": "finished",
+      "results": [
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 111
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "uposmirror.oss-enet-ds.aliyuncs.com."
+            },
+            {
+              "type": "CNAME",
+              "value": "uposmirror.line-isp-province.oss-enet-ds.aliyuncs.com.gds.alibabadns.com."
+            },
+            {
+              "type": "A",
+              "value": "60.188.12.19"
+            }
+          ]
+        },
+        {
+          "country": "PH",
+          "city": "Calamba",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 67
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "uposmirror.oss-enet-ds.aliyuncs.com."
+            },
+            {
+              "type": "CNAME",
+              "value": "uposmirror.line-isp-province.oss-enet-ds.aliyuncs.com.gds.alibabadns.com."
+            },
+            {
+              "type": "A",
+              "value": "60.188.12.19"
+            }
+          ]
+        },
+        {
+          "country": "PH",
+          "city": "Taguig",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 40
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "uposmirror.oss-enet-ds.aliyuncs.com."
+            },
+            {
+              "type": "CNAME",
+              "value": "uposmirror.line-isp-province.oss-enet-ds.aliyuncs.com.gds.alibabadns.com."
+            },
+            {
+              "type": "A",
+              "value": "60.188.12.19"
+            }
+          ]
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 111
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "uposmirror.oss-enet-ds.aliyuncs.com."
+            },
+            {
+              "type": "CNAME",
+              "value": "uposmirror.line-isp-province.oss-enet-ds.aliyuncs.com.gds.alibabadns.com."
+            },
+            {
+              "type": "A",
+              "value": "60.188.12.19"
+            }
+          ]
+        }
+      ],
+      "missingAsns": []
+    },
+    {
+      "type": "dns",
+      "target": "upos-sz-mirrorhwo1.bilivideo.com",
+      "id": "2bRCphIbAllCSyDQp00021J6R",
+      "url": "https://globalping.io/measurements/2bRCphIbAllCSyDQp00021J6R",
+      "status": "finished",
+      "results": [
+        {
+          "country": "PH",
+          "city": "Calamba",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 759
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "upos-sz-mirrorhwo1.bilivideo.com.c.cdnhwc1.com."
+            },
+            {
+              "type": "CNAME",
+              "value": "hcdnv.biliv6.gslb.c.cdnhwc2.com."
+            },
+            {
+              "type": "A",
+              "value": "39.135.62.105"
+            },
+            {
+              "type": "A",
+              "value": "39.137.35.130"
+            },
+            {
+              "type": "A",
+              "value": "39.135.62.79"
+            },
+            {
+              "type": "A",
+              "value": "39.137.35.133"
+            },
+            {
+              "type": "A",
+              "value": "39.135.58.229"
+            },
+            {
+              "type": "A",
+              "value": "39.135.58.203"
+            }
+          ]
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 17639,
+          "network": "Converge ICT Solutions",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 2611
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "upos-sz-mirrorhwo1.bilivideo.com.c.cdnhwc1.com."
+            },
+            {
+              "type": "CNAME",
+              "value": "hcdnv.biliv6.gslb.c.cdnhwc2.com."
+            },
+            {
+              "type": "A",
+              "value": "39.135.58.203"
+            },
+            {
+              "type": "A",
+              "value": "39.135.58.229"
+            },
+            {
+              "type": "A",
+              "value": "39.135.62.79"
+            },
+            {
+              "type": "A",
+              "value": "39.135.62.105"
+            },
+            {
+              "type": "A",
+              "value": "39.137.35.130"
+            },
+            {
+              "type": "A",
+              "value": "39.137.35.133"
+            }
+          ]
+        },
+        {
+          "country": "PH",
+          "city": "Quezon City",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 2611
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "upos-sz-mirrorhwo1.bilivideo.com.c.cdnhwc1.com."
+            },
+            {
+              "type": "CNAME",
+              "value": "hcdnv.biliv6.gslb.c.cdnhwc2.com."
+            },
+            {
+              "type": "A",
+              "value": "39.135.58.203"
+            },
+            {
+              "type": "A",
+              "value": "39.135.58.229"
+            },
+            {
+              "type": "A",
+              "value": "39.135.62.79"
+            },
+            {
+              "type": "A",
+              "value": "39.135.62.105"
+            },
+            {
+              "type": "A",
+              "value": "39.137.35.130"
+            },
+            {
+              "type": "A",
+              "value": "39.137.35.133"
+            }
+          ]
+        },
+        {
+          "country": "PH",
+          "city": "Taguig",
+          "asn": 9299,
+          "network": "Philippine Long Distance Telephone",
+          "expectedNetwork": true,
+          "status": "finished",
+          "statusCode": 0,
+          "timings": {
+            "total": 410
+          },
+          "dnsStatus": "NOERROR",
+          "answers": [
+            {
+              "type": "CNAME",
+              "value": "upos-sz-mirrorhwo1.bilivideo.com.c.cdnhwc1.com."
+            },
+            {
+              "type": "CNAME",
+              "value": "hcdnv.biliv6.gslb.c.cdnhwc2.com."
+            },
+            {
+              "type": "A",
+              "value": "39.137.35.130"
+            },
+            {
+              "type": "A",
+              "value": "39.135.62.79"
+            },
+            {
+              "type": "A",
+              "value": "39.137.35.133"
+            },
+            {
+              "type": "A",
+              "value": "39.135.58.229"
+            },
+            {
+              "type": "A",
+              "value": "39.135.58.203"
+            },
+            {
+              "type": "A",
+              "value": "39.135.62.105"
+            }
+          ]
+        }
+      ],
+      "missingAsns": []
+    }
+  ]
+}

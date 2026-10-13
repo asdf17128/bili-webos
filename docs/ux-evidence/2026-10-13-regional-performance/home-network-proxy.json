@@ -1,0 +1,319 @@
+{
+  "at": "2026-10-13T04:42:53.797Z",
+  "execution": "local",
+  "bvid": "BV1sapi6qE72",
+  "credentials": "anonymous, newly acquired fingerprint only",
+  "checks": [
+    {
+      "name": "partition 1008",
+      "pass": true,
+      "detail": {
+        "code": 0,
+        "count": 100
+      }
+    },
+    {
+      "name": "partition 1005",
+      "pass": true,
+      "detail": {
+        "code": 0,
+        "count": 100
+      }
+    },
+    {
+      "name": "partition 1003",
+      "pass": true,
+      "detail": {
+        "code": 0,
+        "count": 100
+      }
+    },
+    {
+      "name": "partition 1010",
+      "pass": true,
+      "detail": {
+        "code": 0,
+        "count": 100
+      }
+    },
+    {
+      "name": "partition 1002",
+      "pass": true,
+      "detail": {
+        "code": 0,
+        "count": 100
+      }
+    },
+    {
+      "name": "partition 1007",
+      "pass": true,
+      "detail": {
+        "code": 0,
+        "count": 100
+      }
+    },
+    {
+      "name": "video metadata or pagelist fallback",
+      "pass": true,
+      "detail": {
+        "viewCode": 0
+      }
+    },
+    {
+      "name": "DASH video source",
+      "pass": true,
+      "detail": {
+        "code": 0,
+        "quality": 32
+      }
+    },
+    {
+      "name": "automatic route has successful measurements",
+      "pass": true,
+      "detail": {
+        "host": "upos-sz-estgoss.bilivideo.com"
+      }
+    },
+    {
+      "name": "selected route transfers a new media range",
+      "pass": true,
+      "detail": {
+        "host": "upos-sz-estgoss.bilivideo.com",
+        "bytes": 65536,
+        "ms": 187.45345796924084
+      }
+    },
+    {
+      "name": "cache contains no signed media URLs",
+      "pass": true
+    }
+  ],
+  "samples": [
+    {
+      "host": "upos-sz-estgoss.bilivideo.com",
+      "start": 0,
+      "end": 262143,
+      "bytes": 262144,
+      "total": 157120651,
+      "ms": 207.84425002057105,
+      "sha256": "c6c61a254f7138d9194d391be59f9e846703a1c06c34de61c839b3bd18f0795e"
+    },
+    {
+      "host": "upos-sz-estgoss.bilivideo.com",
+      "start": 78560325,
+      "end": 78822468,
+      "bytes": 262144,
+      "total": 157120651,
+      "ms": 166.76754201762378,
+      "sha256": "7953a99e3ddcfd5f4f7fa8f11f434f009200cd57f05329885ec0d3fa26e7f428"
+    },
+    {
+      "host": "upos-sz-mirrorcosov.bilivideo.com",
+      "start": 0,
+      "end": 262143,
+      "bytes": 262144,
+      "total": 157120651,
+      "ms": 2818.213624996133,
+      "sha256": "c6c61a254f7138d9194d391be59f9e846703a1c06c34de61c839b3bd18f0795e"
+    },
+    {
+      "host": "upos-sz-mirrorcosov.bilivideo.com",
+      "start": 78560325,
+      "end": 78822468,
+      "bytes": 262144,
+      "total": 157120651,
+      "ms": 3142.200166010298,
+      "sha256": "7953a99e3ddcfd5f4f7fa8f11f434f009200cd57f05329885ec0d3fa26e7f428"
+    },
+    {
+      "host": "upos-sz-mirrorhwo1.bilivideo.com",
+      "start": 0,
+      "end": 262143,
+      "bytes": 262144,
+      "total": 157120651,
+      "ms": 257.1486249798909,
+      "sha256": "c6c61a254f7138d9194d391be59f9e846703a1c06c34de61c839b3bd18f0795e"
+    },
+    {
+      "host": "upos-sz-mirrorhwo1.bilivideo.com",
+      "start": 78560325,
+      "end": 78822468,
+      "bytes": 262144,
+      "total": 157120651,
+      "ms": 285.4818330379203,
+      "sha256": "7953a99e3ddcfd5f4f7fa8f11f434f009200cd57f05329885ec0d3fa26e7f428"
+    },
+    {
+      "host": "upos-sz-mirroraliov.bilivideo.com",
+      "start": 0,
+      "end": 262143,
+      "bytes": 262144,
+      "total": 157120651,
+      "ms": 1356.8077919771895,
+      "sha256": "c6c61a254f7138d9194d391be59f9e846703a1c06c34de61c839b3bd18f0795e"
+    },
+    {
+      "host": "upos-sz-mirroraliov.bilivideo.com",
+      "start": 78560325,
+      "end": 78822468,
+      "bytes": 262144,
+      "total": 157120651,
+      "ms": 3044.3627909990028,
+      "sha256": "7953a99e3ddcfd5f4f7fa8f11f434f009200cd57f05329885ec0d3fa26e7f428"
+    },
+    {
+      "host": "upos-sz-mirrorali.bilivideo.com",
+      "start": 0,
+      "end": 262143,
+      "bytes": 262144,
+      "total": 157120651,
+      "ms": 189.11995796952397,
+      "sha256": "c6c61a254f7138d9194d391be59f9e846703a1c06c34de61c839b3bd18f0795e"
+    },
+    {
+      "host": "upos-sz-mirrorali.bilivideo.com",
+      "start": 78560325,
+      "end": 78822468,
+      "bytes": 262144,
+      "total": 157120651,
+      "ms": 182.2744159726426,
+      "sha256": "7953a99e3ddcfd5f4f7fa8f11f434f009200cd57f05329885ec0d3fa26e7f428"
+    },
+    {
+      "host": "upos-sz-mirrorcos.bilivideo.com",
+      "start": 0,
+      "end": 262143,
+      "bytes": 262144,
+      "total": 157120651,
+      "ms": 205.51812497433275,
+      "sha256": "c6c61a254f7138d9194d391be59f9e846703a1c06c34de61c839b3bd18f0795e"
+    },
+    {
+      "host": "upos-sz-mirrorcos.bilivideo.com",
+      "start": 78560325,
+      "end": 78822468,
+      "bytes": 262144,
+      "total": 157120651,
+      "ms": 182.85762495361269,
+      "sha256": "7953a99e3ddcfd5f4f7fa8f11f434f009200cd57f05329885ec0d3fa26e7f428"
+    }
+  ],
+  "location": {
+    "loc": "HK",
+    "proxyConfigured": true
+  },
+  "dns": [
+    {
+      "host": "api.bilibili.com",
+      "addresses": [
+        "116.207.163.64",
+        "116.207.163.65",
+        "116.207.163.66",
+        "117.21.179.18",
+        "117.21.179.19",
+        "117.21.179.20",
+        "175.4.62.127",
+        "175.4.62.128"
+      ],
+      "ms": 14.7
+    },
+    {
+      "host": "api.live.bilibili.com",
+      "addresses": [
+        "116.207.163.64",
+        "116.207.163.65",
+        "116.207.163.66",
+        "117.21.179.18",
+        "117.21.179.19",
+        "117.21.179.20",
+        "175.4.62.127",
+        "175.4.62.128",
+        "175.4.62.129"
+      ],
+      "ms": 8.5
+    },
+    {
+      "host": "upos-hz-mirrorakam.akamaized.net",
+      "addresses": [
+        "23.61.251.196",
+        "23.61.251.219"
+      ],
+      "ms": 10.9
+    },
+    {
+      "host": "upos-sz-mirrorcosov.bilivideo.com",
+      "addresses": [
+        "43.168.62.60",
+        "43.174.128.14",
+        "43.174.128.72",
+        "43.174.128.77",
+        "43.175.120.27",
+        "43.175.44.40"
+      ],
+      "ms": 8.8
+    },
+    {
+      "host": "upos-sz-estgoss.bilivideo.com",
+      "addresses": [
+        "60.188.12.118",
+        "60.188.12.122"
+      ],
+      "ms": 9.4
+    },
+    {
+      "host": "upos-sz-mirrorhwo1.bilivideo.com",
+      "addresses": [
+        "122.228.241.57",
+        "122.228.241.58",
+        "122.228.241.59"
+      ],
+      "ms": 9
+    }
+  ],
+  "nav": {
+    "code": -101,
+    "hasWbiKeys": true
+  },
+  "selection": {
+    "state": "ready",
+    "preferred": "upos-sz-estgoss.bilivideo.com",
+    "candidates": [
+      {
+        "host": "upos-sz-estgoss.bilivideo.com",
+        "ok": true,
+        "rateMbps": 10.090016922731506,
+        "ageMs": 11678
+      },
+      {
+        "host": "upos-sz-mirrorcosov.bilivideo.com",
+        "ok": true,
+        "rateMbps": 0.6674151515505735,
+        "ageMs": 5715
+      },
+      {
+        "host": "upos-sz-mirrorhwo1.bilivideo.com",
+        "ok": true,
+        "rateMbps": 7.346008597757032,
+        "ageMs": 5169
+      },
+      {
+        "host": "upos-sz-mirroraliov.bilivideo.com",
+        "ok": true,
+        "rateMbps": 0.6888640231054141,
+        "ageMs": 765
+      },
+      {
+        "host": "upos-sz-mirrorali.bilivideo.com",
+        "ok": true,
+        "rateMbps": 11.089004156493884,
+        "ageMs": 391
+      },
+      {
+        "host": "upos-sz-mirrorcos.bilivideo.com",
+        "ok": true,
+        "rateMbps": 10.204219215516463,
+        "ageMs": 0
+      }
+    ]
+  }
+}

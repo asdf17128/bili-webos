@@ -8,6 +8,14 @@ import net from 'node:net';
 import assert from 'node:assert/strict';
 import { tvPassphrase } from './_tvpass.mjs';
 
+const minutes = Number(process.env.SOAK_MINUTES || 25);
+if (!Number.isInteger(minutes) || minutes < 1 || minutes > 120) throw new Error('SOAK_MINUTES must be 1..120');
+const sampleVideo = { bvid: process.env.SOAK_BVID || 'BV1xx411c7Xg', resumeMode: 'none' };
+if (!/^BV[a-zA-Z0-9]+$/.test(sampleVideo.bvid)) throw new Error('Invalid SOAK_BVID');
+if (process.env.SOAK_CID) {
+  sampleVideo.cid = Number(process.env.SOAK_CID);
+  if (!Number.isSafeInteger(sampleVideo.cid) || sampleVideo.cid < 1) throw new Error('Invalid SOAK_CID');
+}
 const output = process.env.UX_OUTPUT || '/tmp/bili-network-soak-tv';
 
 mkdirSync(output, { recursive: true });
@@ -16,7 +24,7 @@ const results = [];
 let originalSettings = null;
 let server, ws;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-const overall = setTimeout(() => { console.error('TV UX check timed out'); process.exit(1); }, 27 * 60 * 1000);
+const overall = setTimeout(() => { console.error('TV UX check timed out'); process.exit(1); }, (minutes + 2) * 60 * 1000);
 try {
   await new Promise((resolve, reject) => {
     conn.on('ready', resolve).on('error', reject);
@@ -60,24 +68,28 @@ try {
     }
     throw new Error('Timed out: ' + expression);
   };
-  const check = (name, condition, detail) => { results.push({ name, pass: !!condition, detail }); console.log(condition ? 'PASS' : 'FAIL', name, detail || ''); assert.ok(condition, name); };
+  const check = (name, condition, detail, fatal = true) => { results.push({ name, pass: !!condition, detail }); console.log(condition ? 'PASS' : 'FAIL', name, detail || ''); if (fatal) assert.ok(condition, name); };
   originalSettings = await evaluate('localStorage.getItem("bili_settings")');
   try {
-    await evaluate(`localStorage.setItem('bili_settings',JSON.stringify({...JSON.parse(localStorage.getItem('bili_settings')||'{}'),playbackMode:'repeat'}))`);
+    await evaluate(`localStorage.setItem('bili_settings',JSON.stringify({...JSON.parse(localStorage.getItem('bili_settings')||'{}'),playbackMode:'repeat',quality:120}))`);
     await call('Page.reload'); await wait('!!window.__openVideo');
-    await evaluate("window.__openVideo({bvid:'BV1xx411c7Xg',resumeMode:'none'})");
+    await evaluate('window.__openVideo('+JSON.stringify(sampleVideo)+')');
     await wait("document.querySelector('video')?.currentTime>0.5 && document.querySelector('video').readyState>=2",40000);
     await evaluate(`(() => {
       const v=document.querySelector('video');
-      window.__soak={lastTime:v.currentTime,lastAdvance:Date.now(),longestGap:0,ends:0};
+      window.__soak={lastTime:v.currentTime,lastAdvance:Date.now(),longestGap:0,ends:0,longTasks:0,longTaskMs:0,maxTaskMs:0,longTasksSupported:!!window.PerformanceObserver?.supportedEntryTypes?.includes('longtask')};
       v.addEventListener('ended',()=>window.__soak.ends++);
+      try {
+        window.__soakObserver = new PerformanceObserver(list=>list.getEntries().forEach(e=>{const s=window.__soak;s.longTasks++;s.longTaskMs+=e.duration;s.maxTaskMs=Math.max(s.maxTaskMs,e.duration)}));
+        window.__soakObserver.observe({entryTypes:['longtask']});
+      } catch {}
       window.__soakTimer=setInterval(()=>{
         const s=window.__soak;
         if(v.currentTime!==s.lastTime){s.longestGap=Math.max(s.longestGap,Date.now()-s.lastAdvance);s.lastAdvance=Date.now();s.lastTime=v.currentTime;}
       },1000);
     })()`);
     const started=Date.now();let previousUptime=0;
-    for(let n=0;n<=25;n++){
+    for(let n=0;n<=minutes;n++){
       if(n)await sleep(Math.max(0,started+n*60000-Date.now()));
       const sample=await evaluate(`(async () => {
         const request=(method,parameters)=>new Promise(resolve=>{
@@ -96,21 +108,29 @@ try {
           request('fetch',{url:'https://github.com/asdf17128/bili-webos/releases/latest/download/version.json'})
         ]);
         const service=await request('getDiagnostics',{}),v=document.querySelector('video'),s=window.__soak;
-        return {apis,service,t:v?.currentTime,ready:v?.readyState,paused:v?.paused,width:v?.videoWidth,height:v?.videoHeight,
+        const stats=window.__shakaPlayer?.getStats(),track=window.__shakaPlayer?.getVariantTracks()?.find(t=>t.active);
+        let buffer=0;for(let i=0;v&&i<v.buffered.length;i++)if(v.currentTime>=v.buffered.start(i)&&v.currentTime<=v.buffered.end(i))buffer=v.buffered.end(i)-v.currentTime;
+        const performanceSample={heapBytes:performance.memory?.usedJSHeapSize,decodedFrames:stats?.decodedFrames,droppedFrames:stats?.droppedFrames,bufferSec:buffer,codec:track?.videoCodec,frameRate:track?.frameRate,bandwidth:track?.bandwidth,longTasksSupported:s.longTasksSupported,longTasks:s.longTasks,longTaskMs:s.longTaskMs,maxTaskMs:s.maxTaskMs};
+        return {apis,service,performance:performanceSample,t:v?.currentTime,ready:v?.readyState,paused:v?.paused,width:v?.videoWidth,height:v?.videoHeight,
           ends:s.ends,longestGap:Math.max(s.longestGap,Date.now()-s.lastAdvance)};
       })()`);
+      try { const heap = await call('Runtime.getHeapUsage'); sample.performance.cdpHeapBytes = heap.usedSize; } catch {}
       sample.elapsedMs=Date.now()-started;
+      sample.playbackHealthy = sample.width>0 && sample.ready>=2 && !sample.paused && sample.longestGap<15000;
+      sample.biliHealthy = sample.apis.slice(0,2).every(a=>a.status===200 && a.code===0);
+      sample.updateHealthy = sample.apis[2].status===200 && !!sample.apis[2].version;
       check('continuous playback and APIs minute '+n,sample.width>0 && sample.ready>=2 && !sample.paused && sample.longestGap<15000 &&
-        sample.apis.every((a,i)=>a.status===200 && (i===2?!!a.version:a.code===0)) && sample.service.uptime>previousUptime,sample);
-      previousUptime=sample.service.uptime;
+        sample.apis.every((a,i)=>a.status===200 && (i===2?!!a.version:a.code===0)) && sample.service.uptime>previousUptime,sample,false);
+      previousUptime=sample.service.uptime || previousUptime;
       writeFileSync(`${output}/device.json`,JSON.stringify(results,null,2));
     }
   } finally {
-    await evaluate('clearInterval(window.__soakTimer);delete window.__soak;delete window.__soakTimer');
+    await evaluate('clearInterval(window.__soakTimer);window.__soakObserver?.disconnect();delete window.__soakObserver;delete window.__soak;delete window.__soakTimer');
     await evaluate(originalSettings==null?'localStorage.removeItem("bili_settings")':`localStorage.setItem('bili_settings',${JSON.stringify(originalSettings)})`);
     check('original settings restored',await evaluate('localStorage.getItem("bili_settings")')===originalSettings);
     await call('Page.reload');
   }
+  if (results.some(r=>!r.pass)) process.exitCode=1;
 } catch (error) { console.error(error.message); results.push({ name: 'completion', pass: false, detail: error.message }); process.exitCode = 1; }
 finally {
   writeFileSync(`${output}/device.json`, JSON.stringify(results, null, 2));

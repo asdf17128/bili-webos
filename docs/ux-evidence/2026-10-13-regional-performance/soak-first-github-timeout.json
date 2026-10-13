@@ -1,0 +1,260 @@
+[
+  {
+    "name": "continuous playback and APIs minute 0",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 223
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 385
+        },
+        {
+          "status": 200,
+          "version": "2.3.0",
+          "ms": 3638
+        }
+      ],
+      "service": {
+        "uptime": 660,
+        "node": "v16.20.2",
+        "dnsErrors": 4,
+        "readRetries": 0,
+        "requestErrors": 14,
+        "ms": 278
+      },
+      "performance": {
+        "heapBytes": 10000000,
+        "decodedFrames": 541,
+        "droppedFrames": 0,
+        "bufferSec": 15.1,
+        "codec": "hvc1.1.6.L153.90",
+        "bandwidth": 8058077,
+        "longTasks": 0,
+        "longTaskMs": 0,
+        "maxTaskMs": 0
+      },
+      "t": 4.9,
+      "ready": 4,
+      "paused": false,
+      "width": 3840,
+      "height": 2160,
+      "ends": 0,
+      "longestGap": 1195,
+      "elapsedMs": 3967
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 1",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 79
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 106
+        },
+        {
+          "status": 200,
+          "version": "2.3.0",
+          "ms": 1579
+        }
+      ],
+      "service": {
+        "uptime": 718,
+        "node": "v16.20.2",
+        "dnsErrors": 4,
+        "readRetries": 0,
+        "requestErrors": 14,
+        "ms": 6
+      },
+      "performance": {
+        "heapBytes": 10000000,
+        "decodedFrames": 3422,
+        "droppedFrames": 0,
+        "bufferSec": 32.44,
+        "codec": "hvc1.1.6.L153.90",
+        "bandwidth": 8058077,
+        "longTasks": 0,
+        "longTaskMs": 0,
+        "maxTaskMs": 0
+      },
+      "t": 62.56,
+      "ready": 4,
+      "paused": false,
+      "width": 3840,
+      "height": 2160,
+      "ends": 0,
+      "longestGap": 1195,
+      "elapsedMs": 61625
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 2",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 73
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 87
+        },
+        {
+          "status": 200,
+          "version": "2.3.0",
+          "ms": 2126
+        }
+      ],
+      "service": {
+        "uptime": 778,
+        "node": "v16.20.2",
+        "dnsErrors": 4,
+        "readRetries": 0,
+        "requestErrors": 14,
+        "ms": 7
+      },
+      "performance": {
+        "heapBytes": 10000000,
+        "decodedFrames": 6451,
+        "droppedFrames": 0,
+        "bufferSec": 26.900000000000006,
+        "codec": "hvc1.1.6.L153.90",
+        "bandwidth": 8058077,
+        "longTasks": 0,
+        "longTaskMs": 0,
+        "maxTaskMs": 0
+      },
+      "t": 123.1,
+      "ready": 4,
+      "paused": false,
+      "width": 3840,
+      "height": 2160,
+      "ends": 0,
+      "longestGap": 1195,
+      "elapsedMs": 122172
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 3",
+    "pass": true,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 87
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 154
+        },
+        {
+          "status": 200,
+          "version": "2.3.0",
+          "ms": 1929
+        }
+      ],
+      "service": {
+        "uptime": 838,
+        "node": "v16.20.2",
+        "dnsErrors": 4,
+        "readRetries": 0,
+        "requestErrors": 14,
+        "ms": 5
+      },
+      "performance": {
+        "heapBytes": 10000000,
+        "decodedFrames": 9443,
+        "droppedFrames": 0,
+        "bufferSec": 32.02000000000001,
+        "codec": "hvc1.1.6.L153.90",
+        "bandwidth": 8058077,
+        "longTasks": 0,
+        "longTaskMs": 0,
+        "maxTaskMs": 0
+      },
+      "t": 182.98,
+      "ready": 4,
+      "paused": false,
+      "width": 3840,
+      "height": 2160,
+      "ends": 0,
+      "longestGap": 1195,
+      "elapsedMs": 182078
+    }
+  },
+  {
+    "name": "continuous playback and APIs minute 4",
+    "pass": false,
+    "detail": {
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 61
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 85
+        },
+        {
+          "failed": true,
+          "ms": 10024
+        }
+      ],
+      "service": {
+        "uptime": 906,
+        "node": "v16.20.2",
+        "dnsErrors": 4,
+        "readRetries": 0,
+        "requestErrors": 14,
+        "ms": 9
+      },
+      "performance": {
+        "heapBytes": 10000000,
+        "decodedFrames": 12848,
+        "droppedFrames": 0,
+        "bufferSec": 29.159999999999997,
+        "codec": "hvc1.1.6.L153.90",
+        "bandwidth": 8058077,
+        "longTasks": 0,
+        "longTaskMs": 0,
+        "maxTaskMs": 0
+      },
+      "t": 251.02,
+      "ready": 4,
+      "paused": false,
+      "width": 3840,
+      "height": 2160,
+      "ends": 0,
+      "longestGap": 1195,
+      "elapsedMs": 250150
+    }
+  },
+  {
+    "name": "original settings restored",
+    "pass": true
+  },
+  {
+    "name": "completion",
+    "pass": false,
+    "detail": "continuous playback and APIs minute 4"
+  }
+]

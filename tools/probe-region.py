@@ -1,10 +1,11 @@
-"""Ephemeral JSON-lines worker used by test-region-network.mjs over SSH stdin.
+"""Ephemeral JSON-lines worker used locally or over SSH stdin.
 No files, account credentials, or server configuration changes.
 """
 import hashlib
 import json
 import re
 import sys
+import socket
 import time
 import urllib.error
 import urllib.request
@@ -14,6 +15,10 @@ cookies = ''
 
 def request(job):
     global cookies
+    if job['op'] == 'dns':
+        started = time.monotonic()
+        addresses = sorted(set(row[4][0] for row in socket.getaddrinfo(job['host'], 443, type=socket.SOCK_STREAM)))
+        return {'addresses': addresses, 'ms': round((time.monotonic() - started) * 1000, 1)}
     headers = {'User-Agent': UA, 'Referer': job.get('referer', 'https://www.bilibili.com/')}
     if job['op'] == 'api':
         headers['Origin'] = 'https://www.bilibili.com'
@@ -52,8 +57,9 @@ def request(job):
         body = response.read(4 * 1024 * 1024)
         if job['op'] == 'location':
             # Return country code only, never publish the server's IP.
-            return {'loc': dict(line.split('=', 1) for line in body.decode().splitlines() if '=' in line).get('loc')}
+            return {'loc': dict(line.split('=', 1) for line in body.decode().splitlines() if '=' in line).get('loc'), 'proxyConfigured': bool(urllib.request.getproxies())}
         data = json.loads(body)
+        data['status'] = response.status
         if '/finger/spi' in job['url'] and data.get('code') == 0:
             value = data.get('data', {})
             cookies = '; '.join(k + '=' + value[v] for k, v in [('buvid3', 'b_3'), ('buvid4', 'b_4')] if value.get(v))
@@ -70,7 +76,8 @@ for line in sys.stdin:
             try:
                 value = json.loads(error.read(4 * 1024 * 1024))
             except Exception:
-                value = {'status': error.code}
+                value = {}
+            value['status'] = error.code
             result = {'value': value}
         else:
             result = {'error': type(error).__name__, 'status': error.code}

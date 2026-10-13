@@ -683,3 +683,13 @@ C9 社区独立验证：[#34 回报](https://github.com/asdf17128/bili-webos/iss
 本轮未证明报告者当地的 CDN 403、#34 账号 -352 风控、C9/C6 硬件故障已消失；也没有把短时故障回归当作“连续约 20 分钟后所有请求失败”的完整复现。需要该故障发生时的错误码/节点与时间线继续定位。
 
 本轮最终门禁：`verify.sh --no-tv --ux` **exit 0**（UI 68、加载 44、诊断新增 4、直播 9、CDN 7；service 41、媒体 45 通过 / 1 个可选媒体语料跳过；真实 Node 0.12.2 / 8.17 通过）。真机故障恢复 **7/7**、CDN/二维码 **16/16**、会员/杜比回归 **9/9**；整机 **53 通过、0 失败、3 跳过**：首个安静直播间无即时弹幕（另一个实时弹幕验证通过）、所选直播间仅一档画质、账号列表写入。本地六个生产 JS 与电视安装文件逐个 SHA256 一致；测试 IPK SHA256 `9b3117c8fcf3d0d4fa2be2e1d7a464a3fb5d81583984d64d867088b4450bfed1`，偏好恢复。详见 [summary](ux-evidence/2026-10-13-playback-failures/summary.json)。
+
+
+## 2026-10-13：海外家庭检测与性能观测（未发布）
+
+- **C-NET-HOME-01**：新增本地 Python 工作者，不需要 SSH、npm 依赖或登录。生产 CDN 排序读取新鲜匿名签名，但报告只输出 host、耗时、字节数、状态和散列。保存 HTTP 状态和业务 code，避免把 412/-352 与连接失败混为一谈。系统 DNS、代理标记与出口国家单独列出。
+- **C-NET-HOME-02**：真实本地 HTTP fixture 验证精确 Range、HTTP 403、错误范围、停滞响应体超时、HTTP 412/-352、IP 脱敏与 localhost DNS。缺少 Python 的 CLI 退出并保存失败报告；便携 ZIP 解压到无 node_modules 的目录，真实匿名检查 **11/11**，选中线路额外 64 KiB 传输成功。本机出口 HK / 已配置代理，只验证工具和该出口，不冒充报告者的菲律宾连接。
+- **C-NET-PH-01**：菲律宾 AS17639 / AS9299 各两个 eyeball 探针，三轮公共站/API/1.1.1.1 对照。公共站全成功；默认 DNS 下 B站 API 两个探针成功、两个 ECONNREFUSED，改 resolver 未改善。两个 Quezon 探针可能同运营者，不能推断整个 ISP 故障。所有 DNS 查询 NOERROR 不等于媒体可达。
+- **C-PERF-LONG-01**：扩展真实电视长播工具，分别保存视频、主站/直播与 GitHub 更新源状态；记录 CDP JS 堆、解码/丢帧、缓冲、主线程长任务和服务 uptime。一项失败后继续保存剩余时间线，但最终仍退出 1，不能把忽略失败当作通过。首次运行因 GitHub 超时提前结束的原始结果保留。
+
+使用方法和网络结果见 [NETWORK-TESTING](NETWORK-TESTING.md)，便携包可由 `tools/package-network-check.py` 重建。性能数值与解释见 [PERFORMANCE](PERFORMANCE.md)，完整脱敏证据在 [regional-performance](ux-evidence/2026-10-13-regional-performance)。应用仍为已经验证的 `2.3.0 playback-test.2`；本次仅添加诊断工具和测量记录，没有更改电视安装包、发布或关闭 issue。

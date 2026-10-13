@@ -1,0 +1,14 @@
+{
+  "ts": "2026-10-13T05:08:28.816Z",
+  "label": "playback-test-2-after-soak",
+  "env": "tv-external",
+  "focusExternal": {
+    "p50": 3.4,
+    "p95": 5.5,
+    "n": 32
+  },
+  "mem": {
+    "used": 43,
+    "total": 45
+  }
+}

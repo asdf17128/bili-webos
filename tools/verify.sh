@@ -151,6 +151,11 @@ if [ -n "$UX" ]; then
   node tools/test-playback-health.mjs
   node tools/test-cdn-auto.mjs
   node tools/test-diagnostic-cdn.mjs
+  if command -v python3 >/dev/null 2>&1; then
+    node tools/test-region-probe.mjs
+  else
+    echo "SKIP: home-network probe contract checks require Python 3"
+  fi
   if [ -n "$UX_VITE_PID" ]; then kill "$UX_VITE_PID"; trap - EXIT; fi
 fi
 

@@ -1,0 +1,76 @@
+{
+  "samples": 26,
+  "elapsedMs": 1503498,
+  "playbackPassed": 26,
+  "biliPassed": 26,
+  "apiResults": [
+    {
+      "target": "main",
+      "passed": 26,
+      "total": 26,
+      "p50ms": 74,
+      "p95ms": 151,
+      "maxSuccessMs": 167
+    },
+    {
+      "target": "live",
+      "passed": 26,
+      "total": 26,
+      "p50ms": 150,
+      "p95ms": 348,
+      "maxSuccessMs": 392
+    },
+    {
+      "target": "githubUpdate",
+      "passed": 22,
+      "total": 26,
+      "p50ms": 2437,
+      "p95ms": 3617,
+      "maxSuccessMs": 4809
+    }
+  ],
+  "failedSamples": [
+    "continuous playback and APIs minute 3",
+    "continuous playback and APIs minute 10",
+    "continuous playback and APIs minute 20",
+    "continuous playback and APIs minute 22"
+  ],
+  "settingsRestored": true,
+  "serviceUptimeStrictlyIncreases": true,
+  "codec": "hvc1.1.6.L153.90",
+  "bandwidth": 8058077,
+  "dimensions": [
+    3840,
+    2160
+  ],
+  "decodedFrames": 75509,
+  "droppedFrames": 0,
+  "bufferSec": {
+    "min": 19.34,
+    "max": 33.039999999999964,
+    "first": 19.34,
+    "last": 29.77999900000009
+  },
+  "cdpHeapBytes": {
+    "min": 6200100,
+    "max": 7740544,
+    "first": 6200100,
+    "last": 7259152
+  },
+  "longTasks": 4,
+  "longTaskMs": 243,
+  "maxTaskMs": 65,
+  "longestSampledProgressGapMs": 1387,
+  "exitCode": 1,
+  "bvid": "BV1sapi6qE72",
+  "frameRate": 50,
+  "frameRateSource": "tv-track-during.json",
+  "limitations": [
+    "LG C4 sample only",
+    "Minute API sampling is not continuous reachability",
+    "JS heap excludes GPU and decoder allocations",
+    "Long tasks start after playback begins",
+    "Observed GitHub failures are not all-network failures",
+    "Historical reporter failure not reproduced"
+  ]
+}

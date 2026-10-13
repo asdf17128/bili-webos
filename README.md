@@ -161,6 +161,8 @@ The unreleased test branch preserves supported cinema-width 4K, prefers efficien
 
 The test package also restores bounded recovery after fatal playback errors and preserves native signed backup URLs in manual routing, Dolby inspection and diagnostics. Reporter-specific CDN 403 responses and account verification blocks still require confirmation on the affected connection.
 
+海外故障新增 [家庭网络检测方案与菲律宾 ISP 实测](docs/NETWORK-TESTING.md)：可在电视同网络的电脑运行匿名诊断，无需账号，报告不含媒体签名。公共 ISP 探针用于定位区域差异，仍需结合故障电视日志。性能测量与长播结果见 [性能记录](docs/PERFORMANCE.md)。
+
 
 ### v2.2.1 — playback end modes / 播放结束行为
 

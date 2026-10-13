@@ -1,0 +1,90 @@
+[
+  {
+    "name": "backup-host",
+    "pass": false,
+    "error": "native backup must be probed unchanged",
+    "requests": [
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      }
+    ]
+  },
+  {
+    "name": "backup-signature",
+    "pass": false,
+    "error": "native backup must be probed unchanged",
+    "requests": [
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      }
+    ]
+  },
+  {
+    "name": "manual-native",
+    "pass": false,
+    "error": "native backup must be probed unchanged",
+    "requests": [
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      }
+    ]
+  },
+  {
+    "name": "all-fail",
+    "pass": false,
+    "error": "The input did not match the regular expression /视频节点全部连不上/. Input:\n\n'最近一次起播 · —\\n' +\n  '先播放一个视频，再打开诊断查看起播耗时\\n' +\n  '❌ 后台服务 — Luna not available\\n' +\n  '✅ API 连通 — 已登录\\n' +\n  '❌ 推荐流(风控) — code=0 items=0\\n' +\n  '✅ 视频信息 view — code=0\\n' +\n  '✅ 取流 playurl — code=0\\n' +\n  '❌ 视频 CDN — cosov ✗(Invalid range response (HTTP 403)) · estgoss ✗(Invalid range response (HTTP 403)) · hwo1 ✗(Invalid range response (HTTP 403)) — 视频节点\\n' +\n  '❌ 图片代理 — :7654 加载失败\\n' +\n  '手机扫码 → 自动生成 GitHub 反馈(内容可先检查,提交前不会发送任何数据)'\n",
+    "requests": [
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      }
+    ]
+  }
+]

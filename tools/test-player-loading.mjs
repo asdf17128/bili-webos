@@ -15,7 +15,7 @@ const stub = `class Player {
  async load(url,position,mime){window.__probe.loads++;window.__probe.mimes.push(mime);
  if(window.__mode==='quality-restore'&&window.__probe.loads===2)throw Object.assign(new Error('network failed'),{category:1});
  const mpd=await (await fetch(url)).text();window.__probe.mpds.push(mpd);window.__probe.positions.push(position);
- if(window.__mode==='codec-fallback' && /codecs="hvc1/.test(mpd))throw Object.assign(new Error('HEVC decode failed'),{category:3});
+ if(window.__mode==='codec-fallback' && /codecs="hvc1/.test(mpd)){this.events.error({detail:{category:3,code:3016,severity:2}});throw Object.assign(new Error('HEVC decode failed'),{category:3});}
  if(window.__mode==='premium-fallback' && /codecs="(ec-3|fLaC)"/.test(mpd)) throw Object.assign(new Error('unsupported decoder'),{category:3});
  if(window.__mode==='dolby-fallback' && /codecs="dvh1/.test(mpd)) throw Object.assign(new Error('DV decoder failed'),{category:3}); if(window.__mode==='cancel') return new Promise((r,j)=>{this.reject=j});
  if(window.__mode==='network') throw Object.assign(new Error('network unavailable'),{code:1001,category:1});
@@ -71,6 +71,10 @@ async function run(name, mode, fn, scale) {
     calls.playurl++;calls.events.push({type:'playurl',cid:u.searchParams.get('cid'),at:Date.now()});if(mode.startsWith('startup'))await new Promise(r=>setTimeout(r,500));
     const qn=mode==='quality-restore'?Number(u.searchParams.get('qn')||80):mode==='resolution-8k'?127:mode==='codec-fallback'?120:mode.startsWith('dolby')?126:80;
     data={quality:qn,accept_quality:[qn,16],dash:{duration:100,video:[{id:qn,bandwidth:1000,baseUrl:'https://media.bilivideo.com/video',codecs:qn===126?'hvc1.2.4.L156.90':'avc1.640028',width:1920,height:1080,frameRate:mode==='dolby-120'?'120000/1001':mode==='dolby-unknown'?'':'60000/1001',SegmentBase:{Initialization:'0-51',indexRange:'52-70'}}],audio:[]}};
+    if(mode==='dolby-signed-route') {
+      data.dash.video[0].baseUrl='https://upos-sz-mirrorcosov.bilivideo.com/upgcxcode/video?upsig=primary';
+      data.dash.video[0].backupUrl=['https://upos-sz-mirrorhwo1.bilivideo.com/upgcxcode/native/video?upsig=native%2Bsignature'];
+    }
     if(mode==='resolution-8k') {
       data.dash.video[0]={...data.dash.video[0],codecs:'hvc1.1.6.L180.90',width:7680,height:4320};
       data.dash.video.push({...data.dash.video[0],id:125,codecs:'hvc1.2.4.L153.90',width:3840,height:2160});
@@ -86,6 +90,11 @@ async function run(name, mode, fn, scale) {
     }
   }
   if(u.pathname.endsWith('/video')&&mode.startsWith('dolby')) {
+    if(mode==='dolby-signed-route') {
+      const signed=u.pathname.includes('/native/video')&&u.search==='?upsig=native%2Bsignature';
+      calls.dolbyProbeSigned=signed;
+      if(!signed)return route.fulfill({status:403,body:''});
+    }
     const init=Buffer.from('000000006876633100000000687663430000000000000020647676430100104d4000000000000000000000000000000000000000','hex');
     return route.fulfill({status:206,body:init,headers:{'content-range':`bytes 0-${init.length-1}/1000`,'content-length':String(init.length),'access-control-allow-origin':'*','access-control-expose-headers':'Content-Range, Content-Length'}});
   }
@@ -162,6 +171,12 @@ for (const mode of ['dolby-120', 'dolby-unknown']) await run('unverified Dolby f
  assert.doesNotMatch(mpd,/codecs="dvh1/);
  assert.match(mpd,/<Representation id="126"/);
 });
+await run('Dolby inspection uses selected native signed backup without hostname substitution','dolby-signed-route',async(page,calls)=>{
+ await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('bili_settings'));localStorage.setItem('bili_settings',JSON.stringify({...s,cdnRoute:'hwo1'}))});
+ await open(page);await page.waitForFunction(()=>window.__probe.mpds.length===1);
+ assert.equal(calls.dolbyProbeSigned,true);
+ assert.match(await page.evaluate(()=>window.__probe.mpds[0]),/codecs="dvh1.08.09"/);
+});
 await run('comment rail renders one state and keeps controls unobscured','comments',async page=>{
  await open(page);await page.waitForFunction(()=>window.__probe.loads===1);
  await page.keyboard.press('ArrowUp');
@@ -236,6 +251,57 @@ for (const action of ['automatic', 'manual', 'exit', 'new-intent']) await run('o
   await page.waitForFunction(()=>window.__probe.loads===3);
   assert.equal(await page.evaluate(()=>window.__probe.positions[2]),73);
  }
+});
+for (const kind of ['media', 'network']) await run('critical runtime error while paused: '+kind,'runtime-'+kind,async(page,calls)=>{
+ await page.clock.install();
+ await page.evaluate(()=>window.__openVideo({bvid:'BVtest',cid:3,resumeMode:'at',progress:47}));
+ await page.waitForFunction(()=>window.__probe.loads===1);await page.waitForTimeout(200);
+ await page.evaluate(kind=>{
+  const v=document.querySelector('video');
+  Object.defineProperty(v,'currentTime',{configurable:true,get:()=>47});
+  Object.defineProperty(v,'paused',{configurable:true,get:()=>true});
+  for(let i=0;i<2;i++)window.__shakaPlayer.events.error({detail:{category:kind==='media'?3:1,code:kind==='media'?3016:1001,severity:2,data:['https://media.bilivideo.com/video?upsig=private-signature']}});
+ },kind);
+ await page.getByText('重试播放',{exact:true}).waitFor();
+ assert.equal(await page.locator('.player-page .loading').count(),0);
+ const errors=await page.evaluate(async()=>{return (await import('/src/utils/errlog.js')).getErrors().filter(e=>e.tag==='playback-error')});
+ assert.equal(errors.length,1,'duplicate notification only records one failure');
+ assert.match(errors[0].d,new RegExp('code='+(kind==='media'?3016:1001)));
+ assert.doesNotMatch(JSON.stringify(errors),/upsig|private-signature/);
+ await page.screenshot({path:output+'/runtime-'+kind+'.png'});
+ await page.clock.fastForward(8100);
+ await page.waitForFunction(()=>window.__probe.loads===2);
+ assert.equal(await page.evaluate(()=>window.__probe.positions[1]),47);
+ assert.equal(calls.events.filter(x=>x.type==='playurl').pop().cid,'3');
+ assert.equal(await page.getByText('重试播放',{exact:true}).count(),0);
+});
+await run('recoverable runtime network error keeps player and retries streaming','runtime-warning',async page=>{
+ await page.clock.install();await open(page);await page.waitForFunction(()=>window.__probe.loads===1);await page.waitForTimeout(200);
+ await page.evaluate(()=>window.__shakaPlayer.events.error({detail:{category:1,code:1001,severity:1}}));
+ await page.clock.fastForward(25000);
+ assert.equal(await page.evaluate(()=>window.__probe.loads),1);
+ assert.equal(await page.evaluate(()=>window.__probe.retries),1);
+ assert.equal(await page.getByText('重试播放',{exact:true}).count(),0);
+});
+await run('leaving after fatal runtime error cancels delayed recovery','runtime-exit',async page=>{
+ await page.clock.install();await open(page);await page.waitForFunction(()=>window.__probe.loads===1);await page.waitForTimeout(200);
+ await page.evaluate(()=>{window.__lateError=window.__shakaPlayer.events.error;window.__lateError({detail:{category:3,code:3016,severity:2}})});
+ await page.getByText('重试播放',{exact:true}).waitFor();await page.keyboard.press('Escape');
+ await page.evaluate(()=>window.__lateError({detail:{category:3,code:3016,severity:2}}));
+ await page.clock.fastForward(25000);
+ assert.equal(await page.locator('video').count(),0);assert.equal(await page.evaluate(()=>window.__probe.loads),1);
+});
+await run('repeated fatal runtime errors exhaust bounded remount budget','runtime-budget',async page=>{
+ await page.clock.install();await open(page);
+ for(let i=0;i<3;i++) {
+  await page.waitForFunction(n=>window.__probe.loads===n,i+1);await page.waitForTimeout(200);
+  await page.evaluate(()=>window.__shakaPlayer.events.error({detail:{category:3,code:3016,severity:2}}));
+  await page.getByText('重试播放',{exact:true}).waitFor();
+  if(i<2)await page.clock.fastForward((i+1)*8000+100);
+ }
+ await page.getByText('自动重试已停止，按 OK 重试或返回退出',{exact:true}).waitFor();
+ await page.clock.fastForward(120000);assert.equal(await page.evaluate(()=>window.__probe.loads),3);
+ await page.keyboard.press('Enter');await page.waitForFunction(()=>window.__probe.loads===4);
 });
 await run('creator follow from player control bar','follow',async(page,calls)=>{
  await open(page);await page.waitForFunction(()=>window.__probe.loads===1);await page.waitForTimeout(200);

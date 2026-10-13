@@ -26,7 +26,7 @@ import { translateCues } from './subTranslate';
 import { createDmTranslator } from './dmTranslate';
 import { titleMT, useTitlesMT } from '../utils/titlemt';
 import { t, getLocale } from '../i18n';
-import { CDN_ROUTES, withHost, cdnHostOf, isBanned, onShakaRetry, playbackCdnUrls } from './cdn';
+import { cdnHostOf, isBanned, onShakaRetry, playbackCdnUrls } from './cdn';
 import { createAutoCdnRouter } from './cdnAuto';
 import { useUpFollow } from '../hooks/useUpFollow';
 
@@ -100,6 +100,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   useTitlesMT(); // re-render when list-title translations land (no-op on zh)
   const videoRef = useRef(null);
   const shakaRef = useRef(null);
+  const pendingMediaLoads = useRef(0);
   const cdnAutoRef = useRef(null);
   const [playing, setPlaying] = useState(false);
   const [streamFormat, setStreamFormat] = useState({ video: '', audio: '' });
@@ -500,6 +501,22 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     media.addEventListener('loadedmetadata', onMetadata);
     media.addEventListener('playing', onPlaying);
     media.addEventListener('loadeddata', onFirstFrame);
+    const failPlayback = (category, code) => {
+      if (!mounted || loadingRef.current || pendingMediaLoads.current || loadErrorRef.current) return;
+      loadErrorRef.current = true; // duplicate events must not restart recovery
+      logErr('playback-error', 'category=' + category + ' code=' + code + ' position=' + Math.floor(media.currentTime || 0));
+      media.pause();
+      setBuffering(false);
+      setErrorMsg(category === 1 ? t('播放暂时中断，请检查网络或切换线路') : t('播放暂时中断，请重试播放'));
+      setRecoverable(true);
+      setLoadError(true);
+      castReportState({ playState: 'error', error: 'media-' + category + '-' + code }).catch(() => {});
+    };
+    const onNativeError = () => {
+      // Shaka owns MSE errors; the HTML5 speed path has no Shaka stream.
+      if (nativeModeRef.current && media.error?.code >= 2) failPlayback(media.error.code === 2 ? 1 : 3, media.error.code);
+    };
+    media.addEventListener('error', onNativeError);
     const infoStart = perfNow();
     const infoTask = !(video?.isBangumi || video?.epid || video?.seasonId)
       ? trace.measure('view', () => getVideoInfo(video)).then(value => ({ value }), error => ({ error })) : null;
@@ -549,13 +566,19 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         },
       });
 
-      // On a network/media error, resume streaming instead of dying silently.
-      // category 1 = NETWORK, 3 = MEDIA — usually recoverable mid-playback.
+      // Load-time errors belong to loadDash's codec/audio fallback ladder.
+      // Once playback has started, a fatal decoder error can pause the media,
+      // making the stall watchdog inactive. Remount through the bounded retry
+      // UI instead of calling retryStreaming forever on a broken decoder.
       player.addEventListener('error', (e) => {
         const err = e.detail;
+        if (!mounted) return;
         if (dolbyRuntimeRef.current?.handleError(err)) { err.handled = true; return; }
-        console.error('Shaka error code:', err?.code, 'category:', err?.category, err);
-        if (err && (err.category === 1 || err.category === 3)) {
+        if (loadingRef.current || pendingMediaLoads.current || loadErrorRef.current) return;
+        if (err?.severity === 2 && (err.category === 1 || err.category === 3)) {
+          failPlayback(err.category, err.code);
+          err.handled = true;
+        } else if (err?.category === 1) {
           try { player.retryStreaming(); } catch {}
         }
       });
@@ -629,6 +652,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       media.removeEventListener('loadedmetadata', onMetadata);
       media.removeEventListener('playing', onPlaying);
       media.removeEventListener('loadeddata', onFirstFrame);
+      media.removeEventListener('error', onNativeError);
       cdnAutoRef.current?.dispose(); cdnAutoRef.current = null;
       dolbyRuntimeRef.current?.begin(null); dolbyRuntimeRef.current = null;
       delete window.__dolbyRuntime;
@@ -1130,8 +1154,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       if (selected.actualQn === 126 && !options.disableDolby && (session || dolbySignalingFrameRateAllowed(representation))) {
         if (nativeDolby) dolbyCodec = representation.codecs;
         try {
-          const routeHost = CDN_ROUTES[storage.getSettings().cdnRoute];
-          const probe = routeHost ? { ...representation, baseUrl: withHost(representation.baseUrl || representation.base_url, routeHost) } : representation;
+          const probe = { ...representation, baseUrl: playbackCdnUrls(representation, storage.getSettings().cdnRoute)[0] };
           dolby = await measure('probe', () => inspectDolbyRepresentation(probe, mediaProxyBase(), { active: probeRequestsRef.current }));
           if (dolby && supported(`video/mp4; codecs="${dolby.codec}"`)) dolbyCodec = dolby.codec;
         } catch (e) { if (isActive()) logErr('dolby-probe', e.message); }
@@ -1153,7 +1176,9 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         const url = URL.createObjectURL(new Blob([mpd], { type: 'application/dash+xml' }));
         try {
           options.onLoad?.();
-          await measure('load', () => player.load(url, position || undefined, 'application/dash+xml'));
+          pendingMediaLoads.current++;
+          try { await measure('load', () => player.load(url, position || undefined, 'application/dash+xml')); }
+          finally { pendingMediaLoads.current--; }
           if (!isActive()) throw Object.assign(new Error('Load cancelled'), { code: 7000 });
           runtime?.ready(epoch, async () => {
             if (!isActive()) return;
@@ -2530,7 +2555,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       )}
 
       {loadError && !loading && (
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+        <div className="player-error" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           gap: 16, background: 'rgba(0,0,0,0.85)', zIndex: 50 }}>
           <div style={{ fontSize: 26, color: '#fff', maxWidth: 1100, textAlign: 'center', lineHeight: 1.5 }}>
@@ -2546,7 +2571,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
             {t('去网络诊断')}
           </button>
           <div style={{ fontSize: 18, color: '#aaa' }}>
-            {recoverable ? (autoRetryDelay ? t('正在等待网络恢复，也可按 OK 立即重试') : t('自动重试已停止，按 OK 重试或返回退出'))
+            {recoverable ? (autoRetryDelay ? t('稍后自动重试，也可按 OK 立即重试') : t('自动重试已停止，按 OK 重试或返回退出'))
               : errorMsg ? t('OK 打开网络诊断 · 返回键退出') : t('该视频源节点异常,请按返回键重试或换一个视频')}
           </div>
         </div>

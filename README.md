@@ -153,9 +153,14 @@ Player loading overlaps independent requests and reuses resume metadata. Auxilia
 
 ### Unreleased premium playback fixes / 未发布的会员播放修复
 
-当前测试分支修复会员 4K / Dolby 影院片源退到 1080p、不同编码按码率误选、手动画质失败后的恢复；支持 3996/4096 宽片源，并保留 4K 电视的 8K 回退边界。进一步集成 [PR #17](https://github.com/asdf17128/bili-webos/pull/17) 的特定杜比 120→60fps 路径，仍保留原分辨率和音轨。仅为 `premium-test.1` 测试包，**尚未发布到 Release / Homebrew**。适用片源、设备限制及真实测试范围见 [会员播放说明](docs/DOLBY_VISION.md)。
+当前测试分支修复会员 4K / Dolby 影院片源退到 1080p、不同编码按码率误选、手动画质失败后的恢复；支持 3996/4096 宽片源，并保留 4K 电视的 8K 回退边界。进一步集成 [PR #17](https://github.com/asdf17128/bili-webos/pull/17) 的特定杜比 120→60fps 路径，仍保留原分辨率和音轨。当前为 `playback-test.2` 测试包，**尚未发布到 Release / Homebrew**。适用片源、设备限制及真实测试范围见 [会员播放说明](docs/DOLBY_VISION.md)。
 
 The unreleased test branch preserves supported cinema-width 4K, prefers efficient codecs within the selected quality, restores failed manual switches, and integrates PR #17's source-specific Dolby 120→60fps path. Device resolution limits still apply. See [scope and verification](docs/DOLBY_VISION.md); this does not change the published 2.3.0 package.
+
+测试包同时修复播放中致命错误后停住且没有重试入口的问题，保留原分 P 和进度进行有限重试；手动 CDN、杜比检测及网络诊断保留接口返回的备用签名地址。诊断测速复用实际成功的地址，不再因丢失备用地址而误报全部不可用。[故障对照与验证边界](docs/TESTCASES.md#2026-10-13其他播放失败排查未发布)。
+
+The test package also restores bounded recovery after fatal playback errors and preserves native signed backup URLs in manual routing, Dolby inspection and diagnostics. Reporter-specific CDN 403 responses and account verification blocks still require confirmation on the affected connection.
+
 
 ### v2.2.1 — playback end modes / 播放结束行为
 

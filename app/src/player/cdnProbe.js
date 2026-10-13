@@ -1,8 +1,10 @@
-import { CDN_ROUTES, FALLBACK_MIRRORS, cdnHostOf, canMirror } from './cdn.js';
+import { sourceCdnUrls, cdnHostOf } from './cdn.js';
 
+// Keep every native path/signature, including distinct URLs on one host.
+// Diagnostics bypass temporary bans so they can check recovery independently.
+export function diagnosticUrls(rep, route) { return sourceCdnUrls(rep, route); }
 export function diagnosticHosts(url, route) {
-  if (!canMirror(url)) return [cdnHostOf(url)];
-  return Array.from(new Set([CDN_ROUTES[route], cdnHostOf(url), ...FALLBACK_MIRRORS].filter(Boolean)));
+  return Array.from(new Set(diagnosticUrls({ baseUrl: url }, route).map(cdnHostOf)));
 }
 
 // XHR's timeout covers headers AND body, including on Chromium 53 where

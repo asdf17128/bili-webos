@@ -150,6 +150,7 @@ if [ -n "$UX" ]; then
   node tools/test-live-loading.mjs
   node tools/test-playback-health.mjs
   node tools/test-cdn-auto.mjs
+  node tools/test-diagnostic-cdn.mjs
   if [ -n "$UX_VITE_PID" ]; then kill "$UX_VITE_PID"; trap - EXIT; fi
 fi
 

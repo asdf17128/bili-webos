@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import qrcode from 'qrcode-generator';
 import { apiFetch, wbiFetch, getRecommend, getServiceDiagnostics, mediaProxyBase } from '../api/client';
-import { withHost } from '../player/cdn';
-import { diagnosticHosts, probeRange } from '../player/cdnProbe';
+import { diagnosticUrls, probeRange } from '../player/cdnProbe';
 import { getPlaybackReport } from '../player/playbackHealth';
 import { startupReportLines } from '../player/startupTrace';
 import { getAutoCdnStatus } from '../player/cdnAuto';
@@ -96,7 +95,7 @@ export default function DiagPanel() {
       // 走 wbiFetch 和播放器同路径;失败时和播放器一样试 pagelist 兜底。
       push('视频信息 view', 'run', '');
       let probeCid = null;
-      let probeStreamUrl = null;
+      let probeRepresentation = null;
       try {
         const v = await wbiFetch('/x/web-interface/view', { bvid: PROBE_BVID });
         if (v && v.code === 0) { probeCid = v.data.cid; push('视频信息 view', 'ok', 'code=0'); }
@@ -117,46 +116,34 @@ export default function DiagPanel() {
         const p = await wbiFetch('/x/player/playurl', { bvid: PROBE_BVID, cid: probeCid, qn: 16, fnval: 16 });
         if (p && p.code === 0) push('取流 playurl', 'ok', 'code=0');
         else push('取流 playurl', 'fail', apiErrorHint(p && p.code, { loggedIn: !!storage.getAuth()?.SESSDATA }) || ('playurl code=' + (p && p.code)));
-        // 探针用的流 URL:主+备里第一个**非 PCDN** 的(mcdn/带端口的 P2P 节点是播放器
-        // 主动排到最后的,拿它测 CDN 没意义);全是 PCDN 才退回主 URL。
-        const v0 = p && p.code === 0 && p.data && p.data.dash && p.data.dash.video && p.data.dash.video[0];
-        if (v0) {
-          const cands = [v0.baseUrl || v0.base_url].concat(v0.backupUrl || v0.backup_url || []).filter(Boolean);
-          const isPcdn = (u) => /mcdn\.|szbdyd|\bxy[\dx]+xy\b|:\d{4,5}\//i.test(u);
-          probeStreamUrl = cands.find(u => !isPcdn(u)) || cands[0] || null;
-        }
+        probeRepresentation = p?.code === 0 ? p.data?.dash?.video?.[0] : null;
       } catch (e) { push('取流 playurl', 'fail', e.message); }
 
       // 4b. 视频 CDN (#29):接口全通但拉不到流,以前只能对着一堆 E: 猜。
-      // 用刚拿到的真实签名 URL,经本地代理向「B站 分配的节点 + 两个兜底镜像」
+      // 用刚拿到的真实签名 URL,经本地代理向「B站 分配的主备地址 + 兜底镜像」
       // 各拉 200KB，优先测用户所选线路。探针只报告可达性，不代表实际播放已切换。
       push('视频 CDN', 'run', '');
       try {
-        let cdnUrl = probeStreamUrl;
+        let representation = probeRepresentation;
         if (rcmdPick) {
           try {
             const p2 = await wbiFetch('/x/player/playurl', { bvid: rcmdPick.bvid, cid: rcmdPick.cid, qn: 64, fnval: 16 });
             const v2 = p2 && p2.code === 0 && p2.data && p2.data.dash && p2.data.dash.video && p2.data.dash.video[0];
-            if (v2) {
-              const c2 = [v2.baseUrl || v2.base_url].concat(v2.backupUrl || v2.backup_url || []).filter(Boolean);
-              const isPcdn2 = (u) => /mcdn\.|szbdyd|\bxy[\dx]+xy\b|:\d{4,5}\//i.test(u);
-              cdnUrl = c2.find(u => !isPcdn2(u)) || c2[0] || cdnUrl;
-            }
+            if (v2) representation = v2;
           } catch (e) { /* 热门视频取流失败就退回 av2 */ }
         }
-        if (!cdnUrl) throw new Error(t('前置 view/pagelist 都失败,拿不到 cid'));
-        const hosts = diagnosticHosts(cdnUrl, route);
+        if (!representation) throw new Error(t('前置 view/pagelist 都失败,拿不到 cid'));
+        const urls = diagnosticUrls(representation, route);
         const base = mediaProxyBase();
-        const one = async (host) => {
-          const u = withHost(cdnUrl, host);
-          const x = new URL(u);
+        const one = async (url) => {
+          const x = new URL(url), host = x.host;
           try {
             const r = await probeRange(`${base}/proxy/${x.host}${x.pathname}${x.search}`, 0, 200000, { active });
-            return { host, ok: !r.timedOut, ms: r.ms, total: r.total, why: r.timedOut ? t('超时(15s)') : '' };
-          } catch (e) { return { host, ok: false, why: e.message }; }
+            return { host, url, ok: !r.timedOut, ms: r.ms, total: r.total, why: r.timedOut ? t('超时(15s)') : '' };
+          } catch (e) { return { host, ok: false, why: /HTTP [45]\d\d/.exec(e.message)?.[0] || e.message }; }
         };
         const rs = [];
-        for (const h of hosts) { if (dead) return; rs.push(await one(h)); }
+        for (const url of urls) { if (dead) return; rs.push(await one(url)); }
         if (dead) return;
         const short = h => h.replace(/^upos-(sz|hz)-(mirror)?/, '').replace(/\.(bilivideo\.com|akamaized\.net)$/, '');
         const text = rs.map(r => short(r.host) + (r.ok ? ' ' + (r.ms / 1000).toFixed(1) + 's' : ' ✗' + (r.why ? '(' + r.why + ')' : ''))).join(' · ');
@@ -173,7 +160,7 @@ export default function DiagPanel() {
         if (good) {
           push('CDN 测速', 'run', '');
           try {
-            const gx = new URL(withHost(cdnUrl, good.host));
+            const gx = new URL(good.url);
             const proxied = `${base}/proxy/${gx.host}${gx.pathname}${gx.search}`;
             const total = good.total || 0;
             const BLK = total ? Math.max(256 * 1024, Math.min(2 * 1024 * 1024, Math.floor(total / 8))) : 1024 * 1024;

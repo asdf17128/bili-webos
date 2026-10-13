@@ -1,0 +1,12 @@
+[
+  {
+    "name": "critical runtime error while paused: media",
+    "pass": false,
+    "error": "locator.waitFor: Timeout 7000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('重试播放', { exact: true }) to be visible\u001b[22m\n"
+  },
+  {
+    "name": "critical runtime error while paused: network",
+    "pass": false,
+    "error": "locator.waitFor: Timeout 7000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('重试播放', { exact: true }) to be visible\u001b[22m\n"
+  }
+]

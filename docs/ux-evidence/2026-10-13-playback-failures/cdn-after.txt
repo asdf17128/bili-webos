@@ -1,0 +1,22 @@
+(node:86945) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ cached measurements promote a faster mirror, retaining exact native signed URLs (1.380625ms)
+✔ Akamai-only and live URLs are never mirror templates (0.606291ms)
+✔ similar measurements preserve incumbent, all-failed restores original order (0.098083ms)
+✔ cache expires, survives restart, strips private fields and handles corrupt storage (0.101708ms)
+✔ untrusted cache host cannot insert a new destination into requests (0.198042ms)
+✔ native .cn hosts are measured once; uncacheable hosts cannot monopolize probes (1.431125ms)
+✔ two completed samples rank by slower transfer; every candidate is visited (0.592084ms)
+✔ loading/buffer gate and manual choice prevent probes and automatic override (0.1825ms)
+✔ buffer loss aborts active probe without poisoning cache (0.472417ms)
+✔ late result after source change or exit cannot update routing/cache (0.342542ms)
+✔ partial/timeout sample is failure and banned winner yields to healthy fallback (0.269584ms)
+✔ manual route uses its API-native signature before invented mirror URL (0.086708ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 73.210042

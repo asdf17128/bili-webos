@@ -1,5 +1,7 @@
 // Spanish dictionary. Keys are the Chinese source strings (see index.js).
 export default {
+  '播放暂时中断，请重试播放': 'Reproducción interrumpida. Vuelve a intentarlo.',
+  '稍后自动重试，也可按 OK 立即重试': 'Se reintentará en breve. Pulsa OK para reintentar ahora.',
   "正在退出登录…": "Cerrando sesión…",
   "退出登录失败，请重试": "No se pudo cerrar sesión. Inténtalo de nuevo.",
   "正在连接服务…": "Conectando al servicio…",

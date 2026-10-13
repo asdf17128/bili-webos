@@ -1,0 +1,34 @@
+[
+  {
+    "name": "startup overlaps independent requests and preserves resume: startup-overlap",
+    "pass": true
+  },
+  {
+    "name": "startup overlaps independent requests and preserves resume: startup-part",
+    "pass": true
+  },
+  {
+    "name": "outage recovery: new-intent",
+    "pass": true
+  },
+  {
+    "name": "critical runtime error while paused: media",
+    "pass": true
+  },
+  {
+    "name": "critical runtime error while paused: network",
+    "pass": true
+  },
+  {
+    "name": "recoverable runtime network error keeps player and retries streaming",
+    "pass": true
+  },
+  {
+    "name": "leaving after fatal runtime error cancels delayed recovery",
+    "pass": true
+  },
+  {
+    "name": "repeated fatal runtime errors exhaust bounded remount budget",
+    "pass": true
+  }
+]

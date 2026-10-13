@@ -151,6 +151,12 @@ Fixes the compressed progress bar when recommendations expand and keeps remote f
 
 Player loading overlaps independent requests and reuses resume metadata. Auxiliary content waits for media readiness. Danmaku lookup and concurrent animations are bounded; pause and seek keep the overlay in sync. See [release notes and validation limits](docs/releases/v2.2.2.md).
 
+### Unreleased premium playback fixes / 未发布的会员播放修复
+
+当前测试分支修复会员 4K / Dolby 影院片源退到 1080p、不同编码按码率误选、手动画质失败后的恢复；支持 3996/4096 宽片源，并保留 4K 电视的 8K 回退边界。进一步集成 [PR #17](https://github.com/asdf17128/bili-webos/pull/17) 的特定杜比 120→60fps 路径，仍保留原分辨率和音轨。仅为 `premium-test.1` 测试包，**尚未发布到 Release / Homebrew**。适用片源、设备限制及真实测试范围见 [会员播放说明](docs/DOLBY_VISION.md)。
+
+The unreleased test branch preserves supported cinema-width 4K, prefers efficient codecs within the selected quality, restores failed manual switches, and integrates PR #17's source-specific Dolby 120→60fps path. Device resolution limits still apply. See [scope and verification](docs/DOLBY_VISION.md); this does not change the published 2.3.0 package.
+
 ### v2.2.1 — playback end modes / 播放结束行为
 
 设置 → 播放与显示 → **播放结束后**：
@@ -171,7 +177,7 @@ Settings → **When playback ends** now offers **Play next automatically**, **St
 - Playback recovery and diagnostics now account for exhausted buffers and the selected CDN route. Reports include the last playback node and stall count.
 - Favorites has a **Subscriptions** tab for followed folders and creator collections, with pagination and playback across pages.
 - webOS 4.x compatibility includes Chromium 53 layout fallbacks and a Node 0.12 service compatibility layer. Community patch: [#34](https://github.com/asdf17128/bili-webos/issues/34).
-- Dolby initialization metadata and supported E-AC-3 / FLAC audio tracks are selected independently. Decoder failures during loading fall back; E-AC-3 alone is not a guarantee of Atmos output. Selection/parsing adapted from [PR #17](https://github.com/asdf17128/bili-webos/pull/17). The source-specific 4K120 frame transform from that PR is not included; sources above 60 fps or with an unknown frame rate retain their original base-layer signaling.
+- Dolby initialization metadata and supported E-AC-3 / FLAC audio tracks are selected independently. Decoder failures during loading fall back; E-AC-3 alone is not a guarantee of Atmos output. Selection/parsing adapted from [PR #17](https://github.com/asdf17128/bili-webos/pull/17). In v2.2.0, the source-specific 4K120 frame transform from that PR was not included; sources above 60 fps or with an unknown frame rate retain their original base-layer signaling.
 
 v2.2.0 补充缓冲耗尽恢复、按所选 CDN 测速和最近播放节点记录；收藏页增加 **订阅**，支持别人的收藏夹、UP 主合集及跨页连播。webOS 4.x 的布局和旧服务运行时兼容基于社区 [#34](https://github.com/asdf17128/bili-webos/issues/34) 补丁。
 
@@ -181,6 +187,6 @@ v2.2.0 补充缓冲耗尽恢复、按所选 CDN 测速和最近播放节点记�
 
 直播保留所选画质，优先使用本机实测起播更快的 fMP4 HLS 源，不兼容或启动超时则回退 TS；取流与画质列表合并为一次请求，真正播放后才结束加载提示，失败可按确认重试。LG C4 三个直播间的播放进度开始推进由约 7.5–9.3 秒缩短至 2.0–3.3 秒；这是本机、本次网络的小样本结果，详见 [直播实测记录](docs/TESTCASES.md#直播起播优化与回归2026-10-06)。
 
-杜比源会读取初始化段中的实际格式，并按设备能力选择 E-AC-3、FLAC 或 AAC；加载阶段解码失败会回退。显示 E-AC-3 只代表所选音轨，全景声是否输出还取决于片源、电视、音响连接和系统设置。部分实现来自 [PR #17](https://github.com/asdf17128/bili-webos/pull/17)，本版未包含其中针对特定 4K120 片源的帧变换；超过 60fps 或帧率未知时保留原有基础层信令，避免直接开启杜比信令的已知黑屏风险。webOS 4.x 整机兼容及杜比／全景声输出仍需对应设备实测。
+杜比源会读取初始化段中的实际格式，并按设备能力选择 E-AC-3、FLAC 或 AAC；加载阶段解码失败会回退。显示 E-AC-3 只代表所选音轨，全景声是否输出还取决于片源、电视、音响连接和系统设置。部分实现来自 [PR #17](https://github.com/asdf17128/bili-webos/pull/17)，v2.2.0 未包含其中针对特定 4K120 片源的帧变换；超过 60fps 或帧率未知时保留原有基础层信令，避免直接开启杜比信令的已知黑屏风险。webOS 4.x 整机兼容及杜比／全景声输出仍需对应设备实测。
 
 完整更新说明与已知问题见 [v2.2.0 release notes](docs/releases/v2.2.0.md)。#41 在后续 v2.2.1 中修复，见上方播放结束行为说明。

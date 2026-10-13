@@ -1,0 +1,715 @@
+{
+  "samples": [
+    {
+      "time": 0,
+      "duration": 176,
+      "ready": 1,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 0,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 0
+      },
+      "ended": false
+    },
+    {
+      "time": 2.75,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 450,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 2
+      },
+      "ended": false
+    },
+    {
+      "time": 7.766687,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 827,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 4
+      },
+      "ended": false
+    },
+    {
+      "time": 12.766687,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 1125,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 6
+      },
+      "ended": false
+    },
+    {
+      "time": 17.766687,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 1426,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 8
+      },
+      "ended": false
+    },
+    {
+      "time": 22.766687,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 1727,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 10
+      },
+      "ended": false
+    },
+    {
+      "time": 27.766687,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 2027,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 11
+      },
+      "ended": false
+    },
+    {
+      "time": 32.783312,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 2327,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 12
+      },
+      "ended": false
+    },
+    {
+      "time": 37.783312,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 2627,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 13
+      },
+      "ended": false
+    },
+    {
+      "time": 42.783312,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 2927,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 14
+      },
+      "ended": false
+    },
+    {
+      "time": 47.8,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 3227,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 15
+      },
+      "ended": false
+    },
+    {
+      "time": 52.8,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 3528,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 16
+      },
+      "ended": false
+    },
+    {
+      "time": 57.8,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 3828,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 17
+      },
+      "ended": false
+    },
+    {
+      "time": 62.8,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 4129,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 18
+      },
+      "ended": false
+    },
+    {
+      "time": 67.8,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 4427,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 19
+      },
+      "ended": false
+    },
+    {
+      "time": 72.8,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 4729,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 21
+      },
+      "ended": false
+    },
+    {
+      "time": 77.8,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 5028,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 21
+      },
+      "ended": false
+    },
+    {
+      "time": 82.816687,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 5329,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 22
+      },
+      "ended": false
+    },
+    {
+      "time": 87.816687,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 5628,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 23
+      },
+      "ended": false
+    },
+    {
+      "time": 92.816687,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 5929,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 24
+      },
+      "ended": false
+    },
+    {
+      "time": 97.816687,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 6230,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 25
+      },
+      "ended": false
+    },
+    {
+      "time": 102.816687,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 6530,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 26
+      },
+      "ended": false
+    },
+    {
+      "time": 107.833312,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 6829,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 27
+      },
+      "ended": false
+    },
+    {
+      "time": 112.833312,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 7129,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 28
+      },
+      "ended": false
+    },
+    {
+      "time": 117.833312,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 7431,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 29
+      },
+      "ended": false
+    },
+    {
+      "time": 122.833312,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 7731,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 30
+      },
+      "ended": false
+    },
+    {
+      "time": 127.833312,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 8030,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 31
+      },
+      "ended": false
+    },
+    {
+      "time": 132.833312,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 8330,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 32
+      },
+      "ended": false
+    },
+    {
+      "time": 137.85,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 8631,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 33
+      },
+      "ended": false
+    },
+    {
+      "time": 142.85,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 8931,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 34
+      },
+      "ended": false
+    },
+    {
+      "time": 147.933312,
+      "duration": 176,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 9235,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 35
+      },
+      "ended": false
+    },
+    {
+      "time": 152.933312,
+      "duration": 174.983374,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 9535,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 36
+      },
+      "ended": false
+    },
+    {
+      "time": 157.933312,
+      "duration": 174.983374,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 9837,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 36
+      },
+      "ended": false
+    },
+    {
+      "time": 162.933312,
+      "duration": 174.983374,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 10137,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 36
+      },
+      "ended": false
+    },
+    {
+      "time": 167.933312,
+      "duration": 174.983374,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 10436,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 36
+      },
+      "ended": false
+    },
+    {
+      "time": 172.933312,
+      "duration": 174.983374,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 10500,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 36
+      },
+      "ended": false
+    },
+    {
+      "time": 174.983374,
+      "duration": 174.983374,
+      "ready": 4,
+      "width": 3840,
+      "height": 2160,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "fps": 60,
+      "decoded": 10500,
+      "dropped": 0,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 36
+      },
+      "ended": true
+    }
+  ],
+  "events": [
+    {
+      "type": "ended",
+      "time": 174.983374
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

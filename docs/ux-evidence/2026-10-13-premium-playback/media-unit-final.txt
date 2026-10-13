@@ -1,0 +1,55 @@
+✔ binds the transform only to the audited video, cid and representation (1.212333ms)
+✔ media transform fails closed until the exact source index is validated (0.095875ms)
+✔ binds all media responses to the exact audited SIDX entries (0.177875ms)
+✔ finds a controlled transform error through Shaka-style wrapping (0.092375ms)
+✔ reduces a strict five-second Dolby 120 fps fragment to an exact 60fps grid (9.578ms)
+✔ reduces the shorter final 598-sample fragment to 299 pictures (3.552791ms)
+✔ fails closed when a discarded picture can be depended on (1.714875ms)
+▶ fails closed for unsupported sample and HEVC formats
+  ✔ lengthSize other than four (0.809042ms)
+  ✔ fragment without 600 samples (0.9515ms)
+  ✔ access unit without a Dolby RPU (1.598083ms)
+  ✔ one sample with a non-120fps duration (2.125791ms)
+  ✔ closed segment boundary was not proven by the index validator (0.944292ms)
+  ✔ a media response containing sidx cannot be shortened safely (0.892875ms)
+✔ fails closed for unsupported sample and HEVC formats (7.802708ms)
+﹣ all 35 captured fragments satisfy the closed-GOP reduction proof (0.037375ms) # SKIP
+✔ normal media remains byte-identical and never triggers transform recovery (0.75875ms)
+✔ validated index required, including requests already rewritten through another local port (0.469583ms)
+✔ wrong ranges, missing context and corrupted index fail closed (0.172291ms)
+✔ late transformed responses cannot enter a new stream (0.092125ms)
+✔ runtime transform/media/stall failure queues one fallback and changing video cancels queued work (0.239291ms)
+✔ load-time transform failures never trigger generic media retries or a stale runtime fallback (0.450791ms)
+✔ patches only the target SPS VUI time_scale byte (1.197583ms)
+✔ patches the exact hvcC record without growing VPS or the record (0.118625ms)
+✔ patches exactly one complete hvcC box in a bounded init segment (0.214041ms)
+✔ validates the exact 35-fragment index and rejects neighboring bytes (0.13175ms)
+✔ patches the target SPS in the segment-leading access unit (0.242375ms)
+✔ is idempotent for the already-patched target structures (0.099916ms)
+✔ fails closed for neighboring but non-target encodes and layouts (0.08175ms)
+✔ Dolby signaling preserves the base layer for high or unknown frame rates (0.803084ms)
+✔ parses Bilibili Profile 8 Level 9 dvvC signaling (0.334292ms)
+✔ rejects truncated and non-box Dolby markers (0.083834ms)
+✔ proxy media URLs preserve ranges and reject non-network protocols (0.198708ms)
+✔ Dolby init probing is bounded and requires a complete body (0.360792ms)
+✔ strict video selection never disguises a lower quality as 4K (0.20325ms)
+✔ automatic video fallback reports the quality it actually selected (0.065417ms)
+✔ true Dolby audio wins over Hi-Res and AAC (0.587208ms)
+✔ Hi-Res-only video selects FLAC and never pretends AAC is EC-3 (0.103417ms)
+✔ unsupported premium codecs fall back to the highest AAC representation (0.140542ms)
+✔ unsupported EC-3 falls through to supported Hi-Res FLAC (0.074083ms)
+✔ runtime audio fallbacks remain Dolby to Hi-Res to AAC without duplicates (0.676334ms)
+✔ Dolby signaling failure retries the same audio ladder on the base layer (0.1065ms)
+✔ AAC-only playback is attempted once (0.042792ms)
+✔ premium video prefers supported HEVC over a larger AVC stream at the same quality (0.092833ms)
+✔ no supported representation and no lower fallback never re-enable a rejected codec or upgrade quality (0.0435ms)
+✔ 4K TV rejects 8K before loading but keeps 4096 cinema and HDR fallback (0.069541ms)
+✔ webOS display limits preserve 8K devices and widen only UHD cinema (0.134416ms)
+ℹ tests 46
+ℹ suites 0
+ℹ pass 45
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 93.347958

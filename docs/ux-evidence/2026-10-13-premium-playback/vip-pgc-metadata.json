@@ -1,0 +1,138 @@
+{
+  "code": 0,
+  "chosen": {
+    "epid": 433953,
+    "cid": 456488230,
+    "bvid": "BV1vS4y1X7xj",
+    "status": 13,
+    "badge": "会员"
+  },
+  "playCode": 0,
+  "quality": 125,
+  "accept": [
+    125,
+    120,
+    112,
+    80,
+    64,
+    32,
+    16
+  ],
+  "video": [
+    {
+      "id": 125,
+      "codecs": "hvc1.2.4.H150.90",
+      "width": 3840,
+      "height": 2160
+    },
+    {
+      "id": 120,
+      "codecs": "av01.0.00M.10.0.110.01.01.01.0",
+      "width": 3840,
+      "height": 2160
+    },
+    {
+      "id": 120,
+      "codecs": "avc1.640033",
+      "width": 3840,
+      "height": 2160
+    },
+    {
+      "id": 120,
+      "codecs": "hev1.1.6.L153.90",
+      "width": 3840,
+      "height": 2160
+    },
+    {
+      "id": 112,
+      "codecs": "avc1.640032",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "id": 112,
+      "codecs": "hvc1.1.6.L150.90",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "id": 112,
+      "codecs": "av01.0.08M.08.0.110.01.01.01.0",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "id": 80,
+      "codecs": "avc1.640032",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "id": 80,
+      "codecs": "hvc1.1.6.L150.90",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "id": 80,
+      "codecs": "av01.0.08M.08.0.110.01.01.01.0",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "id": 64,
+      "codecs": "avc1.640028",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "id": 64,
+      "codecs": "hvc1.1.6.L120.90",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "id": 64,
+      "codecs": "av01.0.08M.08.0.110.01.01.01.0",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "id": 32,
+      "codecs": "avc1.64001F",
+      "width": 852,
+      "height": 480
+    },
+    {
+      "id": 32,
+      "codecs": "hvc1.1.6.L120.90",
+      "width": 852,
+      "height": 480
+    },
+    {
+      "id": 32,
+      "codecs": "av01.0.08M.08.0.110.01.01.01.0",
+      "width": 852,
+      "height": 480
+    },
+    {
+      "id": 16,
+      "codecs": "hvc1.1.6.L120.90",
+      "width": 640,
+      "height": 360
+    },
+    {
+      "id": 16,
+      "codecs": "avc1.64001E",
+      "width": 640,
+      "height": 360
+    },
+    {
+      "id": 16,
+      "codecs": "av01.0.08M.08.0.110.01.01.01.0",
+      "width": 640,
+      "height": 360
+    }
+  ],
+  "duration": 1426
+}

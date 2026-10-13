@@ -6,9 +6,9 @@ const TV_PROXY_BASE = 'http://127.0.0.1:7654';
 const MAX_DOLBY_INIT_BYTES = 1024 * 1024;
 
 // PR #17 documents black/corrupt output when the untouched 4K120 stream is
-// advertised as Dolby Vision. Its source-specific frame transform is not part
-// of this player. Keep the original base-layer signaling above 60 fps (or when
-// the rate is unknown), even if MSE accepts the Dolby codec string.
+// advertised as Dolby Vision. Outside the separately audited transform, keep
+// original base-layer signaling above 60 fps (or for an unknown rate), even if
+// MSE accepts the Dolby codec string.
 export function dolbySignalingFrameRateAllowed(rep) {
   const value = String(rep?.frameRate || rep?.frame_rate || '').trim();
   if (!/^\d+(?:\.\d+)?(?:\/\d+(?:\.\d+)?)?$/.test(value)) return false;
@@ -57,14 +57,29 @@ function canPlay(rep, isTypeSupported) {
   }
 }
 
+// webOS reports panel dimensions, not exact decoder widths. Keep the panel
+// height boundary (8K on a 4K TV can load but never advance), allowing DCI 4K.
+export function webOSVideoLimit(deviceInfo) {
+  if (deviceInfo == null) return null;
+  let info = {};
+  try { info = JSON.parse(deviceInfo) || {}; } catch { /* conservative TV default */ }
+  const width = Math.max(1920, Number(info.screenWidth) || 1920);
+  const height = Math.max(1080, Number(info.screenHeight) || 1080);
+  return { width: width === 3840 && height >= 2160 ? 4096 : width, height };
+}
+
 // Select one exact video quality. Manual quality changes use strict selection
 // so the UI can never say "4K" while a lower representation is playing.
 // Automatic startup fallback may opt into the next available lower qn.
 export function selectVideoRepresentation(dash, requestedQn, options = {}) {
   let videos = asArray(dash && dash.video).filter(representationUrl);
+  if (options.maxResolution) {
+    const { width, height } = options.maxResolution;
+    videos = videos.filter(rep => !(Number(rep.width) > width || Number(rep.height) > height));
+  }
   if (options.isTypeSupported) {
     const supported = videos.filter(rep => canPlay({ ...rep, mimeType: rep.mimeType || rep.mime_type || 'video/mp4' }, options.isTypeSupported));
-    if (supported.length) videos = supported;
+    videos = supported;
   }
   if (!videos.length) return { representation: null, actualQn: null, exact: false };
 
@@ -78,15 +93,27 @@ export function selectVideoRepresentation(dash, requestedQn, options = {}) {
     const ids = Array.from(new Set(videos.map(rep => Number(rep.id)).filter(Number.isFinite)))
       .sort((a, b) => b - a);
     const fallbackQn = Number.isFinite(requested)
-      ? (ids.find(id => id <= requested) ?? ids[0])
+      ? ids.find(id => id <= requested)
       : ids[0];
     pool = videos.filter(rep => Number(rep.id) === fallbackQn);
     exact = false;
   }
 
-  const representation = pickHighestBandwidth(pool);
+  // Bitrates are not comparable across codecs. For premium TV streams prefer
+  // supported HEVC, then AV1; retain AVC as a same-quality decoder fallback.
+  // Within one codec retain the best encode, never silently lower qn.
+  const codecRank = rep => {
+    if (Number(rep.id) < 112) return 0;
+    if (/^(dvh[1e]|hvc1|hev1)\./i.test(rep.codecs || '')) return 0;
+    if (/^av01\./i.test(rep.codecs || '')) return 1;
+    return 2;
+  };
+  const representations = pool.slice().sort((a, b) => codecRank(a) - codecRank(b)
+    || (Number(b.bandwidth) || 0) - (Number(a.bandwidth) || 0));
+  const representation = representations[0] || null;
   return {
     representation,
+    representations,
     actualQn: representation ? Number(representation.id) : null,
     exact,
   };
@@ -148,7 +175,7 @@ export function createPlaybackAttemptPlan(audioCandidates, dolbyCodec, options =
   if (!audio.length && options.allowVideoOnly) {
     audio.push({ representation: null, kind: 'none', codec: '', label: '' });
   }
-  const signaling = dolbyCodec ? [dolbyCodec, null] : [null];
+  const signaling = dolbyCodec ? (options.allowBaseLayer === false ? [dolbyCodec] : [dolbyCodec, null]) : [null];
   const attempts = [];
   for (const codec of signaling) {
     for (const candidate of audio) {

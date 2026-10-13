@@ -1,0 +1,35 @@
+[
+  {
+    "name": "unverified Dolby frame rate keeps the original base layer: dolby-120",
+    "pass": true
+  },
+  {
+    "name": "unverified Dolby frame rate keeps the original base layer: dolby-unknown",
+    "pass": true
+  },
+  {
+    "name": "actual manifest and codec fallback: premium",
+    "pass": true
+  },
+  {
+    "name": "actual manifest and codec fallback: premium-fallback",
+    "pass": true
+  },
+  {
+    "name": "failed quality load restores original stream with explicit DASH MIME",
+    "pass": true
+  },
+  {
+    "name": "missing requested quality keeps existing stream and never blames membership",
+    "pass": false,
+    "error": "locator.click: Timeout 7000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.player-control-btn').filter({ hasText: '1080P' })\u001b[22m\n"
+  },
+  {
+    "name": "same-quality HEVC decoder failure tries AVC without dropping to 1080p",
+    "pass": true
+  },
+  {
+    "name": "network failure stops after two outer attempts instead of trying every quality",
+    "pass": true
+  }
+]

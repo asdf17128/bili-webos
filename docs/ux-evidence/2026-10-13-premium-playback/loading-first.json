@@ -1,0 +1,27 @@
+[
+  {
+    "name": "unverified Dolby frame rate keeps the original base layer: dolby-120",
+    "pass": true
+  },
+  {
+    "name": "unverified Dolby frame rate keeps the original base layer: dolby-unknown",
+    "pass": true
+  },
+  {
+    "name": "actual manifest and codec fallback: premium",
+    "pass": true
+  },
+  {
+    "name": "actual manifest and codec fallback: premium-fallback",
+    "pass": true
+  },
+  {
+    "name": "failed quality load restores original stream with explicit DASH MIME",
+    "pass": false,
+    "error": "page.waitForFunction: Timeout 7000ms exceeded."
+  },
+  {
+    "name": "network failure stops after two outer attempts instead of trying every quality",
+    "pass": true
+  }
+]

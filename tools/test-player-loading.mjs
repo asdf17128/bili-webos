@@ -10,11 +10,12 @@ const results = [];
 const stub = `class Player {
  static isBrowserSupported(){return true}
  async attach(v){this.video=v}
- configure(){} addEventListener(n,f){(this.events||(this.events={}))[n]=f} getNetworkingEngine(){return this.net||(this.net={registerRequestFilter(f){this.request=f},registerResponseFilter(f){this.response=f},addEventListener(n,f){this.retry=f}})}
+ configure(config){window.__probe.configs=(window.__probe.configs||[]).concat(config)} addEventListener(n,f){(this.events||(this.events={}))[n]=f} getNetworkingEngine(){return this.net||(this.net={registerRequestFilter(f){this.request=f},registerResponseFilter(f){this.response=f},addEventListener(n,f){this.retry=f}})}
  getVariantTracks(){return []} retryStreaming(){window.__probe.retries++;return true} getStats(){return {}}
  async load(url,position,mime){window.__probe.loads++;window.__probe.mimes.push(mime);
  if(window.__mode==='quality-restore'&&window.__probe.loads===2)throw Object.assign(new Error('network failed'),{category:1});
  const mpd=await (await fetch(url)).text();window.__probe.mpds.push(mpd);window.__probe.positions.push(position);
+ if(window.__mode==='codec-fallback' && /codecs="hvc1/.test(mpd))throw Object.assign(new Error('HEVC decode failed'),{category:3});
  if(window.__mode==='premium-fallback' && /codecs="(ec-3|fLaC)"/.test(mpd)) throw Object.assign(new Error('unsupported decoder'),{category:3});
  if(window.__mode==='dolby-fallback' && /codecs="dvh1/.test(mpd)) throw Object.assign(new Error('DV decoder failed'),{category:3}); if(window.__mode==='cancel') return new Promise((r,j)=>{this.reject=j});
  if(window.__mode==='network') throw Object.assign(new Error('network unavailable'),{code:1001,category:1});
@@ -45,7 +46,7 @@ async function run(name, mode, fn, scale) {
    if(mode.startsWith('layout')||mode.startsWith('follow'))localStorage.setItem('bili_auth',JSON.stringify({SESSDATA:'fixture'}));
    localStorage.setItem('bili_perfopt',JSON.stringify({prefetchPage:false,warmPlayer:false}));
    HTMLMediaElement.prototype.play=function(){if(this.readyState>=2)this.dispatchEvent(new Event('playing'));return Promise.resolve()};
-   if (/premium|dolby/.test(mode)) MediaSource.isTypeSupported=type=>!type.includes('av01');
+   if (/premium|dolby|codec|resolution/.test(mode)) MediaSource.isTypeSupported=type=>!type.includes('av01');
  },{mode,scale});
  const page=await context.newPage();page.setDefaultTimeout(7000);
  const calls={playurl:0,info:0,meta:0,extras:0,events:[]};
@@ -68,8 +69,16 @@ async function run(name, mode, fn, scale) {
   if(u.pathname.endsWith('/view')){calls.info++;calls.events.push({type:'view',at:Date.now()});if(mode==='slow-info')await new Promise(r=>setTimeout(r,1200));data={aid:1,cid:2,bvid:'BVtest',pages:mode==='startup-part'?[{cid:2},{cid:3}]:[{cid:2}],title:mode.startsWith('layout')?'日本有钱人的小别墅能有多离谱！超迷你设计成这样就问你敢住吗':'加载回归',owner:{mid:1,name:mode.startsWith('layout')?'11区小豪的故事':'测试'},pubdate:1790323200,stat:{}};}
   if(u.pathname.endsWith('/playurl')){
     calls.playurl++;calls.events.push({type:'playurl',cid:u.searchParams.get('cid'),at:Date.now()});if(mode.startsWith('startup'))await new Promise(r=>setTimeout(r,500));
-    const qn=mode.startsWith('dolby')?126:80;
+    const qn=mode==='quality-restore'?Number(u.searchParams.get('qn')||80):mode==='resolution-8k'?127:mode==='codec-fallback'?120:mode.startsWith('dolby')?126:80;
     data={quality:qn,accept_quality:[qn,16],dash:{duration:100,video:[{id:qn,bandwidth:1000,baseUrl:'https://media.bilivideo.com/video',codecs:qn===126?'hvc1.2.4.L156.90':'avc1.640028',width:1920,height:1080,frameRate:mode==='dolby-120'?'120000/1001':mode==='dolby-unknown'?'':'60000/1001',SegmentBase:{Initialization:'0-51',indexRange:'52-70'}}],audio:[]}};
+    if(mode==='resolution-8k') {
+      data.dash.video[0]={...data.dash.video[0],codecs:'hvc1.1.6.L180.90',width:7680,height:4320};
+      data.dash.video.push({...data.dash.video[0],id:125,codecs:'hvc1.2.4.L153.90',width:3840,height:2160});
+    }
+    if(mode==='codec-fallback') {
+      data.dash.video[0].bandwidth=17000000;
+      data.dash.video.push({...data.dash.video[0],codecs:'hvc1.1.6.L153.90',bandwidth:7800000});
+    }
     if(mode.startsWith('premium')) {
       const rep=(id,codecs)=>({id,codecs,mimeType:'audio/mp4',bandwidth:1000,baseUrl:'https://media.bilivideo.com/audio',SegmentBase:{Initialization:'0-1',indexRange:'2-3'}});
       data.dash.dolby={audio:[rep(30250,'ec-3')]};data.dash.flac={audio:rep(30251,'fLaC')};data.dash.audio=[rep(30280,'mp4a.40.2')];
@@ -291,6 +300,31 @@ await run('failed quality load restores original stream with explicit DASH MIME'
  await page.waitForFunction(()=>!document.querySelector('.player-page .loading'));
  assert.deepEqual(await page.evaluate(()=>window.__probe.mimes),Array(3).fill('application/dash+xml'));
  assert.equal(await page.locator('.player-page .player-error').count(),0);
+});
+await run('missing requested quality keeps existing stream and never blames membership','quality-missing',async page=>{
+ await page.evaluate(()=>window.__openVideo({bvid:'BVtest',resumeMode:'none'}));
+ await page.waitForFunction(()=>window.__probe.loads===1);
+ await page.keyboard.press('ArrowUp');
+ await page.locator('.player-btn').filter({hasText:'1080P'}).click();
+ await page.locator('.quality-option').filter({hasText:'360P'}).click();
+ await page.waitForFunction(()=>document.body.innerText.includes('画质切换失败'));
+ assert.equal(await page.evaluate(()=>window.__probe.loads),1);
+ assert.ok(!(await page.locator('body').innerText()).includes('该画质需要大会员'));
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('bili_settings')).quality),80);
+});
+await run('4K TV starts 8K source at available HDR tier without loading stuck 8K','resolution-8k',async(page,calls)=>{
+ await page.evaluate(()=>{window.PalmSystem={deviceInfo:JSON.stringify({screenWidth:3840,screenHeight:2160})}});
+ await open(page);await page.waitForFunction(()=>window.__probe.mpds.length===1);
+ const p=await page.evaluate(()=>window.__probe);assert.match(p.mpds[0],/Representation id="125"/);
+ assert.doesNotMatch(p.mpds[0],/width="7680"/);assert.equal(calls.playurl,1);
+});
+await run('same-quality HEVC decoder failure tries AVC without dropping to 1080p','codec-fallback',async(page,calls)=>{
+ await page.evaluate(()=>window.__openVideo({bvid:'BVtest',resumeMode:'none'}));
+ await page.waitForFunction(()=>window.__probe.mpds.length===2);
+ const p=await page.evaluate(()=>window.__probe);
+ assert.match(p.mpds[0],/codecs="hvc1/);assert.match(p.mpds[1],/codecs="avc1/);
+ assert.ok(p.mpds.every(m=>m.includes('Representation id="120"')));
+ assert.ok(p.configs.some(c=>c.ignoreHardwareResolution===true));assert.equal(calls.playurl,1);
 });
 await run('network failure stops after two outer attempts instead of trying every quality','network',async(page,calls)=>{
  await open(page);await page.waitForTimeout(2000);assert.equal(calls.playurl,2);

@@ -615,3 +615,46 @@ C9 社区独立验证：[#34 回报](https://github.com/asdf17128/bili-webos/iss
 **真机常规回归最终结果：53 通过 / 0 失败 / 3 跳过。** 点播真实时间推进、评论与 UP 投稿、番剧取流、直播实际解码、关注分页、认证收藏/订阅读取、搜索、CDN 遥控选择及重启持久化、失败立即重试后的焦点、热门与六个分区均通过。3 项跳过为当前直播间暂无实时弹幕、直播只有单一画质、未授权执行本轮稍后再看增删；不计为通过。原设置已恢复。真实账号写入仅有普通播放产生的历史，本轮没有修改关注/投币/收藏/稍后再看。见[完整真机回归](ux-evidence/2026-10-13-tv-bugfixes/smoke.json)。
 
 安装后的前端主 bundle SHA256 也已通过 SSH 与本地逐字节哈希匹配，并确认含 `bugfix-test.1` 标记，见[前端身份](ux-evidence/2026-10-13-tv-bugfixes/frontend-hashes.json)。电视最后回到首页，保留已验证的测试包；GitHub Release、稳定版 metadata 与 Homebrew 均未改动。
+
+## 2026-10-13：会员画质与 PR #17集成（未发布）
+
+当前账号经 B站 nav 确认 `vipStatus=1`。使用 LG C4 / Chromium 120 对照 `bugfix-test.1` 和 `premium-test.1`，测试目标来自 [#11](https://github.com/asdf17128/bili-webos/issues/11)、[#33](https://github.com/asdf17128/bili-webos/issues/33)、[#34](https://github.com/asdf17128/bili-webos/issues/34)、[PR #17](https://github.com/asdf17128/bili-webos/pull/17)。旧实现与本次修复均走真实 API、真实 Shaka 和电视硬件，不用模拟的媒体事件代替解码。
+
+| 片源 / 用例 | 修复前 | 最终真机结果 |
+|---|---|---|
+| Profile 5，BV1kX4y197P4 / cid 1127214165 | 退到 1920×1038 AVC | 3996×2160 `dvh1.05.07` / E-AC-3 |
+| Profile 8.4，同 BV / cid 1026939788 | 已可播放 | 3840×2160 `dvh1.08.06`，继续通过 |
+| 4096 宽高帧率，BV1fK4y1t7hj | 退到 1920×872 AVC | 4096×1860 HEVC |
+| SDR 4K120，BV1rp4y1e745 | AVC，短测 728 解码 / 88 丢帧 | 3840×1920 HEVC，短测 0 丢帧 |
+| 同片 HDR 高帧率 | 已可播放 | 3840×1920 HEVC，继续通过 |
+| PR #17 影院 DV，BV1Bg4vz2ENd | 退到 1920×886 AVC | 4096×1890 `dvh1.08.09` / E-AC-3 |
+| PR #17 DV120，BV1dCNC6hEzE | 原 `hvc1` 120fps 基础层 | 3840×2160 `dvh1.08.10` 60fps / E-AC-3 |
+| #34 4K50，BV1sapi6qE72 | AVC 视频约 17.06 Mbps | HEVC 视频约 7.88 Mbps，qn 120 / 3840×2160 |
+| #11 Dolby60，BV14BjU6bEo1 | 本轮未做旧包对照 | 3840×2160 `dvh1.08.09` / E-AC-3 |
+| #11 8K，BV1yuJ56wEQ3 | 本轮首个候选无限制尝试 8K，45s 内进度为 0 | 直接回退 qn 125 / 3840×2160 HDR，并推进 |
+| 会员专享番剧 ep 433953，API badge=会员 | 本轮未做旧包对照 | 3840×2160 HDR，真实解码并推进 |
+
+最终片源矩阵 **11/11**；每条至少持续推进 4s，0 记录丢帧。这是本机短样本，不能推断所有网络、整段高帧率视频都零卡顿。
+
+- **C-PLAY-PREMIUM-01：影院宽度与设备边界。** 旧包三条 3996/4096 源误降 1080p；放开 Shaka 面板宽度后可保持原 qn/尺寸。额外 8K 对照抓到首候选回归：MSE 支持、Shaka load 成功、readyState=4，仍停在 0 秒。现在按 webOS 设备高度/宽度过滤，4K 允许 4096 宽、拒绝 8K，8K 设备仍允许 8K。单测正对照失败后通过，React 测试确认第一份 MPD 直接为可用 HDR，不先加载卡住的 8K。
+- **C-PLAY-PREMIUM-02：同档编码与手动恢复。** 同 qn 优先 HEVC，再试 AV1/AVC；浏览器注入 HEVC 解码失败后，同 qn AVC 成功，不降到 1080p。请求档位缺失时不卸载原流、不写新偏好；真加载失败后恢复原流。真机遥控 DV→4K→Profile 5，音轨仍为 E-AC-3，进度差小于 1s、暂停保持；非缓冲区 seek 后继续解码。
+- **C-PLAY-DV120-01：审计片源转换与失败关闭。** 使用 PR #17 完整转换实现，按当前播放器生命周期集成。电视读取真实 CDN init / SIDX / 全部 35 个媒体分片，逐一通过校验；34 个长片输出 300 帧，末片输出 299 帧，单片转换最慢 131ms。媒体字节与签名地址不离开电视。单测覆盖错误范围、SIDX/hvcC/依赖/RPU/时间条件、旧播放响应、取消和单次恢复，出错不把未经验证的字节送入 Dolby 解码器。
+- **C-PLAY-DV120-02：实际播放及受控失败恢复。** 真机加载目标为 qn 126 / 3840×2160 / 60fps；跳至末尾短分片仍推进。人工注入 Shaka 3016 解码错误通知，真正执行同 qn HLG 加载和硬件解码；音轨、暂停与位置保持，恢复播放后继续推进。注入只用于触发失败，不把通知冒充真实自然解码错误。
+
+代码与边界说明：[DOLBY_VISION.md](DOLBY_VISION.md)。证据：[目录](ux-evidence/2026-10-13-premium-playback)、[旧包](ux-evidence/2026-10-13-premium-playback/tv-before.json)、[最终 11 条](ux-evidence/2026-10-13-premium-playback/tv-after.json)、[8K 首候选失败](ux-evidence/2026-10-13-premium-playback/8k-first-failure.json)、[遥控与恢复](ux-evidence/2026-10-13-premium-playback/tv-controls.json)、[完整分片](ux-evidence/2026-10-13-premium-playback/tv-corpus.json)。
+
+**本地最终门禁通过：** `verify.sh --no-tv --ux` 退出 0；服务 **41/41**，媒体/Dolby 单测 **45 通过 / 1 可选本机 corpus 跳过**（本轮另有真实电视全 35 片测试），真实 Node **0.12.2 / 8.17.0**、ES5/ES2016、构建与国际化通过；UI **68/68**、会话/端口 **9/9**、独立代理 **3/3**、加载 **38/38**、片尾 **26/26**、直播 **9/9**、CDN **7/7**、弹幕 **6/6**。
+
+工具纠错原样保留：加载恢复 fixture 最初返回错误 qn，质量测试用了错误按钮 selector，偏好测试忽略默认 qn=80，8K fixture 初次未声明 HEVC 能力；真机遥控最初无条件 ArrowUp 导致焦点偏离。完整播放首轮实际 ended、10,500 解码帧、0 丢帧，但工具错误要求响应数恰好 35；真实 Shaka 重取一次，记录为 36。修正为至少 35，并结合自然 ended / 时间轴 / 帧数及独立全分片校验，不修改该首次 `pass:false` 原始结果。安装后首探针读到尚未就绪页面，重新前台启动并核对就绪与安装哈希后再测。
+
+本轮仅用户 C4 安装 **2.3.0 premium-test.1**。IPK **674668 bytes**，SHA256 `7c5d3418bb300241f9a764720071ac794351a9472a0543f3c6753fa82ac59960`；安装后的全部 6 个 JS bundle、service.js、上传 IPK 均匹配本地哈希。未发布 Release、未更新 Homebrew；PR #17 贡献已移植并署名，GitHub PR 尚未正式合并。面板实际 Dolby 标志与音响 Atmos 输出需现场观察；C9/其他电视及 #48 报告者 CDN 403 不在本轮完成验收范围。
+
+**最终包完整播放通过：** `probe-premium-soak-tv.js` 播放到原生 `ended`，实际时长 **174.983374s**，解码 **10,500 帧**、丢帧 **0**、媒体错误 **0**；codec `dvh1.08.10`、3840×2160、60fps、E-AC-3，始终保持转换播放路径。计数 36 为实际处理响应次数，含重复请求；全部 35 个唯一分片另有 corpus 逐片校验。见[最终完整播放](ux-evidence/2026-10-13-premium-playback/soak-final.json)。末次仅调整源码注释后在独立目录重建，6 个 JS bundle 与已测试/安装包逐字节一致。
+
+用户要求自动截图/日志观察后，实际调用系统视频截图通道 `com.webos.service.capture/executeOneShot`（`SCREEN_WITH_SOURCE_VIDEO`），返回 **Denied method call**；旧 `com.webos.service.tv.capture` 不存在。没有绕过系统权限。CDP 播放器截图已人工查看，控制栏的 Dolby Vision / E-AC-3、焦点和进度正常，GPU 视频层黑色不能用于画面颜色判断。此边界依据[真机调用记录](ux-evidence/2026-10-13-premium-playback/system-capture.json)，不是要求用户代做已有自动测试。
+
+**最终常规真机回归：55 通过 / 0 失败 / 2 跳过。** 首页与点播、评论、UP 投稿、番剧取流、直播实际播放/弹幕通路/画质往返、搜索、关注分页、认证收藏/订阅读取、设置和 CDN 持久化、失败后遥控焦点与六分区均通过。跳过当前安静直播间的即时弹幕，以及未启用的稍后再看账号写入；后续推荐直播间另通过真实弹幕接收。最终包会员遥控专项再次 **9/9**。见[常规结果](ux-evidence/2026-10-13-premium-playback/tv-smoke.json)与[最终遥控结果](ux-evidence/2026-10-13-premium-playback/tv-controls-final.json)。
+
+日志不全是零错误：服务记录了 3 次上游响应头超时和 1 次响应体中断（后者产生 body/res 两条记录），分别涉及主站/直播 API；后续常规回归仍完成，账号 nav 返回 code=0、VIP 有效。这些不是媒体解码错误，也不足以证明或排除历史“全部请求失败”的根因。保存[当前账号/设备能力及服务错误摘要](ux-evidence/2026-10-13-premium-playback/account-device-diagnostics.json)，不包含账号身份或 Cookie。设备宣告 DV/Atmos 能力，不等于当前音响输出已验收。
+
+结束后主站 nav **HTTP 200 / code 0 / 52ms**、生产直播推荐接口 **HTTP 200 / code 0 / 290ms**，见[接口复查](ux-evidence/2026-10-13-premium-playback/api-recheck.json)。此前用于额外探测的固定 room=6 六请求脚本触发工具 30s 总时限，未将无结果当作接口成功；改为生产回归使用的直播接口并返回明确状态。电视回到首页，偏好已恢复；公开记录不含账号内容截图或媒体数据。总览见[summary.json](ux-evidence/2026-10-13-premium-playback/summary.json)。

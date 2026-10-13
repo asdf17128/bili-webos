@@ -91,7 +91,7 @@ node tools/test-aigc.mjs || { echo "FAIL: aigc extraction"; exit 1; }
 # C-CAST-03: DLNA URL rewrite (Huya FLV→HLS; non-Huya untouched)
 node tools/test-casturl.mjs || { echo "FAIL: cast url rewrite"; exit 1; }
 # C-SRCH-02: search-history dedup/cap
-node --test app/src/player/mediaSelection.test.js || { echo "FAIL: media selection"; exit 1; }
+node --test app/src/player/mediaSelection.test.js app/src/player/dolby*.test.js || { echo "FAIL: media selection"; exit 1; }
 node tools/test-library.mjs || { echo "FAIL: library playlists"; exit 1; }
 node tools/test-searchhistory.mjs || { echo "FAIL: search history"; exit 1; }
 npm test || { echo "FAIL: service unit tests"; exit 1; }

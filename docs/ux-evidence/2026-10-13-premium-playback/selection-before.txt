@@ -1,0 +1,85 @@
+✔ Dolby signaling preserves the base layer for high or unknown frame rates (0.720167ms)
+✔ parses Bilibili Profile 8 Level 9 dvvC signaling (0.303709ms)
+✔ rejects truncated and non-box Dolby markers (0.091334ms)
+✔ proxy media URLs preserve ranges and reject non-network protocols (0.20625ms)
+✔ Dolby init probing is bounded and requires a complete body (0.364625ms)
+✔ strict video selection never disguises a lower quality as 4K (0.116416ms)
+✔ automatic video fallback reports the quality it actually selected (0.070666ms)
+✔ true Dolby audio wins over Hi-Res and AAC (0.156625ms)
+✔ Hi-Res-only video selects FLAC and never pretends AAC is EC-3 (0.08525ms)
+✔ unsupported premium codecs fall back to the highest AAC representation (0.11675ms)
+✔ unsupported EC-3 falls through to supported Hi-Res FLAC (0.068417ms)
+✔ runtime audio fallbacks remain Dolby to Hi-Res to AAC without duplicates (0.610667ms)
+✔ Dolby signaling failure retries the same audio ladder on the base layer (0.08825ms)
+✔ AAC-only playback is attempted once (0.031875ms)
+✖ premium video prefers supported HEVC over a larger AVC stream at the same quality (1.064875ms)
+✖ no supported representation and no lower fallback never re-enable a rejected codec or upgrade quality (0.1225ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 14
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 68.458083
+
+✖ failing tests:
+
+test at app/src/player/mediaSelection.test.js:205:1
+✖ premium video prefers supported HEVC over a larger AVC stream at the same quality (1.064875ms)
+  AssertionError [ERR_ASSERTION]: Expected "actual" to be reference-equal to "expected":
+  + actual - expected
+
+    {
+  +   bandwidth: 17000000,
+  +   baseUrl: 'https://example.test/avc',
+  +   codecs: 'avc1.640034',
+  -   bandwidth: 7800000,
+  -   baseUrl: 'https://example.test/hevc',
+  -   codecs: 'hvc1.1.6.L153.90',
+      id: 120
+    }
+
+      at TestContext.<anonymous> (file://<worktree>/app/src/player/mediaSelection.test.js:210:10)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1095:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:777:18)
+      at Test.postRun (node:internal/test_runner/test:1224:19)
+      at Test.run (node:internal/test_runner/test:1152:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:777:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { id: 120, codecs: 'avc1.640034', bandwidth: 17000000, baseUrl: 'https://example.test/avc' },
+    expected: { id: 120, codecs: 'hvc1.1.6.L153.90', bandwidth: 7800000, baseUrl: 'https://example.test/hevc' },
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at app/src/player/mediaSelection.test.js:215:1
+✖ no supported representation and no lower fallback never re-enable a rejected codec or upgrade quality (0.1225ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + {
+  +   bandwidth: 100,
+  +   baseUrl: 'https://example.test/120.m4s',
+  +   codecs: 'hev1.1.6.L156.90',
+  +   id: 120,
+  +   mimeType: 'audio/mp4'
+  + }
+  - null
+
+      at TestContext.<anonymous> (file://<worktree>/app/src/player/mediaSelection.test.js:217:10)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1095:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:777:18)
+      at Test.postRun (node:internal/test_runner/test:1224:19)
+      at Test.run (node:internal/test_runner/test:1152:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:777:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { id: 120, codecs: 'hev1.1.6.L156.90', bandwidth: 100, mimeType: 'audio/mp4', baseUrl: 'https://example.test/120.m4s' },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

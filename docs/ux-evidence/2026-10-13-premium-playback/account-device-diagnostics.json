@@ -1,0 +1,49 @@
+{
+  "account": {
+    "code": 0,
+    "loggedIn": true,
+    "vipStatus": 1,
+    "vipType": 1
+  },
+  "deviceCapabilities": {
+    "uhd": true,
+    "uhd8K": false,
+    "dolbyVision": true,
+    "dolbyAtmos": true,
+    "hdr10": true,
+    "screenWidth": 3840,
+    "screenHeight": 2160
+  },
+  "diagnostics": {
+    "node": "v16.20.2",
+    "uptime": 518,
+    "localProxyPort": 7654,
+    "errors": [
+      {
+        "tag": "req:api.bilibili.com",
+        "time": 1791863934117,
+        "detail": "Upstream timeout before response headers"
+      },
+      {
+        "tag": "req:api.live.bilibili.com",
+        "time": 1791864238556,
+        "detail": "Upstream timeout before response headers"
+      },
+      {
+        "tag": "req:api.live.bilibili.com",
+        "time": 1791864258061,
+        "detail": "Upstream timeout before response headers"
+      },
+      {
+        "tag": "body:api.live.bilibili.com",
+        "time": 1791864333416,
+        "detail": "Upstream response aborted"
+      },
+      {
+        "tag": "res:api.live.bilibili.com",
+        "time": 1791864333417,
+        "detail": "aborted"
+      }
+    ]
+  }
+}

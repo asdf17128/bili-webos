@@ -1,0 +1,57 @@
+{
+  "date": "2026-10-13",
+  "build": "2.3.0 premium-test.1",
+  "released": false,
+  "githubPr17Merged": false,
+  "pr17SourceCommit": "0df9763aa7a1161a5237dff3f93f408c313f9868",
+  "device": "LG C4 / Chromium 120",
+  "accountVipVerified": true,
+  "mediaMatrix": {
+    "passed": 11,
+    "failed": 0
+  },
+  "remoteAndRecovery": {
+    "passed": 9,
+    "failed": 0
+  },
+  "corpus": {
+    "passed": 35,
+    "failed": 0
+  },
+  "completePlayback": {
+    "endedNaturally": true,
+    "seconds": 174.983374,
+    "decodedFrames": 10500,
+    "droppedFrames": 0,
+    "mediaErrors": 0,
+    "codec": "dvh1.08.10",
+    "width": 3840,
+    "height": 2160,
+    "fps": 60,
+    "audio": "ec-3"
+  },
+  "tvSmoke": {
+    "passed": 55,
+    "failed": 0,
+    "skipped": 2
+  },
+  "localGate": "verify.sh --no-tv --ux: exit 0",
+  "localMediaUnit": {
+    "passed": 45,
+    "failed": 0,
+    "skipped": 1
+  },
+  "playerLoading": {
+    "passed": 38,
+    "failed": 0
+  },
+  "installedBundleHashesMatch": true,
+  "settingsRestored": true,
+  "limits": [
+    "CDP omits GPU video; system video capture denied by webOS. Physical Dolby/Atmos output not verified.",
+    "No C9 or C6 hardware validation in this run.",
+    "35-fragment transform applies only to its exact audited source.",
+    "Service API timeouts/response interruption were observed; subsequent main/live checks succeeded.",
+    "Reporter issue 48 CDN 403 and historical all-request failure root cause are not proven resolved."
+  ]
+}

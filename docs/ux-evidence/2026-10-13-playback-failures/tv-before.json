@@ -1,0 +1,48 @@
+[
+  {
+    "name": "before: media error leaves paused media without retry UI",
+    "pass": true,
+    "detail": {
+      "time": 25.125,
+      "duration": 190,
+      "paused": true,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "hev1.1.6.L153.90",
+      "audio": "ec-3",
+      "frameRate": 24.39,
+      "runtime": {
+        "epoch": 1,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 120,
+      "errorVisible": false
+    }
+  },
+  {
+    "name": "before: network error leaves paused media without retry UI",
+    "pass": true,
+    "detail": {
+      "time": 25.125,
+      "duration": 190,
+      "paused": true,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "hev1.1.6.L153.90",
+      "audio": "ec-3",
+      "frameRate": 24.39,
+      "runtime": {
+        "epoch": 1,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 120,
+      "errorVisible": false
+    }
+  }
+]

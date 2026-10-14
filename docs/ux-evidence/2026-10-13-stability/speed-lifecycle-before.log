@@ -1,0 +1,9 @@
+FAIL native speed lifecycle: exit cancelled native switch must not assign a media URL: {"sources":[{"connected":false,"value":"http://127.0.0.1:7654/proxy/media.bilivideo.com/native-1.mp4"}],"rates":[],"loads":1,"unloads":1}
+FAIL native speed lifecycle: normal cancelled native switch must not assign a media URL: {"sources":[{"connected":true,"value":"http://127.0.0.1:7654/proxy/media.bilivideo.com/native-1.mp4"}],"rates":[2],"loads":1,"unloads":1}
+FAIL native speed lifecycle: newer-speed older URL must not replace newer native source
+FAIL native speed lifecycle: new-video cancelled native switch must not assign a media URL: {"sources":[{"connected":false,"value":"http://127.0.0.1:7654/proxy/media.bilivideo.com/native-1.mp4"}],"rates":[],"loads":2,"unloads":1}
+FAIL native speed lifecycle: quality page.waitForFunction: Timeout 7000ms exceeded.
+FAIL native speed lifecycle: exit-unloading cancelled native switch must not assign a media URL: {"sources":[{"connected":false,"value":"http://127.0.0.1:7654/proxy/media.bilivideo.com/native-1.mp4"}],"rates":[],"loads":1,"unloads":1}
+FAIL native speed lifecycle: normal-unloading cancelled native switch must not assign a media URL: {"sources":[{"connected":true,"value":"http://127.0.0.1:7654/proxy/media.bilivideo.com/native-1.mp4"}],"rates":[2],"loads":1,"unloads":1}
+PASS native speed lifecycle: success
+1/8 passed

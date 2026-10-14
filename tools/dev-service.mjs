@@ -38,7 +38,23 @@ Module._resolveFilename = function (request, ...rest) {
 const requireCjs = Module.createRequire(path.join(SERVICE_DIR, 'service.js'));
 const fs = requireCjs('fs');
 const MAC_COOKIES = path.join(ROOT, 'proxy/cookies.json');
-if (!fs.existsSync('/media/internal')) {
+// Automated anonymous runs must not inherit or clear the developer's login.
+// Remap only service.js's filesystem boundary; production code is unchanged.
+const isolatedState = process.env.BILI_DEV_STATE_DIR;
+if (isolatedState) {
+  fs.mkdirSync(isolatedState, { recursive: true });
+  const stateFs = Object.create(fs);
+  const mapped = p => typeof p === 'string' && p.startsWith('/media/internal/') ? path.join(isolatedState, path.basename(p)) : p;
+  for (const method of ['existsSync', 'readFileSync', 'writeFileSync']) {
+    stateFs[method] = (p, ...args) => fs[method](mapped(p), ...args);
+  }
+  const originalLoad = Module._load;
+  Module._load = function (request, parent, ...args) {
+    if (request === 'fs' && parent?.filename === path.join(SERVICE_DIR, 'service.js')) return stateFs;
+    return originalLoad.call(this, request, parent, ...args);
+  };
+}
+if (!isolatedState && !fs.existsSync('/media/internal')) {
   try { fs.mkdirSync('/media/internal', { recursive: true }); }
   catch (e) {
     // Can't create it (permissions) — seed the service's in-memory jar from the
@@ -54,7 +70,7 @@ const methods = Object.keys(svc.methods).sort();
 console.log('[dev-service] registered methods:', methods.join(', '));
 
 // Seed cookies from the proxy jar so dev keeps the same login/buvid3.
-if (svc.methods.setCookies && fs.existsSync(MAC_COOKIES)) {
+if (!isolatedState && svc.methods.setCookies && fs.existsSync(MAC_COOKIES)) {
   try {
     const jar = JSON.parse(fs.readFileSync(MAC_COOKIES, 'utf-8'));
     svc.methods.setCookies({ payload: { cookies: jar }, respond() {} });
@@ -62,14 +78,23 @@ if (svc.methods.setCookies && fs.existsSync(MAC_COOKIES)) {
   } catch (e) { console.warn('[dev-service] cookie seed failed:', e.message); }
 }
 
+let nextMessageToken = 0;
 const call = (method, payload, onRespond, isSub) => {
   const handler = svc.methods[method];
   if (!handler) { onRespond({ returnValue: false, errorText: 'no such method: ' + method }); return; }
+  let cancelled = false;
+  const message = { payload: payload || {}, uniqueToken: 'dev-' + (++nextMessageToken), isSubscription: !!isSub, respond: onRespond, cancel() {} };
   try {
-    handler({ payload: payload || {}, isSubscription: !!isSub, respond: onRespond, cancel() {} });
+    handler(message);
   } catch (e) {
     onRespond({ returnValue: false, errorText: e.message });
   }
+  return () => {
+    if (cancelled) return;
+    cancelled = true;
+    const cancel = svc.cancels && svc.cancels[method];
+    if (isSub && cancel) cancel(message);
+  };
 };
 
 const server = http.createServer((req, res) => {
@@ -112,9 +137,11 @@ server.on('upgrade', (req, socket, head) => {
     const payload = {};
     u.searchParams.forEach((v, k) => { payload[k] = /^\d+$/.test(v) ? parseInt(v, 10) : v; });
     console.log('[dev-service] subscribe', m[1], JSON.stringify(payload).slice(0, 80));
-    call(m[1], payload, (r) => {
+    const cancel = call(m[1], payload, (r) => {
       if (ws.readyState === 1) { try { ws.send(JSON.stringify(r || {})); } catch (e) { /* ignore */ } }
     }, true);
+    ws.once('close', () => cancel && cancel());
+    ws.on('error', () => cancel && cancel());
   });
 });
 

@@ -1,0 +1,38 @@
+{
+  "at": "2026-10-13T06:29:59.021Z",
+  "scope": "Exact monitor extracted from production test tool; virtual clock/video/counters, no TV or build",
+  "results": [
+    {
+      "name": "initial observation does not count existing cumulative frames",
+      "pass": true
+    },
+    {
+      "name": "repeated snapshots count only frame differences",
+      "pass": true
+    },
+    {
+      "name": "over-three-second gap preserves buffer state and nearby event evidence",
+      "pass": true
+    },
+    {
+      "name": "advancing closes the original gap without creating duplicates",
+      "pass": true
+    },
+    {
+      "name": "natural loop splits segment even when ended was sampled earlier",
+      "pass": true
+    },
+    {
+      "name": "counter reset starts a new segment without summing cumulative counts",
+      "pass": true
+    },
+    {
+      "name": "unavailable counters are explicitly null and incomplete",
+      "pass": true
+    },
+    {
+      "name": "cleanup removes all listeners, intervals and monitor ownership",
+      "pass": true
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "name": "remote focuses the actual quality button",
+    "pass": true
+  },
+  {
+    "name": "remote DV to 4K keeps premium audio, position and paused state",
+    "pass": true,
+    "detail": {
+      "time": 2.208333,
+      "duration": 190,
+      "paused": true,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "hev1.1.6.L153.90",
+      "audio": "ec-3",
+      "frameRate": 24.39,
+      "runtime": {
+        "epoch": 2,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 120
+    }
+  },
+  {
+    "name": "remote focuses the actual quality button",
+    "pass": true
+  },
+  {
+    "name": "completion",
+    "pass": false,
+    "detail": "TV condition timed out: window.__shakaPlayer?.getVariantTracks()?.some(t=>t.active && /^dvh1.05/.test(t.videoCodec)) && document.querySelector('video')?.readyState>=2 && !document.querySelector('.player-page .loading')"
+  }
+]

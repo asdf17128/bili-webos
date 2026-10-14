@@ -10,6 +10,59 @@ import { selectLivePlayback } from '../player/liveStream';
 const API_HOST = 'api.bilibili.com';
 const PASSPORT_HOST = 'passport.bilibili.com';
 const SERVICE_URI = 'luna://com.biliwebos.app.service/';
+let serviceProxyPort = 7654;
+let logoutPending = null;
+let loggingOut = false;
+
+function checkSession(generation) {
+  if (loggingOut || generation !== storage.getAuthGeneration()) throw new Error('Account session changed');
+}
+
+// Also bounds development bridge/proxy discovery on older browsers without
+// AbortController. A late response cannot settle the operation twice.
+function withDeadline(promise, timeout = 10000) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Request timeout')), timeout);
+    promise.then(r => { clearTimeout(timer); resolve(r); }, e => { clearTimeout(timer); reject(e); });
+  });
+}
+function fetchWithDeadline(url, options) { return withDeadline(fetch(url, options)); }
+function fetchJsonWithDeadline(url, options, timeout = 10000) {
+  return withDeadline(fetch(url, options).then(response => {
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    return response.json();
+  }), timeout);
+}
+
+export async function initializeMediaProxy() {
+  if (!hasLunaService() && !await devLunaAvailable()) return;
+  const status = await lunaRequest('ping', {}, false, {});
+  const port = status && status.localProxyPort;
+  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid local proxy port');
+  serviceProxyPort = port;
+}
+
+export function logout() {
+  if (logoutPending) return logoutPending;
+  loggingOut = true;
+  storage.invalidateAuthRequests();
+  logoutPending = (async () => {
+    try {
+      if (hasLunaService() || await devLunaAvailable()) {
+        await lunaRequest('clearCookies', {}, false, {});
+      } else {
+        const response = await fetchJsonWithDeadline(storage.getProxyUrl() + '/cookies/clear', { method: 'POST' });
+        if (!response.ok) throw new Error('Could not clear proxy cookies');
+      }
+      storage.clearAuth();
+      buvidEnsured = false; _buvid3 = '';
+    } finally {
+      storage.invalidateAuthRequests();
+      loggingOut = false; logoutPending = null;
+    }
+  })();
+  return logoutPending;
+}
 
 // Detect if running on webOS with Luna service available. webOSTV.js defines
 // window.webOS.service in ANY browser — only the real TV has the underlying
@@ -35,7 +88,7 @@ async function devLunaAvailable() {
   if (!import.meta.env.DEV) return false;
   if (devLunaUp !== null) return devLunaUp;
   try {
-    const r = await fetch(DEV_LUNA + '/ping', { cache: 'no-store' });
+    const r = await fetchWithDeadline(DEV_LUNA + '/ping', { cache: 'no-store' });
     devLunaUp = r.ok;
   } catch (e) { devLunaUp = false; }
   if (devLunaUp) console.info('[dev] using the real TV service via bridge :9528');
@@ -43,12 +96,10 @@ async function devLunaAvailable() {
 }
 
 async function devLunaCall(method, params) {
-  const r = await fetch(DEV_LUNA + '/luna/' + method, {
+  return fetchJsonWithDeadline(DEV_LUNA + '/luna/' + method, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params || {}),
-  });
-  if (!r.ok) throw new Error('bridge http ' + r.status);
-  return r.json();
+  }, 20000);
 }
 
 function devLunaSubscribe(method, params, onFrame) {
@@ -63,32 +114,35 @@ function devLunaSubscribe(method, params, onFrame) {
 // that same proxy on the Mac, so point there too and the media path matches
 // the TV byte for byte; without the bridge fall back to the standalone proxy.
 export function mediaProxyBase() {
-  if (typeof window !== 'undefined' && window.PalmServiceBridge) return 'http://127.0.0.1:7654';
-  if (import.meta.env.DEV && devLunaUp === true) return 'http://127.0.0.1:7654';
+  if (typeof window !== 'undefined' && window.PalmServiceBridge) return 'http://127.0.0.1:' + serviceProxyPort;
+  if (import.meta.env.DEV && devLunaUp === true) return 'http://127.0.0.1:' + serviceProxyPort;
   return storage.getProxyUrl();
 }
 
 // Luna service fetch (on TV)
 function lunaFetch(url, options) {
+  const generation = storage.getAuthGeneration();
   return new Promise(function(resolve, reject) {
     if (!hasLunaService()) {
       reject(new Error('Luna not available'));
       return;
     }
 
+    try { checkSession(generation); } catch (e) { reject(e); return; }
     var params = { url: url, method: options.method || 'GET' };
     if (options.body) params.body = options.body;
     if (options.contentType) params.contentType = options.contentType;
     if (options.range) params.range = options.range;
 
     var settled = false, request;
+    const deadlineMs = options.deadlineMs || 20000;
     var timer = setTimeout(function () {
       if (settled) return;
       settled = true;
       try { if (request && request.cancel) request.cancel(); } catch (e) { /* already closed */ }
       logErr('luna-timeout', url.split('?')[0]);
-      reject(new Error('Request timeout (20s)'));
-    }, 20000);
+      reject(new Error('Request timeout (' + (deadlineMs / 1000) + 's)'));
+    }, deadlineMs);
     function fail(err) {
       if (settled) return;
       settled = true; clearTimeout(timer);
@@ -102,6 +156,7 @@ function lunaFetch(url, options) {
         parameters: params,
         onSuccess: function(res) {
           if (settled) return;
+          try { checkSession(generation); } catch (e) { fail(e); return; }
           settled = true; clearTimeout(timer);
           if (res.newCookies) {
             var auth = storage.getAuth() || {};
@@ -117,6 +172,8 @@ function lunaFetch(url, options) {
 
 // Proxy fetch (fallback for browser dev)
 function proxyFetchRaw(url, options) {
+  const generation = storage.getAuthGeneration();
+  checkSession(generation);
   var base = storage.getProxyUrl();
   var parsed = new URL(url);
   var proxyUrl = base + '/proxy/' + parsed.host + parsed.pathname + parsed.search;
@@ -128,6 +185,7 @@ function proxyFetchRaw(url, options) {
     },
     body: options.body,
   }).then(function(res) {
+    checkSession(generation);
     var setCookie = res.headers.get('X-Set-Cookie');
     if (setCookie) {
       try {
@@ -142,11 +200,14 @@ function proxyFetchRaw(url, options) {
 
 // Smart fetch: try Luna first, fallback to proxy
 async function smartFetch(host, path, options) {
+  const generation = storage.getAuthGeneration();
+  checkSession(generation);
   var url = 'https://' + host + path;
   var opts = options || {};
 
   if (hasLunaService()) {
     var res = await lunaFetch(url, opts);
+    checkSession(generation);
     if (!res.returnValue) {
       logErr('svc', host + path.split('?')[0] + ' :: ' + res.error);
       throw new Error(res.error);
@@ -159,11 +220,14 @@ async function smartFetch(host, path, options) {
   }
 
   // DEV with the bridge up: same path the TV takes (service.fetch)
-  if (await devLunaAvailable()) {
+  const bridge = await devLunaAvailable();
+  checkSession(generation);
+  if (bridge) {
     var br = await devLunaCall('fetch', {
       url: url, method: opts.method || 'GET', body: opts.body,
       contentType: opts.contentType, range: opts.range,
     });
+    checkSession(generation);
     if (br && br.newCookies) {
       var a2 = storage.getAuth() || {};
       storage.setAuth(Object.assign({}, a2, br.newCookies));
@@ -177,7 +241,9 @@ async function smartFetch(host, path, options) {
   var proxyRes = await proxyFetchRaw(url, opts);
   var ct = proxyRes.headers.get('content-type') || '';
   if (ct.indexOf('json') >= 0 || ct.indexOf('text/plain') >= 0) {
-    return proxyRes.json();
+    const data = await proxyRes.json();
+    checkSession(generation);
+    return data;
   }
   return proxyRes;
 }
@@ -195,7 +261,9 @@ export async function apiFetch(path, params, options) {
 // API fetch with WBI signature. options.host targets a non-default host (the
 // WBI signature is host-agnostic, so it works for api.live.bilibili.com too).
 export async function wbiFetch(path, params, options) {
+  const generation = storage.getAuthGeneration();
   var keys = await getWbiKeys(apiFetch);
+  checkSession(generation);
   var signedQuery = signWbi(params || {}, keys.imgKey, keys.subKey);
   return smartFetch((options && options.host) || API_HOST, path + '?' + signedQuery);
 }
@@ -212,37 +280,41 @@ export async function rawFetch(url, options) {
 function lunaRequest(method, parameters, subscribe, handlers) {
   handlers = handlers || {};
   return new Promise(function(resolve, reject) {
+    var settled = false, request;
+    var timer = setTimeout(function () {
+      fail(new Error(method + ' timeout'));
+      try { if (request && request.cancel) request.cancel(); } catch (e) { /* closed */ }
+    }, 10000);
+    function fail(err) {
+      if (settled) return;
+      settled = true; clearTimeout(timer);
+      if (handlers.onFailure) handlers.onFailure(err);
+      reject(new Error(err.errorText || err.error || err.message || (method + ' failed')));
+    }
+    function success(res) {
+      if (settled) return;
+      if (res && res.returnValue === false) { fail(res); return; }
+      settled = true; clearTimeout(timer);
+      if (handlers.onSuccess) handlers.onSuccess(res);
+      resolve(res);
+    }
     if (!hasLunaService()) {
       devLunaAvailable().then(function (up) {
+        if (settled) return;
         if (!up) {
-          if (handlers.allowMissing) { resolve(null); return; }
-          reject(new Error('Luna not available'));
-          return;
+          if (handlers.allowMissing) { success(null); return; }
+          fail(new Error('Luna not available')); return;
         }
-        devLunaCall(method, parameters || {}).then(function (r) {
-          if (handlers.onSuccess) handlers.onSuccess(r);
-          resolve(r);
-        }).catch(function (e) {
-          if (handlers.allowMissing) { resolve(null); return; }
-          reject(e);
-        });
-      });
+        devLunaCall(method, parameters || {}).then(success, fail);
+      }, fail);
       return;
     }
-
-    window.webOS.service.request(SERVICE_URI, {
-      method: method,
-      subscribe: !!subscribe,
-      parameters: parameters || {},
-      onSuccess: function(res) {
-        if (handlers.onSuccess) handlers.onSuccess(res);
-        resolve(res);
-      },
-      onFailure: function(err) {
-        if (handlers.onFailure) handlers.onFailure(err);
-        reject(new Error(err.errorText || err.error || (method + ' failed')));
-      },
-    });
+    try {
+      request = window.webOS.service.request(SERVICE_URI, {
+        method: method, subscribe: !!subscribe, parameters: parameters || {},
+        onSuccess: success, onFailure: fail,
+      });
+    } catch (e) { fail(e); }
   });
 }
 
@@ -262,7 +334,7 @@ export function castSubscribe(onEvent, onFailure) {
   }
 
   let cancelled = false;
-  window.webOS.service.request(SERVICE_URI, {
+  const request = window.webOS.service.request(SERVICE_URI, {
     method: 'castSubscribe',
     subscribe: true,
     parameters: { subscribe: true },
@@ -274,7 +346,12 @@ export function castSubscribe(onEvent, onFailure) {
     }
   });
 
-  return function () { cancelled = true; };
+  return function () {
+    if (cancelled) return;
+    cancelled = true;
+    // Suppressing callbacks alone leaves the SDK's subscription/bridge alive.
+    try { request?.cancel?.(); } catch (e) { /* already closed */ }
+  };
 }
 
 export async function castAck(payload) {
@@ -304,12 +381,14 @@ let buvidEnsured = false;
 let _buvid3 = '';
 export function getBuvid3() { return _buvid3; }
 export async function ensureBuvid() {
+  const generation = storage.getAuthGeneration();
   if (buvidEnsured) return;
   try {
     const r = await apiFetch('/x/frontend/finger/spi');
     const b3 = r?.data?.b_3;
     const b4 = r?.data?.b_4;
     if (b3) {
+      checkSession(generation);
       _buvid3 = b3;
       await setServiceCookies({ buvid3: b3, buvid4: b4 || '' });
       // Dev browser: the service isn't there to hold the fingerprint, so hand
@@ -363,36 +442,42 @@ export function danmakuSubscribe(params, onDanmaku, onEvent) {
     // stays as a fallback for when only proxy/server.js is running.
     var cancelledBridge = false, stopBridge = null;
     devLunaAvailable().then(function (up) {
-      if (!up || cancelledBridge) return;
-      stopBridge = devLunaSubscribe('danmakuSubscribe', params || {}, function (res) {
-        if (!res) return;
-        if (res.danmaku && onDanmaku) onDanmaku(res.danmaku);
-        if (res.event && onEvent) onEvent(res.event);
-      });
+      if (cancelledBridge) return;
+      if (up) {
+        stopBridge = devLunaSubscribe('danmakuSubscribe', params || {}, function (res) {
+          if (cancelledBridge || !res) return;
+          if (res.danmaku && onDanmaku) onDanmaku(res.danmaku);
+          if (res.event && onEvent) onEvent(res.event);
+        });
+        return;
+      }
+      // Pick a single transport after discovery. Opening the fallback early
+      // lets a late bridge response create a second, unowned subscription.
+      try {
+        var base = storage.getProxyUrl().replace(/^http/, 'ws');
+        var p = params || {};
+        var ws = new WebSocket(base + '/danmaku?roomid=' + encodeURIComponent(p.roomid)
+          + '&token=' + encodeURIComponent(p.token || '')
+          + '&host=' + encodeURIComponent(p.host || ''));
+        ws.onmessage = function (m) {
+          if (cancelledBridge) return;
+          try {
+            var d = JSON.parse(m.data);
+            if (d.danmaku && onDanmaku) onDanmaku(d.danmaku);
+            if (d.event && onEvent) onEvent(d.event);
+          } catch (e) { /* ignore */ }
+        };
+        stopBridge = function () { try { ws.close(); } catch (e) { /* ignore */ } };
+      } catch (e) { /* unavailable fallback */ }
     });
-    if (devLunaUp === true) {
-      return function () { cancelledBridge = true; if (stopBridge) stopBridge(); };
-    }
-    try {
-      var base = storage.getProxyUrl().replace(/^http/, 'ws');
-      var p = params || {};
-      var ws = new WebSocket(base + '/danmaku?roomid=' + encodeURIComponent(p.roomid)
-        + '&token=' + encodeURIComponent(p.token || '')
-        + '&host=' + encodeURIComponent(p.host || ''));
-      ws.onmessage = function (m) {
-        try {
-          var d = JSON.parse(m.data);
-          if (d.danmaku && onDanmaku) onDanmaku(d.danmaku);
-          if (d.event && onEvent) onEvent(d.event);
-        } catch (e) { /* ignore */ }
-      };
-      return function () { try { ws.close(); } catch (e) { /* ignore */ } };
-    } catch (e) {
-      return function () {};
-    }
+    return function () {
+      if (cancelledBridge) return;
+      cancelledBridge = true;
+      if (stopBridge) stopBridge();
+    };
   }
   let cancelled = false;
-  window.webOS.service.request(SERVICE_URI, {
+  const request = window.webOS.service.request(SERVICE_URI, {
     method: 'danmakuSubscribe',
     subscribe: true,
     parameters: params || {},
@@ -404,7 +489,12 @@ export function danmakuSubscribe(params, onDanmaku, onEvent) {
     },
     onFailure: function () {},
   });
-  return function () { cancelled = true; };
+  return function () {
+    if (cancelled) return;
+    cancelled = true;
+    // danmakuStop closes the service relay; cancel releases the SDK request.
+    try { request?.cancel?.(); } catch (e) { /* already closed */ }
+  };
 }
 
 export async function danmakuStop() {
@@ -583,33 +673,48 @@ export function setUpFollow(mid, follow) {
   return biliWrite('/x/relation/modify', { fid: mid, act: follow ? 1 : 2, re_src: 11 });
 }
 
-// Latest released version from GitHub (direct fetch — github API sends CORS *,
-// so it doesn't need the B站 proxy, and no B站 cookies leak to github).
+// Manual/settings update check: release asset first, independent release API
+// once if it fails. The daily asset ping below retains its original semantics.
 export async function getLatestVersion() {
-  // On TV, read the tiny version.json release asset via the service (~20 bytes,
-  // keep-alive, allowlisted) instead of the huge releases/latest API or a flaky
-  // direct file:// fetch. GitHub serves release assets as octet-stream, so the
-  // service returns bodyBase64 (not parsed body) — decode it.
+  const normalize = value => {
+    const version = typeof value === 'string' ? value.replace(/^v/i, '') : '';
+    if (!/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(version)) throw new Error('Invalid release version');
+    return version;
+  };
+  const releaseApi = 'https://api.github.com/repos/asdf17128/bili-webos/releases/latest';
   if (hasLunaService()) {
-    var r = await lunaFetch('https://github.com/asdf17128/bili-webos/releases/latest/download/version.json', {});
-    var txt = (r && r.body) || '';
-    if (!txt && r && r.bodyBase64) { try { txt = atob(r.bodyBase64); } catch (e) { txt = ''; } }
-    try { return String(JSON.parse(txt).version || '').replace(/^v/i, ''); } catch (e) { return ''; }
+    const sources = [
+      ['https://github.com/asdf17128/bili-webos/releases/latest/download/version.json', 'version'],
+      [releaseApi, 'tag_name'],
+    ];
+    for (let i = 0; i < sources.length; i++) {
+      let status = null, category = 'transport';
+      try {
+        const response = await lunaFetch(sources[i][0], { deadlineMs: 7000 });
+        status = response?.status ?? null; category = 'http';
+        if (!response?.returnValue || status !== 200) throw new Error('Update HTTP failure');
+        category = 'encoding';
+        const text = response.body || (response.bodyBase64 ? atob(response.bodyBase64) : '');
+        category = 'json';
+        const body = JSON.parse(text);
+        category = 'version';
+        return normalize(body?.[sources[i][1]]);
+      } catch {
+        // Fixed diagnostics only: no upstream body, signed redirect or account.
+        logErr('update-check', (i === 0 ? 'asset' : 'release-api') + ' status=' + String(status) + ' category=' + category);
+      }
+    }
+    throw new Error('Update sources unavailable');
   }
-  // Dev browser: the GitHub API returns JSON with CORS.
-  var res = await fetch('https://api.github.com/repos/asdf17128/bili-webos/releases/latest', {
-    headers: { 'Accept': 'application/vnd.github+json' },
-  });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  var data = await res.json();
-  return (data.tag_name || '').replace(/^v/i, '');
+  const data = await fetchJsonWithDeadline(releaseApi, { headers: { Accept: 'application/vnd.github+json' } }, 7000);
+  return normalize(data?.tag_name);
 }
 
 // Daily countable version check ("日活 via update requests", owner-approved):
 // fetches the version.json RELEASE ASSET via the Luna service — each fetch
 // bumps the asset's public download_count, which the maintainer reads as a
-// daily-active proxy. No identifier of any kind is sent; the manual check in
-// 设置 uses the API above so it doesn't pollute the count. TV-only (the asset
+// daily-active proxy. No identifier of any kind is sent; manual checks also
+// use this asset first, so its count is an approximate activity measure. TV-only (the asset
 // redirect has no CORS for browsers; dev just skips).
 export async function pingVersionAsset() {
   if (!hasLunaService()) return null;
@@ -664,11 +769,11 @@ export async function getLiveHistory(roomId) {
     { host: 'api.live.bilibili.com' });
 }
 
-export async function getLivePlayback(roomId, qn, preferredFormat) {
+export async function getLivePlayback(roomId, qn, preferredFormat, avoidedHosts) {
   const res = await smartFetch('api.live.bilibili.com',
     '/xlive/web-room/v2/index/getRoomPlayInfo?room_id=' + roomId + '&protocol=0,1&format=0,1,2&codec=0,1,2&platform=web&ptype=8'
       + (qn ? '&qn=' + qn : ''));
-  return selectLivePlayback(res, preferredFormat);
+  return selectLivePlayback(res, preferredFormat, avoidedHosts);
 }
 
 // ============ Search ============

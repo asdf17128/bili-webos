@@ -1,0 +1,73 @@
+{
+  "source": "tools/test-playback-lifecycle-tv.mjs",
+  "sha256": "232ae089564ecdf7295c0ce013f4742826b3dffecf538d76a05ead3ee21986b7",
+  "scope": "Synthetic numeric observations exercise the actual test predicate; no TV or production player is executed.",
+  "oldCorrect": 2,
+  "newCorrect": 4,
+  "cases": [
+    {
+      "name": "normal paused sample",
+      "before": {
+        "time": 37,
+        "paused": true
+      },
+      "after": {
+        "time": 37.05,
+        "paused": true
+      },
+      "expected": true,
+      "oldAccepted": true,
+      "oldCorrect": true,
+      "newAccepted": true,
+      "newCorrect": true
+    },
+    {
+      "name": "large backward jump while paused",
+      "before": {
+        "time": 37,
+        "paused": true
+      },
+      "after": {
+        "time": 0,
+        "paused": true
+      },
+      "expected": false,
+      "oldAccepted": true,
+      "oldCorrect": false,
+      "newAccepted": false,
+      "newCorrect": true
+    },
+    {
+      "name": "small change while unexpectedly playing",
+      "before": {
+        "time": 37,
+        "paused": true
+      },
+      "after": {
+        "time": 37.04,
+        "paused": false
+      },
+      "expected": false,
+      "oldAccepted": true,
+      "oldCorrect": false,
+      "newAccepted": false,
+      "newCorrect": true
+    },
+    {
+      "name": "large forward jump while paused",
+      "before": {
+        "time": 37,
+        "paused": true
+      },
+      "after": {
+        "time": 38,
+        "paused": true
+      },
+      "expected": false,
+      "oldAccepted": false,
+      "oldCorrect": true,
+      "newAccepted": false,
+      "newCorrect": true
+    }
+  ]
+}

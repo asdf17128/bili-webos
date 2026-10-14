@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-13",
+  "base": "e38ed9a83f12d9561a2ecf129c30af615dfc1ee1",
+  "branch": "codex/simulator-bugfixes-20261013",
+  "released": false,
+  "tv_operated": false,
+  "local_gate": {
+    "command": "bash tools/verify.sh --no-tv --ux",
+    "exit_code": 0,
+    "service_unit_tests": 41,
+    "ui_tests": 68,
+    "session_proxy_tests": 9,
+    "standalone_proxy_tests": 3,
+    "loading_tests": 35,
+    "end_tests": 26,
+    "live_loading_tests": 9,
+    "cdn_tests": 7,
+    "node_versions": [
+      "0.12.2",
+      "8.17.0"
+    ]
+  },
+  "limits": [
+    "IntersectionObserver property removal in modern Chromium, not webOS 4.x hardware",
+    "Port conflict uses actual production proxy and synthetic media bytes; no hardware decode claim",
+    "CDN HTTP 403 in issue 48 is not established as resolved"
+  ],
+  "real_network_simulator": {
+    "passed": 54,
+    "failed": 0,
+    "skipped": 3,
+    "account": "isolated anonymous",
+    "tv": false
+  }
+}

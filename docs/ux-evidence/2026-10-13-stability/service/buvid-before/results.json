@@ -1,0 +1,395 @@
+{
+  "started": "2026-10-13T05:30:27.037Z",
+  "baseline": true,
+  "node": "v25.4.0",
+  "sourceSha256": "81904add59fe8f021c5ba2185ae76f5a7a7a6dee7b1cdab2b71ae0b3ca671276",
+  "realDeadlineMs": 10000,
+  "realBackoffMs": 15000,
+  "results": [
+    {
+      "mode": "dns",
+      "starts": [
+        10
+      ],
+      "closes": [
+        {
+          "attempt": 1,
+          "atMs": 11231
+        }
+      ],
+      "bodyErrors": [],
+      "logs": [
+        "[service] buvid fetch failed: socket hang up"
+      ],
+      "attempts": 1,
+      "afterDeadline": {
+        "atMs": 11216,
+        "outstandingRequests": 1,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 0
+      },
+      "final": {
+        "atMs": 11217,
+        "outstandingRequests": 1,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 0
+      },
+      "checks": {
+        "firstAttemptClosed": false,
+        "failureLogged": false,
+        "bodyErrorHandled": true,
+        "badHttpDataRejected": true,
+        "retryScheduled": false,
+        "recoveredAfterBackoff": null,
+        "boundedAttempts": true,
+        "noAccountCredentials": true,
+        "healthyServiceRequest": true
+      },
+      "pass": false
+    },
+    {
+      "mode": "headers",
+      "starts": [
+        11
+      ],
+      "closes": [
+        {
+          "attempt": 1,
+          "atMs": 11231
+        }
+      ],
+      "bodyErrors": [],
+      "logs": [
+        "[service] buvid fetch failed: socket hang up"
+      ],
+      "attempts": 1,
+      "afterDeadline": {
+        "atMs": 11217,
+        "outstandingRequests": 1,
+        "sockets": 1,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 0
+      },
+      "final": {
+        "atMs": 11223,
+        "outstandingRequests": 1,
+        "sockets": 1,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 0
+      },
+      "checks": {
+        "firstAttemptClosed": false,
+        "failureLogged": false,
+        "bodyErrorHandled": true,
+        "badHttpDataRejected": true,
+        "retryScheduled": false,
+        "recoveredAfterBackoff": null,
+        "boundedAttempts": true,
+        "noAccountCredentials": true,
+        "healthyServiceRequest": true
+      },
+      "pass": false
+    },
+    {
+      "mode": "truncated",
+      "starts": [
+        12
+      ],
+      "closes": [
+        {
+          "attempt": 1,
+          "atMs": 28
+        }
+      ],
+      "bodyErrors": [
+        {
+          "code": "ECONNRESET",
+          "applicationErrorListeners": 0
+        }
+      ],
+      "logs": [],
+      "attempts": 1,
+      "afterDeadline": {
+        "atMs": 11217,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 0
+      },
+      "final": {
+        "atMs": 11225,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 0
+      },
+      "checks": {
+        "firstAttemptClosed": true,
+        "failureLogged": false,
+        "bodyErrorHandled": false,
+        "badHttpDataRejected": true,
+        "retryScheduled": false,
+        "recoveredAfterBackoff": null,
+        "boundedAttempts": true,
+        "noAccountCredentials": true,
+        "healthyServiceRequest": true
+      },
+      "pass": false
+    },
+    {
+      "mode": "body-stall",
+      "starts": [
+        12
+      ],
+      "closes": [
+        {
+          "attempt": 1,
+          "atMs": 11230
+        }
+      ],
+      "bodyErrors": [
+        {
+          "code": "ECONNRESET",
+          "applicationErrorListeners": 0
+        }
+      ],
+      "logs": [],
+      "attempts": 1,
+      "afterDeadline": {
+        "atMs": 11217,
+        "outstandingRequests": 1,
+        "sockets": 1,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 0
+      },
+      "final": {
+        "atMs": 11226,
+        "outstandingRequests": 1,
+        "sockets": 1,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 0
+      },
+      "checks": {
+        "firstAttemptClosed": false,
+        "failureLogged": false,
+        "bodyErrorHandled": false,
+        "badHttpDataRejected": true,
+        "retryScheduled": false,
+        "recoveredAfterBackoff": null,
+        "boundedAttempts": true,
+        "noAccountCredentials": true,
+        "healthyServiceRequest": true
+      },
+      "pass": false
+    },
+    {
+      "mode": "invalid-json",
+      "starts": [
+        13
+      ],
+      "closes": [
+        {
+          "attempt": 1,
+          "atMs": 17
+        }
+      ],
+      "bodyErrors": [],
+      "logs": [
+        "[service] buvid parse failed: Unexpected token 'b', \"broken json\" is not valid JSON"
+      ],
+      "attempts": 1,
+      "afterDeadline": {
+        "atMs": 11217,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 0
+      },
+      "final": {
+        "atMs": 11226,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 0
+      },
+      "checks": {
+        "firstAttemptClosed": true,
+        "failureLogged": true,
+        "bodyErrorHandled": true,
+        "badHttpDataRejected": true,
+        "retryScheduled": false,
+        "recoveredAfterBackoff": null,
+        "boundedAttempts": true,
+        "noAccountCredentials": true,
+        "healthyServiceRequest": true
+      },
+      "pass": false
+    },
+    {
+      "mode": "http503",
+      "starts": [
+        13
+      ],
+      "closes": [
+        {
+          "attempt": 1,
+          "atMs": 18
+        }
+      ],
+      "bodyErrors": [],
+      "logs": [],
+      "attempts": 1,
+      "afterDeadline": {
+        "atMs": 11217,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": "must-not-accept-error-status",
+        "retryTimers": 0
+      },
+      "final": {
+        "atMs": 11227,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": "must-not-accept-error-status",
+        "retryTimers": 0
+      },
+      "checks": {
+        "firstAttemptClosed": true,
+        "failureLogged": false,
+        "bodyErrorHandled": true,
+        "badHttpDataRejected": false,
+        "retryScheduled": false,
+        "recoveredAfterBackoff": null,
+        "boundedAttempts": true,
+        "noAccountCredentials": true,
+        "healthyServiceRequest": true
+      },
+      "pass": false
+    },
+    {
+      "mode": "always-invalid",
+      "starts": [
+        13
+      ],
+      "closes": [
+        {
+          "attempt": 1,
+          "atMs": 18
+        }
+      ],
+      "bodyErrors": [],
+      "logs": [
+        "[service] buvid parse failed: Unexpected token 'b', \"broken json\" is not valid JSON"
+      ],
+      "attempts": 1,
+      "afterDeadline": {
+        "atMs": 11217,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 0
+      },
+      "final": {
+        "atMs": 11228,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 0
+      },
+      "checks": {
+        "firstAttemptClosed": true,
+        "failureLogged": true,
+        "bodyErrorHandled": true,
+        "badHttpDataRejected": true,
+        "retryScheduled": null,
+        "recoveredAfterBackoff": null,
+        "boundedAttempts": false,
+        "noAccountCredentials": true,
+        "healthyServiceRequest": true
+      },
+      "pass": false
+    }
+  ],
+  "cleanup": [
+    {
+      "requests": 0,
+      "sockets": 0
+    },
+    {
+      "requests": 0,
+      "sockets": 0
+    },
+    {
+      "requests": 0,
+      "sockets": 0
+    },
+    {
+      "requests": 0,
+      "sockets": 0
+    },
+    {
+      "requests": 0,
+      "sockets": 0
+    },
+    {
+      "requests": 0,
+      "sockets": 0
+    },
+    {
+      "requests": 0,
+      "sockets": 0
+    }
+  ],
+  "finished": "2026-10-13T05:30:38.279Z",
+  "pass": false,
+  "limitations": [
+    "loopback HTTP; no TLS, actual DNS infrastructure, real fingerprint/account, or television involved",
+    "baseline ends at 11.2s and does not wait for backoff; new-source run verifies the real 15s backoff recovery",
+    "always-invalid case alone compresses the five 15s backoffs to 20ms and checks exactly six total attempts",
+    "error observer keeps old unhandled response errors from terminating the harness and records missing production listeners"
+  ]
+}

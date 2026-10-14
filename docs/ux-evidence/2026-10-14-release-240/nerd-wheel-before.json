@@ -1,0 +1,7 @@
+[
+  {
+    "name": "Nerd setting is reachable by wheel when signed out",
+    "pass": false,
+    "error": "page.waitForFunction: Timeout 7000ms exceeded."
+  }
+]

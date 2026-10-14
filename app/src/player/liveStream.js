@@ -1,7 +1,7 @@
 // Keep source and quality metadata from the same response. The API normally
 // lists TS first; C4 measurements favored the fMP4 source at unchanged quality.
 // Retain TS for devices/streams that cannot start the preferred source.
-export function selectLivePlayback(response, preferredFormat = 'fmp4') {
+export function selectLivePlayback(response, preferredFormat = 'fmp4', avoidedHosts = []) {
   if (response?.code && response.code !== 0) throw new Error('Live API: ' + response.code);
   const playurl = response?.data?.playurl_info?.playurl;
   const names = {};
@@ -13,7 +13,20 @@ export function selectLivePlayback(response, preferredFormat = 'fmp4') {
         if (entry.format_name !== format) continue;
         for (const codec of entry.codec || []) {
           if (codec.codec_name !== 'avc' || !codec.base_url) continue;
-          const info = (codec.url_info || []).find(item => /^https?:\/\//.test(item.host || ''));
+          const infos = (codec.url_info || []).map(info => {
+            try {
+              const parsed = new URL(info.host);
+              return /^https?:$/.test(parsed.protocol) ? { info, host: parsed.host } : null;
+            } catch { return null; }
+          }).filter(Boolean);
+          // Choose only URLs supplied together by the live API. Never rewrite
+          // a signed live URL using VOD mirrors or another candidate's query.
+          // Failure history is oldest first. If every host failed, rotate to
+          // the least recently tried host instead of repeatedly pinning primary.
+          const candidate = infos.find(item => !avoidedHosts.includes(item.host))
+            || avoidedHosts.map(host => infos.find(item => item.host === host)).find(Boolean)
+            || infos[0];
+          const info = candidate?.info;
           if (!info) continue;
           return {
             url: info.host + codec.base_url + (info.extra || ''), format,

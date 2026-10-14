@@ -1,0 +1,46 @@
+[
+  {
+    "name": "subtitle lifecycle cancels obsolete translation: body",
+    "pass": true
+  },
+  {
+    "name": "subtitle lifecycle cancels obsolete translation: batches",
+    "pass": true
+  },
+  {
+    "name": "subtitle lifecycle cancels obsolete translation: success",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: exit",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: normal",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: newer-speed",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: new-video",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: quality",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: exit-unloading",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: normal-unloading",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: success",
+    "pass": true
+  }
+]

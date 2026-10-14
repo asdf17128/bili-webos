@@ -264,3 +264,23 @@ button, input { font-family: inherit; }
   .config-page > :first-child { flex: none; width: 440px; margin-right: 80px; }
   .config-page > * + * { flex: 1 1 0; min-width: 0; }
 }
+
+/* Service startup has native button focus before the remote navigator mounts. */
+.startup-state { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 28px; color: var(--tv-text, #fff); }
+.startup-state button { padding: 16px 40px; margin-top: 24px; background: #263548; color: #fff; border: 3px solid transparent; border-radius: 10px; font: inherit; }
+.startup-state button:focus { border-color: #fff; outline: none; }
+
+/* Membership stays beside identity, without widening the collapsed rail. */
+.membership-badge { display: inline-block; flex: none; max-width: 100%; padding: 3px 8px; border: 1px solid #a85c76; border-radius: 5px; color: #ffafc9; background: #402332; font-size: calc(13px * var(--ui-scale)); line-height: 1.4; white-space: nowrap; }
+.sidebar-user-name { min-width: 0; overflow: hidden; }
+.sidebar-user-label { display: block; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-user-name .membership-badge { margin-top: 3px; }
+.profile-identity { flex-wrap: wrap; }
+.profile-identity .membership-badge { margin-left: 12px; }
+
+.quality-popup { overflow-y: auto; }
+
+/* Opt-in diagnostics stay separate from everyday playback controls. */
+.nerd-info { position: absolute; top: 100px; left: 40px; z-index: 45; max-width: 900px; padding: 18px 24px; border-radius: 10px; background: rgba(12,14,18,.88); color: #e5e7eb; font-size: calc(18px * var(--ui-scale)); line-height: 1.55; pointer-events: none; overflow-wrap: break-word; }
+.nerd-info strong { display: block; margin-bottom: 6px; }
+.nerd-info small { display: block; font-size: calc(16px * var(--ui-scale)); color: #aeb5bf; margin-top: 6px; }

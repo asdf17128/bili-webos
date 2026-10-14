@@ -1,0 +1,7 @@
+[
+  {
+    "name": "4K TV starts 8K source at available HDR tier without loading stuck 8K",
+    "pass": false,
+    "error": "page.waitForFunction: Timeout 7000ms exceeded."
+  }
+]

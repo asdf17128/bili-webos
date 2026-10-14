@@ -1,3 +1,4 @@
+import MembershipBadge from '../components/MembershipBadge';
 import React, { useState } from 'react';
 import { storage } from '../utils/storage';
 import { getHistory, getLiveRoomInfo, mediaProxyBase, getToView } from '../api/client';
@@ -226,7 +227,7 @@ export default function SettingsPage({ user, onPlayVideo, onRequestLogin }) {
       <header className="library-header">
         <div className="page-heading"><h1>{t('我的')}</h1></div>
         <div className="profile-identity"><div className="profile-avatar">{avatar ? <img src={avatar} alt="" /> : (user?.uname || 'B')[0]}</div>
-          <h2>{user ? user.uname : t('未登录')}</h2>
+          <h2>{user ? user.uname : t('未登录')}</h2><MembershipBadge membership={user?.membership} />
         </div>
       </header>
 

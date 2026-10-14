@@ -73,6 +73,7 @@ node tools/test-triplestate.mjs || { echo "FAIL: triple-state policy"; exit 1; }
 node tools/test-apihint.mjs || { echo "FAIL: api error hints"; exit 1; }
 # C-LIVE-06: 直播解码失败要降档(owner 2026-08-22 黑屏:同一 qn 无限重试)
 node tools/test-liveqn.mjs || { echo "FAIL: live qn ladder"; exit 1; }
+node --test app/src/utils/qualityPreference.test.js || { echo "FAIL: membership and quality preference"; exit 1; }
 node --test app/src/player/liveStream.test.js || { echo "FAIL: live stream selection"; exit 1; }
 node --test app/src/player/cdnAuto.test.js || { echo "FAIL: automatic CDN routing"; exit 1; }
 node --test app/src/player/startupTrace.test.js || { echo "FAIL: startup diagnostics"; exit 1; }
@@ -91,10 +92,21 @@ node tools/test-aigc.mjs || { echo "FAIL: aigc extraction"; exit 1; }
 # C-CAST-03: DLNA URL rewrite (Huya FLV→HLS; non-Huya untouched)
 node tools/test-casturl.mjs || { echo "FAIL: cast url rewrite"; exit 1; }
 # C-SRCH-02: search-history dedup/cap
-node --test app/src/player/mediaSelection.test.js || { echo "FAIL: media selection"; exit 1; }
+node --test app/src/player/mediaSelection.test.js app/src/player/dolby*.test.js || { echo "FAIL: media selection"; exit 1; }
 node tools/test-library.mjs || { echo "FAIL: library playlists"; exit 1; }
 node tools/test-searchhistory.mjs || { echo "FAIL: search history"; exit 1; }
+node tools/test-subscription-cleanup.mjs || { echo "FAIL: TV SDK subscription cleanup"; exit 1; }
+node tools/test-tv-stability-transport.mjs || { echo "FAIL: TV stability transport fault paths"; exit 1; }
+node tools/test-soak-monitor.mjs || { echo "FAIL: soak monitor gap and frame accounting"; exit 1; }
 npm test || { echo "FAIL: service unit tests"; exit 1; }
+node tools/test-service-stability.mjs || { echo "FAIL: service request lifecycle stress"; exit 1; }
+node tools/test-buvid-stability.mjs || { echo "FAIL: fingerprint startup deadlines"; exit 1; }
+node tools/test-service-subscriptions.mjs || { echo "FAIL: service subscription cancellation"; exit 1; }
+node tools/test-dev-bridge-subscriptions.mjs || { echo "FAIL: dev bridge subscription cancellation"; exit 1; }
+node tools/test-dev-subscription-cleanup.mjs || { echo "FAIL: dev client subscription discovery cancellation"; exit 1; }
+node tools/test-live-relay-reconnect.mjs || { echo "FAIL: live relay reconnect budget"; exit 1; }
+node tools/test-live-stability-monitor.mjs || { echo "FAIL: live stability monitor cleanup"; exit 1; }
+node tools/test-update-recovery.mjs || { echo "FAIL: update source recovery"; exit 1; }
 
 echo ""
 # Version drift gate: appinfo.json (what webOS installs) and src/version.js
@@ -141,6 +153,8 @@ if [ -n "$UX" ]; then
     done
   fi
   node tools/test-tv-ux.mjs
+  node tools/test-session-proxy.mjs
+  node tools/test-proxy-logout.mjs
   node tools/test-manifest-mime.mjs
   node tools/test-player-loading.mjs
   node tools/test-danmaku-render.mjs
@@ -148,6 +162,12 @@ if [ -n "$UX" ]; then
   node tools/test-live-loading.mjs
   node tools/test-playback-health.mjs
   node tools/test-cdn-auto.mjs
+  node tools/test-diagnostic-cdn.mjs
+  if command -v python3 >/dev/null 2>&1; then
+    node tools/test-region-probe.mjs
+  else
+    echo "SKIP: home-network probe contract checks require Python 3"
+  fi
   if [ -n "$UX_VITE_PID" ]; then kill "$UX_VITE_PID"; trap - EXIT; fi
 fi
 

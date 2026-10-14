@@ -1,0 +1,48 @@
+✔ Dolby signaling preserves the base layer for high or unknown frame rates (0.702958ms)
+✔ parses Bilibili Profile 8 Level 9 dvvC signaling (0.30375ms)
+✔ rejects truncated and non-box Dolby markers (0.078083ms)
+✔ proxy media URLs preserve ranges and reject non-network protocols (0.186542ms)
+✔ Dolby init probing is bounded and requires a complete body (0.3445ms)
+✔ strict video selection never disguises a lower quality as 4K (0.187083ms)
+✔ automatic video fallback reports the quality it actually selected (0.076416ms)
+✔ true Dolby audio wins over Hi-Res and AAC (0.17725ms)
+✔ Hi-Res-only video selects FLAC and never pretends AAC is EC-3 (0.378083ms)
+✔ unsupported premium codecs fall back to the highest AAC representation (0.124917ms)
+✔ unsupported EC-3 falls through to supported Hi-Res FLAC (0.071ms)
+✔ runtime audio fallbacks remain Dolby to Hi-Res to AAC without duplicates (0.624ms)
+✔ Dolby signaling failure retries the same audio ladder on the base layer (0.093125ms)
+✔ AAC-only playback is attempted once (0.035375ms)
+✔ premium video prefers supported HEVC over a larger AVC stream at the same quality (0.076833ms)
+✔ no supported representation and no lower fallback never re-enable a rejected codec or upgrade quality (0.040625ms)
+✖ 4K TV rejects 8K before loading but keeps 4096 cinema and HDR fallback (0.584125ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 16
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 70.771708
+
+✖ failing tests:
+
+test at app/src/player/mediaSelection.test.js:221:1
+✖ 4K TV rejects 8K before loading but keeps 4096 cinema and HDR fallback (0.584125ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  127 !== 125
+
+      at TestContext.<anonymous> (file://<worktree>/app/src/player/mediaSelection.test.js:228:10)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1095:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:777:18)
+      at Test.postRun (node:internal/test_runner/test:1224:19)
+      at Test.run (node:internal/test_runner/test:1152:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:777:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 127,
+    expected: 125,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

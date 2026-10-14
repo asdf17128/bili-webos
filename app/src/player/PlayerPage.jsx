@@ -1,3 +1,5 @@
+import NerdInfo from './NerdInfo';
+import { requestedQuality } from '../utils/qualityPreference';
 import Icon from '../components/Icon';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getLibraryPage, getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies, getReplyReplies, tripleVideo, likeVideo, coinVideo, favVideo, getFavFoldersFor, getVideoRelation, getHtml5PlayUrl, mediaProxyBase, addToView, delToView } from '../api/client';
@@ -5,7 +7,9 @@ import { nextPlaylistItem } from '../utils/library';
 import { playPart, playAdvance } from './playIntent';
 import { getPlaybackMode } from './playbackMode';
 import { createStallMonitor, startPlaybackReport, updatePlaybackReport, countPlaybackEvent, bufferedAhead } from './playbackHealth';
-import { selectVideoRepresentation, listPreferredAudio, hasAudioRepresentations, createPlaybackAttemptPlan, inspectDolbyRepresentation, dolbySignalingFrameRateAllowed } from './mediaSelection';
+import { selectVideoRepresentation, webOSVideoLimit, listPreferredAudio, hasAudioRepresentations, createPlaybackAttemptPlan, inspectDolbyRepresentation, dolbySignalingFrameRateAllowed } from './mediaSelection';
+import { createTargetDolby120Session, findDolbyTransformFailure } from './dolby120Transform';
+import { createDolbyRuntime } from './dolbyRuntime';
 import { createStartupTrace } from './startupTrace';
 import { logErr } from '../utils/errlog';
 
@@ -24,7 +28,7 @@ import { translateCues } from './subTranslate';
 import { createDmTranslator } from './dmTranslate';
 import { titleMT, useTitlesMT } from '../utils/titlemt';
 import { t, getLocale } from '../i18n';
-import { CDN_ROUTES, withHost, cdnHostOf, isBanned, onShakaRetry, playbackCdnUrls } from './cdn';
+import { cdnHostOf, isBanned, onShakaRetry, playbackCdnUrls } from './cdn';
 import { createAutoCdnRouter } from './cdnAuto';
 import { useUpFollow } from '../hooks/useUpFollow';
 
@@ -98,6 +102,9 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   useTitlesMT(); // re-render when list-title translations land (no-op on zh)
   const videoRef = useRef(null);
   const shakaRef = useRef(null);
+  const transferRef = useRef({ bytes: 0, host: '' });
+  const [nerdInfo] = useState(() => storage.getSettings().nerdInfo === true);
+  const pendingMediaLoads = useRef(0);
   const cdnAutoRef = useRef(null);
   const [playing, setPlaying] = useState(false);
   const [streamFormat, setStreamFormat] = useState({ video: '', audio: '' });
@@ -115,6 +122,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   const [showControls, setShowControls] = useState(false);
   const [qualities, setQualities] = useState([]);
   const [currentQuality, setCurrentQuality] = useState(80);
+  const [autoQuality, setAutoQuality] = useState(() => storage.getSettings().quality === 'auto');
   const [showQuality, setShowQuality] = useState(false);
   const [showRelated, setShowRelated] = useState(false);
   const [danmakus, setDanmakus] = useState([]);
@@ -206,6 +214,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   const controlsTimer = useRef(null);
   const timeUpdateRef = useRef(null);
   const cidRef = useRef(null);
+  const dolbyRuntimeRef = useRef(null);
   const videoAidRef = useRef(null);
   const startTimeRef = useRef(Date.now());
   const upMidRef = useRef(null);
@@ -305,12 +314,13 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
 
   const selectSubtitle = useCallback((track) => {
     const req = ++subReqRef.current;
+    const isActive = () => mountedRef.current && subReqRef.current === req;
     if (!track) { setSubLan(null); setSubCues(null); return; }
     setSubLan(track.lan);
     setSubCues(null);
     fetchSubBody(track.subtitle_url)
       .then(body => {
-        if (subReqRef.current !== req) return;
+        if (!isActive()) return;
         const cues = parseSubtitleBody(body);
         // MT track: show NOTHING until translated batches land (a Chinese
         // flash before the swap reads as a bug on non-zh UIs — owner report).
@@ -324,18 +334,20 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
           if (startIndex < 0) { startIndex = cues.findIndex(c => c.to > t); if (startIndex < 0) startIndex = 0; }
           translateCues(cues, track.mt, gtxTranslate, `bili_subtr:${cidRef.current || ''}:${track.mt}`, window.localStorage, {
             startIndex,
-            onPartial: pc => { if (subReqRef.current === req) setSubCues(pc); },
+            isActive,
+            onPartial: pc => { if (isActive()) setSubCues(pc); },
           })
-            .then(tc => { if (subReqRef.current === req) setSubCues(tc); })
+            .then(tc => { if (isActive()) setSubCues(tc); })
             .catch(e => {
+              if (!isActive()) return;
               console.warn('[subtitle] MT failed, falling back to source:', e?.message || e);
               // Revert to the source cues + label — the button must not claim
               // a translation that isn't (fully) showing.
-              if (subReqRef.current === req) { setSubLan(track.srcLan); setSubCues(cues); }
+              setSubLan(track.srcLan); setSubCues(cues);
             });
         }
       })
-      .catch(() => { if (subReqRef.current === req) setSubCues(null); });
+      .catch(() => { if (isActive()) setSubCues(null); });
   }, [fetchSubBody]);
 
   const makeMtTrack = useCallback((tracks, loc) => {
@@ -394,16 +406,20 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   // drives the rate over the Luna bus; speed=1 swaps back to DASH.
   // Verified on-device 2026-07-22: 1.25/1.5/2.0 all play at true rate.
   const nativeModeRef = useRef(false);
+  const speedGenerationRef = useRef(0);
+  const nativeSwitchRef = useRef(null);
+  const nativeUnloadRef = useRef(null);
   const onWebOS = typeof window !== 'undefined' && !!(window.PalmServiceBridge && window.webOS && window.webOS.service);
 
-  const lunaSetPlayRate = useCallback(async (rate) => {
-    if (!onWebOS) return false;
+  const lunaSetPlayRate = useCallback(async (rate, isActive = () => mountedRef.current) => {
+    if (!onWebOS || !isActive()) return false;
     const v = videoRef.current;
     if (!v) return false;
     // mediaId populates shortly after the native pipeline spins up.
     let id = v.mediaId;
     for (let i = 0; i < 20 && !id; i++) {
       await new Promise(r => setTimeout(r, 250));
+      if (!isActive() || videoRef.current !== v) return false;
       id = v.mediaId;
     }
     if (!id) return false;
@@ -419,27 +435,48 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     });
   }, [onWebOS]);
 
-  const enterNativeSpeed = useCallback(async (s) => {
+  const enterNativeSpeed = useCallback(async (s, generation) => {
     const v = videoRef.current;
     if (!v || !cidRef.current) return false;
+    const player = shakaRef.current;
+    const isActive = () => mountedRef.current && generation === speedGenerationRef.current && videoRef.current === v;
+    nativeSwitchRef.current = generation;
     try {
       const res = await getHtml5PlayUrl(video, cidRef.current);
+      if (!isActive()) return null;
       const durl = res?.data?.durl && res.data.durl[0] && res.data.durl[0].url;
       if (!durl) throw new Error('no durl (html5 playurl)');
-      const pos = v.currentTime || 0;
-      try { await shakaRef.current?.unload(); } catch (e) { /* ignore */ }
+      // All speed intents during one DASH unload share its original playback
+      // position/state. Reading currentTime after unload would lose that state.
+      let transition = nativeUnloadRef.current;
+      if (!transition) {
+        transition = { pos: v.currentTime || 0, wasPaused: v.paused, promise: null };
+        nativeUnloadRef.current = transition;
+        transition.promise = Promise.resolve().then(() => player?.unload()).catch(() => {});
+      }
+      // Reusing an unload still supersedes any intervening 1x/quality intent.
+      streamGenerationRef.current++;
       nativeModeRef.current = true;
+      await transition.promise;
+      if (!isActive()) return null;
       v.src = proxyImgRaw(durl);
-      pendingSeekRef.current = pos > 1 ? pos : null; // flushed on loadedmetadata
-      const p = v.play();
-      if (p && p.catch) p.catch(() => {});
-      const ok = await lunaSetPlayRate(s);
+      pendingSeekRef.current = transition.pos > 1 ? transition.pos : null; // flushed on loadedmetadata
+      transition.attached = true;
+      if (!transition.wasPaused) {
+        const p = v.play();
+        if (p && p.catch) p.catch(() => {});
+      }
+      setLoading(false); setBuffering(false);
+      const ok = await lunaSetPlayRate(s, isActive);
+      if (!isActive()) return null;
       if (!ok) console.warn('[speed] setPlayRate declined');
       return true;
     } catch (e) {
+      if (!isActive()) return null;
       console.warn('[speed] native switch failed:', e?.message || e);
-      nativeModeRef.current = false;
       return false;
+    } finally {
+      if (nativeSwitchRef.current === generation) nativeSwitchRef.current = null;
     }
   }, [video, lunaSetPlayRate]);
 
@@ -497,6 +534,22 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     media.addEventListener('loadedmetadata', onMetadata);
     media.addEventListener('playing', onPlaying);
     media.addEventListener('loadeddata', onFirstFrame);
+    const failPlayback = (category, code) => {
+      if (!mounted || loadingRef.current || pendingMediaLoads.current || loadErrorRef.current) return;
+      loadErrorRef.current = true; // duplicate events must not restart recovery
+      logErr('playback-error', 'category=' + category + ' code=' + code + ' position=' + Math.floor(media.currentTime || 0));
+      media.pause();
+      setBuffering(false);
+      setErrorMsg(category === 1 ? t('播放暂时中断，请检查网络或切换线路') : t('播放暂时中断，请重试播放'));
+      setRecoverable(true);
+      setLoadError(true);
+      castReportState({ playState: 'error', error: 'media-' + category + '-' + code }).catch(() => {});
+    };
+    const onNativeError = () => {
+      // Shaka owns MSE errors; the HTML5 speed path has no Shaka stream.
+      if (nativeModeRef.current && media.error?.code >= 2) failPlayback(media.error.code === 2 ? 1 : 3, media.error.code);
+    };
+    media.addEventListener('error', onNativeError);
     const infoStart = perfNow();
     const infoTask = !(video?.isBangumi || video?.epid || video?.seasonId)
       ? trace.measure('view', () => getVideoInfo(video)).then(value => ({ value }), error => ({ error })) : null;
@@ -532,6 +585,9 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         // ABR off: the app has an explicit quality selector, so don't let
         // Shaka silently downgrade bitrate mid-playback on bandwidth wobble.
         abr: { enabled: false },
+        // PR #17: panel width is not a decoder limit (3996/4096-wide cinema).
+        // MSE capability checks and same-quality decoder fallback remain active.
+        ignoreHardwareResolution: true,
         // No exponential backoff: keep retries for reliability but a flat,
         // short delay so a transient failure doesn't add seconds of dead wait
         // (an aggressive backoff here added ~7.5s to every load).
@@ -543,12 +599,19 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         },
       });
 
-      // On a network/media error, resume streaming instead of dying silently.
-      // category 1 = NETWORK, 3 = MEDIA — usually recoverable mid-playback.
+      // Load-time errors belong to loadDash's codec/audio fallback ladder.
+      // Once playback has started, a fatal decoder error can pause the media,
+      // making the stall watchdog inactive. Remount through the bounded retry
+      // UI instead of calling retryStreaming forever on a broken decoder.
       player.addEventListener('error', (e) => {
         const err = e.detail;
-        console.error('Shaka error code:', err?.code, 'category:', err?.category, err);
-        if (err && (err.category === 1 || err.category === 3)) {
+        if (!mounted) return;
+        if (dolbyRuntimeRef.current?.handleError(err)) { err.handled = true; return; }
+        if (loadingRef.current || pendingMediaLoads.current || loadErrorRef.current) return;
+        if (err?.severity === 2 && (err.category === 1 || err.category === 3)) {
+          failPlayback(err.category, err.code);
+          err.handled = true;
+        } else if (err?.category === 1) {
           try { player.retryStreaming(); } catch {}
         }
       });
@@ -560,6 +623,9 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       // 以前它们没走代理、被电视浏览器直连 CDN(没 Referer),等于失败转移
       // 形同虚设(#29)。拉黑的 host 直接剔掉(至少留一个)。
       const ne = player.getNetworkingEngine();
+      const dolbyRuntime = createDolbyRuntime();
+      dolbyRuntimeRef.current = dolbyRuntime;
+      window.__dolbyRuntime = () => dolbyRuntime.snapshot();
       cdnAutoRef.current = createAutoCdnRouter({
         getRoute: () => storage.getSettings().cdnRoute,
         proxyBase: mediaProxyBase,
@@ -571,7 +637,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         },
       });
       player.addEventListener('segmentappended', e => trace.append(e.contentType, media));
-      ne.registerRequestFilter((type, request) => {
+      ne.registerRequestFilter((type, request, context) => {
+        dolbyRuntime.request(type, request, context);
         const proxyBase = mediaProxyBase();
         // Shaka can reuse proxied URIs; audio/video keep their own signed paths.
         let urls = request.uris.map(u => u?.startsWith(proxyBase + '/proxy/')
@@ -596,6 +663,11 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       });
       ne.registerResponseFilter((type, response, context) => {
         if (type === 1) {
+          transferRef.current.bytes += response.data?.byteLength || 0;
+          transferRef.current.host = cdnHostOf(response.uri || response.originalUri);
+        }
+        dolbyRuntime.response(type, response, context);
+        if (type === 1) {
           trace.response(response, context);
           if (mounted) report({ host: cdnHostOf(response.uri || response.originalUri) });
         }
@@ -617,7 +689,10 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       media.removeEventListener('loadedmetadata', onMetadata);
       media.removeEventListener('playing', onPlaying);
       media.removeEventListener('loadeddata', onFirstFrame);
+      media.removeEventListener('error', onNativeError);
       cdnAutoRef.current?.dispose(); cdnAutoRef.current = null;
+      dolbyRuntimeRef.current?.begin(null); dolbyRuntimeRef.current = null;
+      delete window.__dolbyRuntime;
       player?.destroy();
       if (window.__shakaPlayer === player) delete window.__shakaPlayer;
     };
@@ -732,7 +807,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         // cid. Rejections are handled here so cancellation never leaks one.
         if (cid) {
           initialCid = cid;
-          initialPlay = trace.measure('url', () => getPlayUrl(video, cid, storage.getSettings().quality || 80))
+          initialPlay = trace.measure('url', () => getPlayUrl(video, cid, requestedQuality(storage.getSettings().quality)))
             .then(value => ({ value }), error => ({ error }));
         }
         // 续播: casual opens (resumeMode 'auto', see playIntent.js) resume at the
@@ -840,17 +915,10 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       const settings = storage.getSettings();
       let loaded = false;
       let lastErr = null;
-      // Quality-fallback ladder: try the best first, then drop to safer
-      // qualities so a TV that can't decode the top rep (e.g. an older panel
-      // facing 4K/HDR HEVC) still plays at 1080p/360p instead of black-
-      // screening. `null` = the default pick (bangumi → top/HDR rep, UGC →
-      // highest bitrate). Inner loop re-fetches playurl for fresh CDN nodes.
-      // Step DOWN one quality tier at a time on decode failure. The old UGC
-      // ladder [null,16] jumped an undecodable 8K/4K rep straight to 360p
-      // (#11: an 8K video played at 360p). Prefer Dolby Vision (126) / HDR (125)
-      // 4K over SDR 4K (120) on the way down, per the reporter's request, before
-      // bottoming out at 1080p (80) / 360p (16).
-      const qualityLadder = isBangumi ? [null, 80, 16] : [null, 126, 125, 120, 80, 16];
+      // Try the requested/default tier and its supported codec/audio variants,
+      // then descend only through the lower quality ids actually supplied.
+      // Preserve HDR/4K tiers on the way down (#11); re-fetch once for fresh CDN URLs.
+      const qualityLadder = [null];
       for (let rung = 0; rung < qualityLadder.length && !loaded; rung++) {
         const fallbackQn = qualityLadder[rung];
         for (let attempt = 0; attempt < 2 && !loaded; attempt++) {
@@ -860,12 +928,12 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
             if (isBangumi) {
               // Request the full ladder so HDR/4K reps are present; pick the
               // top rep by default, or the forced fallback quality.
-              const res = await activeResult(trace.measure('url', () => getBangumiPlayUrl({ epid, cid }, 127)));
+              const res = await activeResult(trace.measure('url', () => getBangumiPlayUrl({ epid, cid }, fallbackQn || requestedQuality(settings.quality))));
               meta = res?.result || res?.data;
               dash = meta?.dash;
               if (!dash) throw new Error('No DASH stream (bangumi — region/VIP locked?)');
               wantQn = fallbackQn != null ? fallbackQn
-                : (Math.max.apply(null, (dash.video || []).map(v => v.id || 0)) || undefined);
+                : (settings.quality === 'auto' ? undefined : settings.quality);
             } else {
               // Pass the whole `video` so a cast-initiated, aid-only payload
               // still resolves via getPlayUrl's object overload.
@@ -876,7 +944,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
                 if (result.error) throw result.error;
                 res = result.value;
               } else {
-                res = await activeResult(trace.measure('url', () => getPlayUrl(video, cid, fallbackQn || settings.quality || 80)));
+                res = await activeResult(trace.measure('url', () => getPlayUrl(video, cid, fallbackQn || requestedQuality(settings.quality))));
               }
               initialPlay = null;
               mark('po-playurl', perfNow() - _tPu);
@@ -896,14 +964,19 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
               meta = res?.data;
               dash = meta?.dash;
               if (!dash) throw new Error('No DASH stream in playurl (DRM/bangumi?)');
-              // Default to the quality id B站 actually served (meta.quality), NOT
-              // the highest bitrate. HDR=125 / Dolby Vision=126 reps are usually
-              // lower bitrate than an SDR 4K rep, so picking by bitrate selected
-              // SDR and left HDR unlit until the user manually switched (#11).
-              wantQn = fallbackQn != null ? fallbackQn : (meta?.quality || undefined);
+              // Auto asks for the full ladder and selects the highest supported
+              // representation. Manual startup respects the server's served tier.
+              wantQn = fallbackQn != null ? fallbackQn : (settings.quality === 'auto' ? undefined : (meta?.quality || undefined));
             }
 
-            setQualities((meta?.accept_quality || []).map(q => ({ qn: q, label: QUALITY_MAP[q] || `${q}` })));
+            // Same-qn codec/audio attempts run inside loadDash. Only descend
+            // through qualities actually present; never retry a higher tier.
+            if (rung === 0 && qualityLadder.length === 1) {
+              const ceiling = Number(wantQn) || Math.max(...dash.video.map(rep => Number(rep.id)));
+              qualityLadder.push(...Array.from(new Set(dash.video.map(rep => Number(rep.id))))
+                .filter(qn => Number.isFinite(qn) && qn < ceiling).sort((a, b) => b - a));
+            }
+            setQualities([{ qn: 'auto', label: t('自动 · 最高可用') }, ...(meta?.accept_quality || []).map(q => ({ qn: q, label: QUALITY_MAP[q] || `${q}` }))]);
             const resumeAt = (resumeProgress > 0 && resumeProgress < (dash.duration || 9999) - 10)
               ? resumeProgress : 0;
             const _tLoad = perfNow();
@@ -1091,52 +1164,92 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     }
   }, [video, queueOrApplySeek, selectSubtitle, makeMtTrack]);
 
-  async function loadDash(player, dash, wantQn, position, isActive, trace) {
+  async function loadDash(player, dash, wantQn, position, isActive, trace, options = {}) {
     const measure = (key, fn) => trace ? trace.measure(key, fn) : fn();
     const supported = type => {
       try { return !window.MediaSource?.isTypeSupported || window.MediaSource.isTypeSupported(type); }
       catch { return false; }
     };
-    const selected = selectVideoRepresentation(dash, wantQn, { allowFallback: true, isTypeSupported: supported });
-    if (!selected.representation) throw new Error('No video representation');
-    cdnAutoRef.current?.setSource(selected.representation);
-    const audio = listPreferredAudio(dash, supported);
+    const selected = selectVideoRepresentation(dash, wantQn, { allowFallback: !options.strict, isTypeSupported: supported, maxResolution: webOSVideoLimit(window.PalmSystem?.deviceInfo) });
+    if (!selected.representation) throw Object.assign(new Error('Requested video quality is unavailable'), { category: 4 });
+    let audio = listPreferredAudio(dash, supported);
+    if (options.preferredAudioKind) audio = audio.slice().sort((a, b) => Number(b.kind === options.preferredAudioKind) - Number(a.kind === options.preferredAudioKind));
     if (!audio.length && hasAudioRepresentations(dash)) throw Object.assign(new Error('Unsupported audio codec'), { category: 4 });
-    let dolby = null, dolbyCodec = null;
-    if (selected.actualQn === 126 && dolbySignalingFrameRateAllowed(selected.representation)) {
-      try {
-        const rep = selected.representation;
-        const routeHost = CDN_ROUTES[storage.getSettings().cdnRoute];
-        const probe = routeHost ? { ...rep, baseUrl: withHost(rep.baseUrl || rep.base_url, routeHost) } : rep;
-        dolby = await measure('probe', () => inspectDolbyRepresentation(probe, mediaProxyBase(), { active: probeRequestsRef.current }));
-        if (dolby && supported(`video/mp4; codecs="${dolby.codec}"`)) dolbyCodec = dolby.codec;
-      } catch (e) { if (isActive()) logErr('dolby-probe', e.message); }
-    }
-    const attempts = createPlaybackAttemptPlan(audio, dolbyCodec, { allowVideoOnly: !hasAudioRepresentations(dash) });
     let lastError;
-    for (const attempt of attempts) {
+    for (const representation of selected.representations) {
       if (!isActive()) throw Object.assign(new Error('Load cancelled'), { code: 7000 });
-      const mpd = buildMPD(dash, selected.representation, attempt);
-      const url = URL.createObjectURL(new Blob([mpd], { type: 'application/dash+xml' }));
-      try {
-        await measure('load', () => player.load(url, position || undefined, 'application/dash+xml'));
+      cdnAutoRef.current?.setSource(representation);
+      const session = createTargetDolby120Session(video, cidRef.current, representation);
+      let dolby = null, dolbyCodec = null;
+      const nativeDolby = /^(dvh1|dvhe)\./i.test(representation.codecs || '');
+      if (nativeDolby && !session && !dolbySignalingFrameRateAllowed(representation)) {
+        lastError = Object.assign(new Error('Unverified high-frame-rate Dolby representation'), { category: 4 });
+        continue;
+      }
+      if (selected.actualQn === 126 && !options.disableDolby && (session || dolbySignalingFrameRateAllowed(representation))) {
+        if (nativeDolby) dolbyCodec = representation.codecs;
+        try {
+          const probe = { ...representation, baseUrl: playbackCdnUrls(representation, storage.getSettings().cdnRoute)[0] };
+          dolby = await measure('probe', () => inspectDolbyRepresentation(probe, mediaProxyBase(), { active: probeRequestsRef.current }));
+          if (dolby && supported(`video/mp4; codecs="${dolby.codec}"`)) dolbyCodec = dolby.codec;
+        } catch (e) { if (isActive()) logErr('dolby-probe', e.message); }
+      }
+      // Profile 5 has no HDR-compatible base layer. Never relabel native DV
+      // bytes as HEVC; only a confirmed compatible generic HEVC source may fall back.
+      const canUseBase = !nativeDolby && dolby?.profile === 8 && [1, 4].includes(dolby.compatibilityId);
+      const attempts = createPlaybackAttemptPlan(audio, dolbyCodec, {
+        allowVideoOnly: !hasAudioRepresentations(dash), allowBaseLayer: canUseBase,
+      });
+      for (let index = 0; index < attempts.length; index++) {
         if (!isActive()) throw Object.assign(new Error('Load cancelled'), { code: 7000 });
-        const format = {
-          video: attempt.dolbyCodec ? 'Dolby Vision' : selected.actualQn === 126
-            ? (dolby?.compatibilityId === 4 ? 'HLG' : t('杜比源（基础层）'))
-            : (QUALITY_MAP[selected.actualQn] || String(selected.actualQn)),
-          audio: attempt.audioLabel,
-        };
-        loadedStreamRef.current = { mpd, format, quality: selected.actualQn, representation: selected.representation };
-        setStreamFormat(format); setCurrentQuality(selected.actualQn);
-        updatePlaybackReport({ quality: selected.actualQn, videoCodec: attempt.dolbyCodec || selected.representation.codecs, audioCodec: attempt.audioCodec });
-        return selected.actualQn;
-      } catch (e) {
-        if (!isActive() || (e?.category !== 3 && e?.category !== 4)) throw e;
-        lastError = e;
-      } finally { URL.revokeObjectURL(url); }
+        const attempt = attempts[index];
+        const transform = !!(session && attempt.dolbyCodec);
+        const runtime = dolbyRuntimeRef.current;
+        const epoch = runtime?.begin(transform ? session : null);
+        player.configure({ streaming: { segmentPrefetchLimit: transform ? 0 : 1 } });
+        const mpd = buildMPD(dash, representation, { ...attempt, frameRate: transform ? 60 : null });
+        const url = URL.createObjectURL(new Blob([mpd], { type: 'application/dash+xml' }));
+        try {
+          options.onLoad?.();
+          pendingMediaLoads.current++;
+          try { await measure('load', () => player.load(url, position || undefined, 'application/dash+xml')); }
+          finally { pendingMediaLoads.current--; }
+          if (!isActive()) throw Object.assign(new Error('Load cancelled'), { code: 7000 });
+          runtime?.ready(epoch, async () => {
+            if (!isActive()) return;
+            const media = videoRef.current, pos = media.currentTime, paused = media.paused;
+            setLoading(true);
+            try {
+              await loadDash(player, { ...dash, video: [representation] }, selected.actualQn, pos, isActive, null,
+                { strict: true, disableDolby: true, preferredAudioKind: attempt.audioKind });
+              if (isActive() && !paused) await media.play();
+            } catch (error) {
+              if (isActive()) { setErrorMsg(t('播放暂时中断，请检查网络或切换线路')); setLoadError(true); }
+            } finally { if (isActive()) setLoading(false); }
+          });
+          const format = {
+            video: attempt.dolbyCodec || nativeDolby ? 'Dolby Vision' : selected.actualQn === 126
+              ? (dolby?.compatibilityId === 4 || options.disableDolby && session ? 'HLG' : t('杜比源（基础层）'))
+              : (QUALITY_MAP[selected.actualQn] || String(selected.actualQn)),
+            audio: attempt.audioLabel,
+          };
+          loadedStreamRef.current = { mpd, format, quality: selected.actualQn, representation, dash, audioKind: attempt.audioKind };
+          setStreamFormat(format); setCurrentQuality(selected.actualQn);
+          updatePlaybackReport({ quality: selected.actualQn, videoCodec: attempt.dolbyCodec || representation.codecs, audioCodec: attempt.audioCodec });
+          return selected.actualQn;
+        } catch (e) {
+          if (!isActive()) throw e;
+          const failure = findDolbyTransformFailure(e);
+          if (failure) {
+            const fallbackIndex = attempts.findIndex((a, i) => i > index && !a.dolbyCodec && a.audioKind === attempt.audioKind);
+            if (fallbackIndex >= 0) { index = fallbackIndex - 1; lastError = e; continue; }
+          }
+          if (!failure && e?.category !== 3 && e?.category !== 4) throw e;
+          lastError = e;
+        } finally { URL.revokeObjectURL(url); }
+      }
     }
-    throw lastError || new Error('No playable audio/video combination');
+    throw lastError || Object.assign(new Error('No playable audio/video combination'), { category: 4 });
   }
 
   function buildMPD(dash, representation, attempt) {
@@ -1147,7 +1260,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     let videoAdaptations = '';
     if (videoList.length > 0) {
       const reps = videoList.map(v => {
-        return `<Representation id="${v.id}" bandwidth="${v.bandwidth || 1000000}" codecs="${v.codecs || 'avc1.640032'}" mimeType="${v.mimeType || 'video/mp4'}" width="${v.width || 1920}" height="${v.height || 1080}" frameRate="${v.frameRate || v.frame_rate || '30'}">
+        return `<Representation id="${v.id}" bandwidth="${v.bandwidth || 1000000}" codecs="${v.codecs || 'avc1.640032'}" mimeType="${v.mimeType || 'video/mp4'}" width="${v.width || 1920}" height="${v.height || 1080}" frameRate="${attempt.frameRate || v.frameRate || v.frame_rate || '30'}">
           ${buildBaseUrls(v)}
           <SegmentBase indexRange="${v.SegmentBase?.indexRange || v.segment_base?.index_range || '0-0'}">
             <Initialization range="${v.SegmentBase?.Initialization || v.segment_base?.initialization || '0-0'}" />
@@ -1255,8 +1368,12 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         lunaSetPlayRate(speedRef.current).catch(() => {});
       }
     };
-    const handleLoadedMetadata = () => { flushPendingSeek(); applyRate(); };
-    const handleCanPlay = () => { flushPendingSeek(); applyRate(); reassertLunaRate(); };
+    const flushNativeSeek = () => {
+      flushPendingSeek();
+      if (nativeUnloadRef.current?.attached && pendingSeekRef.current == null) nativeUnloadRef.current = null;
+    };
+    const handleLoadedMetadata = () => { flushNativeSeek(); applyRate(); };
+    const handleCanPlay = () => { flushNativeSeek(); applyRate(); reassertLunaRate(); };
     const handleSeeked = () => { reassertLunaRate(); };
 
     const handlePause = () => {
@@ -1353,6 +1470,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       if (state.buffering && !wasBuffering) countPlaybackEvent('stalls');
       wasBuffering = state.buffering;
       setBuffering(state.buffering && !state.failed);
+      if (state.retry && dolbyRuntimeRef.current?.stalled()) return;
       if (state.retry) {
         countPlaybackEvent('retries');
         try { shakaRef.current?.retryStreaming(); } catch { /* unloaded */ }
@@ -1374,14 +1492,16 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   // The grid can scroll the entire shelf. Restore the focused row, including
   // wrapped controls at large text sizes, without moving the page behind it.
   useEffect(() => {
-    if (focusArea === 'tabs') {
+    if (focusArea === 'quality' && showQuality) {
+      document.querySelector('.quality-popup .focused')?.scrollIntoView({ block: 'nearest' });
+    } else if (focusArea === 'tabs') {
       const el = document.querySelector('.panel-tab-row');
       if (el) el.scrollIntoView({ block: 'nearest' });
     } else if (showControls && focusArea === 'controls') {
       const el = btnRefs.current[controlsRef.current[focusIdx]];
       if (el) el.scrollIntoView({ block: 'nearest' });
     }
-  }, [focusArea, focusIdx, showControls]);
+  }, [focusArea, focusIdx, showControls, showQuality]);
 
   // ===== Scrub (deferred seek) =====
   const clearScrub = useCallback(() => {
@@ -1682,7 +1802,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       setFocusArea('quality');
       // Open ON the current tier (same as the subtitle/speed panels) — the
       // panel opening at the top made OK-from-muscle-memory switch quality.
-      setFocusIdx(Math.max(0, qualities.findIndex(q => q.qn === currentQuality)));
+      setFocusIdx(Math.max(0, qualities.findIndex(q => q.qn === (autoQuality ? 'auto' : currentQuality))));
       if (controlsTimer.current) clearTimeout(controlsTimer.current);
       return;
     } else if (btn === 'coin') {
@@ -1697,7 +1817,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     // 'like' never routes here: its press/release runs the long-press machinery
     // (keydown/keyup + mousedown/mouseup on the button itself).
     hideControlsLater();
-  }, [subOptions, subLan, subTracks, fetchSubBody, hideControlsLater, doCoin, doFav, doToView, showPlayerToast, anchorFor, qualities, currentQuality, comments, follow.toggle]);
+  }, [subOptions, subLan, subTracks, fetchSubBody, hideControlsLater, doCoin, doFav, doToView, showPlayerToast, anchorFor, qualities, currentQuality, autoQuality, comments, follow.toggle]);
 
   // Load more related videos
   const loadingRelatedRef = useRef(false);
@@ -1880,47 +2000,70 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   }, [comments, video]);
 
   // Change quality
-  const changeQuality = useCallback(async (qn) => {
+  const changeQuality = useCallback(async (qn, persistPreference = true) => {
     const isBangumi = !!(video?.isBangumi || video?.epid || video?.seasonId);
     if ((!video?.bvid && !video?.aid && !isBangumi) || !shakaRef.current) return;
     const player = shakaRef.current;
     const generation = ++streamGenerationRef.current;
+    speedGenerationRef.current++;
+    let transition = nativeUnloadRef.current;
+    const needsDashRestore = nativeModeRef.current || !!transition;
+    if (nativeModeRef.current && (!transition || transition.attached)) {
+      // The MP4 src was set outside Shaka, after its assetUri was cleared.
+      // load() therefore skips its normal unload. Detach that native source
+      // explicitly so the new playhead cannot observe its old metadata/time.
+      transition = {
+        pos: transition ? transition.pos : videoRef.current.currentTime,
+        wasPaused: transition ? transition.wasPaused : videoRef.current.paused,
+        promise: Promise.resolve().then(() => player.unload(false)),
+      };
+      nativeUnloadRef.current = transition;
+    }
+    nativeModeRef.current = false;
+    setCurrentSpeed(1);
     const isActive = () => mountedRef.current && generation === streamGenerationRef.current;
-    const pos = videoRef.current.currentTime;
-    const wasPaused = videoRef.current.paused;
+    const pos = transition ? transition.pos : videoRef.current.currentTime;
+    const wasPaused = transition ? transition.wasPaused : videoRef.current.paused;
     const previous = loadedStreamRef.current;
+    let loadStarted = false;
     setLoading(true); setBuffering(false);
     cdnAutoRef.current?.setSource(null);
     try {
+      // A late unload must finish before any replacement DASH load starts.
+      if (transition) {
+        await transition.promise;
+        if (!isActive()) return;
+        if (nativeUnloadRef.current === transition) nativeUnloadRef.current = null;
+      }
+      pendingSeekRef.current = null;
       const cid = video.cid || cidRef.current;
-      const res = isBangumi ? await getBangumiPlayUrl({ epid: video.epid, cid }, qn) : await getPlayUrl(video, cid, qn);
+      const requestQn = requestedQuality(qn);
+      const res = isBangumi ? await getBangumiPlayUrl({ epid: video.epid, cid }, requestQn) : await getPlayUrl(video, cid, requestQn);
       if (!isActive()) return;
       const meta = res?.result || res?.data;
       if (!meta?.dash) throw new Error('No DASH stream');
-      const served = await loadDash(player, meta.dash, meta.quality || qn, pos, isActive);
+      const served = await loadDash(player, meta.dash, qn === 'auto' ? undefined : qn, pos, isActive, null, { strict: qn !== 'auto', onLoad: () => { loadStarted = true; } });
       if (!isActive()) return;
-      storage.setSettings({ ...storage.getSettings(), quality: served });
+      if (persistPreference) {
+        storage.setSettings({ ...storage.getSettings(), quality: qn === 'auto' ? 'auto' : served, qualityMode: qn === 'auto' ? 'auto' : 'manual' });
+        setAutoQuality(qn === 'auto');
+      }
       selectBestVariant(player);
       if (!wasPaused) videoRef.current.play();
-      if (served !== qn) showPlayerToast(t('该画质需要大会员,已按 {q} 播放', { q: QUALITY_MAP[served] || served }));
     } catch (e) {
       if (!isActive()) return;
       showPlayerToast(t('画质切换失败，已保留原画质'));
       // A failed decoder load can unload the old stream; restore it at the
       // captured position, including the user's paused state.
-      if (previous) {
-        cdnAutoRef.current?.setSource(previous.representation);
-        const url = URL.createObjectURL(new Blob([previous.mpd], { type: 'application/dash+xml' }));
+      if (previous) cdnAutoRef.current?.setSource(previous.representation);
+      if (previous && (loadStarted || needsDashRestore)) {
         try {
-          await player.load(url, pos, 'application/dash+xml');
-          if (isActive()) {
-            loadedStreamRef.current = previous;
-            setCurrentQuality(previous.quality); setStreamFormat(previous.format);
-            if (!wasPaused) videoRef.current.play();
-          }
+          await loadDash(player, { ...previous.dash, video: [previous.representation] }, previous.quality, pos, isActive, null,
+            { strict: true, preferredAudioKind: previous.audioKind });
+          if (isActive() && !wasPaused) await videoRef.current.play();
         } catch (err) {
           if (isActive()) { setErrorMsg(t('播放暂时中断，请检查网络或切换线路')); setLoadError(true); }
-        } finally { URL.revokeObjectURL(url); }
+        }
       }
     } finally { if (isActive()) setLoading(false); }
   }, [video]);
@@ -1928,6 +2071,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   // 倍速: apply for THIS video only (no persistence). Browser = plain
   // playbackRate; TV = native-pipeline swap (speed≠1) / back to DASH (speed=1).
   const applySpeed = useCallback(async (s) => {
+    const generation = ++speedGenerationRef.current;
+    const isActive = () => mountedRef.current && generation === speedGenerationRef.current;
     setCurrentSpeed(s);
     setShowSpeedPanel(false);
     setFocusArea('controls');
@@ -1939,16 +2084,17 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     }
     if (s === 1) {
       if (nativeModeRef.current) {
-        nativeModeRef.current = false;
-        changeQuality(currentQuality); // captures position, reloads DASH, seeks back
+        changeQuality(currentQuality, false); // waits for unload, then restores DASH and playback state
       }
-    } else if (nativeModeRef.current) {
-      lunaSetPlayRate(s).catch(() => {});
+    } else if (nativeModeRef.current && nativeSwitchRef.current === null) {
+      lunaSetPlayRate(s, isActive).catch(() => {});
     } else {
-      const ok = await enterNativeSpeed(s);
+      const ok = await enterNativeSpeed(s, generation);
+      if (!isActive()) return;
       if (!ok) {
         showPlayerToast(t('倍速切换失败'));
         setCurrentSpeed(1);
+        if (nativeModeRef.current || nativeUnloadRef.current) await changeQuality(currentQuality, false);
       }
     }
   }, [hideControlsLater, onWebOS, changeQuality, currentQuality, lunaSetPlayRate, enterNativeSpeed, showPlayerToast]);
@@ -2358,6 +2504,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
 
   return (
     <div className="player-page" onMouseMove={handlePointerMove}>
+      {nerdInfo && <NerdInfo videoRef={videoRef} playerRef={shakaRef} transferRef={transferRef} audio={streamFormat.audio} />}
       <video ref={videoRef} className="player-video"
         style={showCommentRail ? { width: RAIL_VW, height: RAIL_VH } : undefined} />
       {/* Same treatment as the live layout: 16:9 in a 1500-wide column leaves
@@ -2480,7 +2627,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       )}
 
       {loadError && !loading && (
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+        <div className="player-error" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           gap: 16, background: 'rgba(0,0,0,0.85)', zIndex: 50 }}>
           <div style={{ fontSize: 26, color: '#fff', maxWidth: 1100, textAlign: 'center', lineHeight: 1.5 }}>
@@ -2496,7 +2643,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
             {t('去网络诊断')}
           </button>
           <div style={{ fontSize: 18, color: '#aaa' }}>
-            {recoverable ? (autoRetryDelay ? t('正在等待网络恢复，也可按 OK 立即重试') : t('自动重试已停止，按 OK 重试或返回退出'))
+            {recoverable ? (autoRetryDelay ? t('稍后自动重试，也可按 OK 立即重试') : t('自动重试已停止，按 OK 重试或返回退出'))
               : errorMsg ? t('OK 打开网络诊断 · 返回键退出') : t('该视频源节点异常,请按返回键重试或换一个视频')}
           </div>
         </div>
@@ -2712,7 +2859,6 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
             );
           })}
           <span className="player-time">
-            {streamFormat.audio && <span className="player-audio-format">{streamFormat.audio} · </span>}
             {formatDuration(currentTime)} / {formatDuration(duration)}
             {(() => {
               const ch = chapters.find(c => currentTime >= c.from && currentTime < c.to);
@@ -2814,9 +2960,9 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       )}
 
       {showQuality && (
-        <div className="ctrl-popup" style={popupPos ? { left: popupPos.left, bottom: popupPos.bottom } : { right: 60, bottom: 120, transform: 'none' }}>
+        <div className="ctrl-popup quality-popup" style={popupPos ? { left: popupPos.left, bottom: popupPos.bottom, maxHeight: Math.max(120, 1080 - popupPos.bottom - 24) } : { right: 60, bottom: 120, maxHeight: 936, transform: 'none' }}>
           {qualities.map((q, i) => (
-            <div key={q.qn} className={`quality-option ${focusArea === 'quality' && focusIdx === i ? 'focused' : ''} ${currentQuality === q.qn ? 'active' : ''}`}
+            <div key={q.qn} className={`quality-option ${focusArea === 'quality' && focusIdx === i ? 'focused' : ''} ${(q.qn === 'auto' ? autoQuality : !autoQuality && currentQuality === q.qn) ? 'active' : ''}`}
               onMouseEnter={() => { setFocusArea('quality'); setFocusIdx(i); }}
               onClick={() => { changeQuality(q.qn); setShowQuality(false); setFocusArea('controls'); setFocusIdx(CONTROLS.indexOf('quality')); hideControlsLater(); }}>
               {q.label}{q.qn >= 112 ? <span className="vip-tag">{t('大会员')}</span> : null}

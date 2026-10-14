@@ -26,3 +26,27 @@ test('FLV-only and missing HLS URL responses are errors rather than endless load
 test('failed API response is not mistaken for an empty room',()=>{
  assert.throws(()=>selectLivePlayback({code:-352}),/Live API: -352/);
 });
+test('failed live CDN uses the exact signed backup at identical format and quality',()=>{
+ const r=response();r.data.playurl_info.playurl.stream[0].format[2].codec[0].url_info.push({host:'https://backup.bilivideo.com',extra:'?signed=second&token=fixture'});
+ const selected=selectLivePlayback(r,'fmp4',['live.bilivideo.com']);
+ assert.equal(selected.url,'https://backup.bilivideo.com/fmp4.m3u8?signed=second&token=fixture');
+ assert.equal(selected.qn,10000);assert.equal(selected.format,'fmp4');
+});
+test('all recently failed nodes still allow bounded recovery with fresh API source',()=>{
+ const selected=selectLivePlayback(response(),'fmp4',['live.bilivideo.com']);
+ assert.equal(selected.url,'https://live.bilivideo.com/fmp4.m3u8?signed=fixture');
+});
+test('network preference never chooses another codec or container',()=>{
+ const selected=selectLivePlayback(response(),'ts',['live.bilivideo.com']);
+ assert.equal(selected.format,'ts');assert.equal(selected.qn,10000);
+});
+test('all failed CDN candidates rotate to the least recently failed host',()=>{
+ const r=response();r.data.playurl_info.playurl.stream[0].format[2].codec[0].url_info.push({host:'https://backup.bilivideo.com',extra:'?signed=second'});
+ const selected=selectLivePlayback(r,'fmp4',['backup.bilivideo.com','live.bilivideo.com']);
+ assert.equal(selected.url,'https://backup.bilivideo.com/fmp4.m3u8?signed=second');
+});
+test('malformed hosts never become the recovery fallback',()=>{
+ const r=response();r.data.playurl_info.playurl.stream[0].format[2].codec[0].url_info.unshift({host:'https://['});
+ const selected=selectLivePlayback(r,'fmp4',['live.bilivideo.com']);
+ assert.equal(selected.url,'https://live.bilivideo.com/fmp4.m3u8?signed=fixture');
+});

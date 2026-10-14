@@ -1,0 +1,45 @@
+=== [1/6] Service syntax (ES5 / Node 0.12) ===
+OK: all service files parse as ES5
+
+=== [2/6] Static gates (design spec + logic) ===
+OK: no <16px inline text
+OK: no aspect-ratio CSS
+OK: no inset shorthand
+PASS  feed card (cid present) → auto-resume
+PASS  history row (progress 300) → at/300
+PASS  选集 pick → none/0
+PASS  连播 advance strips stale progress → none/0
+PASS  cast seekTs → at
+PASS  explicit intent passes through normalize
+PASS  playFresh always auto
+PASS  全新三连 → 三项全亮
+PASS  之前已赞已投(接口只回 fav)→ 仍然三项全亮
+PASS  本地状态是空的(relation 请求失败)→ 三连后照样全亮
+PASS  投币数封顶 2
+PASS  计数:已赞过 → like 不再 +1
+PASS  计数:本次新增收藏 → favorite +1
+PASS  计数:本次投 2 币 → coin +2
+PASS  校准:服务端还没同步(全 false)也不会把已亮的按灭
+PASS  校准:服务端说已赞已投已藏 → 从暗变亮
+PASS  校准:字段名以实测为准(favorite 不是 fav)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/yuanzhan/.codex/worktrees/playback-mode-41/bili_webos/app/src/utils/qualityPreference' imported from /Users/yuanzhan/.codex/worktrees/playback-mode-41/bili_webos/app/src/utils/storage.js
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:712:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:729:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:758:52)
+    at #resolve (node:internal/modules/esm/loader:694:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:614:35)
+    at ModuleJob.syncLink (node:internal/modules/esm/module_job:160:33)
+    at ModuleJob.link (node:internal/modules/esm/module_job:245:17) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/yuanzhan/.codex/worktrees/playback-mode-41/bili_webos/app/src/utils/qualityPreference'
+}
+
+Node.js v25.4.0
+FAIL: api error hints

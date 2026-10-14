@@ -1,0 +1,7 @@
+[
+  {
+    "name": "missing requested quality keeps existing stream and never blames membership",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n80 !== undefined\n"
+  }
+]

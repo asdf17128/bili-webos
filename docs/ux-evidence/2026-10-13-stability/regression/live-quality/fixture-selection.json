@@ -1,0 +1,61 @@
+{
+  "recommendationCode": 0,
+  "rows": [
+    {
+      "roomId": 34348,
+      "online": 142559,
+      "code": 0,
+      "liveStatus": 1,
+      "qualities": [
+        10000,
+        400,
+        250
+      ]
+    },
+    {
+      "roomId": 1774680610,
+      "online": 39268,
+      "code": 0,
+      "liveStatus": 1,
+      "qualities": [
+        10000
+      ]
+    },
+    {
+      "roomId": 1753100932,
+      "online": 36614,
+      "code": 0,
+      "liveStatus": 1,
+      "qualities": [
+        10000
+      ]
+    },
+    {
+      "roomId": 1889472619,
+      "online": 18840,
+      "code": 0,
+      "liveStatus": 1,
+      "qualities": [
+        10000
+      ]
+    },
+    {
+      "roomId": 32080159,
+      "online": 15225,
+      "code": 0,
+      "liveStatus": 1,
+      "qualities": [
+        10000
+      ]
+    },
+    {
+      "roomId": 1850493801,
+      "online": 14083,
+      "code": 0,
+      "liveStatus": 1,
+      "qualities": [
+        10000
+      ]
+    }
+  ]
+}

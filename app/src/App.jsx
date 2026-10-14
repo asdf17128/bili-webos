@@ -1,6 +1,8 @@
+import { membership } from './utils/membership';
+import MembershipBadge from './components/MembershipBadge';
 import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { initKeyboardNav, setFocus, onFocusChange, getCurrentFocusId, focusFirstContent, setLastSidebarFocus, isPointerFocus, isHoverDriven, setContentContext, cancelContentFocus, resetContentMemory } from './hooks/useFocus';
-import { castAck, castSubscribe, castGetStatus, getNavInfo, pingVersionAsset } from './api/client';
+import { castAck, castSubscribe, castGetStatus, getNavInfo, pingVersionAsset, logout } from './api/client';
 import { thumbUrl } from './utils/thumb';
 import { normalizePlay, playAt } from './player/playIntent';
 import { storage } from './utils/storage';
@@ -141,7 +143,7 @@ function Sidebar({ activePage, onPreview, onSelect, user }) {
             <div className="sidebar-user-avatar">
               {user.face && <img src={thumbUrl(user.face, 4)} alt="" />}
             </div>
-            <div className="sidebar-user-name">{user.uname}</div>
+            <div className="sidebar-user-name"><span className="sidebar-user-label">{user.uname}</span><MembershipBadge membership={user.membership} /></div>
           </>
         ) : (
           <><div className="sidebar-user-avatar"><Icon name="follow" /></div><div className="sidebar-user-login">{t('未登录')}</div></>
@@ -155,6 +157,8 @@ export default function App() {
   const [page, setPage] = useState('recommend');
   const [user, setUser] = useState(null);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const logoutBusy = useRef(false);
   const [playerVideo, setPlayerVideo] = useState(null);
   const [liveRoom, setLiveRoom] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
@@ -307,11 +311,15 @@ export default function App() {
   }, [playerVideo, liveRoom, showLogin, page]);
 
   const loadUserInfo = useCallback(async () => {
+    const generation = storage.getAuthGeneration();
     try {
       const res = await getNavInfo();
+      if (generation !== storage.getAuthGeneration()) return;
       if (res?.data?.isLogin) {
-        setUser({ mid: res.data.mid, uname: res.data.uname, face: res.data.face });
+        setUser({ mid: res.data.mid, uname: res.data.uname, face: res.data.face, membership: membership(res.data) });
         setLoggedIn(true);
+      } else if (res?.code === 0 && res?.data?.isLogin === false) {
+        setUser(null); setLoggedIn(false);
       }
     } catch (err) {
       console.error('Nav info error:', err);
@@ -326,12 +334,21 @@ export default function App() {
     setPage('recommend');
   }, [loadUserInfo]);
 
-  const handleLogout = useCallback(() => {
-    storage.clearAuth();
-    setUser(null);
-    setLoggedIn(false);
-    showToastMsg(t('已退出登录'));
-    setPage('recommend');
+  const handleLogout = useCallback(async () => {
+    if (logoutBusy.current) return;
+    logoutBusy.current = true; setLoggingOut(true);
+    try {
+      await logout();
+      setUser(null); setLoggedIn(false);
+      setPlayerVideo(null); setLiveRoom(null); setMenuVideo(null); setShowLogin(false);
+      setRefreshKeys({}); resetContentMemory();
+      showToastMsg(t('已退出登录'));
+      setPage('recommend');
+    } catch (err) {
+      showToastMsg(t('退出登录失败，请重试'));
+    } finally {
+      logoutBusy.current = false; setLoggingOut(false);
+    }
   }, []);
 
   const handlePlayVideo = useCallback((video) => {
@@ -478,7 +495,7 @@ export default function App() {
     <>
       <div className="app-container" data-language={getLocale()} style={{ display: (playerVideo || liveRoom) ? 'none' : 'flex' }}>
         <Sidebar activePage={page} onPreview={previewPage} onSelect={selectPage} user={user} />
-        <div className="main-content">
+        <div className="main-content" key={loggedIn ? 'member' : 'guest'}>
           {['recommend', 'hot', 'live', 'follow'].includes(page) || PARTITION_KEYS[page] != null ? (
             page === 'follow' && !loggedIn ? <PageState title={t('关注的精彩，登录后继续')} description={t('扫码登录，同步你的关注与收藏')} action={t('扫码登录')} onAction={() => setShowLogin(true)} /> :
             <HomePage key={`${page}:${refreshKey}`} onPlayVideo={handlePlayVideo} refreshKey={refreshKey}
@@ -489,7 +506,7 @@ export default function App() {
           {page === 'favorites' && (loggedIn ? <FavoritesPage userMid={user?.mid} onPlayVideo={handlePlayVideo} /> :
             <PageState title={t('收藏的好内容，在电视上看')} description={t('扫码登录，同步你的关注与收藏')} action={t('扫码登录')} onAction={() => setShowLogin(true)} />)}
           {page === 'settings' && <SettingsPage user={user} onPlayVideo={handlePlayVideo} onRequestLogin={() => setShowLogin(true)} />}
-          {page === 'config' && <ConfigPage onLogout={handleLogout} user={user} />}
+          {page === 'config' && <ConfigPage onLogout={handleLogout} user={user} loggingOut={loggingOut} />}
         </div>
         {toast && <div className="toast" role="status">{toast}</div>}
       </div>

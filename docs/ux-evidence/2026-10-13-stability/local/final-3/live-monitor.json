@@ -1,0 +1,198 @@
+[
+  {
+    "name": "normal cleanup",
+    "pass": true,
+    "observed": {
+      "before": {
+        "index": 0,
+        "openedAt": 1791873431449,
+        "exitedAt": 1791873431449,
+        "tokenCode": null,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 0,
+        "subscriptionFailures": 0,
+        "frames": 0,
+        "events": 0,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 1,
+        "handleCancelSuccess": 1,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 0,
+        "mediaErrors": [],
+        "firstPlayingMs": null,
+        "playingEvents": 0,
+        "mediaConnects": 3,
+        "mediaRetries": 2,
+        "mediaGaveUps": 1,
+        "maxRetryAttempt": 2,
+        "connectStreak": 1,
+        "maxConnectStreak": 2,
+        "postExitMediaAttempts": 1,
+        "mediaAttempts": [
+          {
+            "type": "connect",
+            "atMs": 0,
+            "attempt": 0
+          },
+          {
+            "type": "retry",
+            "atMs": 0,
+            "attempt": 1
+          },
+          {
+            "type": "connect",
+            "atMs": 0,
+            "attempt": 1
+          },
+          {
+            "type": "playing",
+            "atMs": 0
+          },
+          {
+            "type": "retry",
+            "atMs": 0,
+            "attempt": 2
+          },
+          {
+            "type": "gave-up",
+            "atMs": 0,
+            "after": 2
+          },
+          {
+            "type": "connect",
+            "atMs": 0,
+            "attempt": 2
+          }
+        ],
+        "omittedMediaAttempts": 0,
+        "waitingEvents": 0,
+        "endedEvents": 0,
+        "lastTime": 0,
+        "lastAdvance": 1791873431449,
+        "maxGapMs": 0,
+        "advancedSeconds": 0
+      },
+      "cleaned": {
+        "requestRestored": true,
+        "diagPushRestored": true,
+        "forcedCancels": 0,
+        "cancelFailures": 0,
+        "injectionsRemoved": true
+      },
+      "requestRestored": true,
+      "pushRestored": true,
+      "ownPushRestored": true,
+      "cancelled": 1,
+      "listenerCount": 0,
+      "timerCount": 0,
+      "observerCount": 0,
+      "monitorAbsent": true
+    }
+  },
+  {
+    "name": "mid-test failure cleanup",
+    "pass": true,
+    "observed": {
+      "before": {
+        "index": 0,
+        "openedAt": 1791873431487,
+        "exitedAt": 1791873431487,
+        "tokenCode": null,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 0,
+        "subscriptionFailures": 0,
+        "frames": 0,
+        "events": 0,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 0,
+        "handleCancelSuccess": 0,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 0,
+        "mediaErrors": [],
+        "firstPlayingMs": null,
+        "playingEvents": 0,
+        "mediaConnects": 3,
+        "mediaRetries": 2,
+        "mediaGaveUps": 1,
+        "maxRetryAttempt": 2,
+        "connectStreak": 1,
+        "maxConnectStreak": 2,
+        "postExitMediaAttempts": 1,
+        "mediaAttempts": [
+          {
+            "type": "connect",
+            "atMs": 0,
+            "attempt": 0
+          },
+          {
+            "type": "retry",
+            "atMs": 0,
+            "attempt": 1
+          },
+          {
+            "type": "connect",
+            "atMs": 0,
+            "attempt": 1
+          },
+          {
+            "type": "playing",
+            "atMs": 0
+          },
+          {
+            "type": "retry",
+            "atMs": 0,
+            "attempt": 2
+          },
+          {
+            "type": "gave-up",
+            "atMs": 0,
+            "after": 2
+          },
+          {
+            "type": "connect",
+            "atMs": 0,
+            "attempt": 2
+          }
+        ],
+        "omittedMediaAttempts": 0,
+        "waitingEvents": 0,
+        "endedEvents": 0,
+        "lastTime": 0,
+        "lastAdvance": 1791873431487,
+        "maxGapMs": 0,
+        "advancedSeconds": 0
+      },
+      "cleaned": {
+        "requestRestored": true,
+        "diagPushRestored": true,
+        "forcedCancels": 1,
+        "cancelFailures": 0,
+        "injectionsRemoved": true
+      },
+      "requestRestored": true,
+      "pushRestored": true,
+      "ownPushRestored": true,
+      "cancelled": 1,
+      "listenerCount": 0,
+      "timerCount": 0,
+      "observerCount": 0,
+      "monitorAbsent": true
+    }
+  }
+]

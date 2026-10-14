@@ -1,0 +1,10 @@
+[
+  {
+    "name": "critical runtime error while paused: media",
+    "pass": true
+  },
+  {
+    "name": "critical runtime error while paused: network",
+    "pass": true
+  }
+]

@@ -1,0 +1,185 @@
+{
+  "at": "2026-10-13T07:43:22.748Z",
+  "sources": [
+    {
+      "name": "test-live-stability-tv.mjs",
+      "sha256": "1b429d14ea581206291e04e503a8abb6be62f20984486bcafdb847e1cc1bdc6f"
+    },
+    {
+      "name": "test-network-soak-tv.mjs",
+      "sha256": "01abb7c98b965c64a2fa47a1d95cc1dbb02514a33f5ee4e9ae373bd9c53ade97"
+    }
+  ],
+  "rows": [
+    {
+      "tool": "test-live-stability-tv.mjs",
+      "name": "non-json HTTP502",
+      "pass": true
+    },
+    {
+      "tool": "test-live-stability-tv.mjs",
+      "name": "empty HTTP204",
+      "pass": true
+    },
+    {
+      "tool": "test-live-stability-tv.mjs",
+      "name": "JSON null",
+      "pass": true
+    },
+    {
+      "tool": "test-live-stability-tv.mjs",
+      "name": "malformed base64",
+      "pass": true
+    },
+    {
+      "tool": "test-live-stability-tv.mjs",
+      "name": "non-text response",
+      "pass": true
+    },
+    {
+      "tool": "test-live-stability-tv.mjs",
+      "name": "valid base64 JSON preserves fields",
+      "pass": true
+    },
+    {
+      "tool": "test-live-stability-tv.mjs",
+      "name": "safe failure dns",
+      "pass": true
+    },
+    {
+      "tool": "test-live-stability-tv.mjs",
+      "name": "safe failure timeout",
+      "pass": true
+    },
+    {
+      "tool": "test-live-stability-tv.mjs",
+      "name": "safe failure connection",
+      "pass": true
+    },
+    {
+      "tool": "test-live-stability-tv.mjs",
+      "name": "safe failure tls",
+      "pass": true
+    },
+    {
+      "tool": "test-live-stability-tv.mjs",
+      "name": "safe failure cancel",
+      "pass": true
+    },
+    {
+      "tool": "test-live-stability-tv.mjs",
+      "name": "safe failure unknown",
+      "pass": true
+    },
+    {
+      "tool": "test-live-stability-tv.mjs",
+      "name": "string errorCode is not exported",
+      "pass": true
+    },
+    {
+      "tool": "test-live-stability-tv.mjs",
+      "name": "actual request non-json",
+      "pass": true
+    },
+    {
+      "tool": "test-live-stability-tv.mjs",
+      "name": "actual request failure",
+      "pass": true
+    },
+    {
+      "tool": "test-live-stability-tv.mjs",
+      "name": "actual request throw",
+      "pass": true
+    },
+    {
+      "tool": "test-live-stability-tv.mjs",
+      "name": "actual request valid",
+      "pass": true
+    },
+    {
+      "tool": "test-network-soak-tv.mjs",
+      "name": "non-json HTTP502",
+      "pass": true
+    },
+    {
+      "tool": "test-network-soak-tv.mjs",
+      "name": "empty HTTP204",
+      "pass": true
+    },
+    {
+      "tool": "test-network-soak-tv.mjs",
+      "name": "JSON null",
+      "pass": true
+    },
+    {
+      "tool": "test-network-soak-tv.mjs",
+      "name": "malformed base64",
+      "pass": true
+    },
+    {
+      "tool": "test-network-soak-tv.mjs",
+      "name": "non-text response",
+      "pass": true
+    },
+    {
+      "tool": "test-network-soak-tv.mjs",
+      "name": "valid base64 JSON preserves fields",
+      "pass": true
+    },
+    {
+      "tool": "test-network-soak-tv.mjs",
+      "name": "safe failure dns",
+      "pass": true
+    },
+    {
+      "tool": "test-network-soak-tv.mjs",
+      "name": "safe failure timeout",
+      "pass": true
+    },
+    {
+      "tool": "test-network-soak-tv.mjs",
+      "name": "safe failure connection",
+      "pass": true
+    },
+    {
+      "tool": "test-network-soak-tv.mjs",
+      "name": "safe failure tls",
+      "pass": true
+    },
+    {
+      "tool": "test-network-soak-tv.mjs",
+      "name": "safe failure cancel",
+      "pass": true
+    },
+    {
+      "tool": "test-network-soak-tv.mjs",
+      "name": "safe failure unknown",
+      "pass": true
+    },
+    {
+      "tool": "test-network-soak-tv.mjs",
+      "name": "string errorCode is not exported",
+      "pass": true
+    },
+    {
+      "tool": "test-network-soak-tv.mjs",
+      "name": "actual request non-json",
+      "pass": true
+    },
+    {
+      "tool": "test-network-soak-tv.mjs",
+      "name": "actual request failure",
+      "pass": true
+    },
+    {
+      "tool": "test-network-soak-tv.mjs",
+      "name": "actual request throw",
+      "pass": true
+    },
+    {
+      "tool": "test-network-soak-tv.mjs",
+      "name": "actual request valid",
+      "pass": true
+    }
+  ]
+}

@@ -1,0 +1,837 @@
+{
+  "source": "service/com.biliwebos.app.service/danmaku.js",
+  "sha256": "0d2acd8c32e34abe50258d4e0a580437682882c0a23c8e9439ee2b73e4ef31a4",
+  "boundary": "Actual relay, controlled WebSocket and virtual time. Real legacy socket teardown is separately exercised below.",
+  "checks": [
+    {
+      "name": "six healthy reconnects restore budget and continue delivery",
+      "pass": true,
+      "detail": {
+        "connections": 8,
+        "atMs": [
+          0,
+          33000,
+          66000,
+          99000,
+          132000,
+          165000,
+          198000,
+          231000
+        ],
+        "timers": 1,
+        "delivered": 7,
+        "authPackets": 7,
+        "heartbeatPackets": 14,
+        "state": {
+          "phase": "connecting",
+          "connected": false,
+          "connections": 8,
+          "consecutiveFailures": 1,
+          "packetsReceived": 28,
+          "messagesReceived": 7,
+          "eventsDelivered": 7,
+          "parseErrors": 0,
+          "heartbeatsSent": 14,
+          "heartbeatsReceived": 14,
+          "lastPacketAt": 1800000228000,
+          "lastMessageAt": 1800000228000,
+          "lastEventAt": 1800000228000,
+          "lastHeartbeatAt": 1800000228000,
+          "lastHeartbeatReplyAt": 1800000228000,
+          "lastCloseCode": 1006,
+          "lastAuthCode": 0,
+          "lastError": "socket-close",
+          "retryAt": null
+        }
+      }
+    },
+    {
+      "name": "handshake deadline terminates hung CONNECTING socket",
+      "pass": true,
+      "detail": {
+        "connections": 2,
+        "atMs": [
+          0,
+          13000
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 0,
+        "heartbeatPackets": 0,
+        "state": {
+          "phase": "connecting",
+          "connected": false,
+          "connections": 2,
+          "consecutiveFailures": 1,
+          "packetsReceived": 0,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 0,
+          "heartbeatsSent": 0,
+          "heartbeatsReceived": 0,
+          "lastPacketAt": null,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": null,
+          "lastHeartbeatReplyAt": null,
+          "lastCloseCode": null,
+          "lastAuthCode": null,
+          "lastError": "connect-timeout",
+          "retryAt": null
+        }
+      }
+    },
+    {
+      "name": "chat and heartbeat cannot replace authentication; auth has a deadline",
+      "pass": true,
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 1,
+        "heartbeatPackets": 0,
+        "state": {
+          "phase": "backoff",
+          "connected": false,
+          "connections": 1,
+          "consecutiveFailures": 1,
+          "packetsReceived": 2,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 0,
+          "heartbeatsSent": 0,
+          "heartbeatsReceived": 0,
+          "lastPacketAt": 1800000000000,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": null,
+          "lastHeartbeatReplyAt": null,
+          "lastCloseCode": null,
+          "lastAuthCode": null,
+          "lastError": "auth-timeout",
+          "retryAt": 1800000013000
+        }
+      }
+    },
+    {
+      "name": "auth rejection is visible and waits sixty seconds before retry",
+      "pass": true,
+      "detail": {
+        "connections": 2,
+        "atMs": [
+          0,
+          60000
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 1,
+        "heartbeatPackets": 0,
+        "state": {
+          "phase": "connecting",
+          "connected": false,
+          "connections": 2,
+          "consecutiveFailures": 1,
+          "packetsReceived": 1,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 0,
+          "heartbeatsSent": 0,
+          "heartbeatsReceived": 0,
+          "lastPacketAt": 1800000000000,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": null,
+          "lastHeartbeatReplyAt": null,
+          "lastCloseCode": null,
+          "lastAuthCode": -101,
+          "lastError": "auth-rejected",
+          "retryAt": null
+        }
+      }
+    },
+    {
+      "name": "quiet room with heartbeat replies remains connected for ten minutes",
+      "pass": true,
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 1,
+        "heartbeatPackets": 21,
+        "state": {
+          "phase": "connected",
+          "connected": true,
+          "connections": 1,
+          "consecutiveFailures": 0,
+          "packetsReceived": 22,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 0,
+          "heartbeatsSent": 21,
+          "heartbeatsReceived": 21,
+          "lastPacketAt": 1800000600000,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": 1800000600000,
+          "lastHeartbeatReplyAt": 1800000600000,
+          "lastCloseCode": null,
+          "lastAuthCode": 0,
+          "lastError": null,
+          "retryAt": null
+        }
+      }
+    },
+    {
+      "name": "half-open heartbeat timeout destroys connection and schedules recovery",
+      "pass": true,
+      "detail": {
+        "connections": 2,
+        "atMs": [
+          0,
+          53000
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 1,
+        "heartbeatPackets": 2,
+        "state": {
+          "phase": "connecting",
+          "connected": false,
+          "connections": 2,
+          "consecutiveFailures": 1,
+          "packetsReceived": 2,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 0,
+          "heartbeatsSent": 2,
+          "heartbeatsReceived": 1,
+          "lastPacketAt": 1800000000000,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": 1800000030000,
+          "lastHeartbeatReplyAt": 1800000000000,
+          "lastCloseCode": null,
+          "lastAuthCode": 0,
+          "lastError": "heartbeat-timeout",
+          "retryAt": null
+        }
+      }
+    },
+    {
+      "name": "nineteen-second heartbeat delay is tolerated",
+      "pass": true,
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 1,
+        "heartbeatPackets": 2,
+        "state": {
+          "phase": "connected",
+          "connected": true,
+          "connections": 1,
+          "consecutiveFailures": 0,
+          "packetsReceived": 3,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 0,
+          "heartbeatsSent": 2,
+          "heartbeatsReceived": 2,
+          "lastPacketAt": 1800000049000,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": 1800000030000,
+          "lastHeartbeatReplyAt": 1800000049000,
+          "lastCloseCode": null,
+          "lastAuthCode": 0,
+          "lastError": null,
+          "retryAt": null
+        }
+      }
+    },
+    {
+      "name": "persistent failures use capped backoff with one retry and no permanent stop",
+      "pass": true,
+      "detail": {
+        "connections": 13,
+        "atMs": [
+          0,
+          3000,
+          9000,
+          21000,
+          51000,
+          111000,
+          171000,
+          231000,
+          291000,
+          351000,
+          411000,
+          471000,
+          531000
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 0,
+        "heartbeatPackets": 0,
+        "state": {
+          "phase": "connecting",
+          "connected": false,
+          "connections": 13,
+          "consecutiveFailures": 12,
+          "packetsReceived": 0,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 0,
+          "heartbeatsSent": 0,
+          "heartbeatsReceived": 0,
+          "lastPacketAt": null,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": null,
+          "lastHeartbeatReplyAt": null,
+          "lastCloseCode": null,
+          "lastAuthCode": null,
+          "lastError": "socket-error",
+          "retryAt": null
+        }
+      }
+    },
+    {
+      "name": "brief authenticated connections do not wash repeated-failure backoff",
+      "pass": true,
+      "detail": {
+        "connections": 7,
+        "atMs": [
+          0,
+          3000,
+          9000,
+          21000,
+          51000,
+          111000,
+          171000
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 6,
+        "heartbeatPackets": 6,
+        "state": {
+          "phase": "connecting",
+          "connected": false,
+          "connections": 7,
+          "consecutiveFailures": 6,
+          "packetsReceived": 12,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 0,
+          "heartbeatsSent": 6,
+          "heartbeatsReceived": 6,
+          "lastPacketAt": 1800000111000,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": 1800000111000,
+          "lastHeartbeatReplyAt": 1800000111000,
+          "lastCloseCode": 1006,
+          "lastAuthCode": 0,
+          "lastError": "socket-close",
+          "retryAt": null
+        }
+      }
+    },
+    {
+      "name": "late old socket open/message/error/close cannot touch newer connection",
+      "pass": true,
+      "detail": {
+        "connections": 2,
+        "atMs": [
+          0,
+          3000
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 1,
+        "heartbeatPackets": 1,
+        "state": {
+          "phase": "connected",
+          "connected": true,
+          "connections": 2,
+          "consecutiveFailures": 1,
+          "packetsReceived": 2,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 0,
+          "heartbeatsSent": 1,
+          "heartbeatsReceived": 1,
+          "lastPacketAt": 1800000003000,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": 1800000003000,
+          "lastHeartbeatReplyAt": 1800000003000,
+          "lastCloseCode": 1006,
+          "lastAuthCode": 0,
+          "lastError": "socket-close",
+          "retryAt": null
+        }
+      }
+    },
+    {
+      "name": "stop clears retry immediately and prevents reconnect",
+      "pass": true,
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 0,
+        "delivered": 0,
+        "authPackets": 0,
+        "heartbeatPackets": 0,
+        "state": {
+          "phase": "stopped",
+          "connected": false,
+          "connections": 1,
+          "consecutiveFailures": 1,
+          "packetsReceived": 0,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 0,
+          "heartbeatsSent": 0,
+          "heartbeatsReceived": 0,
+          "lastPacketAt": null,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": null,
+          "lastHeartbeatReplyAt": null,
+          "lastCloseCode": 1006,
+          "lastAuthCode": null,
+          "lastError": "socket-close",
+          "retryAt": null
+        }
+      }
+    },
+    {
+      "name": "stop during connect suppresses late auth send and message delivery",
+      "pass": true,
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 0,
+        "delivered": 0,
+        "authPackets": 0,
+        "heartbeatPackets": 0,
+        "state": {
+          "phase": "stopped",
+          "connected": false,
+          "connections": 1,
+          "consecutiveFailures": 0,
+          "packetsReceived": 0,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 0,
+          "heartbeatsSent": 0,
+          "heartbeatsReceived": 0,
+          "lastPacketAt": null,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": null,
+          "lastHeartbeatReplyAt": null,
+          "lastCloseCode": null,
+          "lastAuthCode": null,
+          "lastError": null,
+          "retryAt": null
+        }
+      }
+    },
+    {
+      "name": "stop while connected suppresses late messages and releases all timers",
+      "pass": true,
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 0,
+        "delivered": 0,
+        "authPackets": 1,
+        "heartbeatPackets": 1,
+        "state": {
+          "phase": "stopped",
+          "connected": false,
+          "connections": 1,
+          "consecutiveFailures": 0,
+          "packetsReceived": 2,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 0,
+          "heartbeatsSent": 1,
+          "heartbeatsReceived": 1,
+          "lastPacketAt": 1800000000000,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": 1800000000000,
+          "lastHeartbeatReplyAt": 1800000000000,
+          "lastCloseCode": null,
+          "lastAuthCode": 0,
+          "lastError": null,
+          "retryAt": null
+        }
+      }
+    },
+    {
+      "name": "async heartbeat send failure and close create exactly one retry",
+      "pass": true,
+      "detail": {
+        "connections": 2,
+        "atMs": [
+          0,
+          3000
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 1,
+        "heartbeatPackets": 1,
+        "state": {
+          "phase": "connecting",
+          "connected": false,
+          "connections": 2,
+          "consecutiveFailures": 1,
+          "packetsReceived": 1,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 0,
+          "heartbeatsSent": 1,
+          "heartbeatsReceived": 0,
+          "lastPacketAt": 1800000000000,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": 1800000000000,
+          "lastHeartbeatReplyAt": null,
+          "lastCloseCode": null,
+          "lastAuthCode": 0,
+          "lastError": "send-error",
+          "retryAt": null
+        }
+      }
+    },
+    {
+      "name": "async auth send failure and constructor exceptions remain bounded",
+      "pass": true,
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 1,
+        "heartbeatPackets": 0,
+        "state": {
+          "phase": "backoff",
+          "connected": false,
+          "connections": 2,
+          "consecutiveFailures": 2,
+          "packetsReceived": 0,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 0,
+          "heartbeatsSent": 0,
+          "heartbeatsReceived": 0,
+          "lastPacketAt": null,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": null,
+          "lastHeartbeatReplyAt": null,
+          "lastCloseCode": null,
+          "lastAuthCode": null,
+          "lastError": "connect-error",
+          "retryAt": 1800000009000
+        }
+      }
+    },
+    {
+      "name": "malformed authentication does not authorize or throw",
+      "pass": true,
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 1,
+        "heartbeatPackets": 0,
+        "state": {
+          "phase": "backoff",
+          "connected": false,
+          "connections": 1,
+          "consecutiveFailures": 1,
+          "packetsReceived": 2,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 1,
+          "heartbeatsSent": 0,
+          "heartbeatsReceived": 0,
+          "lastPacketAt": 1800000000000,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": null,
+          "lastHeartbeatReplyAt": null,
+          "lastCloseCode": null,
+          "lastAuthCode": null,
+          "lastError": "auth-timeout",
+          "retryAt": 1800000013000
+        }
+      }
+    },
+    {
+      "name": "compressed multiple packets and malformed lengths are isolated",
+      "pass": true,
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 1,
+        "delivered": 3,
+        "authPackets": 1,
+        "heartbeatPackets": 1,
+        "state": {
+          "phase": "connected",
+          "connected": true,
+          "connections": 1,
+          "consecutiveFailures": 0,
+          "packetsReceived": 5,
+          "messagesReceived": 3,
+          "eventsDelivered": 3,
+          "parseErrors": 1,
+          "heartbeatsSent": 1,
+          "heartbeatsReceived": 1,
+          "lastPacketAt": 1800000000000,
+          "lastMessageAt": 1800000000000,
+          "lastEventAt": 1800000000000,
+          "lastHeartbeatAt": 1800000000000,
+          "lastHeartbeatReplyAt": 1800000000000,
+          "lastCloseCode": null,
+          "lastAuthCode": 0,
+          "lastError": null,
+          "retryAt": null
+        }
+      }
+    },
+    {
+      "name": "diagnostic snapshot exposes state and counters without credentials or content",
+      "pass": true,
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 1,
+        "delivered": 1,
+        "authPackets": 1,
+        "heartbeatPackets": 1,
+        "state": {
+          "phase": "connected",
+          "connected": true,
+          "connections": 1,
+          "consecutiveFailures": 0,
+          "packetsReceived": 3,
+          "messagesReceived": 1,
+          "eventsDelivered": 1,
+          "parseErrors": 0,
+          "heartbeatsSent": 1,
+          "heartbeatsReceived": 1,
+          "lastPacketAt": 1800000000000,
+          "lastMessageAt": 1800000000000,
+          "lastEventAt": 1800000000000,
+          "lastHeartbeatAt": 1800000000000,
+          "lastHeartbeatReplyAt": 1800000000000,
+          "lastCloseCode": null,
+          "lastAuthCode": 0,
+          "lastError": null,
+          "retryAt": null
+        }
+      }
+    },
+    {
+      "name": "real ws-legacy tls-stall: stop releases transport",
+      "pass": true,
+      "detail": {
+        "stage": "tls-stall",
+        "deadline": false,
+        "opened": 1,
+        "upgrades": 0,
+        "activeAfterStop": 0,
+        "requests": 1,
+        "requestCloseEvents": 1,
+        "upgradedRequests": 0,
+        "clientSockets": 1,
+        "clientSocketCloseEvents": 1,
+        "clientSocketsAlive": 0,
+        "clientStates": [
+          3
+        ],
+        "elapsedMs": 171,
+        "state": {
+          "phase": "stopped",
+          "connected": false,
+          "connections": 1,
+          "consecutiveFailures": 0,
+          "packetsReceived": 0,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 0,
+          "heartbeatsSent": 0,
+          "heartbeatsReceived": 0,
+          "lastPacketAt": null,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": null,
+          "lastHeartbeatReplyAt": null,
+          "lastCloseCode": null,
+          "lastAuthCode": null,
+          "lastError": null,
+          "retryAt": null
+        }
+      }
+    },
+    {
+      "name": "real ws-legacy upgrade-stall: stop releases transport",
+      "pass": true,
+      "detail": {
+        "stage": "upgrade-stall",
+        "deadline": false,
+        "opened": 1,
+        "upgrades": 1,
+        "activeAfterStop": 0,
+        "requests": 1,
+        "requestCloseEvents": 1,
+        "upgradedRequests": 0,
+        "clientSockets": 1,
+        "clientSocketCloseEvents": 1,
+        "clientSocketsAlive": 0,
+        "clientStates": [
+          3
+        ],
+        "elapsedMs": 166,
+        "state": {
+          "phase": "stopped",
+          "connected": false,
+          "connections": 1,
+          "consecutiveFailures": 0,
+          "packetsReceived": 0,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 0,
+          "heartbeatsSent": 0,
+          "heartbeatsReceived": 0,
+          "lastPacketAt": null,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": null,
+          "lastHeartbeatReplyAt": null,
+          "lastCloseCode": null,
+          "lastAuthCode": null,
+          "lastError": null,
+          "retryAt": null
+        }
+      }
+    },
+    {
+      "name": "real ws-legacy open-no-close-reply: stop releases transport",
+      "pass": true,
+      "detail": {
+        "stage": "open-no-close-reply",
+        "deadline": false,
+        "opened": 1,
+        "upgrades": 1,
+        "activeAfterStop": 0,
+        "requests": 1,
+        "requestCloseEvents": 0,
+        "upgradedRequests": 1,
+        "clientSockets": 1,
+        "clientSocketCloseEvents": 1,
+        "clientSocketsAlive": 0,
+        "clientStates": [
+          3
+        ],
+        "elapsedMs": 164,
+        "state": {
+          "phase": "stopped",
+          "connected": false,
+          "connections": 1,
+          "consecutiveFailures": 0,
+          "packetsReceived": 0,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 0,
+          "heartbeatsSent": 0,
+          "heartbeatsReceived": 0,
+          "lastPacketAt": null,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": null,
+          "lastHeartbeatReplyAt": null,
+          "lastCloseCode": null,
+          "lastAuthCode": null,
+          "lastError": null,
+          "retryAt": null
+        }
+      }
+    },
+    {
+      "name": "real ws-legacy tls-stall: deadline, recovery and stop",
+      "pass": true,
+      "detail": {
+        "stage": "tls-stall",
+        "deadline": true,
+        "opened": 2,
+        "upgrades": 0,
+        "activeAfterStop": 0,
+        "requests": 2,
+        "requestCloseEvents": 2,
+        "upgradedRequests": 0,
+        "clientSockets": 2,
+        "clientSocketCloseEvents": 2,
+        "clientSocketsAlive": 0,
+        "clientStates": [
+          3,
+          3
+        ],
+        "elapsedMs": 13159,
+        "state": {
+          "phase": "stopped",
+          "connected": false,
+          "connections": 2,
+          "consecutiveFailures": 1,
+          "packetsReceived": 0,
+          "messagesReceived": 0,
+          "eventsDelivered": 0,
+          "parseErrors": 0,
+          "heartbeatsSent": 0,
+          "heartbeatsReceived": 0,
+          "lastPacketAt": null,
+          "lastMessageAt": null,
+          "lastEventAt": null,
+          "lastHeartbeatAt": null,
+          "lastHeartbeatReplyAt": null,
+          "lastCloseCode": null,
+          "lastAuthCode": null,
+          "lastError": "connect-timeout",
+          "retryAt": null
+        }
+      }
+    }
+  ],
+  "pass": true
+}

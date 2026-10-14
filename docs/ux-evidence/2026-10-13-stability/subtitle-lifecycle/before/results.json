@@ -1,0 +1,16 @@
+[
+  {
+    "name": "subtitle lifecycle cancels obsolete translation: body",
+    "pass": false,
+    "error": "late body must not start translation after exit\n\n8 !== 0\n"
+  },
+  {
+    "name": "subtitle lifecycle cancels obsolete translation: batches",
+    "pass": false,
+    "error": "exit must not schedule the remaining four batches\n\n8 !== 4\n"
+  },
+  {
+    "name": "subtitle lifecycle cancels obsolete translation: success",
+    "pass": true
+  }
+]

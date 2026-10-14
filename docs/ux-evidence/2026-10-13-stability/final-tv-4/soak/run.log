@@ -1,0 +1,4525 @@
+PASS continuous playback and APIs minute 0 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 70
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 96
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2696
+    }
+  ],
+  service: {
+    uptime: 1785,
+    observedAt: 1791877874452,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 1,
+    requestErrors: 15,
+    ms: 49
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 483,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 16.28,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 0,
+    longTaskMs: 0,
+    maxTaskMs: 0,
+    cdpHeapBytes: 6142540
+  },
+  t: 3.72,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1043,
+  minute: 0,
+  elapsedMs: 3383,
+  targetElapsedMs: 0,
+  samplingDelayMs: 3383,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 0,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 1 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 69
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 329
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2522
+    }
+  ],
+  service: {
+    uptime: 1845,
+    observedAt: 1791877934291,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 2,
+    requestErrors: 14,
+    ms: 6
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 3475,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.439999999999998,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 0,
+    longTaskMs: 0,
+    maxTaskMs: 0,
+    cdpHeapBytes: 6900468
+  },
+  t: 63.56,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1128,
+  minute: 1,
+  elapsedMs: 62668,
+  targetElapsedMs: 60000,
+  samplingDelayMs: 2668,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 161,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 2 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 147
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 144
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2585
+    }
+  ],
+  service: {
+    uptime: 1905,
+    observedAt: 1791877994304,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 2,
+    requestErrors: 14,
+    ms: 5
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 6475,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.42,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 0,
+    longTaskMs: 0,
+    maxTaskMs: 0,
+    cdpHeapBytes: 6987864
+  },
+  t: 123.58,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1128,
+  minute: 2,
+  elapsedMs: 122625,
+  targetElapsedMs: 120000,
+  samplingDelayMs: 2625,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 148,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 3 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 48
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 97
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2874
+    }
+  ],
+  service: {
+    uptime: 1965,
+    observedAt: 1791878054600,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 2,
+    requestErrors: 14,
+    ms: 5
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 9490,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.120000000000005,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 0,
+    longTaskMs: 0,
+    maxTaskMs: 0,
+    cdpHeapBytes: 6637480
+  },
+  t: 183.88,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1128,
+  minute: 3,
+  elapsedMs: 182984,
+  targetElapsedMs: 180000,
+  samplingDelayMs: 2984,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 148,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 4 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 58
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 69
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2624
+    }
+  ],
+  service: {
+    uptime: 2025,
+    observedAt: 1791878114343,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 2,
+    requestErrors: 14,
+    ms: 8
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 12476,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.560000000000002,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 0,
+    longTaskMs: 0,
+    maxTaskMs: 0,
+    cdpHeapBytes: 7448768
+  },
+  t: 243.62,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1128,
+  minute: 4,
+  elapsedMs: 242672,
+  targetElapsedMs: 240000,
+  samplingDelayMs: 2672,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 109,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 5 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 61
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 171
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2277
+    }
+  ],
+  service: {
+    uptime: 2085,
+    observedAt: 1791878174485,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 2,
+    requestErrors: 14,
+    ms: 9
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 15484,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.420000000000016,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 0,
+    longTaskMs: 0,
+    maxTaskMs: 0,
+    cdpHeapBytes: 7722568
+  },
+  t: 303.76,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1128,
+  minute: 5,
+  elapsedMs: 302362,
+  targetElapsedMs: 300000,
+  samplingDelayMs: 2362,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 33,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 6 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 69
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 88
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2315
+    }
+  ],
+  service: {
+    uptime: 2145,
+    observedAt: 1791878234482,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 2,
+    requestErrors: 14,
+    ms: 6
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 18484,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.420000000000016,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 0,
+    longTaskMs: 0,
+    maxTaskMs: 0,
+    cdpHeapBytes: 7014524
+  },
+  t: 363.76,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1128,
+  minute: 6,
+  elapsedMs: 362350,
+  targetElapsedMs: 360000,
+  samplingDelayMs: 2350,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 30,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 7 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 48
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 76
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2080
+    }
+  ],
+  service: {
+    uptime: 2205,
+    observedAt: 1791878294282,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 2,
+    requestErrors: 14,
+    ms: 5
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 21475,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.620000000000005,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 0,
+    longTaskMs: 0,
+    maxTaskMs: 0,
+    cdpHeapBytes: 7440236
+  },
+  t: 423.56,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1128,
+  minute: 7,
+  elapsedMs: 422147,
+  targetElapsedMs: 420000,
+  samplingDelayMs: 2147,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 170,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 8 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 45
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 81
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2581
+    }
+  ],
+  service: {
+    uptime: 2265,
+    observedAt: 1791878354803,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 2,
+    requestErrors: 14,
+    ms: 37
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 24502,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.319999999999936,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 0,
+    longTaskMs: 0,
+    maxTaskMs: 0,
+    cdpHeapBytes: 6779844
+  },
+  t: 484.1,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1128,
+  minute: 8,
+  elapsedMs: 482731,
+  targetElapsedMs: 480000,
+  samplingDelayMs: 2731,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 351,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 9 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 56
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 81
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2047
+    }
+  ],
+  service: {
+    uptime: 2325,
+    observedAt: 1791878414219,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 2,
+    requestErrors: 14,
+    ms: 6
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 27472,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.93999999999994,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 0,
+    longTaskMs: 0,
+    maxTaskMs: 0,
+    cdpHeapBytes: 7711352
+  },
+  t: 543.48,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1128,
+  minute: 9,
+  elapsedMs: 542080,
+  targetElapsedMs: 540000,
+  samplingDelayMs: 2080,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 233,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 10 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 53
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 83
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2448
+    }
+  ],
+  service: {
+    uptime: 2385,
+    observedAt: 1791878474622,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 2,
+    requestErrors: 14,
+    ms: 6
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 30488,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.519999999999982,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 0,
+    longTaskMs: 0,
+    maxTaskMs: 0,
+    cdpHeapBytes: 6874048
+  },
+  t: 603.9,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1245,
+  minute: 10,
+  elapsedMs: 602484,
+  targetElapsedMs: 600000,
+  samplingDelayMs: 2484,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 170,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 11 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 119
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 152
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2219
+    }
+  ],
+  service: {
+    uptime: 2445,
+    observedAt: 1791878534499,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 3,
+    requestErrors: 13,
+    ms: 8
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 33484,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.659999999999968,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 0,
+    longTaskMs: 0,
+    maxTaskMs: 0,
+    cdpHeapBytes: 7292448
+  },
+  t: 663.76,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1245,
+  minute: 11,
+  elapsedMs: 662357,
+  targetElapsedMs: 660000,
+  samplingDelayMs: 2357,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 47,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 12 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 118
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 292
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 1852
+    }
+  ],
+  service: {
+    uptime: 2505,
+    observedAt: 1791878594100,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 3,
+    requestErrors: 13,
+    ms: 10
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 36464,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 32.299999999999955,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 0,
+    longTaskMs: 0,
+    maxTaskMs: 0,
+    cdpHeapBytes: 7197576
+  },
+  t: 723.36,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1245,
+  minute: 12,
+  elapsedMs: 721998,
+  targetElapsedMs: 720000,
+  samplingDelayMs: 1998,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 352,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 13 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 246
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 261
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2474
+    }
+  ],
+  service: {
+    uptime: 2565,
+    observedAt: 1791878654691,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 3,
+    requestErrors: 13,
+    ms: 7
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 39492,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.699999999999932,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 0,
+    longTaskMs: 0,
+    maxTaskMs: 0,
+    cdpHeapBytes: 7537300
+  },
+  t: 783.96,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1245,
+  minute: 13,
+  elapsedMs: 782608,
+  targetElapsedMs: 780000,
+  samplingDelayMs: 2608,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 239,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 14 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 56
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 86
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 1703
+    }
+  ],
+  service: {
+    uptime: 2625,
+    observedAt: 1791878713892,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 3,
+    requestErrors: 13,
+    ms: 7
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 42452,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 32.5,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 0,
+    longTaskMs: 0,
+    maxTaskMs: 0,
+    cdpHeapBytes: 7059348
+  },
+  t: 843.16,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1245,
+  minute: 14,
+  elapsedMs: 841796,
+  targetElapsedMs: 840000,
+  samplingDelayMs: 1796,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 560,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 15 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 109
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 141
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2144
+    }
+  ],
+  service: {
+    uptime: 2685,
+    observedAt: 1791878774365,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 3,
+    requestErrors: 13,
+    ms: 7
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 45476,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 32.01999999999998,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 0,
+    longTaskMs: 0,
+    maxTaskMs: 0,
+    cdpHeapBytes: 7349504
+  },
+  t: 903.64,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1245,
+  minute: 15,
+  elapsedMs: 902245,
+  targetElapsedMs: 900000,
+  samplingDelayMs: 2245,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 87,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 16 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 83
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 97
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2534
+    }
+  ],
+  service: {
+    uptime: 2745,
+    observedAt: 1791878834762,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 3,
+    requestErrors: 13,
+    ms: 6
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 48496,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.860000000000014,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 0,
+    longTaskMs: 0,
+    maxTaskMs: 0,
+    cdpHeapBytes: 7172816
+  },
+  t: 964.04,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1245,
+  minute: 16,
+  elapsedMs: 962650,
+  targetElapsedMs: 960000,
+  samplingDelayMs: 2650,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 310,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 17 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 127
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 357
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2300
+    }
+  ],
+  service: {
+    uptime: 2805,
+    observedAt: 1791878894525,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 4,
+    requestErrors: 12,
+    ms: 5
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 51488,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 32.100000000000136,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 1,
+    longTaskMs: 55,
+    maxTaskMs: 55,
+    cdpHeapBytes: 7012024
+  },
+  t: 1023.8,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1245,
+  minute: 17,
+  elapsedMs: 1022382,
+  targetElapsedMs: 1020000,
+  samplingDelayMs: 2382,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 73,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 18 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 97
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 348
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2308
+    }
+  ],
+  service: {
+    uptime: 2865,
+    observedAt: 1791878954562,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 4,
+    requestErrors: 12,
+    ms: 27
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 54488,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 32.04000000000019,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 1,
+    longTaskMs: 55,
+    maxTaskMs: 55,
+    cdpHeapBytes: 6837740
+  },
+  t: 1083.86,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1295,
+  minute: 18,
+  elapsedMs: 1082501,
+  targetElapsedMs: 1080000,
+  samplingDelayMs: 2501,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 110,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 19 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 129
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 138
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2018
+    }
+  ],
+  service: {
+    uptime: 2925,
+    observedAt: 1791879014283,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 4,
+    requestErrors: 12,
+    ms: 5
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 57472,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 32.340000000000146,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 1,
+    longTaskMs: 55,
+    maxTaskMs: 55,
+    cdpHeapBytes: 7790060
+  },
+  t: 1143.56,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1295,
+  minute: 19,
+  elapsedMs: 1142119,
+  targetElapsedMs: 1140000,
+  samplingDelayMs: 2119,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 169,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 20 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 54
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 76
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 1954
+    }
+  ],
+  service: {
+    uptime: 2985,
+    observedAt: 1791879074203,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 4,
+    requestErrors: 12,
+    ms: 8
+  },
+  performance: {
+    heapBytes: 37300000,
+    decodedFrames: 60471,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 29.79999900000007,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 1,
+    longTaskMs: 55,
+    maxTaskMs: 55,
+    cdpHeapBytes: 7153688
+  },
+  t: 1203.48,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1659,
+  minute: 20,
+  elapsedMs: 1202066,
+  targetElapsedMs: 1200000,
+  samplingDelayMs: 2066,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 249,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 21 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 127
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 191
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2742
+    }
+  ],
+  service: {
+    uptime: 3045,
+    observedAt: 1791879134810,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 4,
+    requestErrors: 12,
+    ms: 5
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 63499,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.019999999999982,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 1,
+    longTaskMs: 55,
+    maxTaskMs: 55,
+    cdpHeapBytes: 7115524
+  },
+  t: 1264.08,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1659,
+  minute: 21,
+  elapsedMs: 1262814,
+  targetElapsedMs: 1260000,
+  samplingDelayMs: 2814,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 358,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 22 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 316
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 596
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2425
+    }
+  ],
+  service: {
+    uptime: 3105,
+    observedAt: 1791879194628,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 5,
+    requestErrors: 11,
+    ms: 7
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 66488,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 29.699998999999934,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 1,
+    longTaskMs: 55,
+    maxTaskMs: 55,
+    cdpHeapBytes: 7103964
+  },
+  t: 1323.9,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1659,
+  minute: 22,
+  elapsedMs: 1322638,
+  targetElapsedMs: 1320000,
+  samplingDelayMs: 2638,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 176,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 23 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 45
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 178
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2745
+    }
+  ],
+  service: {
+    uptime: 3165,
+    observedAt: 1791879254857,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 5,
+    requestErrors: 11,
+    ms: 8
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 69505,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 29.639999000000216,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7534916
+  },
+  t: 1384.12,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1659,
+  minute: 23,
+  elapsedMs: 1382906,
+  targetElapsedMs: 1380000,
+  samplingDelayMs: 2906,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 405,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 24 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 52
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 77
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2694
+    }
+  ],
+  service: {
+    uptime: 3225,
+    observedAt: 1791879314739,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 5,
+    requestErrors: 11,
+    ms: 5
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 72496,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 29.91999899999996,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7253564
+  },
+  t: 1444,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1659,
+  minute: 24,
+  elapsedMs: 1442731,
+  targetElapsedMs: 1440000,
+  samplingDelayMs: 2731,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 287,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 25 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 46
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 81
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2147
+    }
+  ],
+  service: {
+    uptime: 3285,
+    observedAt: 1791879374199,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 5,
+    requestErrors: 11,
+    ms: 5
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 75468,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 30.599999000000025,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7857788
+  },
+  t: 1503.48,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1659,
+  minute: 25,
+  elapsedMs: 1502220,
+  targetElapsedMs: 1500000,
+  samplingDelayMs: 2220,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 253,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 26 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 54
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 169
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 1708
+    }
+  ],
+  service: {
+    uptime: 3344,
+    observedAt: 1791879433809,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 6,
+    requestErrors: 11,
+    ms: 5
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 78452,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.15999899999997,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7351276
+  },
+  t: 1563.08,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1659,
+  minute: 26,
+  elapsedMs: 1561800,
+  targetElapsedMs: 1560000,
+  samplingDelayMs: 1800,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 357,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 27 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 80
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 174
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2380
+    }
+  ],
+  service: {
+    uptime: 3405,
+    observedAt: 1791879494427,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 6,
+    requestErrors: 11,
+    ms: 6
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 81481,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 30.699998999999934,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7379344
+  },
+  t: 1623.7,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1659,
+  minute: 27,
+  elapsedMs: 1622413,
+  targetElapsedMs: 1620000,
+  samplingDelayMs: 2413,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 25,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 28 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 57
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 77
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2417
+    }
+  ],
+  service: {
+    uptime: 3465,
+    observedAt: 1791879554490,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 6,
+    requestErrors: 11,
+    ms: 5
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 84483,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 30.79999900000007,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7160792
+  },
+  t: 1683.76,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1659,
+  minute: 28,
+  elapsedMs: 1682550,
+  targetElapsedMs: 1680000,
+  samplingDelayMs: 2550,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 38,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 29 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 122
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 119
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2136
+    }
+  ],
+  service: {
+    uptime: 3525,
+    observedAt: 1791879614213,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 6,
+    requestErrors: 11,
+    ms: 8
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 87472,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.239998999999898,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7560664
+  },
+  t: 1743.48,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1659,
+  minute: 29,
+  elapsedMs: 1742194,
+  targetElapsedMs: 1740000,
+  samplingDelayMs: 2194,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 239,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 30 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 64
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 85
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2185
+    }
+  ],
+  service: {
+    uptime: 3585,
+    observedAt: 1791879674307,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 6,
+    requestErrors: 11,
+    ms: 5
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 90472,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.29999900000007,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7207152
+  },
+  t: 1803.58,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1659,
+  minute: 30,
+  elapsedMs: 1802354,
+  targetElapsedMs: 1800000,
+  samplingDelayMs: 2354,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 145,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 31 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 173
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 211
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2571
+    }
+  ],
+  service: {
+    uptime: 3645,
+    observedAt: 1791879734659,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 6,
+    requestErrors: 11,
+    ms: 6
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 93492,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.119999000000007,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7475412
+  },
+  t: 1863.92,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1659,
+  minute: 31,
+  elapsedMs: 1862714,
+  targetElapsedMs: 1860000,
+  samplingDelayMs: 2714,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 207,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 32 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 148
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 188
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 3342
+    }
+  ],
+  service: {
+    uptime: 3706,
+    observedAt: 1791879795430,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 6,
+    requestErrors: 11,
+    ms: 6
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 96532,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 30.49999899999989,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7562828
+  },
+  t: 1924.7,
+  duration: 2015,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1659,
+  minute: 32,
+  elapsedMs: 1923408,
+  targetElapsedMs: 1920000,
+  samplingDelayMs: 3408,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 22,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 33 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 68
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 93
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2859
+    }
+  ],
+  service: {
+    uptime: 3766,
+    observedAt: 1791879854951,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 6,
+    requestErrors: 11,
+    ms: 9
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 99508,
+    droppedFrames: 0,
+    frameSegments: [ [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 29.987998999999945,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7633716
+  },
+  t: 1984.22,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 0,
+  longestGap: 1659,
+  minute: 33,
+  elapsedMs: 1982994,
+  targetElapsedMs: 1980000,
+  samplingDelayMs: 2994,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 501,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 34 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 59
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 89
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2602
+    }
+  ],
+  service: {
+    uptime: 3825,
+    observedAt: 1791879914699,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 6,
+    requestErrors: 11,
+    ms: 6
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 102363,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 32.84,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7448300
+  },
+  t: 27.16,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 34,
+  elapsedMs: 2042679,
+  targetElapsedMs: 2040000,
+  samplingDelayMs: 2679,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 247,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 35 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 56
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 163
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2265
+    }
+  ],
+  service: {
+    uptime: 3885,
+    observedAt: 1791879974406,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 7,
+    requestErrors: 11,
+    ms: 7
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 105347,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 33.14,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7641564
+  },
+  t: 86.86,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 35,
+  elapsedMs: 2102378,
+  targetElapsedMs: 2100000,
+  samplingDelayMs: 2378,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 46,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 36 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 58
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 141
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2891
+    }
+  ],
+  service: {
+    uptime: 3946,
+    observedAt: 1791880034965,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 7,
+    requestErrors: 11,
+    ms: 42
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 108379,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 32.53999999999999,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 6922172
+  },
+  t: 147.46,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 36,
+  elapsedMs: 2163005,
+  targetElapsedMs: 2160000,
+  samplingDelayMs: 3005,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 487,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 37 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 89
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 75
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2350
+    }
+  ],
+  service: {
+    uptime: 4005,
+    observedAt: 1791880094438,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 7,
+    requestErrors: 11,
+    ms: 8
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 111349,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 33.099999999999994,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7087492
+  },
+  t: 206.9,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 37,
+  elapsedMs: 2222406,
+  targetElapsedMs: 2220000,
+  samplingDelayMs: 2406,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 14,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 38 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 52
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 84
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2074
+    }
+  ],
+  service: {
+    uptime: 4065,
+    observedAt: 1791880154184,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 7,
+    requestErrors: 11,
+    ms: 6
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 114340,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 33.54000000000002,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7365136
+  },
+  t: 266.64,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 38,
+  elapsedMs: 2282148,
+  targetElapsedMs: 2280000,
+  samplingDelayMs: 2148,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 268,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 39 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 56
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 91
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2527
+    }
+  ],
+  service: {
+    uptime: 4125,
+    observedAt: 1791880214606,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 7,
+    requestErrors: 11,
+    ms: 6
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 117357,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 33.120000000000005,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7582452
+  },
+  t: 327.06,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 39,
+  elapsedMs: 2342568,
+  targetElapsedMs: 2340000,
+  samplingDelayMs: 2568,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 154,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 40 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 57
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 70
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 3011
+    }
+  ],
+  service: {
+    uptime: 4186,
+    observedAt: 1791880275085,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 7,
+    requestErrors: 11,
+    ms: 6
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 120381,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 32.639999999999986,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7117920
+  },
+  t: 387.54,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 40,
+  elapsedMs: 2403069,
+  targetElapsedMs: 2400000,
+  samplingDelayMs: 3069,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 367,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 41 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 46
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 167
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2404
+    }
+  ],
+  service: {
+    uptime: 4245,
+    observedAt: 1791880334529,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 7,
+    requestErrors: 11,
+    ms: 7
+  },
+  performance: {
+    heapBytes: 97400000,
+    decodedFrames: 123356,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 33.19999999999999,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7214480
+  },
+  t: 446.98,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 41,
+  elapsedMs: 2462562,
+  targetElapsedMs: 2460000,
+  samplingDelayMs: 2562,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 77,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 42 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 46
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 105
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 1993
+    }
+  ],
+  service: {
+    uptime: 4305,
+    observedAt: 1791880394098,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 7,
+    requestErrors: 11,
+    ms: 9
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 126336,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 29.886665999999934,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7486864
+  },
+  t: 506.54,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 42,
+  elapsedMs: 2522056,
+  targetElapsedMs: 2520000,
+  samplingDelayMs: 2056,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 354,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 43 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 99
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 85
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2977
+    }
+  ],
+  service: {
+    uptime: 4366,
+    observedAt: 1791880455135,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 7,
+    requestErrors: 11,
+    ms: 116
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 129385,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 27.799999999999955,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 6991024
+  },
+  t: 567.62,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 43,
+  elapsedMs: 2583188,
+  targetElapsedMs: 2580000,
+  samplingDelayMs: 3188,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 317,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 44 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 65
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 162
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2069
+    }
+  ],
+  service: {
+    uptime: 4425,
+    observedAt: 1791880514195,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 8,
+    requestErrors: 10,
+    ms: 9
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 132336,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 29.25999999999999,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7426668
+  },
+  t: 626.66,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 44,
+  elapsedMs: 2642164,
+  targetElapsedMs: 2640000,
+  samplingDelayMs: 2164,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 257,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 45 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 82
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 164
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2993
+    }
+  ],
+  service: {
+    uptime: 4486,
+    observedAt: 1791880575101,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 8,
+    requestErrors: 10,
+    ms: 9
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 135384,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 32.860000000000014,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7569136
+  },
+  t: 687.56,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 45,
+  elapsedMs: 2703060,
+  targetElapsedMs: 2700000,
+  samplingDelayMs: 3060,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 351,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 46 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 52
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 72
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2904
+    }
+  ],
+  service: {
+    uptime: 4546,
+    observedAt: 1791880635054,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 8,
+    requestErrors: 10,
+    ms: 36
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 138380,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 28.300000000000068,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 6982940
+  },
+  t: 747.54,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 46,
+  elapsedMs: 2763062,
+  targetElapsedMs: 2760000,
+  samplingDelayMs: 3062,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 398,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 47 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 47
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 67
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 1983
+    }
+  ],
+  service: {
+    uptime: 4605,
+    observedAt: 1791880694113,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 8,
+    requestErrors: 10,
+    ms: 9
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 141332,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 29.079999999999927,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7314156
+  },
+  t: 806.58,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 47,
+  elapsedMs: 2822215,
+  targetElapsedMs: 2820000,
+  samplingDelayMs: 2215,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 339,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 48 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 120
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 76
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2869
+    }
+  ],
+  service: {
+    uptime: 4666,
+    observedAt: 1791880754958,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 8,
+    requestErrors: 10,
+    ms: 6
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 144377,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 29.966666000000032,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7493492
+  },
+  t: 867.42,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 48,
+  elapsedMs: 2883005,
+  targetElapsedMs: 2880000,
+  samplingDelayMs: 3005,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 494,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 49 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 129
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 107
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2003
+    }
+  ],
+  service: {
+    uptime: 4725,
+    observedAt: 1791880814096,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 8,
+    requestErrors: 10,
+    ms: 8
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 147332,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.006665999999996,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7600216
+  },
+  t: 926.54,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 49,
+  elapsedMs: 2942047,
+  targetElapsedMs: 2940000,
+  samplingDelayMs: 2047,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 356,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 50 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 93
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 79
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2922
+    }
+  ],
+  service: {
+    uptime: 4786,
+    observedAt: 1791880875063,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 8,
+    requestErrors: 10,
+    ms: 6
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 150384,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 30.18666600000006,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7462836
+  },
+  t: 987.52,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 50,
+  elapsedMs: 3003046,
+  targetElapsedMs: 3000000,
+  samplingDelayMs: 3046,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 389,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 51 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 62
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 84
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 3229
+    }
+  ],
+  service: {
+    uptime: 4846,
+    observedAt: 1791880935453,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 8,
+    requestErrors: 10,
+    ms: 129
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 153400,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 28,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 6991884
+  },
+  t: 1047.9,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 51,
+  elapsedMs: 3063496,
+  targetElapsedMs: 3060000,
+  samplingDelayMs: 3496,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 1,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 52 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 48
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 72
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2470
+    }
+  ],
+  service: {
+    uptime: 4905,
+    observedAt: 1791880994604,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 8,
+    requestErrors: 10,
+    ms: 7
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 156360,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 30.966666000000032,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7331176
+  },
+  t: 1107.06,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 52,
+  elapsedMs: 3122551,
+  targetElapsedMs: 3120000,
+  samplingDelayMs: 2551,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 152,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 53 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 52
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 71
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 3034
+    }
+  ],
+  service: {
+    uptime: 4966,
+    observedAt: 1791881055132,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 8,
+    requestErrors: 10,
+    ms: 26
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 159384,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 30.58666600000015,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 6993144
+  },
+  t: 1167.6,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 53,
+  elapsedMs: 3183125,
+  targetElapsedMs: 3180000,
+  samplingDelayMs: 3125,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 320,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 54 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 53
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 145
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 1890
+    }
+  ],
+  service: {
+    uptime: 5025,
+    observedAt: 1791881114039,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 9,
+    requestErrors: 10,
+    ms: 9
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 162328,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 28.59999999999991,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 2,
+    longTaskMs: 115,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7101804
+  },
+  t: 1226.5,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 54,
+  elapsedMs: 3242057,
+  targetElapsedMs: 3240000,
+  samplingDelayMs: 2057,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 413,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 55 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 51
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 150
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2565
+    }
+  ],
+  service: {
+    uptime: 5085,
+    observedAt: 1791881174666,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 9,
+    requestErrors: 10,
+    ms: 6
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 165360,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.386666000000105,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 3,
+    longTaskMs: 172,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7123556
+  },
+  t: 1287.12,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 55,
+  elapsedMs: 3302628,
+  targetElapsedMs: 3300000,
+  samplingDelayMs: 2628,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 214,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 56 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 61
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 81
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2281
+    }
+  ],
+  service: {
+    uptime: 5145,
+    observedAt: 1791881234382,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 9,
+    requestErrors: 10,
+    ms: 7
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 168347,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.82666600000016,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 3,
+    longTaskMs: 172,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7512952
+  },
+  t: 1346.84,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 56,
+  elapsedMs: 3362360,
+  targetElapsedMs: 3360000,
+  samplingDelayMs: 2360,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 70,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 57 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 69
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 180
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2343
+    }
+  ],
+  service: {
+    uptime: 5205,
+    observedAt: 1791881294489,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 9,
+    requestErrors: 10,
+    ms: 6
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 171352,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.886665999999877,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 3,
+    longTaskMs: 172,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7983200
+  },
+  t: 1406.94,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 57,
+  elapsedMs: 3422430,
+  targetElapsedMs: 3420000,
+  samplingDelayMs: 2430,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 37,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 58 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 39
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 212
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 1851
+    }
+  ],
+  service: {
+    uptime: 5265,
+    observedAt: 1791881353964,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 9,
+    requestErrors: 10,
+    ms: 4
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 174324,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 32.56666599999994,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 3,
+    longTaskMs: 172,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7186232
+  },
+  t: 1466.42,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 58,
+  elapsedMs: 3481921,
+  targetElapsedMs: 3480000,
+  samplingDelayMs: 1921,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 488,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 59 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 66
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 91
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 2651
+    }
+  ],
+  service: {
+    uptime: 5325,
+    observedAt: 1791881414809,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 9,
+    requestErrors: 10,
+    ms: 6
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 177370,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 31.886666000000105,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 3,
+    longTaskMs: 172,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7376780
+  },
+  t: 1527.26,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 59,
+  elapsedMs: 3542800,
+  targetElapsedMs: 3540000,
+  samplingDelayMs: 2800,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 357,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS continuous playback and APIs minute 60 {
+  document: 'stability-soak-1791877867854',
+  apis: [
+    {
+      status: 200,
+      bodyLength: 2921,
+      bodyFormat: 'json',
+      code: 0,
+      account: [Object],
+      ms: 48
+    },
+    {
+      status: 200,
+      bodyLength: 119850,
+      bodyFormat: 'json',
+      code: 0,
+      ms: 89
+    },
+    {
+      status: 200,
+      bodyLength: 20,
+      bodyFormat: 'json',
+      version: '2.3.0',
+      ms: 1995
+    }
+  ],
+  service: {
+    uptime: 5385,
+    observedAt: 1791881474103,
+    node: 'v16.20.2',
+    dnsErrors: 4,
+    readRetries: 9,
+    requestErrors: 10,
+    ms: 6
+  },
+  performance: {
+    heapBytes: 47400000,
+    decodedFrames: 180332,
+    droppedFrames: 0,
+    frameSegments: [ [Object], [Object] ],
+    counterResets: 0,
+    gapsOver3s: [],
+    gapsTruncated: 0,
+    bufferSec: 32.746666000000005,
+    codec: 'hvc1.1.6.L153.90',
+    frameRate: 50,
+    bandwidth: 8058077,
+    longTasksSupported: true,
+    longTasks: 3,
+    longTaskMs: 172,
+    maxTaskMs: 60,
+    cdpHeapBytes: 7439312
+  },
+  t: 1586.56,
+  duration: 2014.207999,
+  mediaError: null,
+  ready: 4,
+  paused: false,
+  width: 3840,
+  height: 2160,
+  ends: 1,
+  longestGap: 1999,
+  minute: 60,
+  elapsedMs: 3602102,
+  targetElapsedMs: 3600000,
+  samplingDelayMs: 2102,
+  uncaughtErrors: 0,
+  playbackHealthy: true,
+  serviceEpochDriftMs: 349,
+  serviceHealthy: true,
+  uptimeToleranceMs: 2000,
+  biliHealthy: true,
+  updateHealthy: true
+}
+PASS all progress gap evidence retained { gaps: 0, truncated: 0 }
+PASS requested wall-clock duration and every minute sample completed {
+  expectedSamples: 61,
+  completedSamples: 61,
+  expectedMs: 3600000,
+  elapsedMs: 3602117
+}
+PASS soak monitor listeners timers and globals removed { removed: true, listenersRemoved: 8 }
+PASS original settings restored 
+PASS player closed without reloading document { video: false, sameDocument: true }
+PASS owned document markers removed 

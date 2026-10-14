@@ -1,0 +1,122 @@
+[
+  {
+    "name": "continuous playback and APIs minute 0",
+    "pass": true,
+    "detail": {
+      "document": "stability-soak-1791875307160",
+      "apis": [
+        {
+          "status": 200,
+          "code": 0,
+          "account": {
+            "loggedIn": true,
+            "vip": true
+          },
+          "ms": 84
+        },
+        {
+          "status": 200,
+          "code": 0,
+          "ms": 176
+        },
+        {
+          "status": 200,
+          "version": "2.3.0",
+          "ms": 1274
+        }
+      ],
+      "service": {
+        "uptime": 2498,
+        "observedAt": 1791875312669,
+        "node": "v16.20.2",
+        "dnsErrors": 4,
+        "readRetries": 1,
+        "requestErrors": 15,
+        "ms": 7
+      },
+      "performance": {
+        "heapBytes": 47400000,
+        "decodedFrames": 394,
+        "droppedFrames": 0,
+        "frameSegments": [
+          {
+            "index": 0,
+            "reason": "start",
+            "startedAtMs": 5,
+            "startMediaTime": 0.94,
+            "decodedDelta": 175,
+            "droppedDelta": 0,
+            "counterUnavailable": false,
+            "endedAtMs": 1401,
+            "endMediaTime": 2.34,
+            "decodedRaw": 394,
+            "droppedRaw": 0
+          }
+        ],
+        "counterResets": 0,
+        "gapsOver3s": [],
+        "gapsTruncated": 0,
+        "bufferSec": 12.66,
+        "codec": "hvc1.1.6.L153.90",
+        "frameRate": 50,
+        "bandwidth": 8058077,
+        "longTasksSupported": true,
+        "longTasks": 0,
+        "longTaskMs": 0,
+        "maxTaskMs": 0,
+        "cdpHeapBytes": 5676028
+      },
+      "t": 2.34,
+      "duration": 2015,
+      "mediaError": null,
+      "ready": 4,
+      "paused": false,
+      "width": 3840,
+      "height": 2160,
+      "ends": 0,
+      "longestGap": 1072,
+      "minute": 0,
+      "elapsedMs": 1599,
+      "targetElapsedMs": 0,
+      "samplingDelayMs": 1599,
+      "uncaughtErrors": 0,
+      "playbackHealthy": true,
+      "serviceEpochDriftMs": 0,
+      "serviceHealthy": true,
+      "uptimeToleranceMs": 2000,
+      "biliHealthy": true,
+      "updateHealthy": true
+    }
+  },
+  {
+    "name": "soak monitor listeners timers and globals removed",
+    "pass": true,
+    "detail": {
+      "removed": true,
+      "listenersRemoved": 8
+    }
+  },
+  {
+    "name": "original settings restored",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "name": "player closed without reloading document",
+    "pass": true,
+    "detail": {
+      "video": false,
+      "sameDocument": true
+    }
+  },
+  {
+    "name": "owned document markers removed",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "name": "completion",
+    "pass": false,
+    "detail": "Incomplete soak: SIGINT"
+  }
+]

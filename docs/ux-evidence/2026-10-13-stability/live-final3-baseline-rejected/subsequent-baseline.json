@@ -1,0 +1,78 @@
+{
+  "started": "2026-10-13T06:46:48.183Z",
+  "purpose": "Observe and warm the normal app state after the previous CDP reload; never directly edit service subscriber arrays",
+  "samples": [
+    {
+      "phase": "before warmup",
+      "at": "2026-10-13T06:46:48.213Z",
+      "cast": 1,
+      "live": 0,
+      "active": false,
+      "uptime": 1194
+    },
+    {
+      "phase": "before warmup",
+      "at": "2026-10-13T06:46:49.286Z",
+      "cast": 1,
+      "live": 0,
+      "active": false,
+      "uptime": 1195
+    },
+    {
+      "phase": "before warmup",
+      "at": "2026-10-13T06:46:50.302Z",
+      "cast": 1,
+      "live": 0,
+      "active": false,
+      "uptime": 1196
+    },
+    {
+      "phase": "after normal playback and Back",
+      "at": "2026-10-13T06:46:55.586Z",
+      "cast": 1,
+      "live": 0,
+      "active": false,
+      "uptime": 1201
+    },
+    {
+      "phase": "after normal playback and Back",
+      "at": "2026-10-13T06:46:56.677Z",
+      "cast": 1,
+      "live": 0,
+      "active": false,
+      "uptime": 1202
+    },
+    {
+      "phase": "after normal playback and Back",
+      "at": "2026-10-13T06:46:57.695Z",
+      "cast": 1,
+      "live": 0,
+      "active": false,
+      "uptime": 1203
+    },
+    {
+      "phase": "after normal playback and Back",
+      "at": "2026-10-13T06:46:58.736Z",
+      "cast": 1,
+      "live": 0,
+      "active": false,
+      "uptime": 1204
+    },
+    {
+      "phase": "after normal playback and Back",
+      "at": "2026-10-13T06:46:59.812Z",
+      "cast": 1,
+      "live": 0,
+      "active": false,
+      "uptime": 1205
+    }
+  ],
+  "warmup": {
+    "time": 2.05,
+    "width": 640,
+    "height": 480,
+    "ready": 4
+  },
+  "pass": true,
+  "finished": "2026-10-13T06:47:00.911Z"
+}

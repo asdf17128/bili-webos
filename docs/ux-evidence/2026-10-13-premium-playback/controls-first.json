@@ -1,0 +1,37 @@
+[
+  {
+    "name": "remote focuses the actual quality button",
+    "pass": true
+  },
+  {
+    "name": "remote DV to 4K keeps premium audio, position and paused state",
+    "pass": true,
+    "detail": {
+      "time": 2.291666,
+      "duration": 190,
+      "paused": true,
+      "width": 3996,
+      "height": 2160,
+      "ready": 1,
+      "codec": "hev1.1.6.L153.90",
+      "audio": "ec-3",
+      "frameRate": 24.39,
+      "runtime": {
+        "epoch": 2,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 120
+    }
+  },
+  {
+    "name": "remote focuses the actual quality button",
+    "pass": false
+  },
+  {
+    "name": "completion",
+    "pass": false,
+    "detail": "remote focuses the actual quality button"
+  }
+]

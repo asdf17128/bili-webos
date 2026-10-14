@@ -1,0 +1,166 @@
+[
+  {
+    "name": "backup-host",
+    "pass": true,
+    "requests": [
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": true,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": true,
+        "start": 4000000,
+        "end": 5999999
+      },
+      {
+        "signed": true,
+        "start": 8000000,
+        "end": 8499999
+      },
+      {
+        "signed": true,
+        "start": 8500000,
+        "end": 8999999
+      },
+      {
+        "signed": true,
+        "start": 9000000,
+        "end": 9499999
+      },
+      {
+        "signed": true,
+        "start": 9500000,
+        "end": 9999999
+      }
+    ]
+  },
+  {
+    "name": "backup-signature",
+    "pass": true,
+    "requests": [
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": true,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": true,
+        "start": 4000000,
+        "end": 5999999
+      },
+      {
+        "signed": true,
+        "start": 8000000,
+        "end": 8499999
+      },
+      {
+        "signed": true,
+        "start": 8500000,
+        "end": 8999999
+      },
+      {
+        "signed": true,
+        "start": 9000000,
+        "end": 9499999
+      },
+      {
+        "signed": true,
+        "start": 9500000,
+        "end": 9999999
+      }
+    ]
+  },
+  {
+    "name": "manual-native",
+    "pass": true,
+    "requests": [
+      {
+        "signed": true,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": true,
+        "start": 4000000,
+        "end": 5999999
+      },
+      {
+        "signed": true,
+        "start": 8000000,
+        "end": 8499999
+      },
+      {
+        "signed": true,
+        "start": 8500000,
+        "end": 8999999
+      },
+      {
+        "signed": true,
+        "start": 9000000,
+        "end": 9499999
+      },
+      {
+        "signed": true,
+        "start": 9500000,
+        "end": 9999999
+      }
+    ]
+  },
+  {
+    "name": "all-fail",
+    "pass": true,
+    "requests": [
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": true,
+        "start": 0,
+        "end": 200000
+      },
+      {
+        "signed": false,
+        "start": 0,
+        "end": 200000
+      }
+    ]
+  }
+]

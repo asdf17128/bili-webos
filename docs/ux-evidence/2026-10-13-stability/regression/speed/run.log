@@ -1,0 +1,10 @@
+PASS initial DASH actually decodes {"time":2.25,"width":640,"height":480,"ready":4,"paused":false,"error":null,"source":"DASH"}
+PASS speed control reachable ""
+PASS speed option exists 2x ""
+PASS native 2x actually advances near double speed {"rate":1.9935435808294015,"state":{"time":10.503,"width":640,"height":480,"ready":4,"paused":false,"error":null,"source":"native"}}
+PASS speed control reachable ""
+PASS speed option exists 正常 ""
+PASS 1x restores DASH near the same position {"time":10,"width":640,"height":480,"ready":4,"paused":false,"error":null,"source":"DASH"}
+PASS restored DASH advances at normal speed {"rate":0.9958200147528888,"state":{"time":14.85,"width":640,"height":480,"ready":4,"paused":false,"error":null,"source":"DASH"}}
+PASS normal Back releases player ""
+PASS original preferences restored ""

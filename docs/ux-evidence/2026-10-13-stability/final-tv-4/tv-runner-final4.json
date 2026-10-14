@@ -1,0 +1,155 @@
+[
+  {
+    "name": "live-final4",
+    "command": [
+      "node",
+      "tools/test-live-stability-tv.mjs"
+    ],
+    "environment": {
+      "UX_OUTPUT": "/tmp/bili-stability-20261013/live-final4",
+      "LIVE_MINUTES": "15",
+      "LIVE_CYCLES": "5",
+      "LIVE_ROOM": "34348"
+    },
+    "started": "2026-10-13T07:21:52.083801+00:00",
+    "exitCode": 1,
+    "finished": "2026-10-13T07:38:12.548300+00:00"
+  },
+  {
+    "name": "native-subscriptions-final4",
+    "command": [
+      "node",
+      "tools/test-native-subscriptions-tv.mjs"
+    ],
+    "environment": {
+      "UX_OUTPUT": "/tmp/bili-stability-20261013/native-subscriptions-final4"
+    },
+    "started": "2026-10-13T07:38:52.954199+00:00",
+    "exitCode": 0,
+    "finished": "2026-10-13T07:38:53.908213+00:00"
+  },
+  {
+    "name": "speed-final4",
+    "command": [
+      "node",
+      "tools/test-speed-stability-tv.mjs"
+    ],
+    "environment": {
+      "UX_OUTPUT": "/tmp/bili-stability-20261013/speed-final4"
+    },
+    "started": "2026-10-13T07:38:53.909308+00:00",
+    "exitCode": 0,
+    "finished": "2026-10-13T07:39:30.915251+00:00"
+  },
+  {
+    "name": "lifecycle-final4",
+    "command": [
+      "node",
+      "tools/test-playback-lifecycle-tv.mjs"
+    ],
+    "environment": {
+      "UX_OUTPUT": "/tmp/bili-stability-20261013/lifecycle-final4",
+      "TV_CYCLES": "20"
+    },
+    "started": "2026-10-13T07:39:30.916716+00:00",
+    "exitCode": 0,
+    "finished": "2026-10-13T07:44:08.750257+00:00"
+  },
+  {
+    "name": "runtime-final4",
+    "command": [
+      "node",
+      "tools/test-runtime-errors-tv.mjs"
+    ],
+    "environment": {
+      "UX_OUTPUT": "/tmp/bili-stability-20261013/runtime-final4"
+    },
+    "started": "2026-10-13T07:44:08.751181+00:00",
+    "exitCode": 0,
+    "finished": "2026-10-13T07:45:12.348827+00:00"
+  },
+  {
+    "name": "cdn-final4",
+    "command": [
+      "node",
+      "tools/test-cdn-tv.mjs"
+    ],
+    "environment": {
+      "UX_OUTPUT": "/tmp/bili-stability-20261013/cdn-final4"
+    },
+    "started": "2026-10-13T07:45:12.349720+00:00",
+    "exitCode": 0,
+    "finished": "2026-10-13T07:45:48.084983+00:00"
+  },
+  {
+    "name": "premium-final4",
+    "command": [
+      "node",
+      "tools/test-premium-tv.mjs"
+    ],
+    "environment": {
+      "UX_OUTPUT": "/tmp/bili-stability-20261013/premium-final4"
+    },
+    "started": "2026-10-13T07:45:48.085515+00:00",
+    "exitCode": 0,
+    "finished": "2026-10-13T07:46:32.199011+00:00"
+  },
+  {
+    "name": "scrub-final4",
+    "command": [
+      "node",
+      "tools/test-scrub-tv.mjs"
+    ],
+    "environment": {
+      "UX_OUTPUT": "/tmp/bili-stability-20261013/scrub-final4"
+    },
+    "started": "2026-10-13T07:46:32.200035+00:00",
+    "exitCode": 0,
+    "finished": "2026-10-13T07:47:14.000752+00:00"
+  },
+  {
+    "name": "ended-final4",
+    "command": [
+      "node",
+      "tools/test-playback-end-tv.mjs"
+    ],
+    "environment": {
+      "END_OUTPUT": "/tmp/bili-stability-20261013/ended-final4"
+    },
+    "started": "2026-10-13T07:47:14.001449+00:00",
+    "exitCode": 0,
+    "finished": "2026-10-13T07:47:50.863545+00:00"
+  },
+  {
+    "name": "smoke-final4",
+    "command": [
+      "node",
+      "tools/test-ui.mjs"
+    ],
+    "environment": {
+      "TV_OUTPUT": "/tmp/bili-stability-20261013/smoke-final4"
+    },
+    "started": "2026-10-13T07:47:50.865005+00:00",
+    "exitCode": 0,
+    "finished": "2026-10-13T07:51:06.790102+00:00"
+  },
+  {
+    "name": "soak-60m-final4",
+    "command": [
+      "node",
+      "tools/test-network-soak-tv.mjs"
+    ],
+    "environment": {
+      "UX_OUTPUT": "/tmp/bili-stability-20261013/soak-60m-final4",
+      "SOAK_MINUTES": "60",
+      "SOAK_MIN_WIDTH": "3840",
+      "SOAK_MIN_HEIGHT": "2160",
+      "SOAK_MIN_FPS": "50",
+      "SOAK_CODEC": "hevc",
+      "SOAK_BVID": "BV1sapi6qE72"
+    },
+    "started": "2026-10-13T07:51:06.790943+00:00",
+    "exitCode": 0,
+    "finished": "2026-10-13T08:51:14.862012+00:00"
+  }
+]

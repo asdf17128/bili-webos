@@ -1,0 +1,3905 @@
+{
+  "started": "2026-10-13T06:27:57.428Z",
+  "cyclesRequested": 20,
+  "warmupCycles": 3,
+  "scope": "Actual decode; native pause/seek stress; TV remote exit; no document reload between cycles",
+  "checks": [
+    {
+      "name": "cycle -2 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.54,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle -2 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 14,
+        "afterIdle": 14
+      }
+    },
+    {
+      "name": "cycle -2 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle -2 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle -2 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle -1 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.36,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle -1 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 28,
+        "afterIdle": 28
+      }
+    },
+    {
+      "name": "cycle -1 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle -1 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle -1 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 0 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.68,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 0 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 42,
+        "afterIdle": 42
+      }
+    },
+    {
+      "name": "cycle 0 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 0 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 0 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "before focus has 32 actual changes in same document",
+      "pass": true,
+      "detail": {
+        "label": "before",
+        "samples": [
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 4
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 6.300000000745058
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 4.099999997764826
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3.100000001490116
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.099999997764826
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 4.600000001490116
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.599999997764826
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3.5
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.099999997764826
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3.5
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.400000002235174
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.800000000745058
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3.100000001490116
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 4.100000001490116
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3.100000001490116
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.900000002235174
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 4.600000001490116
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.5
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3.100000001490116
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.399999998509884
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 6.099999997764826
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.300000000745058
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3.300000000745058
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.300000000745058
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3.300000000745058
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.199999999254942
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 4.599999997764826
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 4.199999999254942
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3.599999997764826
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 4.100000001490116
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3.399999998509884
+          }
+        ],
+        "start": "content-0-0",
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "end": "content-0-0",
+        "p50": 3.5,
+        "p95": 6.099999997764826
+      }
+    },
+    {
+      "name": "cycle 1 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.3,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 1 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 50,
+        "afterIdle": 50
+      }
+    },
+    {
+      "name": "cycle 1 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 1 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 1 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 2 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.66,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 2 pause holds position",
+      "pass": true
+    },
+    {
+      "name": "cycle 2 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 76,
+        "afterIdle": 76
+      }
+    },
+    {
+      "name": "cycle 2 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 2 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 2 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 3 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.64,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 3 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 90,
+        "afterIdle": 90
+      }
+    },
+    {
+      "name": "cycle 3 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 3 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 3 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 4 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.7,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 4 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 104,
+        "afterIdle": 104
+      }
+    },
+    {
+      "name": "cycle 4 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 4 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 4 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 5 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.72,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 5 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 118,
+        "afterIdle": 118
+      }
+    },
+    {
+      "name": "cycle 5 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 5 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 5 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 6 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.16,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 6 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 130,
+        "afterIdle": 130
+      }
+    },
+    {
+      "name": "cycle 6 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 6 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 6 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 7 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.46,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 7 pause holds position",
+      "pass": true
+    },
+    {
+      "name": "cycle 7 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 156,
+        "afterIdle": 156
+      }
+    },
+    {
+      "name": "cycle 7 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 7 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 7 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 8 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.38,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 8 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 168,
+        "afterIdle": 168
+      }
+    },
+    {
+      "name": "cycle 8 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 8 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 8 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 9 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.52,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 9 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 183,
+        "afterIdle": 183
+      }
+    },
+    {
+      "name": "cycle 9 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 9 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 9 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 10 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.46,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 10 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 196,
+        "afterIdle": 196
+      }
+    },
+    {
+      "name": "cycle 10 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 10 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 10 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 11 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.38,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 11 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 210,
+        "afterIdle": 210
+      }
+    },
+    {
+      "name": "cycle 11 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 11 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 11 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 12 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.6,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 12 pause holds position",
+      "pass": true
+    },
+    {
+      "name": "cycle 12 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 236,
+        "afterIdle": 236
+      }
+    },
+    {
+      "name": "cycle 12 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 12 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 12 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 13 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.2,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 13 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 249,
+        "afterIdle": 249
+      }
+    },
+    {
+      "name": "cycle 13 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 13 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 13 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 14 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.46,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 14 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 261,
+        "afterIdle": 261
+      }
+    },
+    {
+      "name": "cycle 14 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 14 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 14 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 15 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.66,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 15 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 274,
+        "afterIdle": 274
+      }
+    },
+    {
+      "name": "cycle 15 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 15 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 15 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 16 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.58,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 16 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 287,
+        "afterIdle": 287
+      }
+    },
+    {
+      "name": "cycle 16 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 16 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 16 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 17 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.3,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 17 pause holds position",
+      "pass": true
+    },
+    {
+      "name": "cycle 17 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 311,
+        "afterIdle": 311
+      }
+    },
+    {
+      "name": "cycle 17 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 17 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 17 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 18 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.22,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 18 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 324,
+        "afterIdle": 324
+      }
+    },
+    {
+      "name": "cycle 18 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 18 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 18 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 19 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.24,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 19 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 337,
+        "afterIdle": 337
+      }
+    },
+    {
+      "name": "cycle 19 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 19 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 19 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "cycle 20 actually decodes 4K",
+      "pass": true,
+      "detail": {
+        "time": 2.38,
+        "ready": 4,
+        "width": 3840,
+        "height": 2160,
+        "paused": false,
+        "error": null,
+        "codec": "hvc1.1.6.L153.90"
+      }
+    },
+    {
+      "name": "cycle 20 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 350,
+        "afterIdle": 350
+      }
+    },
+    {
+      "name": "cycle 20 releases player and media",
+      "pass": true,
+      "detail": {
+        "requested": 1,
+        "done": 1,
+        "failed": 0
+      }
+    },
+    {
+      "name": "cycle 20 stays in same document",
+      "pass": true
+    },
+    {
+      "name": "cycle 20 leaves one navigable focus",
+      "pass": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "after focus has 32 actual changes in same document",
+      "pass": true,
+      "detail": {
+        "label": "after",
+        "samples": [
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.699999999254942
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 4.199999999254942
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.399999998509884
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 4.300000000745058
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.199999999254942
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3.300000000745058
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.300000000745058
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3.5
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 2.900000002235174
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3.7000000029802322
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 4.099999997764826
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.100000001490116
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3.199999999254942
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.5
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 2.800000000745058
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 4.199999999254942
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3.600000001490116
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.400000002235174
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 4.099999997764826
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 4.5
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3.699999999254942
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 4.900000002235174
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 5.200000002980232
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.900000002235174
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3.399999998509884
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 4
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3
+          },
+          {
+            "key": "ArrowRight",
+            "from": "content-0-0",
+            "to": "content-0-1",
+            "ms": 3.400000002235174
+          },
+          {
+            "key": "ArrowLeft",
+            "from": "content-0-1",
+            "to": "content-0-0",
+            "ms": 3.5
+          }
+        ],
+        "start": "content-0-0",
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "end": "content-0-0",
+        "p50": 3.5,
+        "p95": 4.900000002235174
+      }
+    },
+    {
+      "name": "focus follows the same route before and after",
+      "pass": true
+    },
+    {
+      "name": "focus DOM response remains within investigation budget",
+      "pass": true,
+      "detail": {
+        "beforeP95": 6.099999997764826,
+        "afterP95": 4.900000002235174,
+        "delta": -1.1999999955296516,
+        "budget": 10,
+        "metric": "keydown to focus DOM mutation, excluding final paint"
+      }
+    },
+    {
+      "name": "retained JS heap within investigation budget",
+      "pass": true,
+      "detail": {
+        "baseline": 5331120,
+        "last": 5592928,
+        "growth": 261808,
+        "budget": 3145728
+      }
+    },
+    {
+      "name": "no sustained latter-half heap growth beyond investigation budget",
+      "pass": true,
+      "detail": {
+        "checkpoints": [
+          {
+            "cycle": 10,
+            "heapBytes": 5486204
+          },
+          {
+            "cycle": 15,
+            "heapBytes": 5566864
+          },
+          {
+            "cycle": 20,
+            "heapBytes": 5592928
+          }
+        ],
+        "continuous": true,
+        "growth": 106724,
+        "budget": 3145728
+      }
+    },
+    {
+      "name": "documents do not accumulate",
+      "pass": true,
+      "detail": {
+        "baseline": 1,
+        "last": 1
+      }
+    },
+    {
+      "name": "event listeners do not accumulate beyond budget",
+      "pass": true,
+      "detail": {
+        "baseline": 210,
+        "last": 210
+      }
+    },
+    {
+      "name": "total DOM nodes do not accumulate beyond budget",
+      "pass": true,
+      "detail": {
+        "baseline": 608,
+        "last": 608
+      }
+    },
+    {
+      "name": "early exit 1 occurs before media ready",
+      "pass": true,
+      "detail": {
+        "time": 0,
+        "ready": 0,
+        "width": 0,
+        "height": 0,
+        "paused": true,
+        "error": null
+      }
+    },
+    {
+      "name": "early exit 1 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 350,
+        "afterIdle": 350
+      }
+    },
+    {
+      "name": "early exit 1 remains closed",
+      "pass": true,
+      "detail": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 350,
+        "completedMedia": 331,
+        "failedMedia": 19
+      }
+    },
+    {
+      "name": "early exit 2 occurs before media ready",
+      "pass": true,
+      "detail": {
+        "time": 0,
+        "ready": 0,
+        "width": 0,
+        "height": 0,
+        "paused": true,
+        "error": null
+      }
+    },
+    {
+      "name": "early exit 2 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 350,
+        "afterIdle": 350
+      }
+    },
+    {
+      "name": "early exit 2 remains closed",
+      "pass": true,
+      "detail": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 350,
+        "completedMedia": 331,
+        "failedMedia": 19
+      }
+    },
+    {
+      "name": "early exit 3 occurs before media ready",
+      "pass": true,
+      "detail": {
+        "time": 0,
+        "ready": 0,
+        "width": 0,
+        "height": 0,
+        "paused": true,
+        "error": null
+      }
+    },
+    {
+      "name": "early exit 3 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 350,
+        "afterIdle": 350
+      }
+    },
+    {
+      "name": "early exit 3 remains closed",
+      "pass": true,
+      "detail": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 350,
+        "completedMedia": 331,
+        "failedMedia": 19
+      }
+    },
+    {
+      "name": "early exit 4 occurs before media ready",
+      "pass": true,
+      "detail": {
+        "time": 0,
+        "ready": 0,
+        "width": 0,
+        "height": 0,
+        "paused": true,
+        "error": null
+      }
+    },
+    {
+      "name": "early exit 4 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 350,
+        "afterIdle": 350
+      }
+    },
+    {
+      "name": "early exit 4 remains closed",
+      "pass": true,
+      "detail": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 350,
+        "completedMedia": 331,
+        "failedMedia": 19
+      }
+    },
+    {
+      "name": "early exit 5 occurs before media ready",
+      "pass": true,
+      "detail": {
+        "time": 0,
+        "ready": 0,
+        "width": 0,
+        "height": 0,
+        "paused": true,
+        "error": null
+      }
+    },
+    {
+      "name": "early exit 5 starts no media after exit",
+      "pass": true,
+      "detail": {
+        "afterExit": 350,
+        "afterIdle": 350
+      }
+    },
+    {
+      "name": "early exit 5 remains closed",
+      "pass": true,
+      "detail": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 350,
+        "completedMedia": 331,
+        "failedMedia": 19
+      }
+    },
+    {
+      "name": "no uncaught JavaScript errors",
+      "pass": true,
+      "detail": {
+        "count": 0
+      }
+    },
+    {
+      "name": "original settings restored",
+      "pass": true
+    }
+  ],
+  "cycles": [
+    {
+      "cycle": -2,
+      "warmup": true,
+      "started": "2026-10-13T06:27:58.002Z",
+      "startupMs": 4827,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 478,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.54,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 14,
+        "completedMedia": 13,
+        "failedMedia": 1
+      },
+      "exitMs": 902,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 14,
+        "completedMedia": 13,
+        "failedMedia": 1
+      }
+    },
+    {
+      "cycle": -1,
+      "warmup": true,
+      "started": "2026-10-13T06:28:07.031Z",
+      "startupMs": 5104,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 477,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.36,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 28,
+        "completedMedia": 26,
+        "failedMedia": 2
+      },
+      "exitMs": 935,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 28,
+        "completedMedia": 26,
+        "failedMedia": 2
+      }
+    },
+    {
+      "cycle": 0,
+      "warmup": true,
+      "started": "2026-10-13T06:28:16.333Z",
+      "startupMs": 5446,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 477,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.68,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 42,
+        "completedMedia": 39,
+        "failedMedia": 3
+      },
+      "exitMs": 910,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 42,
+        "completedMedia": 39,
+        "failedMedia": 3
+      }
+    },
+    {
+      "cycle": 1,
+      "warmup": false,
+      "started": "2026-10-13T06:28:35.216Z",
+      "startupMs": 4933,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 475,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.3,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 50,
+        "completedMedia": 46,
+        "failedMedia": 4
+      },
+      "exitMs": 608,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 50,
+        "completedMedia": 46,
+        "failedMedia": 4
+      }
+    },
+    {
+      "cycle": 2,
+      "warmup": false,
+      "started": "2026-10-13T06:28:43.996Z",
+      "startupMs": 4983,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 478,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.66,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "seek": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 467,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 63.68,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 76,
+        "completedMedia": 71,
+        "failedMedia": 5
+      },
+      "exitMs": 896,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 76,
+        "completedMedia": 71,
+        "failedMedia": 5
+      }
+    },
+    {
+      "cycle": 3,
+      "warmup": false,
+      "started": "2026-10-13T06:28:59.019Z",
+      "startupMs": 5062,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 478,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.64,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 90,
+        "completedMedia": 85,
+        "failedMedia": 5
+      },
+      "exitMs": 1148,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 90,
+        "completedMedia": 85,
+        "failedMedia": 5
+      }
+    },
+    {
+      "cycle": 4,
+      "warmup": false,
+      "started": "2026-10-13T06:29:08.598Z",
+      "startupMs": 4635,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 478,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.7,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 104,
+        "completedMedia": 99,
+        "failedMedia": 5
+      },
+      "exitMs": 788,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 104,
+        "completedMedia": 99,
+        "failedMedia": 5
+      }
+    },
+    {
+      "cycle": 5,
+      "warmup": false,
+      "started": "2026-10-13T06:29:17.780Z",
+      "startupMs": 4903,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 478,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.72,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 118,
+        "completedMedia": 113,
+        "failedMedia": 5
+      },
+      "exitMs": 643,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 118,
+        "completedMedia": 113,
+        "failedMedia": 5
+      }
+    },
+    {
+      "cycle": 6,
+      "warmup": false,
+      "started": "2026-10-13T06:29:28.471Z",
+      "startupMs": 4598,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 477,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.16,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 130,
+        "completedMedia": 125,
+        "failedMedia": 5
+      },
+      "exitMs": 612,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 130,
+        "completedMedia": 125,
+        "failedMedia": 5
+      }
+    },
+    {
+      "cycle": 7,
+      "warmup": false,
+      "started": "2026-10-13T06:29:36.999Z",
+      "startupMs": 4640,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 475,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.46,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "seek": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 467,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 63.32,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 156,
+        "completedMedia": 150,
+        "failedMedia": 6
+      },
+      "exitMs": 689,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 156,
+        "completedMedia": 150,
+        "failedMedia": 6
+      }
+    },
+    {
+      "cycle": 8,
+      "warmup": false,
+      "started": "2026-10-13T06:29:50.803Z",
+      "startupMs": 4660,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 477,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.38,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 168,
+        "completedMedia": 162,
+        "failedMedia": 6
+      },
+      "exitMs": 529,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 168,
+        "completedMedia": 162,
+        "failedMedia": 6
+      }
+    },
+    {
+      "cycle": 9,
+      "warmup": false,
+      "started": "2026-10-13T06:29:59.284Z",
+      "startupMs": 4968,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 478,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.52,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 183,
+        "completedMedia": 176,
+        "failedMedia": 7
+      },
+      "exitMs": 688,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 183,
+        "completedMedia": 176,
+        "failedMedia": 7
+      }
+    },
+    {
+      "cycle": 10,
+      "warmup": false,
+      "started": "2026-10-13T06:30:08.470Z",
+      "startupMs": 4747,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 478,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.46,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 196,
+        "completedMedia": 188,
+        "failedMedia": 8
+      },
+      "exitMs": 819,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 196,
+        "completedMedia": 188,
+        "failedMedia": 8
+      }
+    },
+    {
+      "cycle": 11,
+      "warmup": false,
+      "started": "2026-10-13T06:30:18.902Z",
+      "startupMs": 4808,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 477,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.38,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 210,
+        "completedMedia": 200,
+        "failedMedia": 10
+      },
+      "exitMs": 999,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 210,
+        "completedMedia": 200,
+        "failedMedia": 10
+      }
+    },
+    {
+      "cycle": 12,
+      "warmup": false,
+      "started": "2026-10-13T06:30:28.276Z",
+      "startupMs": 4957,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 477,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.6,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "seek": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 467,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 63.24,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 236,
+        "completedMedia": 225,
+        "failedMedia": 11
+      },
+      "exitMs": 599,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 236,
+        "completedMedia": 225,
+        "failedMedia": 11
+      }
+    },
+    {
+      "cycle": 13,
+      "warmup": false,
+      "started": "2026-10-13T06:30:42.927Z",
+      "startupMs": 4438,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 475,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.2,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 249,
+        "completedMedia": 237,
+        "failedMedia": 12
+      },
+      "exitMs": 839,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 249,
+        "completedMedia": 237,
+        "failedMedia": 12
+      }
+    },
+    {
+      "cycle": 14,
+      "warmup": false,
+      "started": "2026-10-13T06:30:51.929Z",
+      "startupMs": 5305,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 477,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.46,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 261,
+        "completedMedia": 249,
+        "failedMedia": 12
+      },
+      "exitMs": 563,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 261,
+        "completedMedia": 249,
+        "failedMedia": 12
+      }
+    },
+    {
+      "cycle": 15,
+      "warmup": false,
+      "started": "2026-10-13T06:31:01.014Z",
+      "startupMs": 4909,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 477,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.66,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 274,
+        "completedMedia": 261,
+        "failedMedia": 13
+      },
+      "exitMs": 817,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 274,
+        "completedMedia": 261,
+        "failedMedia": 13
+      }
+    },
+    {
+      "cycle": 16,
+      "warmup": false,
+      "started": "2026-10-13T06:31:11.591Z",
+      "startupMs": 4966,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 477,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.58,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 287,
+        "completedMedia": 273,
+        "failedMedia": 14
+      },
+      "exitMs": 876,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 287,
+        "completedMedia": 273,
+        "failedMedia": 14
+      }
+    },
+    {
+      "cycle": 17,
+      "warmup": false,
+      "started": "2026-10-13T06:31:20.800Z",
+      "startupMs": 5516,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 475,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.3,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "seek": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 467,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 63.22,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 311,
+        "completedMedia": 295,
+        "failedMedia": 16
+      },
+      "exitMs": 707,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 311,
+        "completedMedia": 295,
+        "failedMedia": 16
+      }
+    },
+    {
+      "cycle": 18,
+      "warmup": false,
+      "started": "2026-10-13T06:31:35.582Z",
+      "startupMs": 5004,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 475,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.22,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 324,
+        "completedMedia": 307,
+        "failedMedia": 17
+      },
+      "exitMs": 811,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 324,
+        "completedMedia": 307,
+        "failedMedia": 17
+      }
+    },
+    {
+      "cycle": 19,
+      "warmup": false,
+      "started": "2026-10-13T06:31:44.918Z",
+      "startupMs": 4819,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 475,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.24,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 337,
+        "completedMedia": 319,
+        "failedMedia": 18
+      },
+      "exitMs": 841,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 337,
+        "completedMedia": 319,
+        "failedMedia": 18
+      }
+    },
+    {
+      "cycle": 20,
+      "warmup": false,
+      "started": "2026-10-13T06:31:54.130Z",
+      "startupMs": 5446,
+      "playing": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 477,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 0,
+          "done": 0,
+          "failed": 0
+        },
+        "video": {
+          "time": 2.38,
+          "ready": 4,
+          "width": 3840,
+          "height": 2160,
+          "paused": false,
+          "error": null,
+          "codec": "hvc1.1.6.L153.90"
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 350,
+        "completedMedia": 331,
+        "failedMedia": 19
+      },
+      "exitMs": 911,
+      "idle": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 350,
+        "completedMedia": 331,
+        "failedMedia": 19
+      }
+    }
+  ],
+  "retained": [
+    {
+      "cycle": 0,
+      "natural": {
+        "heapBytes": 6890176,
+        "documents": 1,
+        "nodes": 865,
+        "listeners": 402,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 42,
+          "completedMedia": 39,
+          "failedMedia": 3
+        }
+      },
+      "collected": {
+        "heapBytes": 5331120,
+        "documents": 1,
+        "nodes": 608,
+        "listeners": 210,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 42,
+          "completedMedia": 39,
+          "failedMedia": 3
+        }
+      },
+      "state": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      }
+    },
+    {
+      "cycle": 5,
+      "natural": {
+        "heapBytes": 6619256,
+        "documents": 1,
+        "nodes": 831,
+        "listeners": 400,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 118,
+          "completedMedia": 113,
+          "failedMedia": 5
+        }
+      },
+      "collected": {
+        "heapBytes": 5420304,
+        "documents": 1,
+        "nodes": 608,
+        "listeners": 210,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 118,
+          "completedMedia": 113,
+          "failedMedia": 5
+        }
+      },
+      "state": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      }
+    },
+    {
+      "cycle": 10,
+      "natural": {
+        "heapBytes": 6836764,
+        "documents": 1,
+        "nodes": 825,
+        "listeners": 364,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 196,
+          "completedMedia": 188,
+          "failedMedia": 8
+        }
+      },
+      "collected": {
+        "heapBytes": 5486204,
+        "documents": 1,
+        "nodes": 608,
+        "listeners": 210,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 196,
+          "completedMedia": 188,
+          "failedMedia": 8
+        }
+      },
+      "state": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      }
+    },
+    {
+      "cycle": 15,
+      "natural": {
+        "heapBytes": 6893400,
+        "documents": 1,
+        "nodes": 829,
+        "listeners": 400,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 274,
+          "completedMedia": 261,
+          "failedMedia": 13
+        }
+      },
+      "collected": {
+        "heapBytes": 5566864,
+        "documents": 1,
+        "nodes": 608,
+        "listeners": 210,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 274,
+          "completedMedia": 261,
+          "failedMedia": 13
+        }
+      },
+      "state": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      }
+    },
+    {
+      "cycle": 20,
+      "natural": {
+        "heapBytes": 6842728,
+        "documents": 1,
+        "nodes": 862,
+        "listeners": 402,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 350,
+          "completedMedia": 331,
+          "failedMedia": 19
+        }
+      },
+      "collected": {
+        "heapBytes": 5592928,
+        "documents": 1,
+        "nodes": 608,
+        "listeners": 210,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 350,
+          "completedMedia": 331,
+          "failedMedia": 19
+        }
+      },
+      "state": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      }
+    }
+  ],
+  "earlyExits": [
+    {
+      "cycle": 1,
+      "before": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": false,
+        "domNodes": 460,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": {
+          "time": 0,
+          "ready": 0,
+          "width": 0,
+          "height": 0,
+          "paused": true,
+          "error": null
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 350,
+        "completedMedia": 331,
+        "failedMedia": 19
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 350,
+        "completedMedia": 331,
+        "failedMedia": 19
+      },
+      "state": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      }
+    },
+    {
+      "cycle": 2,
+      "before": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 465,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": {
+          "time": 0,
+          "ready": 0,
+          "width": 0,
+          "height": 0,
+          "paused": true,
+          "error": null
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 350,
+        "completedMedia": 331,
+        "failedMedia": 19
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 350,
+        "completedMedia": 331,
+        "failedMedia": 19
+      },
+      "state": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      }
+    },
+    {
+      "cycle": 3,
+      "before": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 460,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": {
+          "time": 0,
+          "ready": 0,
+          "width": 0,
+          "height": 0,
+          "paused": true,
+          "error": null
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 350,
+        "completedMedia": 331,
+        "failedMedia": 19
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 350,
+        "completedMedia": 331,
+        "failedMedia": 19
+      },
+      "state": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      }
+    },
+    {
+      "cycle": 4,
+      "before": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 465,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": {
+          "time": 0,
+          "ready": 0,
+          "width": 0,
+          "height": 0,
+          "paused": true,
+          "error": null
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 350,
+        "completedMedia": 331,
+        "failedMedia": 19
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 350,
+        "completedMedia": 331,
+        "failedMedia": 19
+      },
+      "state": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      }
+    },
+    {
+      "cycle": 5,
+      "before": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 1,
+        "playerPresent": true,
+        "domNodes": 465,
+        "focusCount": 1,
+        "cdn": "manual",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": {
+          "time": 0,
+          "ready": 0,
+          "width": 0,
+          "height": 0,
+          "paused": true,
+          "error": null
+        }
+      },
+      "exitNetwork": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 350,
+        "completedMedia": 331,
+        "failedMedia": 19
+      },
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 350,
+        "completedMedia": 331,
+        "failedMedia": 19
+      },
+      "state": {
+        "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+        "videoCount": 0,
+        "playerPresent": false,
+        "domNodes": 409,
+        "focusCount": 1,
+        "cdn": "stopped",
+        "destroy": {
+          "requested": 1,
+          "done": 1,
+          "failed": 0
+        },
+        "video": null
+      }
+    }
+  ],
+  "focus": [
+    {
+      "label": "before",
+      "samples": [
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 4
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 6.300000000745058
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 4.099999997764826
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3.100000001490116
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.099999997764826
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 4.600000001490116
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.599999997764826
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3.5
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.099999997764826
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3.5
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.400000002235174
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.800000000745058
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3.100000001490116
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 4.100000001490116
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3.100000001490116
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.900000002235174
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 4.600000001490116
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.5
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3.100000001490116
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.399999998509884
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 6.099999997764826
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.300000000745058
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3.300000000745058
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.300000000745058
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3.300000000745058
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.199999999254942
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 4.599999997764826
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 4.199999999254942
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3.599999997764826
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 4.100000001490116
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3.399999998509884
+        }
+      ],
+      "start": "content-0-0",
+      "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+      "end": "content-0-0",
+      "p50": 3.5,
+      "p95": 6.099999997764826
+    },
+    {
+      "label": "after",
+      "samples": [
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.699999999254942
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 4.199999999254942
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.399999998509884
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 4.300000000745058
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.199999999254942
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3.300000000745058
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.300000000745058
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3.5
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 2.900000002235174
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3.7000000029802322
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 4.099999997764826
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.100000001490116
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3.199999999254942
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.5
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 2.800000000745058
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 4.199999999254942
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3.600000001490116
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.400000002235174
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 4.099999997764826
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 4.5
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3.699999999254942
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 4.900000002235174
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 5.200000002980232
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.900000002235174
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3.399999998509884
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 4
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3
+        },
+        {
+          "key": "ArrowRight",
+          "from": "content-0-0",
+          "to": "content-0-1",
+          "ms": 3.400000002235174
+        },
+        {
+          "key": "ArrowLeft",
+          "from": "content-0-1",
+          "to": "content-0-0",
+          "ms": 3.5
+        }
+      ],
+      "start": "content-0-0",
+      "document": "cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1",
+      "end": "content-0-0",
+      "p50": 3.5,
+      "p95": 4.900000002235174
+    }
+  ],
+  "errors": [],
+  "finished": "2026-10-13T06:32:26.171Z"
+}

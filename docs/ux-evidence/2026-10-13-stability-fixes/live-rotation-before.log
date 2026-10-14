@@ -1,0 +1,67 @@
+✔ TS-first API ordering still selects fMP4 with matching original-quality metadata (1.255083ms)
+✔ explicit fallback selects TS without reducing quality (0.076333ms)
+✔ rooms missing usable fMP4 AVC keep working through TS (0.054708ms)
+✔ FLV-only and missing HLS URL responses are errors rather than endless loading (0.19825ms)
+✔ failed API response is not mistaken for an empty room (0.051583ms)
+✔ failed live CDN uses the exact signed backup at identical format and quality (0.052667ms)
+✔ all recently failed nodes still allow bounded recovery with fresh API source (0.059958ms)
+✔ network preference never chooses another codec or container (0.042375ms)
+✖ all failed CDN candidates rotate to the least recently failed host (0.593625ms)
+✖ malformed hosts never become the recovery fallback (0.134625ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 8
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 67.535792
+
+✖ failing tests:
+
+test at app/src/player/liveStream.test.js:43:1
+✖ all failed CDN candidates rotate to the least recently failed host (0.593625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'https://live.bilivideo.com/fmp4.m3u8?signed=fixture'
+  - 'https://backup.bilivideo.com/fmp4.m3u8?signed=second'
+  
+      at TestContext.<anonymous> (file:///Users/yuanzhan/.codex/worktrees/playback-mode-41/bili_webos/app/src/player/liveStream.test.js:46:9)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1095:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:777:18)
+      at Test.postRun (node:internal/test_runner/test:1224:19)
+      at Test.run (node:internal/test_runner/test:1152:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:777:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'https://live.bilivideo.com/fmp4.m3u8?signed=fixture',
+    expected: 'https://backup.bilivideo.com/fmp4.m3u8?signed=second',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at app/src/player/liveStream.test.js:48:1
+✖ malformed hosts never become the recovery fallback (0.134625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'https://[/fmp4.m3u8'
+  - 'https://live.bilivideo.com/fmp4.m3u8?signed=fixture'
+             ^
+  
+      at TestContext.<anonymous> (file:///Users/yuanzhan/.codex/worktrees/playback-mode-41/bili_webos/app/src/player/liveStream.test.js:51:9)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1095:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:777:18)
+      at Test.postRun (node:internal/test_runner/test:1224:19)
+      at Test.run (node:internal/test_runner/test:1152:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:777:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'https://[/fmp4.m3u8',
+    expected: 'https://live.bilivideo.com/fmp4.m3u8?signed=fixture',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

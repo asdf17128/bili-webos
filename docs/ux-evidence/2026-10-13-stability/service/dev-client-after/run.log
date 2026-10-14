@@ -1,0 +1,4 @@
+PASS 20 cancellations before successful discovery cannot create late bridge subscriptions
+PASS successful discovery selects one bridge transport and cleanup suppresses late frames
+PASS unavailable bridge falls back once and cleanup suppresses late proxy frames
+PASS cancel before failed discovery also suppresses fallback creation

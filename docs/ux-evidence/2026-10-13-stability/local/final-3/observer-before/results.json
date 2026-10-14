@@ -1,0 +1,7 @@
+[
+  {
+    "name": "critical runtime error while paused: media",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\nundefined !== 47\n"
+  }
+]

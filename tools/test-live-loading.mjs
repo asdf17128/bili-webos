@@ -32,7 +32,7 @@ async function test(name,fn,mode='normal') {
    if(mode==='empty')return route.fulfill({json:{code:0,data:{}}});
    const qn=Number(u.searchParams.get('qn')||250);
    const ladder=mode==='ladder'?[10000,400,250,150,80]:[10000,250];
-   return route.fulfill({json:{code:0,data:{playurl_info:{playurl:{g_qn_desc:[{qn:10000,desc:'原画'},{qn:250,desc:'超清'}],stream:[{format:['ts','fmp4'].map(format=>({format_name:format,codec:[{codec_name:'avc',current_qn:qn,accept_qn:ladder,base_url:`/${format}.m3u8`,url_info:[{host:'https://live.bilivideo.com',extra:`?qn=${qn}`}]}]}))}]}}}}});
+   return route.fulfill({json:{code:0,data:{playurl_info:{playurl:{g_qn_desc:[{qn:10000,desc:'原画'},{qn:250,desc:'超清'}],stream:[{format:['ts','fmp4'].map(format=>({format_name:format,codec:[{codec_name:'avc',current_qn:qn,accept_qn:ladder,base_url:`/${format}.m3u8`,url_info:[{host:'https://live.bilivideo.com',extra:`?qn=${qn}`},{host:'https://backup.bilivideo.com',extra:`?qn=${qn}&signed=backup`}]}]}))}]}}}}});
   }
   return route.fulfill({json:{code:0,data:{}}});
  });
@@ -109,6 +109,52 @@ await test('empty play info ends with retryable error',async page=>{
  await page.getByText('加载失败，按确认重试',{exact:true}).waitFor();
  assert.equal(await page.locator('.loading').count(),0);
 },'empty');
+await test('network recovery uses fresh signed backup at unchanged format and quality',async(page,calls)=>{
+ await page.clock.install();await open(page);await loaded(page);
+ await page.evaluate(()=>{const v=document.querySelector('video');v.dispatchEvent(new Event('playing'));Object.defineProperty(v,'error',{configurable:true,value:{code:2}});v.dispatchEvent(new Event('error'));});
+ await page.clock.runFor(1000);await page.waitForFunction(()=>window.__sources.length===2);
+ const sources=await page.evaluate(()=>window.__sources);
+ assert.match(sources[1],/backup\.bilivideo\.com.*fmp4\.m3u8\?qn=10000&signed=backup/);
+ assert.equal(calls(),2,'refresh signed URL on recovery');
+});
+await test('unbuffered live stall retries within eight seconds',async page=>{
+ await page.clock.install();await open(page);await loaded(page);
+ await page.evaluate(()=>{const v=document.querySelector('video');Object.defineProperty(v,'paused',{configurable:true,value:false});Object.defineProperty(v,'currentTime',{configurable:true,value:2});v.dispatchEvent(new Event('playing'));});
+ await page.clock.runFor(8000);await page.waitForTimeout(100);
+ assert.equal(await page.evaluate(()=>window.__sources.length),2);
+});
+await test('short live stall and deliberate pause do not reconnect',async page=>{
+ await page.clock.install();await open(page);await loaded(page);
+ await page.evaluate(()=>{const v=document.querySelector('video');Object.defineProperty(v,'paused',{configurable:true,value:false});Object.defineProperty(v,'currentTime',{configurable:true,value:2});v.dispatchEvent(new Event('playing'));});
+ await page.clock.runFor(4000);
+ assert.equal(await page.evaluate(()=>window.__sources.length),1);
+ await page.evaluate(()=>Object.defineProperty(document.querySelector('video'),'paused',{configurable:true,value:true}));
+ await page.clock.runFor(20000);assert.equal(await page.evaluate(()=>window.__sources.length),1);
+});
+await test('buffered decoder stall gets longer grace than empty buffer',async page=>{
+ await page.clock.install();await open(page);await loaded(page);
+ await page.evaluate(()=>{const v=document.querySelector('video');Object.defineProperties(v,{paused:{configurable:true,value:false},currentTime:{configurable:true,value:2},buffered:{configurable:true,value:{length:1,start:()=>0,end:()=>12}}});v.dispatchEvent(new Event('playing'));});
+ await page.clock.runFor(11000);assert.equal(await page.evaluate(()=>window.__sources.length),1);
+ await page.clock.runFor(3000);await page.waitForFunction(()=>window.__sources.length===2);
+});
+await test('failed-host preference expires and never permanently bans primary',async page=>{
+ await page.clock.install();await open(page);await loaded(page);
+ const fail=()=>page.evaluate(()=>{const v=document.querySelector('video');v.dispatchEvent(new Event('playing'));Object.defineProperty(v,'error',{configurable:true,value:{code:2}});v.dispatchEvent(new Event('error'));});
+ await fail();await page.clock.runFor(1000);await page.waitForFunction(()=>window.__sources.length===2);
+ assert.match(await page.evaluate(()=>window.__sources[1]),/backup\.bilivideo/);
+ await page.evaluate(()=>document.querySelector('video').dispatchEvent(new Event('playing')));
+ await page.clock.runFor(61000);await fail();await page.clock.runFor(1000);await page.waitForFunction(()=>window.__sources.length===3);
+ assert.match(await page.evaluate(()=>window.__sources[2]),/proxy\/live\.bilivideo/);
+});
+await test('Nerd live panel is opt-in and never invents native transfer counts',async page=>{
+ await open(page);await loaded(page);
+ assert.equal(await page.locator('.nerd-info').count(),0);
+ await page.keyboard.press('Escape');
+ await page.evaluate(()=>window.__appStorage.setSettings({...window.__appStorage.getSettings(),nerdInfo:true}));
+ await open(page);await page.waitForSelector('.nerd-info');
+ const text=await page.locator('.nerd-info').innerText();
+ assert.match(text,/媒体下载：—/);assert.match(text,/音频编码：—/);
+});
 await browser.close();await writeFile(`${output}/results.json`,JSON.stringify(results,null,2));
 console.log(`${results.filter(r=>r.pass).length}/${results.length} live loading tests passed`);
 process.exitCode=results.some(r=>!r.pass)?1:0;

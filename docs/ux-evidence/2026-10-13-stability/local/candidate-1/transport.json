@@ -1,0 +1,34 @@
+[
+  {
+    "name": "real response envelope and evaluated value",
+    "pass": true
+  },
+  {
+    "name": "close rejects pending commands immediately and forbids future sends",
+    "pass": true
+  },
+  {
+    "name": "late repeated socket errors never escape or leave pending work",
+    "pass": true
+  },
+  {
+    "name": "send callback and synchronous failures reject without a timer leak",
+    "pass": true
+  },
+  {
+    "name": "state wait uses its remaining budget even for a hung evaluation",
+    "pass": true
+  },
+  {
+    "name": "false state polling respects total deadline and ignores late replies",
+    "pass": true
+  },
+  {
+    "name": "malformed events and unrelated responses do not satisfy commands",
+    "pass": true
+  },
+  {
+    "name": "explicit disposal drains every pending command",
+    "pass": true
+  }
+]

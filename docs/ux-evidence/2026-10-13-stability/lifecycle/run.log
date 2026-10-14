@@ -1,0 +1,145 @@
+PASS cycle -2 actually decodes 4K {"time":2.54,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle -2 starts no media after exit {"afterExit":14,"afterIdle":14}
+PASS cycle -2 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle -2 stays in same document ""
+PASS cycle -2 leaves one navigable focus {"count":1}
+PASS cycle -1 actually decodes 4K {"time":2.36,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle -1 starts no media after exit {"afterExit":28,"afterIdle":28}
+PASS cycle -1 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle -1 stays in same document ""
+PASS cycle -1 leaves one navigable focus {"count":1}
+PASS cycle 0 actually decodes 4K {"time":2.68,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 0 starts no media after exit {"afterExit":42,"afterIdle":42}
+PASS cycle 0 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 0 stays in same document ""
+PASS cycle 0 leaves one navigable focus {"count":1}
+PASS before focus has 32 actual changes in same document {"label":"before","samples":[{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":4},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":6.300000000745058},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":4.099999997764826},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3.100000001490116},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.099999997764826},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":4.600000001490116},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.599999997764826},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3.5},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.099999997764826},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3.5},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.400000002235174},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.800000000745058},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3.100000001490116},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":4.100000001490116},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3.100000001490116},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.900000002235174},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":4.600000001490116},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.5},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3.100000001490116},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.399999998509884},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":6.099999997764826},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.300000000745058},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3.300000000745058},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.300000000745058},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3.300000000745058},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.199999999254942},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":4.599999997764826},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":4.199999999254942},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3.599999997764826},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":4.100000001490116},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3.399999998509884}],"start":"content-0-0","document":"cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1","end":"content-0-0","p50":3.5,"p95":6.099999997764826}
+PASS cycle 1 actually decodes 4K {"time":2.3,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 1 starts no media after exit {"afterExit":50,"afterIdle":50}
+PASS cycle 1 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 1 stays in same document ""
+PASS cycle 1 leaves one navigable focus {"count":1}
+PASS cycle 2 actually decodes 4K {"time":2.66,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 2 pause holds position ""
+PASS cycle 2 starts no media after exit {"afterExit":76,"afterIdle":76}
+PASS cycle 2 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 2 stays in same document ""
+PASS cycle 2 leaves one navigable focus {"count":1}
+PASS cycle 3 actually decodes 4K {"time":2.64,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 3 starts no media after exit {"afterExit":90,"afterIdle":90}
+PASS cycle 3 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 3 stays in same document ""
+PASS cycle 3 leaves one navigable focus {"count":1}
+PASS cycle 4 actually decodes 4K {"time":2.7,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 4 starts no media after exit {"afterExit":104,"afterIdle":104}
+PASS cycle 4 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 4 stays in same document ""
+PASS cycle 4 leaves one navigable focus {"count":1}
+PASS cycle 5 actually decodes 4K {"time":2.72,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 5 starts no media after exit {"afterExit":118,"afterIdle":118}
+PASS cycle 5 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 5 stays in same document ""
+PASS cycle 5 leaves one navigable focus {"count":1}
+PASS cycle 6 actually decodes 4K {"time":2.16,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 6 starts no media after exit {"afterExit":130,"afterIdle":130}
+PASS cycle 6 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 6 stays in same document ""
+PASS cycle 6 leaves one navigable focus {"count":1}
+PASS cycle 7 actually decodes 4K {"time":2.46,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 7 pause holds position ""
+PASS cycle 7 starts no media after exit {"afterExit":156,"afterIdle":156}
+PASS cycle 7 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 7 stays in same document ""
+PASS cycle 7 leaves one navigable focus {"count":1}
+PASS cycle 8 actually decodes 4K {"time":2.38,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 8 starts no media after exit {"afterExit":168,"afterIdle":168}
+PASS cycle 8 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 8 stays in same document ""
+PASS cycle 8 leaves one navigable focus {"count":1}
+PASS cycle 9 actually decodes 4K {"time":2.52,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 9 starts no media after exit {"afterExit":183,"afterIdle":183}
+PASS cycle 9 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 9 stays in same document ""
+PASS cycle 9 leaves one navigable focus {"count":1}
+PASS cycle 10 actually decodes 4K {"time":2.46,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 10 starts no media after exit {"afterExit":196,"afterIdle":196}
+PASS cycle 10 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 10 stays in same document ""
+PASS cycle 10 leaves one navigable focus {"count":1}
+PASS cycle 11 actually decodes 4K {"time":2.38,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 11 starts no media after exit {"afterExit":210,"afterIdle":210}
+PASS cycle 11 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 11 stays in same document ""
+PASS cycle 11 leaves one navigable focus {"count":1}
+PASS cycle 12 actually decodes 4K {"time":2.6,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 12 pause holds position ""
+PASS cycle 12 starts no media after exit {"afterExit":236,"afterIdle":236}
+PASS cycle 12 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 12 stays in same document ""
+PASS cycle 12 leaves one navigable focus {"count":1}
+PASS cycle 13 actually decodes 4K {"time":2.2,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 13 starts no media after exit {"afterExit":249,"afterIdle":249}
+PASS cycle 13 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 13 stays in same document ""
+PASS cycle 13 leaves one navigable focus {"count":1}
+PASS cycle 14 actually decodes 4K {"time":2.46,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 14 starts no media after exit {"afterExit":261,"afterIdle":261}
+PASS cycle 14 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 14 stays in same document ""
+PASS cycle 14 leaves one navigable focus {"count":1}
+PASS cycle 15 actually decodes 4K {"time":2.66,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 15 starts no media after exit {"afterExit":274,"afterIdle":274}
+PASS cycle 15 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 15 stays in same document ""
+PASS cycle 15 leaves one navigable focus {"count":1}
+PASS cycle 16 actually decodes 4K {"time":2.58,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 16 starts no media after exit {"afterExit":287,"afterIdle":287}
+PASS cycle 16 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 16 stays in same document ""
+PASS cycle 16 leaves one navigable focus {"count":1}
+PASS cycle 17 actually decodes 4K {"time":2.3,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 17 pause holds position ""
+PASS cycle 17 starts no media after exit {"afterExit":311,"afterIdle":311}
+PASS cycle 17 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 17 stays in same document ""
+PASS cycle 17 leaves one navigable focus {"count":1}
+PASS cycle 18 actually decodes 4K {"time":2.22,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 18 starts no media after exit {"afterExit":324,"afterIdle":324}
+PASS cycle 18 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 18 stays in same document ""
+PASS cycle 18 leaves one navigable focus {"count":1}
+PASS cycle 19 actually decodes 4K {"time":2.24,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 19 starts no media after exit {"afterExit":337,"afterIdle":337}
+PASS cycle 19 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 19 stays in same document ""
+PASS cycle 19 leaves one navigable focus {"count":1}
+PASS cycle 20 actually decodes 4K {"time":2.38,"ready":4,"width":3840,"height":2160,"paused":false,"error":null,"codec":"hvc1.1.6.L153.90"}
+PASS cycle 20 starts no media after exit {"afterExit":350,"afterIdle":350}
+PASS cycle 20 releases player and media {"requested":1,"done":1,"failed":0}
+PASS cycle 20 stays in same document ""
+PASS cycle 20 leaves one navigable focus {"count":1}
+PASS after focus has 32 actual changes in same document {"label":"after","samples":[{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.699999999254942},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":4.199999999254942},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.399999998509884},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":4.300000000745058},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.199999999254942},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3.300000000745058},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.300000000745058},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3.5},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":2.900000002235174},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3.7000000029802322},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":4.099999997764826},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.100000001490116},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3.199999999254942},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.5},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":2.800000000745058},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":4.199999999254942},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3.600000001490116},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.400000002235174},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":4.099999997764826},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":4.5},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3.699999999254942},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":4.900000002235174},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":5.200000002980232},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.900000002235174},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3.399999998509884},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":4},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3},{"key":"ArrowRight","from":"content-0-0","to":"content-0-1","ms":3.400000002235174},{"key":"ArrowLeft","from":"content-0-1","to":"content-0-0","ms":3.5}],"start":"content-0-0","document":"cd2bc62c-8eb4-4d3f-b5b5-1a19653955b1","end":"content-0-0","p50":3.5,"p95":4.900000002235174}
+PASS focus follows the same route before and after ""
+PASS focus DOM response remains within investigation budget {"beforeP95":6.099999997764826,"afterP95":4.900000002235174,"delta":-1.1999999955296516,"budget":10,"metric":"keydown to focus DOM mutation, excluding final paint"}
+PASS retained JS heap within investigation budget {"baseline":5331120,"last":5592928,"growth":261808,"budget":3145728}
+PASS no sustained latter-half heap growth beyond investigation budget {"checkpoints":[{"cycle":10,"heapBytes":5486204},{"cycle":15,"heapBytes":5566864},{"cycle":20,"heapBytes":5592928}],"continuous":true,"growth":106724,"budget":3145728}
+PASS documents do not accumulate {"baseline":1,"last":1}
+PASS event listeners do not accumulate beyond budget {"baseline":210,"last":210}
+PASS total DOM nodes do not accumulate beyond budget {"baseline":608,"last":608}
+PASS early exit 1 occurs before media ready {"time":0,"ready":0,"width":0,"height":0,"paused":true,"error":null}
+PASS early exit 1 starts no media after exit {"afterExit":350,"afterIdle":350}
+PASS early exit 1 remains closed {"active":0,"media":0,"startedMedia":350,"completedMedia":331,"failedMedia":19}
+PASS early exit 2 occurs before media ready {"time":0,"ready":0,"width":0,"height":0,"paused":true,"error":null}
+PASS early exit 2 starts no media after exit {"afterExit":350,"afterIdle":350}
+PASS early exit 2 remains closed {"active":0,"media":0,"startedMedia":350,"completedMedia":331,"failedMedia":19}
+PASS early exit 3 occurs before media ready {"time":0,"ready":0,"width":0,"height":0,"paused":true,"error":null}
+PASS early exit 3 starts no media after exit {"afterExit":350,"afterIdle":350}
+PASS early exit 3 remains closed {"active":0,"media":0,"startedMedia":350,"completedMedia":331,"failedMedia":19}
+PASS early exit 4 occurs before media ready {"time":0,"ready":0,"width":0,"height":0,"paused":true,"error":null}
+PASS early exit 4 starts no media after exit {"afterExit":350,"afterIdle":350}
+PASS early exit 4 remains closed {"active":0,"media":0,"startedMedia":350,"completedMedia":331,"failedMedia":19}
+PASS early exit 5 occurs before media ready {"time":0,"ready":0,"width":0,"height":0,"paused":true,"error":null}
+PASS early exit 5 starts no media after exit {"afterExit":350,"afterIdle":350}
+PASS early exit 5 remains closed {"active":0,"media":0,"startedMedia":350,"completedMedia":331,"failedMedia":19}
+PASS no uncaught JavaScript errors {"count":0}
+PASS original settings restored ""

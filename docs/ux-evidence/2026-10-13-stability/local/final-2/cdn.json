@@ -1,0 +1,30 @@
+[
+  {
+    "name": "cached fastest route reaches actual media request without reloading",
+    "pass": true
+  },
+  {
+    "name": "cold start stays immediate then spare-buffer probes improve later requests",
+    "pass": true
+  },
+  {
+    "name": "pending load and low buffer do not trigger probes; pause enables them",
+    "pass": true
+  },
+  {
+    "name": "manual CDN keeps priority and avoids automatic probes",
+    "pass": true
+  },
+  {
+    "name": "all probe failures retain original media route",
+    "pass": true
+  },
+  {
+    "name": "network reconnect invalidates stale cached winner",
+    "pass": true
+  },
+  {
+    "name": "exit cancels in-flight probe without caching a failure",
+    "pass": true
+  }
+]

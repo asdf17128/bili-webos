@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-13",
+  "appBuild": "2.3.0 playback-test.2",
+  "appCodeCommit": "875879f",
+  "installedIpkSha256": "9b3117c8fcf3d0d4fa2be2e1d7a464a3fb5d81583984d64d867088b4450bfed1",
+  "published": false,
+  "githubCommentsSent": false,
+  "checks": {
+    "tv4k50": "tv-4k50-summary.json",
+    "tvHighFrameRate": "tv-hfr-summary.json",
+    "focusBefore": "focus-before.json",
+    "focusAfter": "focus-after.json",
+    "portableTool": "tool-validation.json",
+    "philippines": "globalping-http-compare.json",
+    "finalTvState": "tv-final-state.json"
+  },
+  "outcome": "Actual playback and sampled Bilibili APIs remained healthy; aggregate network gates failed on intermittent GitHub update requests. Historical all-network failure not reproduced. No product performance changes beyond the earlier efficient same-quality codec selection.",
+  "scope": [
+    "C4 only; no C9/C6 performance conclusion",
+    "Anonymous public ISP probes do not represent the reporter home or VIP/media playback",
+    "Home tool validation used this computer HK proxy route",
+    "JS heap and focus DOM timings are not total memory or physical paint latency"
+  ],
+  "testToolCorrections": [
+    "Preserved first fail-fast GitHub timeout, then collected full 25-minute timeline without hiding failures",
+    "Separated HTTP status from API business code",
+    "Moved generated focus records out of the historical JSONL file",
+    "Installed app bundle unchanged throughout these TV performance runs"
+  ]
+}

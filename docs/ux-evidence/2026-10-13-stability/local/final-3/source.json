@@ -1,0 +1,72 @@
+{
+  "startedAt": "2026-10-13T06:27:37.908410+00:00",
+  "head": "4eb77e0c14ee04c51ba07739d92dd6bd9a650e73",
+  "productionDiffSha256": "491d0ebc498f910fb41c739fd8201c30244530d54aedca94a53b624f0215c69a",
+  "productionDiffScope": [
+    "app/src",
+    "service/com.biliwebos.app.service"
+  ],
+  "testBuild": "stability-test.3",
+  "node": "v25.4.0",
+  "runs": [
+    {
+      "command": "bash tools/verify.sh --no-tv --ux",
+      "startedAt": "2026-10-13T06:27:52.554969+00:00",
+      "endedAt": "2026-10-13T06:31:31.742161+00:00",
+      "exitCode": 1,
+      "classification": "test observation race: replacement load counted before its Blob MPD finished reading",
+      "log": "verify-ux-first-failure.log"
+    },
+    {
+      "command": "bash tools/verify.sh --no-tv --ux",
+      "startedAt": "2026-10-13T06:36:12.069758+00:00",
+      "endedAt": "2026-10-13T06:40:38.550395+00:00",
+      "exitCode": 0,
+      "log": "verify-ux.log"
+    },
+    {
+      "command": "bash tools/verify.sh --sim --no-tv",
+      "startedAt": "2026-10-13T06:41:50.209724+00:00",
+      "endedAt": "2026-10-13T06:45:16.351358+00:00",
+      "exitCode": 0,
+      "isolatedStateDir": "/tmp/bili-stability-final3-state",
+      "accountWrites": false,
+      "simOutput": "/tmp/bili-stability-final3-simulator",
+      "log": "verify-sim.log"
+    }
+  ],
+  "productionDiffSha256AfterUx": "491d0ebc498f910fb41c739fd8201c30244530d54aedca94a53b624f0215c69a",
+  "supplementalRuns": [
+    {
+      "command": "node tools/test-tv-stability-transport.mjs",
+      "exitCode": 0,
+      "completedAt": "2026-10-13T06:41:31.457688+00:00",
+      "log": "transport-inventory.log",
+      "reason": "new inventory error-path coverage was added after UX static stage; simulator repeats final version"
+    }
+  ],
+  "productionDiffSha256AfterSim": "491d0ebc498f910fb41c739fd8201c30244530d54aedca94a53b624f0215c69a",
+  "completedAt": "2026-10-13T06:48:04.048479+00:00",
+  "status": "local required gates passed with explicit optional/account skips",
+  "productionDiffSha256Final": "491d0ebc498f910fb41c739fd8201c30244530d54aedca94a53b624f0215c69a",
+  "sourceUnchanged": true,
+  "cleanup": {
+    "ownedServiceAndViteStartedByVerify": true,
+    "portsInitiallyFree": [
+      5173,
+      9528
+    ],
+    "portsAtCompletion": {
+      "5173": {
+        "listening": false
+      },
+      "9528": {
+        "listening": false
+      }
+    },
+    "checkedAt": "2026-10-13T06:48:04.048479+00:00"
+  },
+  "packageManifestVerification": "manifest-verification.json",
+  "candidateStatus": "superseded: television live relay stopped delivering during full 15-minute run; original local PASS retained",
+  "televisionFollowUp": "../../live-continuity-monitor/candidate3-reassessment.json"
+}

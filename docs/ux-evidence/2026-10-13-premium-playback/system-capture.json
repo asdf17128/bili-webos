@@ -1,0 +1,12 @@
+[
+  {
+    "service": "com.webos.service.capture",
+    "code": 0,
+    "output": "{\n    \"errorCode\": -1,\n    \"returnValue\": false,\n    \"errorText\": \"Denied method call \\\"executeOneShot\\\" for category \\\"/\\\"\"\n}\n"
+  },
+  {
+    "service": "com.webos.service.tv.capture",
+    "code": 0,
+    "output": "{\n    \"errorCode\": -1,\n    \"returnValue\": false,\n    \"errorText\": \"Service does not exist: com.webos.service.tv.capture.\"\n}\nLUNASERVICE ERROR -1: Could not cancel to unknown client (_LSTransportAddPendingMessageWithToken @ transport.c:4152)\n"
+  }
+]

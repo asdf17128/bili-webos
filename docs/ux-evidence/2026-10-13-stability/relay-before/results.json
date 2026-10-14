@@ -1,0 +1,393 @@
+{
+  "source": "service/com.biliwebos.app.service/danmaku.js",
+  "sha256": "b2c1d057f7b0dfa4b0e5c70fe8b7e5513ce72d2587730491af24f8a737863506",
+  "boundary": "Actual relay, controlled WebSocket and virtual time. Real legacy socket teardown is separately exercised below.",
+  "checks": [
+    {
+      "name": "six healthy reconnects restore budget and continue delivery",
+      "pass": false,
+      "error": "healthy connections exhausted lifetime retry budget\n\n5 !== 6\n",
+      "detail": {
+        "connections": 5,
+        "atMs": [
+          0,
+          33000,
+          66000,
+          99000,
+          132000
+        ],
+        "timers": 0,
+        "delivered": 5,
+        "authPackets": 5,
+        "heartbeatPackets": 5,
+        "state": null
+      }
+    },
+    {
+      "name": "handshake deadline terminates hung CONNECTING socket",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n0 !== 3\n",
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 0,
+        "delivered": 0,
+        "authPackets": 0,
+        "heartbeatPackets": 0,
+        "state": null
+      }
+    },
+    {
+      "name": "chat and heartbeat cannot replace authentication; auth has a deadline",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n1 !== 0\n",
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 1,
+        "delivered": 1,
+        "authPackets": 1,
+        "heartbeatPackets": 0,
+        "state": null
+      }
+    },
+    {
+      "name": "auth rejection is visible and waits sixty seconds before retry",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n1 !== 3\n",
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 1,
+        "heartbeatPackets": 0,
+        "state": null
+      }
+    },
+    {
+      "name": "quiet room with heartbeat replies remains connected for ten minutes",
+      "pass": false,
+      "error": "actual state must be observable\n+ actual - expected\n\n+ 'undefined'\n- 'function'\n",
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 1,
+        "heartbeatPackets": 20,
+        "state": null
+      }
+    },
+    {
+      "name": "half-open heartbeat timeout destroys connection and schedules recovery",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n1 !== 3\n",
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 1,
+        "heartbeatPackets": 1,
+        "state": null
+      }
+    },
+    {
+      "name": "nineteen-second heartbeat delay is tolerated",
+      "pass": false,
+      "error": "actual state must be observable\n+ actual - expected\n\n+ 'undefined'\n- 'function'\n",
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 1,
+        "heartbeatPackets": 1,
+        "state": null
+      }
+    },
+    {
+      "name": "persistent failures use capped backoff with one retry and no permanent stop",
+      "pass": false,
+      "error": "error and close must not duplicate retry\n\n2 !== 1\n",
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 2,
+        "delivered": 0,
+        "authPackets": 0,
+        "heartbeatPackets": 0,
+        "state": null
+      }
+    },
+    {
+      "name": "brief authenticated connections do not wash repeated-failure backoff",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n3 !== 2\n",
+      "detail": {
+        "connections": 3,
+        "atMs": [
+          0,
+          3000,
+          6000
+        ],
+        "timers": 0,
+        "delivered": 0,
+        "authPackets": 2,
+        "heartbeatPackets": 0,
+        "state": null
+      }
+    },
+    {
+      "name": "late old socket open/message/error/close cannot touch newer connection",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n1 !== 0\n",
+      "detail": {
+        "connections": 2,
+        "atMs": [
+          0,
+          3000
+        ],
+        "timers": 3,
+        "delivered": 1,
+        "authPackets": 2,
+        "heartbeatPackets": 0,
+        "state": null
+      }
+    },
+    {
+      "name": "stop clears retry immediately and prevents reconnect",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n1 !== 0\n",
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 0,
+        "heartbeatPackets": 0,
+        "state": null
+      }
+    },
+    {
+      "name": "stop during connect suppresses late auth send and message delivery",
+      "pass": false,
+      "error": "closed transport",
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 0,
+        "delivered": 0,
+        "authPackets": 0,
+        "heartbeatPackets": 0,
+        "state": null
+      }
+    },
+    {
+      "name": "stop while connected suppresses late messages and releases all timers",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n1 !== 0\n",
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 0,
+        "delivered": 1,
+        "authPackets": 1,
+        "heartbeatPackets": 0,
+        "state": null
+      }
+    },
+    {
+      "name": "async heartbeat send failure and close create exactly one retry",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n1 !== 3\n",
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 1,
+        "heartbeatPackets": 0,
+        "state": null
+      }
+    },
+    {
+      "name": "async auth send failure and constructor exceptions remain bounded",
+      "pass": false,
+      "error": "actual state must be observable\n+ actual - expected\n\n+ 'undefined'\n- 'function'\n",
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 1,
+        "heartbeatPackets": 0,
+        "state": null
+      }
+    },
+    {
+      "name": "malformed authentication does not authorize or throw",
+      "pass": false,
+      "error": "actual state must be observable\n+ actual - expected\n\n+ 'undefined'\n- 'function'\n",
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 1,
+        "delivered": 0,
+        "authPackets": 1,
+        "heartbeatPackets": 0,
+        "state": null
+      }
+    },
+    {
+      "name": "compressed multiple packets and malformed lengths are isolated",
+      "pass": false,
+      "error": "actual state must be observable\n+ actual - expected\n\n+ 'undefined'\n- 'function'\n",
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 1,
+        "delivered": 2,
+        "authPackets": 1,
+        "heartbeatPackets": 0,
+        "state": null
+      }
+    },
+    {
+      "name": "diagnostic snapshot exposes state and counters without credentials or content",
+      "pass": false,
+      "error": "actual state must be observable\n+ actual - expected\n\n+ 'undefined'\n- 'function'\n",
+      "detail": {
+        "connections": 1,
+        "atMs": [
+          0
+        ],
+        "timers": 1,
+        "delivered": 1,
+        "authPackets": 1,
+        "heartbeatPackets": 0,
+        "state": null
+      }
+    },
+    {
+      "name": "real ws-legacy tls-stall: stop releases transport",
+      "pass": false,
+      "error": "stop left an owned legacy client socket alive\n\n1 !== 0\n",
+      "detail": {
+        "stage": "tls-stall",
+        "deadline": false,
+        "opened": 1,
+        "upgrades": 0,
+        "activeAfterStop": 1,
+        "requests": 1,
+        "requestCloseEvents": 0,
+        "upgradedRequests": 0,
+        "clientSockets": 1,
+        "clientSocketCloseEvents": 0,
+        "clientSocketsAlive": 1,
+        "clientStates": [
+          3
+        ],
+        "elapsedMs": 171,
+        "state": null
+      }
+    },
+    {
+      "name": "real ws-legacy upgrade-stall: stop releases transport",
+      "pass": false,
+      "error": "stop left an owned legacy client socket alive\n\n1 !== 0\n",
+      "detail": {
+        "stage": "upgrade-stall",
+        "deadline": false,
+        "opened": 1,
+        "upgrades": 1,
+        "activeAfterStop": 1,
+        "requests": 1,
+        "requestCloseEvents": 0,
+        "upgradedRequests": 0,
+        "clientSockets": 1,
+        "clientSocketCloseEvents": 0,
+        "clientSocketsAlive": 1,
+        "clientStates": [
+          3
+        ],
+        "elapsedMs": 164,
+        "state": null
+      }
+    },
+    {
+      "name": "real ws-legacy open-no-close-reply: stop releases transport",
+      "pass": false,
+      "error": "stop left an owned legacy client socket alive\n\n1 !== 0\n",
+      "detail": {
+        "stage": "open-no-close-reply",
+        "deadline": false,
+        "opened": 1,
+        "upgrades": 1,
+        "activeAfterStop": 1,
+        "requests": 1,
+        "requestCloseEvents": 0,
+        "upgradedRequests": 1,
+        "clientSockets": 1,
+        "clientSocketCloseEvents": 0,
+        "clientSocketsAlive": 1,
+        "clientStates": [
+          2
+        ],
+        "elapsedMs": 162,
+        "state": null
+      }
+    },
+    {
+      "name": "real ws-legacy tls-stall: deadline, recovery and stop",
+      "pass": false,
+      "error": "ten-second handshake timeout must destroy the old client socket\n\n1 !== 0\n",
+      "detail": {
+        "stage": "tls-stall",
+        "deadline": true,
+        "opened": 1,
+        "upgrades": 0,
+        "activeAfterStop": 1,
+        "requests": 1,
+        "requestCloseEvents": 0,
+        "upgradedRequests": 0,
+        "clientSockets": 1,
+        "clientSocketCloseEvents": 0,
+        "clientSocketsAlive": 1,
+        "clientStates": [
+          3
+        ]
+      }
+    }
+  ],
+  "pass": false
+}

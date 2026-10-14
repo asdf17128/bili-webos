@@ -1,0 +1,56 @@
+{
+  "recordedAt": "2026-10-13T07:25:20.992056+00:00",
+  "head": "4eb77e0c14ee04c51ba07739d92dd6bd9a650e73",
+  "productionDiffSha256": "ef1125343cec968e95406b536347b9d39765dac080b5a4d167e72b05a3c5bcd6",
+  "productionDiffScope": [
+    "app/src",
+    "service/com.biliwebos.app.service"
+  ],
+  "testBuild": "stability-test.4",
+  "node": "v25.4.0",
+  "candidatePackageSha256": "afd179deb5dc4aa223623b1dbbe4a13373b7534e55167441b1b38862a27c0691",
+  "status": "all required local gates passed with explicit skips",
+  "runs": [
+    {
+      "command": "bash tools/verify.sh --no-tv --ux",
+      "startedAt": "2026-10-13T07:26:07.301936+00:00",
+      "log": "verify-ux.log",
+      "gateOutput": "/tmp/bili-stability-final4-ux-gates",
+      "endedAt": "2026-10-13T07:30:47.174571+00:00",
+      "exitCode": 0
+    },
+    {
+      "command": "bash tools/verify.sh --sim --no-tv",
+      "startedAt": "2026-10-13T07:30:52.458728+00:00",
+      "log": "verify-sim.log",
+      "gateOutput": "/tmp/bili-stability-final4-sim-gates",
+      "isolatedStateDir": "/tmp/bili-stability-final4-state",
+      "accountWrites": false,
+      "simOutput": "/tmp/bili-stability-final4-simulator",
+      "endedAt": "2026-10-13T07:34:32.105167+00:00",
+      "exitCode": 0
+    }
+  ],
+  "productionDiffSha256AfterUx": "ef1125343cec968e95406b536347b9d39765dac080b5a4d167e72b05a3c5bcd6",
+  "productionDiffSha256AfterSim": "ef1125343cec968e95406b536347b9d39765dac080b5a4d167e72b05a3c5bcd6",
+  "completedAt": "2026-10-13T07:35:34.178137+00:00",
+  "productionDiffSha256Final": "ef1125343cec968e95406b536347b9d39765dac080b5a4d167e72b05a3c5bcd6",
+  "sourceUnchanged": true,
+  "cleanup": {
+    "ownedPids": [
+      99755,
+      99705
+    ],
+    "ownedProcessesExited": true,
+    "portsAtCompletion": {
+      "5173": false,
+      "9528": false
+    },
+    "checkedAt": "2026-10-13T07:35:34.178137+00:00"
+  },
+  "packageManifestVerification": "manifest-verification.json",
+  "dependencies": {
+    "ws": "7.5.11",
+    "ws-legacy": "1.1.5"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-13T08:51:58.440Z",
+  "visible": "visible",
+  "videoCount": 0,
+  "playerPresent": false,
+  "sidebarItems": 14,
+  "focusCount": 1,
+  "remainingInjections": [],
+  "service": {
+    "uptime": 5429,
+    "loggedIn": true,
+    "castSubscribers": 1,
+    "danmakuSubscribers": 0,
+    "danmakuActive": false
+  },
+  "settingsSha256": "c0338dd4b28d4579c46a34ebd0c7462bd3e4112976d3dc3026196d9d09bacd04",
+  "idle": true,
+  "pass": true
+}

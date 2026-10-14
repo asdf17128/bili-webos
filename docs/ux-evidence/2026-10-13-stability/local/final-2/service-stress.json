@@ -1,0 +1,724 @@
+{
+  "started": "2026-10-13T05:56:50.861Z",
+  "finished": "2026-10-13T05:57:03.692Z",
+  "completed": true,
+  "node": "v25.4.0",
+  "rounds": 50,
+  "deadlineMs": 120,
+  "metrics": {
+    "helperRequestsCreated": 2450,
+    "helperRequestsClosed": 2450,
+    "helperOperations": 2300,
+    "proxyOperations": 400,
+    "positiveControls": 3
+  },
+  "results": [
+    {
+      "name": "positive controls distinguish raw socket failure and incomplete body",
+      "pass": true,
+      "ms": 108,
+      "rawReset": "ECONNRESET",
+      "truncatedStreamHasNoEnd": true,
+      "socketTimeoutMissesPendingDns": true
+    },
+    {
+      "name": "50 × GET healthy, followed by healthy recovery",
+      "pass": true,
+      "ms": 159,
+      "iterations": 50,
+      "recoveryRequests": 50,
+      "p95Ms": 4,
+      "maxMs": 5
+    },
+    {
+      "name": "50 × GET gzip-good, followed by healthy recovery",
+      "pass": true,
+      "ms": 169,
+      "iterations": 50,
+      "recoveryRequests": 50,
+      "p95Ms": 8,
+      "maxMs": 9
+    },
+    {
+      "name": "50 × GET reset-once, followed by healthy recovery",
+      "pass": true,
+      "ms": 176,
+      "iterations": 50,
+      "recoveryRequests": 50,
+      "p95Ms": 10,
+      "maxMs": 10
+    },
+    {
+      "name": "50 × GET reset-always, followed by healthy recovery",
+      "pass": true,
+      "ms": 177,
+      "iterations": 50,
+      "recoveryRequests": 50,
+      "p95Ms": 4,
+      "maxMs": 5
+    },
+    {
+      "name": "50 × POST reset-always, followed by healthy recovery",
+      "pass": true,
+      "ms": 165,
+      "iterations": 50,
+      "recoveryRequests": 50,
+      "p95Ms": 3,
+      "maxMs": 4
+    },
+    {
+      "name": "50 × GET http503, followed by healthy recovery",
+      "pass": true,
+      "ms": 160,
+      "iterations": 50,
+      "recoveryRequests": 50,
+      "p95Ms": 2,
+      "maxMs": 3
+    },
+    {
+      "name": "50 × GET truncate, followed by healthy recovery",
+      "pass": true,
+      "ms": 275,
+      "iterations": 50,
+      "recoveryRequests": 50,
+      "p95Ms": 13,
+      "maxMs": 13
+    },
+    {
+      "name": "50 × GET body-stall, followed by healthy recovery",
+      "pass": true,
+      "ms": 1421,
+      "iterations": 50,
+      "recoveryRequests": 50,
+      "p95Ms": 127,
+      "maxMs": 128
+    },
+    {
+      "name": "50 × GET header-stall, followed by healthy recovery",
+      "pass": true,
+      "ms": 1396,
+      "iterations": 50,
+      "recoveryRequests": 50,
+      "p95Ms": 125,
+      "maxMs": 125
+    },
+    {
+      "name": "50 × GET gzip-bad, followed by healthy recovery",
+      "pass": true,
+      "ms": 154,
+      "iterations": 50,
+      "recoveryRequests": 50,
+      "p95Ms": 3,
+      "maxMs": 3
+    },
+    {
+      "name": "50 × pending DNS deadline and cancellation",
+      "pass": true,
+      "ms": 1402,
+      "timeouts": 50,
+      "cancellations": 50,
+      "lateCallbacks": 0
+    },
+    {
+      "name": "50 × cancel active retry then reuse connection pool",
+      "pass": true,
+      "ms": 225,
+      "cancelledRetries": 50,
+      "lateCallbacks": 0
+    },
+    {
+      "name": "50 × saturated pool, 12 expirations + 6 cancellations, then recovery",
+      "pass": true,
+      "ms": 6526,
+      "rounds": 50,
+      "expiredQueuedRequests": 600,
+      "cancelledQueuedRequests": 300,
+      "recoveryRequests": 50
+    },
+    {
+      "name": "isolated production service starts without account files or external sockets",
+      "pass": true,
+      "ms": 4,
+      "isolation": "production source, only filesystem/network/webOS side effects replaced",
+      "loggedIn": false
+    },
+    {
+      "name": "50 × production proxy header-stall/headers then recovery",
+      "pass": true,
+      "ms": 96,
+      "iterations": 50,
+      "recoveryRequests": 50,
+      "activeUpstreamsAfter": 0,
+      "queuedAfter": 0
+    },
+    {
+      "name": "50 × production proxy body-stall/body then recovery",
+      "pass": true,
+      "ms": 24,
+      "iterations": 50,
+      "recoveryRequests": 50,
+      "activeUpstreamsAfter": 0,
+      "queuedAfter": 0
+    },
+    {
+      "name": "50 × production proxy truncate/error then recovery",
+      "pass": true,
+      "ms": 147,
+      "iterations": 50,
+      "recoveryRequests": 50,
+      "activeUpstreamsAfter": 0,
+      "queuedAfter": 0
+    },
+    {
+      "name": "50 × production proxy reset-always/error then recovery",
+      "pass": true,
+      "ms": 28,
+      "iterations": 50,
+      "recoveryRequests": 50,
+      "activeUpstreamsAfter": 0,
+      "queuedAfter": 0
+    },
+    {
+      "name": "all owned upstream requests, server sockets and pool slots are released",
+      "pass": true,
+      "ms": 7,
+      "fixtureSockets": 0,
+      "ownedRequests": 0,
+      "created": 2450,
+      "closed": 2450,
+      "warnings": []
+    }
+  ],
+  "checkpoints": [
+    {
+      "label": "healthy",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "gzip-good",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "reset-once",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "reset-always",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "reset-always",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "http503",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "truncate",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "body-stall",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "header-stall",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "gzip-bad",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "pending-dns",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "cancel-retry",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "queue-round-0",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-1",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-2",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-3",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-4",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-5",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-6",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-7",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-8",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-9",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-10",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-11",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-12",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-13",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-14",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-15",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-16",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-17",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-18",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-19",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-20",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-21",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-22",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-23",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-24",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-25",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-26",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-27",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-28",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-29",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-30",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-31",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-32",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-33",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-34",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-35",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-36",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-37",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-38",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-39",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-40",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-41",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-42",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-43",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-44",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-45",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-46",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-47",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-48",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-49",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "proxy-header-stall-headers",
+      "active": 0,
+      "queued": 0,
+      "idle": 2,
+      "fixtureConnections": 2
+    },
+    {
+      "label": "proxy-body-stall-body",
+      "active": 0,
+      "queued": 0,
+      "idle": 2,
+      "fixtureConnections": 2
+    },
+    {
+      "label": "proxy-truncate-error",
+      "active": 0,
+      "queued": 0,
+      "idle": 2,
+      "fixtureConnections": 2
+    },
+    {
+      "label": "proxy-reset-always-error",
+      "active": 0,
+      "queued": 0,
+      "idle": 2,
+      "fixtureConnections": 2
+    }
+  ],
+  "limitations": [
+    "loopback HTTP does not test TLS, real DNS infrastructure, webOS Node runtime, overseas routing, device memory/GPU, or 24h longevity",
+    "DNS stall is an injected lookup callback; cancellation and all HTTP failures use real ClientRequest/socket lifecycle",
+    "service proxy runs unmodified service.js with isolated filesystem/webOS and loopback HTTPS transport replacement",
+    "resource assertions cover owned ClientRequests, Agent queues and sockets; no claim about all process memory or activeHandles"
+  ]
+}

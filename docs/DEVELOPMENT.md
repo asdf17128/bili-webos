@@ -188,3 +188,27 @@ webOS 安装版本保持 2.2.3，设置/诊断显示 `2.2.3 c9-test.1`；同版�
 `tools/test-network-soak-tv.mjs` 临时设循环、实际播放 25 分钟，每分钟并行检查 B 站 API、直播 API 与 GitHub 更新请求，记录视频尺寸/进度/最长停滞和服务 uptime；原设置最终恢复。结果只保留状态、耗时与计数，不保存认证、账号信息或媒体地址。正常耐久运行不能代替 DNS 故障复现。每次完整耐久会主动下载 26 次 `version.json`，这些下载是测试流量，不应计作真实日活；失败的运行也会产生部分下载。
 
 `upstreamRequest.js` 仅对无体 GET/HEAD 在响应头前的 ECONNRESET/EPIPE 换新连接重试一次，与第一次请求共用总期限。单元测试用真实 HTTP 对端断连验证；POST、HTTP 错误、部分响应不能重发，取消句柄必须跟随当前尝试。旧运行时门禁包含断连→新连接成功。
+
+
+### 2026-10-13：真机退出登录与动态代理端口
+
+- 已获设备验证授权后，用 `UX_OUTPUT=/tmp/bili-session-tv node tools/test-session-tv.mjs` 验证真实遥控退出、失败提示、前端/服务/磁盘清理、B站匿名响应、重启持久化和旧观察器 API。脚本会暂时退出当前账号，在 finally 恢复原 Cookie、前端认证与设置；私有恢复文件权限 0600，确认原账号恢复后删除，截图只留本地。`--baseline` 可对旧包复现；不要把含凭据的恢复文件提交仓库。
+- `UX_OUTPUT=/tmp/bili-proxy-port-tv node tools/test-proxy-port-tv.mjs` 在电视上启动临时回环 TCP 转发器，注入 Luna 返回的端口，验证生产前端的封面及真实 Shaka 媒体请求跟随端口、206 响应及解码进度。finally 移除注入、重载并关闭临时转发器。它测的是电视前端端口协商；生产服务的 EADDRINUSE 自动换端口另由 `test-session-proxy.mjs` 在真实本机 socket 上验证。
+- 两脚本须在同一电视上串行执行。CDP 先 `Page.enable` 再注册新文档脚本，注入必须有可读标记；Page.reload 返回不代表新文档已就绪，使用文档代次标记等待新页面，避免把旧 DOM 当重启成功。
+- 当前分支以 `TEST_BUILD=bugfix-test.1` 区分设备测试包，数值版本保持 2.3.0。安装与测试不等于发布，未调用 release 工具、未推送测试包或更新 Homebrew。
+
+## 会员画质与 Dolby 真机补验
+
+测试账号必须由 `/x/web-interface/nav` 确认登录和 VIP 状态，Cookie 存在不算。测试需要电视已启动，并在隔离工作树部署带 TEST_BUILD 的包；安装命令成功后须再次确认前台可见、`__openVideo` 就绪、实际安装 bundle/IPK 哈希与本地一致。
+
+```bash
+node tools/_cdp.mjs tools/probe-premium-tv.js             # 11 个真实片源：codec / qn / 实际尺寸 / 推进 / 丢帧
+UX_OUTPUT=/tmp/premium-controls node tools/test-premium-tv.mjs # 遥控画质、seek、注入解码故障后的真实恢复
+node tools/_cdp.mjs tools/probe-premium-soak-tv.js          # 约 3 分钟，实际自然播完特定 DV60 片源
+```
+
+上述工具会播放指定视频并产生正常历史记录，结束恢复原播放设置。只可串行操作同一电视；证据不导出 Cookie、签名媒体 URL 或视频字节。会员番剧用 ep 433953（API 当次 badge=会员），不要用免费第一集代替会员权限验收。
+
+`probe-dolby-corpus-tv.js` 需先在电视内取得目标 playurl，将它临时放入 `window.__premiumSources[bvid+':'+cid]`。用 app 的 esbuild 将探针打包成 IIFE（globalName=`premiumCorpus`），追加 `premiumCorpus.probe()`，经 `_cdp.mjs` 执行。它在电视内读取、转换并检查全部 35 个实际分片，仅返回脱敏计数/耗时。结束删除临时变量或重新启动页面。不要把签名响应写到仓库。
+
+`__dolbyRuntime().fragments` 是已处理响应次数，不是去重分片数，Shaka 可能重复请求；完整性依据逐分片 corpus 校验及自然 ended / 时间轴 / 解码帧数共同判断。CDP 截图只核对控制栏，不能证明 GPU 画面或面板 Dolby/Atmos 输出。

@@ -1,0 +1,126 @@
+{
+  "startedAt": "2026-10-13T05:15:41Z",
+  "completedAt": "2026-10-13T05:19:59.437Z",
+  "sourceCommit": "4eb77e0c14ee04c51ba07739d92dd6bd9a650e73",
+  "command": "bash tools/verify.sh --no-tv --ux",
+  "exitCode": 0,
+  "environment": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "node": "v25.4.0",
+    "python": "3.14.6",
+    "docker": "29.0.1",
+    "chromium": "Playwright bundled Chromium"
+  },
+  "runtimeChecks": [
+    {
+      "node": "0.12.2",
+      "pass": true
+    },
+    {
+      "node": "8.17.0",
+      "pass": true
+    }
+  ],
+  "additionalCommands": [
+    {
+      "command": "node tools/test-loudness.mjs",
+      "exitCode": 0,
+      "groups": 7
+    }
+  ],
+  "skipped": [
+    {
+      "suite": "dolbyFrameReducer.test.js",
+      "case": "all 35 captured fragments satisfy the closed-GOP reduction proof",
+      "reason": "BILI_DOLBY_120_CORPUS not provided; copyrighted full stream is not checked into repository"
+    }
+  ],
+  "cleanup": {
+    "vitePid": 48381,
+    "stopped": true,
+    "noTelevisionOperations": true,
+    "noAccountWrites": true,
+    "productionFilesModified": false
+  },
+  "reports": [
+    {
+      "name": "ui",
+      "file": "ui.json",
+      "modified": "2026-10-13T05:17:38.173Z",
+      "records": 68,
+      "pass": 68,
+      "fail": 0,
+      "sha256": "7747c1336ff5ba7aebb3c54929dd1599643a412e9e17e1ab78b71d106914a8f7"
+    },
+    {
+      "name": "sessions",
+      "file": "sessions.json",
+      "modified": "2026-10-13T05:17:40.891Z",
+      "records": 9,
+      "pass": 9,
+      "fail": 0,
+      "sha256": "d13e9f0515185f0e122ce8cfd03cb5807794611c18489311047e159d32822784"
+    },
+    {
+      "name": "player-loading",
+      "file": "player-loading.json",
+      "modified": "2026-10-13T05:18:21.933Z",
+      "records": 44,
+      "pass": 44,
+      "fail": 0,
+      "sha256": "796a5783b3acb06855a19850d64d4a168869f925812ebbd6cdbd99e5cc0ae275"
+    },
+    {
+      "name": "danmaku",
+      "file": "danmaku.json",
+      "modified": "2026-10-13T05:18:27.545Z",
+      "records": 8,
+      "pass": 6,
+      "fail": 0,
+      "sha256": "2424672e53fc40d8376b67262c8166bac0bd43a243dd16e098491c79811e2212"
+    },
+    {
+      "name": "playback-end",
+      "file": "playback-end.json",
+      "modified": "2026-10-13T05:18:43.237Z",
+      "records": 26,
+      "pass": 26,
+      "fail": 0,
+      "sha256": "9ad8c20837652f74fef4c0ab3686d746aa692f62b8ee180e714e34e1838e2262"
+    },
+    {
+      "name": "live-loading",
+      "file": "live-loading.json",
+      "modified": "2026-10-13T05:18:47.037Z",
+      "records": 9,
+      "pass": 9,
+      "fail": 0,
+      "sha256": "cf28da45314a6a0371cceb95c1655e4bdaaa3fba5e180aee3b0ed13f57c8bed8"
+    },
+    {
+      "name": "cdn",
+      "file": "cdn.json",
+      "modified": "2026-10-13T05:19:06.888Z",
+      "records": 7,
+      "pass": 7,
+      "fail": 0,
+      "sha256": "01d0e9aab3a5b80a62bfe1e8ddf5124b3780296f1a4acfaf73248880dfd2374d"
+    },
+    {
+      "name": "diagnostic-cdn",
+      "file": "diagnostic-cdn.json",
+      "modified": "2026-10-13T05:19:08.349Z",
+      "records": 4,
+      "pass": 4,
+      "fail": 0,
+      "sha256": "444e1349dc1db689d86ae7a1bddd32c06614985e5fd9dc83f1763a99ef9cc831"
+    }
+  ],
+  "limits": [
+    "Browser media-event/engine fixtures are deterministic application regressions, not physical TV decoder validation.",
+    "No actual user account mutations were performed; session tests use isolated fixture credentials.",
+    "Full 35-fragment media corpus test was skipped locally; this is not counted as a pass.",
+    "Long-duration hardware/network stability is recorded separately by the TV test owner."
+  ]
+}

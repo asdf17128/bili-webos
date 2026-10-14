@@ -1,0 +1,92 @@
+{
+  "startedAt": "2026-10-13T05:47:22.913Z",
+  "minutes": 15,
+  "cycles": 5,
+  "checks": [
+    {
+      "name": "service subscriber diagnostics available at idle",
+      "pass": true,
+      "detail": {
+        "danmakuSubscribers": 0,
+        "danmakuActive": false,
+        "castSubscribers": 1
+      }
+    },
+    {
+      "name": "currently active production live room found",
+      "pass": false,
+      "detail": {
+        "roomId": null,
+        "recommendationCode": 0,
+        "candidates": [
+          {
+            "roomId": 22142427,
+            "code": null,
+            "liveStatus": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "test completed",
+      "pass": false,
+      "detail": "No current live room available"
+    },
+    {
+      "name": "original settings restored",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "all live monitor injection removed",
+      "pass": true,
+      "detail": {
+        "requestRestored": true,
+        "forcedCancels": 0,
+        "cancelFailures": 0,
+        "injectionsRemoved": true
+      }
+    }
+  ],
+  "samples": [],
+  "sessions": [],
+  "metrics": [
+    {
+      "phase": "before",
+      "heapBytes": 5734624,
+      "documents": 1,
+      "nodes": 608,
+      "listeners": 214,
+      "network": {
+        "active": 0,
+        "media": 0,
+        "completedMedia": 0,
+        "failedMedia": 0
+      }
+    }
+  ],
+  "limits": [
+    "Native video time/dimensions/frame counters are not a photograph of the physical panel.",
+    "A quiet room without received chat frames cannot validate real-time chat rendering.",
+    "SDK cancellation, service acknowledgement and production diagnostic subscriber counts are measured separately.",
+    "JS heap and DOM counters exclude GPU/process memory; one television and network do not establish fleet-wide stability."
+  ],
+  "baseline": {
+    "danmakuSubscribers": 0,
+    "danmakuActive": false,
+    "castSubscribers": 1
+  },
+  "fixture": {
+    "roomId": null,
+    "recommendationCode": 0,
+    "candidates": [
+      {
+        "roomId": 22142427,
+        "code": null,
+        "liveStatus": null
+      }
+    ]
+  },
+  "completedAt": "2026-10-13T05:47:34.398Z",
+  "pass": false
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "name": "member identity displays active annual badge",
+    "pass": false,
+    "error": "page.waitForFunction: Timeout 7000ms exceeded."
+  },
+  {
+    "name": "member default requests highest and supports explicit manual and automatic choices",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n80 !== 127\n"
+  }
+]

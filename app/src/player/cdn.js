@@ -54,14 +54,18 @@ export function addMirrors(urls, hosts) {
   return result.filter(Boolean);
 }
 
-export function playbackCdnUrls(rep, route) {
+export function sourceCdnUrls(rep, route) {
   let urls = nativeCdnUrls(rep);
   const template = urls.find(canMirror), forced = CDN_ROUTES[route];
   if (template && forced) {
-    const url = withHost(template, forced);
+    const url = urls.find(u => cdnHostOf(u) === forced) || withHost(template, forced);
     urls = [url, ...urls.filter(u => u !== url)];
   }
-  urls = addMirrors(urls, FALLBACK_MIRRORS);
+  return addMirrors(urls, FALLBACK_MIRRORS);
+}
+
+export function playbackCdnUrls(rep, route) {
+  const urls = sourceCdnUrls(rep, route), template = urls.find(canMirror);
   if (testBadCdnEnabled() && template) urls.unshift(withHost(template, TEST_BAD_HOST));
   return demoteBanned(urls);
 }

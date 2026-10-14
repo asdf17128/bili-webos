@@ -1,0 +1,48 @@
+{
+  "results": [
+    {
+      "name": "valid asset succeeds without a fallback",
+      "pass": true
+    },
+    {
+      "name": "octet-stream asset is decoded",
+      "pass": true
+    },
+    {
+      "name": "HTML gateway response falls back once to independent release API",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n'' !== '2.4.0'\n"
+    },
+    {
+      "name": "invalid JSON falls back once to independent release API",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n'' !== '2.4.0'\n"
+    },
+    {
+      "name": "null JSON falls back once to independent release API",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n'' !== '2.4.0'\n"
+    },
+    {
+      "name": "invalid version falls back once to independent release API",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'not-a-version'\n- '2.4.0'\n"
+    },
+    {
+      "name": "transport reset falls back once to independent release API",
+      "pass": false,
+      "error": "ECONNRESET"
+    },
+    {
+      "name": "both failed sources reject instead of claiming latest",
+      "pass": false,
+      "error": "Missing expected rejection."
+    },
+    {
+      "name": "hung source is cancelled; fallback succeeds within bounded configured deadlines",
+      "pass": false,
+      "error": "Request timeout (20s)"
+    }
+  ],
+  "limits": "Luna boundary fixture; deadline values checked with accelerated timer, not real elapsed network time."
+}

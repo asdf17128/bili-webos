@@ -1,0 +1,67 @@
+[
+  {
+    "name": "TV thumbnails use the actual service port",
+    "pass": true,
+    "detail": {
+      "ports": [
+        "7654"
+      ],
+      "service": 7654
+    }
+  },
+  {
+    "name": "TV startup has decoded covers and a visible page",
+    "pass": true
+  },
+  {
+    "name": "remote reaches the real logout row",
+    "pass": true
+  },
+  {
+    "name": "TV refuses false logout success and keeps retry reachable",
+    "pass": true
+  },
+  {
+    "name": "real logout clears the TV service account",
+    "pass": true,
+    "detail": {
+      "loggedIn": false
+    }
+  },
+  {
+    "name": "TV persisted cookie file has no account credentials",
+    "pass": true
+  },
+  {
+    "name": "TV frontend credentials and account UI are cleared",
+    "pass": true
+  },
+  {
+    "name": "real Bilibili API confirms anonymous after logout",
+    "pass": true,
+    "detail": {
+      "code": -101
+    }
+  },
+  {
+    "name": "reload keeps the TV logged out",
+    "pass": true
+  },
+  {
+    "name": "TV renders covers with isIntersecting removed",
+    "pass": false,
+    "detail": {
+      "hasProperty": true,
+      "firstWidth": 420
+    }
+  },
+  {
+    "name": "original TV account and settings restored",
+    "pass": true
+  },
+  {
+    "name": "completion",
+    "pass": false,
+    "detail": "TV renders covers with isIntersecting removed"
+  }
+]

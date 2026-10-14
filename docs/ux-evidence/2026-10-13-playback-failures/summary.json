@@ -1,0 +1,45 @@
+{
+  "date": "2026-10-13",
+  "build": "2.3.0 playback-test.2",
+  "released": false,
+  "device": "LG C4 / Chromium 120",
+  "localGate": "verify.sh --no-tv --ux: exit 0",
+  "browserLoading": {
+    "passed": 44,
+    "failed": 0
+  },
+  "browserDiagnostic": {
+    "passed": 4,
+    "failed": 0
+  },
+  "tvControlledErrorRecovery": {
+    "passed": 7,
+    "failed": 0
+  },
+  "tvCdn": {
+    "passed": 16,
+    "failed": 0
+  },
+  "tvPremiumRegression": {
+    "passed": 9,
+    "failed": 0
+  },
+  "tvSmoke": {
+    "passed": 53,
+    "failed": 0,
+    "skipped": 3
+  },
+  "skipReasons": [
+    "First live room was quiet; separate realtime relay test passed",
+    "Recommended room offered only one live quality",
+    "Account list writes omitted"
+  ],
+  "productionAssetsMatchInstalled": true,
+  "settingsRestored": true,
+  "limits": [
+    "Fatal-error notifications injected; subsequent recovery/decoding real",
+    "CDN 403 on reporter connection and account risk-control not proven resolved",
+    "No C9/C6 hardware or 20-minute continuous soak in this fix validation",
+    "CDP captures UI, not GPU video output"
+  ]
+}

@@ -27,6 +27,8 @@
 | C-PLAY-06 | Scrub(快进快退):影子游标动、视频不跳;停手1s 精确落点(t0+30=258 实测);OK 立即;Back 丢弃;连按加速 10/30/60(算术单测 570s) | 📜 单会话 CDP 场景脚本(v1.2.3 记录) + 加速纯函数单测 | 旧行为盲跳±10s;**教训**:跨连接读取延迟>1s 自动提交窗口会假阴(写入 tv-test skill) |
 | C-PLAY-07 | Scrub 预览图:**视觉完整**(不被 controls overflow 裁剪)、紧贴进度条(~104px)、帧对正清晰(**雪碧图必须原图直出,禁 @672w 缩略后缀**) | 👁 截图逐像素看(rect 测不出裁剪!) | ZMonsterror 抓到裁剪+距离;帧错位/糊 = proxyImg 的 @672w_1c 裁剪(抓包定位);thumb 320x180 复验 |
 | C-PLAY-08 | 章节:进度条分段刻痕(N-1 个)、scrub 气泡显示目标章节名、时间行显当前章节;**预览帧尺寸自适应**(160/480 宽都=320px 显示) | 📜 真机对真实 7 章节视频(BV1n8M86CEUy):6 刻痕、跨章气泡'10-20(4款)' | v1.2.4;480 帧雪碧图曾撑成 960px 宽(实测抓到) |
+| C-PLAY-09 | qn126 init 段解析出 `dvvC` P8/L9/RPU;MPD 用 `dvh1.08.09`;音频按 EC-3→FLAC→AAC 真实可播轨选择;手动画质严格匹配实际 qn | 🤖 `mediaSelection.test.js` 13 组 + 📜 真机 CDP/系统日志 | **抓到真实 bug**:旧 `hvc1` 只亮 HLG;空 Dolby 列表曾把 AAC 误报 EC-3;切换缺失档位曾显示高档但静默播低档。2026-07-17 LG `is_stream_play_as_dolby_vision=true` |
+| C-PLAY-10 | 已审计 qn126 4K/120 DV 源:逐段压缩域降帧为 4K/60、每帧保留独立 RPU、整片时长不变;任一指纹/依赖/时序不符→同 qn126 HLG，保持音轨/进度;不影响其它源 | 🤖 `dolby*test.js`（合成片段+fail-closed；`BILI_DOLBY_120_CORPUS` 可选验证本地全35段语料）+ 📜 ffmpeg/dovi_tool 全片验证 + 👁 LG 真机 | **抓到 P0 事故**:原始120fps在LG花屏/黑屏/声音错乱；只改MPD frameRate的坏实验立即黑屏。OLED42C6PCA/webOS 26 本地验证:目标源 3840×2160/readyState4 从19.5s连续到71.9s，seek168s后最后段正常播完；资源30126+30250，LG报H.265/E-AC-3、DV=true，用户确认画面正常。随后既有DV样本4096×1890持续推进，未误伤 |
 | C-CMT-01 | 播放中看评论:底部面板新增「评论」tab(在 相关推荐/UP主投稿/选集 之后),标题带总数;单列列表(头像+用户名+时间+正文+👍赞数+回复数);焦点单列上下走、到底翻页 loadComments(false);空/加载态区分;评论走 api.bilibili.com `/x/v2/reply`(sort=1 热门,免 WBI,host 本已在白名单) | 📜 dev+Playwright(BV1xx411c7Xg/aid271):tab 显示「评论 · 2.6万」、20 张卡渲染(三师公张良/碧诗真实评论,含赞 4.0万·3072 条回复)、方向键入列表翻页 20→40、focus 单列跟随;👁 comments_panel.png | 2026-07-16 YouTube-TV 对标 P1「播放中看评论」;沿用现有 panelTab 架构(comments 为单列 list,RCOLS=1,Enter 不可播);评论接口对反爬敏感,失败(-412)静默显示暂无评论 |
 | C-CMT-02 | 楼中楼(评论的回复):一级评论下直显 ≤3 条预览(root 响应自带,零请求);OK/点击循环 展开(reply/reply 分页 10/页)→ 加载更多 → 到底「收起回复」→ 收回预览;提示行 展开 {n} 条回复/加载更多回复/收起回复(i18n en/es 已同步);展开后 scrollIntoView 保持卡片可见 | 📜 dev+Playwright(BV1xx411c7Xg):20 卡全带预览+计数;点击 3→10(加载更多)→20;9 条小楼到底显收起→点击回预览;纯键盘自适应导航 Enter 3→10 同样通过 | 2026-07-26 owner 报"评论下面的评论丢失":此前只拉一级评论,rcount 显示但楼中楼完全没实现。**测试工具坑**:合成 mouseenter 不经 React 委托(React 挂 mouseover),hover 断言必须用真实指针或改按导航探测焦点 |
 | C-QLT-01 | 非会员选 VIP 画质(1080P+/4K/HDR≥112):服务端只回 ≤1080P 流(quality 字段=实际授予档),播放/标签按实际档校正,toast「该画质需要大会员,已按 {q} 播放」,不虚标不黑屏;画质菜单 VIP 档带「大会员」角标;load 路径本来就按 meta.quality 诚实显示 | 📜 数据层实测(非会员账号):qn=112 请求 → served=80、dash 仅 [80,64,32,16];菜单角标 dev 渲染验证「1080P+大会员」;toast 路径逻辑依赖 served≠qn(数据已实锤),真机播放链路待 TV 回归顺带确认 | 2026-07-26 owner 无会员实测切了 1080P+ 问会怎样:旧代码 changeQuality 直接 setCurrentQuality(请求档),1080P 流挂着 1080P+ 标签(虚标)。**同类根因二号**:loadVideo 重试阶梯 [null,126,125,120,80,16] 强制 Dolby/HDR 档时也把请求档当当前档——普通视频 rung0 一失败就标「杜比视界」;正对照:dev 破 CDN 环境修复前按钮=杜比视界(截图),修复后=1080P(按 dash 实际可用档就近落) |
@@ -580,3 +582,204 @@ C9 社区独立验证：[#34 回报](https://github.com/asdf17128/bili-webos/iss
 证据：[完整目录](ux-evidence/2026-10-11-release-2.3.0)、[耐久摘要](ux-evidence/2026-10-11-release-2.3.0/soak-summary.json)、[最终耐久](ux-evidence/2026-10-11-release-2.3.0/soak-final.json)、[第 19 分钟失败](ux-evidence/2026-10-11-release-2.3.0/soak-before-retry.json)。每次完整耐久主动请求 26 次 version.json；这部分下载属于测试，不是真实日活。
 
 正式 IPK **663408 bytes**，SHA256 `c75d3bbf4c7add9d4a6d6d24e8e86896bf232408786061aa5393ecedaeb10222`。解包确认版本 **2.3.0**、没有测试标记、服务文件与源码一致；电视已安装相同包，SSH 逐文件比对服务代码和上传 IPK 哈希一致。见 [包身份](ux-evidence/2026-10-11-release-2.3.0/package.json) 与 [电视安装核对](ux-evidence/2026-10-11-release-2.3.0/tv-package.json)。
+
+
+## 2026-10-13：仅本地验证的退出登录、封面与端口修复（未发布）
+
+- **C-AUTH-LOGOUT-01：前后端同步退出。** #34 报告退出后仍可进行账号操作；旧版只移除 localStorage，服务内存和磁盘保留 SESSDATA。真实 React 输入 → 生产 Luna handler → 隔离磁盘的正对照确认后台仍登录。修复后必须等后台持久化清除成功，再移除前端凭据、重建游客页面；刷新后仍是游客。保留 buvid3/buvid4/b_nut 匿名风控指纹。退出过程中阻止新的账号请求与重复确认，10s 无应答显示失败并允许重试；磁盘写失败不可显示成功。电视 Luna、开发桥和浏览器代理三种通路分别覆盖。
+- **C-AUTH-LOGOUT-02：隔离退出前的请求。** 对照在请求发出后执行 clearCookies，再让上游返回 Set-Cookie，旧服务重新登录。服务现在拒绝旧请求的响应头、重定向与晚到的完整响应体；前端用会话代次拒绝已由服务生成、但仍在 Luna/HTTP 通路上的旧响应。独立代理也有代次保护，真实本机 HTTP 验证迟到响应返回 409、不写 Cookie；清盘失败返回 500，可重试。所有账号数据均是隔离夹具，没有真实关注/收藏等账号写入。
+- **C-IMG-LEGACY-01：观察器存在但缺少 isIntersecting。** Chrome 51–57 的 IntersectionObserverEntry 缺少 isIntersecting，而 intersectionRatio 已存在；webOS 4.x 的 Chrome 53 会因此不创建图片。测试保留 Chromium 的真实可见性计算与滚动，只删除缺失属性；旧版可见/滚动卡片不加载，修复后用 intersectionRatio 回退并实际解码图片。完全没有 IntersectionObserver 的旧回退路径也继续通过。对照 **1/2 → 2/2**，这是 API 缺失模拟，不是旧电视整机验收。
+- **C-PROXY-PORT-01：绑定成功后协商媒体端口。** #48 诊断记录服务在 7655，前端却固定 7654。测试真实占用 7654，生产 service.js 自动绑定 7655；启动前等待 ping 的就绪应答，再构造第一批封面/播放器地址。修复前图片加载失败；修复后图片实际解码并完成淡入，媒体 Range 请求获得 206、正确 Content-Range 和 4 个夹具字节，旧端口命中为 0；诊断端口一致。非法端口显示启动失败，遥控 Enter 可重试。此测试不证明 #48 的 CDN HTTP 403 已全部解决，也不验证媒体硬件解码。
+
+脚本：`tools/test-session-proxy.mjs`、`tools/test-proxy-logout.mjs`、`tools/test-tv-ux.mjs`；均纳入 `verify.sh --no-tv --ux`。`tools/test-node8/run8.js` 额外在真实 Node 0.12.2 / 8.17.0 检查 Cookie 持久化清除及代理绑定握手，避免依赖旧 Node 不存在的 server.listening 属性。匿名真实网络模拟用 `BILI_DEV_STATE_DIR` 隔离服务文件，既不读取也不改写开发者的 Cookie 文件。
+
+证据：[修复前退出/端口 0/4](ux-evidence/2026-10-13-simulator-bugfixes/session-before.json)、[封面对照](ux-evidence/2026-10-13-simulator-bugfixes/covers-before.json)、[封面修复后](ux-evidence/2026-10-13-simulator-bugfixes/covers-after.json)、[旧 API 模式截图](ux-evidence/2026-10-13-simulator-bugfixes/legacy-covers.png)、[7655 实际图片截图](ux-evidence/2026-10-13-simulator-bugfixes/negotiated-covers.png)。图片与账号均为夹具；未操作电视，未部署、未发布、未更新 Homebrew。
+
+工具纠错保留：[首次脚本结果](ux-evidence/2026-10-13-simulator-bugfixes/harness-first-attempt.json)、[时钟脚本结果](ux-evidence/2026-10-13-simulator-bugfixes/harness-clock-attempt.json)。游客点击“关注”本来就直接打开扫码页，不能断言它停在中间空态；Vite HMR 下须导入应用实际加载的模块 URL，否则读取到另一份默认代理端口；Playwright clock 替换 performance 后不能再依赖资源计时查找模块，应提前保存引用。上述纠错没有放宽后台清除、旧响应隔离、实际端口或图片解码断言。截图还需等 image-ready 的 opacity 到 1，不能把解码完成前后的淡入占位当最终画面。
+
+**最终本地验收：** `bash tools/verify.sh --no-tv --ux` 退出 **0**；交互 **68/68**、会话/端口专项 **9/9**、独立代理 **3/3**、服务单测 **41/41**、加载 **35/35**、片尾 **26/26**、直播加载 **9/9**、CDN React **7/7**、弹幕 **6/6**；ES5 服务、真实 Node **0.12.2 / 8.17.0**、生产构建与 ES2016 语法门禁均通过。随后使用隔离匿名状态目录运行真实 service bridge + Chrome + B站网络，实际点播/直播、评论、质量选择、故障回退和大字号等 **54 通过 / 0 失败 / 3 跳过**；跳过的是匿名账号下的点赞投币收藏、稍后再看与关注标记，不计为验收成功。真实网络浏览器播放不能代替电视硬件验证。完整结果：[本地门禁](ux-evidence/2026-10-13-simulator-bugfixes/verify-local.txt)、[专项](ux-evidence/2026-10-13-simulator-bugfixes/session-after.json)、[真实网络模拟](ux-evidence/2026-10-13-simulator-bugfixes/real-network-simulator.json)、[摘要](ux-evidence/2026-10-13-simulator-bugfixes/summary.json)。应用版本仍为 **2.3.0**，没有制作或发布新版本。
+
+
+## 2026-10-13：bugfix-test.1 真机补验（未发布）
+
+用户重新授权操作电视后，公共 Luna launch 返回成功，CDP 报告页面可见、首页 20 张卡片、8 张已解码封面、0 张破图；已查看电视实际页面截图。LG C4 当前 Chromium 120，不能把应用页面截图解释成面板电源状态查询。
+
+- **C-AUTH-LOGOUT-01 真机正对照：** 正式版 2.3.0 通过遥控器到达退出行，显示“已退出登录”后 service diagnostics 仍为 loggedIn=true，同一断言真实失败。安装修复包后，模拟 clearCookies 失败会显示失败并允许重试；真正退出后服务内存、`/media/internal/bili_cookies.json` 与前端都没有账号凭据，B站 nav 返回 **-101**；重启仍为游客。结束用同一 nav 账号身份验证原账号已恢复，设置原值保持，临时凭据备份删除。
+- **C-IMG-LEGACY-01 真机 API 缺失验证：** 真机页面加载前删除 `IntersectionObserverEntry.prototype.isIntersecting`，通过显式注入标记及属性检查确认删除生效；首页封面解码，遥控向下滚动后的焦点卡封面继续加载。它验证 C4 上的旧 API 条件，不代替 webOS 4.x 设备验收。会话/封面专项共 **12/12** 通过。
+- **C-PROXY-PORT-01 真机网络链路：** 原服务在 7654，临时电视回环转发器在 **43517**。注入启动时的 Luna 端口应答后，前端首批封面全部走 43517；真实 Shaka 播放的 **18 次媒体响应均为 206**，解码宽度非零且 currentTime 持续推进。结束移除注入，首页恢复使用 7654，临时转发器关闭。专项 **5/5**；并未制造电视服务 EADDRINUSE，真实占用/避让已由上一轮本地生产服务测试覆盖。报告者 #48 的 CDN 403 仍不能据此宣称解决。
+
+保留测试工具失败：[第一次](ux-evidence/2026-10-13-tv-bugfixes/injection-first-attempt.json)、[第二次](ux-evidence/2026-10-13-tv-bugfixes/injection-second-attempt.json)。第二次已等待新文档，仍显示注入标记不存在、属性仍在；增加 `Page.enable` 后，同一属性缺失与解码断言全部通过。不能把未生效的注入算产品失败，也不能去掉属性缺失断言来通过测试。
+
+证据：[正式包退出失败](ux-evidence/2026-10-13-tv-bugfixes/logout-before.json)、[修复包会话与封面](ux-evidence/2026-10-13-tv-bugfixes/session-after.json)、[电视代理端口](ux-evidence/2026-10-13-tv-bugfixes/proxy-port.json)、[安装包与服务哈希](ux-evidence/2026-10-13-tv-bugfixes/package.json)。电视页面截图及账号内容只保存在本机 `/tmp/bili-tv-bugfix-20261013`。
+
+测试包 **2.3.0 bugfix-test.1**，**664680 bytes**，SHA256 `679733ab3af156a47283fd8b98ffb08808778024b3e8d4c545450e0238b8eaff`；SSH 核对上传 IPK 及实际安装的 service.js 哈希均与本地一致。仅安装用户开发电视，未发布 GitHub Release、未更新 Homebrew。
+
+**真机常规回归最终结果：53 通过 / 0 失败 / 3 跳过。** 点播真实时间推进、评论与 UP 投稿、番剧取流、直播实际解码、关注分页、认证收藏/订阅读取、搜索、CDN 遥控选择及重启持久化、失败立即重试后的焦点、热门与六个分区均通过。3 项跳过为当前直播间暂无实时弹幕、直播只有单一画质、未授权执行本轮稍后再看增删；不计为通过。原设置已恢复。真实账号写入仅有普通播放产生的历史，本轮没有修改关注/投币/收藏/稍后再看。见[完整真机回归](ux-evidence/2026-10-13-tv-bugfixes/smoke.json)。
+
+安装后的前端主 bundle SHA256 也已通过 SSH 与本地逐字节哈希匹配，并确认含 `bugfix-test.1` 标记，见[前端身份](ux-evidence/2026-10-13-tv-bugfixes/frontend-hashes.json)。电视最后回到首页，保留已验证的测试包；GitHub Release、稳定版 metadata 与 Homebrew 均未改动。
+
+## 2026-10-13：会员画质与 PR #17集成（未发布）
+
+当前账号经 B站 nav 确认 `vipStatus=1`。使用 LG C4 / Chromium 120 对照 `bugfix-test.1` 和 `premium-test.1`，测试目标来自 [#11](https://github.com/asdf17128/bili-webos/issues/11)、[#33](https://github.com/asdf17128/bili-webos/issues/33)、[#34](https://github.com/asdf17128/bili-webos/issues/34)、[PR #17](https://github.com/asdf17128/bili-webos/pull/17)。旧实现与本次修复均走真实 API、真实 Shaka 和电视硬件，不用模拟的媒体事件代替解码。
+
+| 片源 / 用例 | 修复前 | 最终真机结果 |
+|---|---|---|
+| Profile 5，BV1kX4y197P4 / cid 1127214165 | 退到 1920×1038 AVC | 3996×2160 `dvh1.05.07` / E-AC-3 |
+| Profile 8.4，同 BV / cid 1026939788 | 已可播放 | 3840×2160 `dvh1.08.06`，继续通过 |
+| 4096 宽高帧率，BV1fK4y1t7hj | 退到 1920×872 AVC | 4096×1860 HEVC |
+| SDR 4K120，BV1rp4y1e745 | AVC，短测 728 解码 / 88 丢帧 | 3840×1920 HEVC，短测 0 丢帧 |
+| 同片 HDR 高帧率 | 已可播放 | 3840×1920 HEVC，继续通过 |
+| PR #17 影院 DV，BV1Bg4vz2ENd | 退到 1920×886 AVC | 4096×1890 `dvh1.08.09` / E-AC-3 |
+| PR #17 DV120，BV1dCNC6hEzE | 原 `hvc1` 120fps 基础层 | 3840×2160 `dvh1.08.10` 60fps / E-AC-3 |
+| #34 4K50，BV1sapi6qE72 | AVC 视频约 17.06 Mbps | HEVC 视频约 7.88 Mbps，qn 120 / 3840×2160 |
+| #11 Dolby60，BV14BjU6bEo1 | 本轮未做旧包对照 | 3840×2160 `dvh1.08.09` / E-AC-3 |
+| #11 8K，BV1yuJ56wEQ3 | 本轮首个候选无限制尝试 8K，45s 内进度为 0 | 直接回退 qn 125 / 3840×2160 HDR，并推进 |
+| 会员专享番剧 ep 433953，API badge=会员 | 本轮未做旧包对照 | 3840×2160 HDR，真实解码并推进 |
+
+最终片源矩阵 **11/11**；每条至少持续推进 4s，0 记录丢帧。这是本机短样本，不能推断所有网络、整段高帧率视频都零卡顿。
+
+- **C-PLAY-PREMIUM-01：影院宽度与设备边界。** 旧包三条 3996/4096 源误降 1080p；放开 Shaka 面板宽度后可保持原 qn/尺寸。额外 8K 对照抓到首候选回归：MSE 支持、Shaka load 成功、readyState=4，仍停在 0 秒。现在按 webOS 设备高度/宽度过滤，4K 允许 4096 宽、拒绝 8K，8K 设备仍允许 8K。单测正对照失败后通过，React 测试确认第一份 MPD 直接为可用 HDR，不先加载卡住的 8K。
+- **C-PLAY-PREMIUM-02：同档编码与手动恢复。** 同 qn 优先 HEVC，再试 AV1/AVC；浏览器注入 HEVC 解码失败后，同 qn AVC 成功，不降到 1080p。请求档位缺失时不卸载原流、不写新偏好；真加载失败后恢复原流。真机遥控 DV→4K→Profile 5，音轨仍为 E-AC-3，进度差小于 1s、暂停保持；非缓冲区 seek 后继续解码。
+- **C-PLAY-DV120-01：审计片源转换与失败关闭。** 使用 PR #17 完整转换实现，按当前播放器生命周期集成。电视读取真实 CDN init / SIDX / 全部 35 个媒体分片，逐一通过校验；34 个长片输出 300 帧，末片输出 299 帧，单片转换最慢 131ms。媒体字节与签名地址不离开电视。单测覆盖错误范围、SIDX/hvcC/依赖/RPU/时间条件、旧播放响应、取消和单次恢复，出错不把未经验证的字节送入 Dolby 解码器。
+- **C-PLAY-DV120-02：实际播放及受控失败恢复。** 真机加载目标为 qn 126 / 3840×2160 / 60fps；跳至末尾短分片仍推进。人工注入 Shaka 3016 解码错误通知，真正执行同 qn HLG 加载和硬件解码；音轨、暂停与位置保持，恢复播放后继续推进。注入只用于触发失败，不把通知冒充真实自然解码错误。
+
+代码与边界说明：[DOLBY_VISION.md](DOLBY_VISION.md)。证据：[目录](ux-evidence/2026-10-13-premium-playback)、[旧包](ux-evidence/2026-10-13-premium-playback/tv-before.json)、[最终 11 条](ux-evidence/2026-10-13-premium-playback/tv-after.json)、[8K 首候选失败](ux-evidence/2026-10-13-premium-playback/8k-first-failure.json)、[遥控与恢复](ux-evidence/2026-10-13-premium-playback/tv-controls.json)、[完整分片](ux-evidence/2026-10-13-premium-playback/tv-corpus.json)。
+
+**本地最终门禁通过：** `verify.sh --no-tv --ux` 退出 0；服务 **41/41**，媒体/Dolby 单测 **45 通过 / 1 可选本机 corpus 跳过**（本轮另有真实电视全 35 片测试），真实 Node **0.12.2 / 8.17.0**、ES5/ES2016、构建与国际化通过；UI **68/68**、会话/端口 **9/9**、独立代理 **3/3**、加载 **38/38**、片尾 **26/26**、直播 **9/9**、CDN **7/7**、弹幕 **6/6**。
+
+工具纠错原样保留：加载恢复 fixture 最初返回错误 qn，质量测试用了错误按钮 selector，偏好测试忽略默认 qn=80，8K fixture 初次未声明 HEVC 能力；真机遥控最初无条件 ArrowUp 导致焦点偏离。完整播放首轮实际 ended、10,500 解码帧、0 丢帧，但工具错误要求响应数恰好 35；真实 Shaka 重取一次，记录为 36。修正为至少 35，并结合自然 ended / 时间轴 / 帧数及独立全分片校验，不修改该首次 `pass:false` 原始结果。安装后首探针读到尚未就绪页面，重新前台启动并核对就绪与安装哈希后再测。
+
+本轮仅用户 C4 安装 **2.3.0 premium-test.1**。IPK **674668 bytes**，SHA256 `7c5d3418bb300241f9a764720071ac794351a9472a0543f3c6753fa82ac59960`；安装后的全部 6 个 JS bundle、service.js、上传 IPK 均匹配本地哈希。未发布 Release、未更新 Homebrew；PR #17 贡献已移植并署名，GitHub PR 尚未正式合并。面板实际 Dolby 标志与音响 Atmos 输出需现场观察；C9/其他电视及 #48 报告者 CDN 403 不在本轮完成验收范围。
+
+**最终包完整播放通过：** `probe-premium-soak-tv.js` 播放到原生 `ended`，实际时长 **174.983374s**，解码 **10,500 帧**、丢帧 **0**、媒体错误 **0**；codec `dvh1.08.10`、3840×2160、60fps、E-AC-3，始终保持转换播放路径。计数 36 为实际处理响应次数，含重复请求；全部 35 个唯一分片另有 corpus 逐片校验。见[最终完整播放](ux-evidence/2026-10-13-premium-playback/soak-final.json)。末次仅调整源码注释后在独立目录重建，6 个 JS bundle 与已测试/安装包逐字节一致。
+
+用户要求自动截图/日志观察后，实际调用系统视频截图通道 `com.webos.service.capture/executeOneShot`（`SCREEN_WITH_SOURCE_VIDEO`），返回 **Denied method call**；旧 `com.webos.service.tv.capture` 不存在。没有绕过系统权限。CDP 播放器截图已人工查看，控制栏的 Dolby Vision / E-AC-3、焦点和进度正常，GPU 视频层黑色不能用于画面颜色判断。此边界依据[真机调用记录](ux-evidence/2026-10-13-premium-playback/system-capture.json)，不是要求用户代做已有自动测试。
+
+**最终常规真机回归：55 通过 / 0 失败 / 2 跳过。** 首页与点播、评论、UP 投稿、番剧取流、直播实际播放/弹幕通路/画质往返、搜索、关注分页、认证收藏/订阅读取、设置和 CDN 持久化、失败后遥控焦点与六分区均通过。跳过当前安静直播间的即时弹幕，以及未启用的稍后再看账号写入；后续推荐直播间另通过真实弹幕接收。最终包会员遥控专项再次 **9/9**。见[常规结果](ux-evidence/2026-10-13-premium-playback/tv-smoke.json)与[最终遥控结果](ux-evidence/2026-10-13-premium-playback/tv-controls-final.json)。
+
+日志不全是零错误：服务记录了 3 次上游响应头超时和 1 次响应体中断（后者产生 body/res 两条记录），分别涉及主站/直播 API；后续常规回归仍完成，账号 nav 返回 code=0、VIP 有效。这些不是媒体解码错误，也不足以证明或排除历史“全部请求失败”的根因。保存[当前账号/设备能力及服务错误摘要](ux-evidence/2026-10-13-premium-playback/account-device-diagnostics.json)，不包含账号身份或 Cookie。设备宣告 DV/Atmos 能力，不等于当前音响输出已验收。
+
+结束后主站 nav **HTTP 200 / code 0 / 52ms**、生产直播推荐接口 **HTTP 200 / code 0 / 290ms**，见[接口复查](ux-evidence/2026-10-13-premium-playback/api-recheck.json)。此前用于额外探测的固定 room=6 六请求脚本触发工具 30s 总时限，未将无结果当作接口成功；改为生产回归使用的直播接口并返回明确状态。电视回到首页，偏好已恢复；公开记录不含账号内容截图或媒体数据。总览见[summary.json](ux-evidence/2026-10-13-premium-playback/summary.json)。
+
+
+## 2026-10-13：其他播放失败排查（未发布）
+
+测试包 `2.3.0 playback-test.2`，仍未发布、未推送 Homebrew，也未在 GitHub 关闭相关 issue。继承上一节的会员修复。本轮针对 #48、#29、#35、#37/#38 的 CDN 403、超时与中途冻结反馈核查，没有新增完整日志附件可用于重放报告者的原故障。
+
+| 场景 | 旧版对照 | 修复与验证 |
+| --- | --- | --- |
+| 播放中致命解码/网络错误且媒体已暂停 | 浏览器 2/2 无重试入口；电视实际 4K 播放约 25 秒处暂停，注入错误通知后也无入口 | 显示错误与重试，最多自动重建两轮，保留 cid/进度；电视两种错误后均重新解码并继续前进 |
+| 重复报错、轻微网络错误、退出、重试耗尽 | 旧路径只调用 retryStreaming，暂停后的 watchdog 不处理致命错误 | 重复错误只记录一次；轻微网络错误保持实例；退出后迟到事件不重试；两轮后需手动确认 |
+| 原生倍速流解码失败 | 本轮新增覆盖，未作原生路径旧包对照 | 电视遥控切 2x，确认实际 HTTP 媒体源后注入原生错误；显示重试并回到 DASH 原进度继续解码 |
+| 手动 CDN 的原生备用签名 | 旧版先拼接主地址的路径/签名到指定 host，新增单测失败 | 优先使用接口原生地址，保留 path/query，包括重复参数 |
+| 杜比检测与手动选路 | 旧版真实 React 测试使用改写地址导致探针 403，未启用可用杜比信令 | 与播放共享候选地址，原生备地址探针成功，生成正确 DV MPD；不改写 Akamai-only 地址 |
+| 主地址 403、备用地址可用 | 旧诊断漏掉不同路径/签名，三个场景均失败 | 跨 host、同 host 不同签名、手动路线三种成功；测速的五次请求均复用成功地址 |
+| 所有 CDN 都失败 | 首次工具断言要求完整中文，旧 UI 140 字截断使该断言失败；这不是新增应用故障 | 用失败行状态及不发起测速验证；真实 403 全失败仍如实显示错误 |
+
+证据在 [playback-failures](ux-evidence/2026-10-13-playback-failures)。浏览器播放器使用受控解码器；电视致命错误是**人工通知注入**，后续加载、分片与解码是真实的。坏 CDN 回退测试则真实请求不存在的域名，确认备用分片成功、实际进度推进和黑名单行为。截图确认重试按钮可见且默认聚焦；CDP 截图不含 GPU 视频平面，不把黑色截图视为解码失败。
+
+新增 `tools/test-diagnostic-cdn.mjs` 已进入 `verify.sh --ux`；新增 `tools/test-runtime-errors-tv.mjs` 覆盖真机普通播放/原生倍速故障。扩展 `test-player-loading.mjs` 检查加载期的解码回退不会被运行期错误处理截断，错误日志只记录 category/code/position，不记录带签名 URL。
+
+工具修正记录：首次 TV 脚本返回播放器对象触发 CDP 序列化限制，改为 void 返回后重跑；首次全量浏览器检查期间修改源文件触发 HMR，造成续播两项失败，且虚拟时钟下取 resource timing 找 errlog 模块的断言失败。停止修改应用、修正测试读取后，以完整门禁重跑结果为准，保留首次日志。TV 旧包对照最终按重试文字判断，避免用旧页面不存在的 CSS 类制造假通过。
+
+本轮未证明报告者当地的 CDN 403、#34 账号 -352 风控、C9/C6 硬件故障已消失；也没有把短时故障回归当作“连续约 20 分钟后所有请求失败”的完整复现。需要该故障发生时的错误码/节点与时间线继续定位。
+
+本轮最终门禁：`verify.sh --no-tv --ux` **exit 0**（UI 68、加载 44、诊断新增 4、直播 9、CDN 7；service 41、媒体 45 通过 / 1 个可选媒体语料跳过；真实 Node 0.12.2 / 8.17 通过）。真机故障恢复 **7/7**、CDN/二维码 **16/16**、会员/杜比回归 **9/9**；整机 **53 通过、0 失败、3 跳过**：首个安静直播间无即时弹幕（另一个实时弹幕验证通过）、所选直播间仅一档画质、账号列表写入。本地六个生产 JS 与电视安装文件逐个 SHA256 一致；测试 IPK SHA256 `9b3117c8fcf3d0d4fa2be2e1d7a464a3fb5d81583984d64d867088b4450bfed1`，偏好恢复。详见 [summary](ux-evidence/2026-10-13-playback-failures/summary.json)。
+
+
+## 2026-10-13：海外家庭检测与性能观测（未发布）
+
+- **C-NET-HOME-01**：新增本地 Python 工作者，不需要 SSH、npm 依赖或登录。生产 CDN 排序读取新鲜匿名签名，但报告只输出 host、耗时、字节数、状态和散列。保存 HTTP 状态和业务 code，避免把 412/-352 与连接失败混为一谈。系统 DNS、代理标记与出口国家单独列出。
+- **C-NET-HOME-02**：真实本地 HTTP fixture 验证精确 Range、HTTP 403、错误范围、停滞响应体超时、HTTP 412/-352、IP 脱敏与 localhost DNS。缺少 Python 的 CLI 退出并保存失败报告；便携 ZIP 解压到无 node_modules 的目录，真实匿名检查 **11/11**，选中线路额外 64 KiB 传输成功。本机出口 HK / 已配置代理，只验证工具和该出口，不冒充报告者的菲律宾连接。
+- **C-NET-PH-01**：菲律宾 AS17639 / AS9299 各两个 eyeball 探针，三轮公共站/API/1.1.1.1 对照。公共站全成功；默认 DNS 下 B站 API 两个探针成功、两个 ECONNREFUSED，改 resolver 未改善。两个 Quezon 探针可能同运营者，不能推断整个 ISP 故障。所有 DNS 查询 NOERROR 不等于媒体可达。
+- **C-PERF-LONG-01**：扩展真实电视长播工具，分别保存视频、主站/直播与 GitHub 更新源状态；记录 CDP JS 堆、解码/丢帧、缓冲、主线程长任务和服务 uptime。一项失败后继续保存剩余时间线，但最终仍退出 1，不能把忽略失败当作通过。首次运行因 GitHub 超时提前结束的原始结果保留。
+
+使用方法和网络结果见 [NETWORK-TESTING](NETWORK-TESTING.md)，便携包可由 `tools/package-network-check.py` 重建。性能数值与解释见 [PERFORMANCE](PERFORMANCE.md)，完整脱敏证据在 [regional-performance](ux-evidence/2026-10-13-regional-performance)。应用仍为已经验证的 `2.3.0 playback-test.2`；本次仅添加诊断工具和测量记录，没有更改电视安装包、发布或关闭 issue。
+
+## 2026-10-13：SDK 长订阅的退出资源清理（稳定性测试发现）
+
+- **C-STAB-SUB-01**：`tools/test-subscription-cleanup.mjs` 打包完整生产 `client.js`，执行项目附带的真实 `webOSTV.js 1.2.13`，仅替换平台 `PalmServiceBridge` 边界。弹幕和投屏各重复订阅/退出 20 次，旧版均 **created=20 / cancelled=0**，证明“忽略迟到回调”没有释放 SDK 保存的请求/桥。新增保存请求句柄并执行幂等 `cancel()` 后，两条路径各 **20/20**；同时保持有效期间的事件正常、退出后成功/错误回调不再交付。
+- **C-STAB-SUB-02**：重复退出只取消一次；SDK cancel 抛错或运行环境缺少句柄时不使页面清理崩溃，仍忽略迟到事件。这两个异常场景只验证容错，不能声称异常平台上的桥已释放。新门禁进入 `verify.sh`，旧/新 6 项结果及原始日志在 [稳定性本地证据](ux-evidence/2026-10-13-stability/local/REPORT.md)。
+- 真机直播耐久工具同时记录 **SDK handle.cancel** 与 **danmakuStop 服务确认**，分别证明客户端句柄释放和服务器中继停止；不能以画面消失或没有弹幕 DOM 代替前者。电视执行结果另列于本轮稳定性报告，不把本地 SDK 边界测试写成真机证据。
+
+
+## 2026-10-13：倍速异步切源、机翻退出与同页焦点耐久
+
+- **C-STAB-SPEED-01**：真实 React 播放器与受控 Shaka/Luna 边界，延迟 html5 playurl 或 unload。旧版在退出、切视频、选正常速度、选更新的 1.5x、切画质后仍让旧 2x 请求给媒体赋源；包括已移出 DOM 的 video。八项中旧版 **1/8**（只有正常路径通过），新版 **8/8**：独立倍速意图代次阻止迟到赋源/播放，画质意图取消旧倍速意图，unload 中恢复 1x 会重建 DASH。正常 2x→1x 保持可用。首次画质夹具忽略请求 qn 导致超时，修正夹具后全部七个旧缺陷按实际赋源断言失败；两次旧结果均保留。[旧版最终](ux-evidence/2026-10-13-stability/speed-lifecycle/before-final/results.json)、[新版合并专项](ux-evidence/2026-10-13-stability/lifecycle-browser-after/results.json)。
+- **C-STAB-SPEED-02**：候选 `stability-test.1` 真机遥控专项 **10/10**，原生 2x 实测时间推进率 **1.9935**，回到同位置附近 DASH 后 **0.9958**；返回释放播放器且恢复偏好。这是实际电视媒体时钟测量，不把浏览器受控解码器当作硬件验证；本片实际 640×480，不写成 4K 倍速。[真机结果](ux-evidence/2026-10-13-stability/regression/speed/results.json)。
+- **C-STAB-MT-01**：英文界面 800 条字幕经真实 React/API 路径触发八个翻译批次。退出后再放行字幕正文，旧版新发八批；先放出四个工作请求、退出后再返回，旧版继续余下四批。旧版 **1/3**，正常翻译为通过对照；新版 **3/3**，过期轨道不再追加批次/重试/局部 UI 或完整缓存。已经发出的请求仍按原网络期限结束，不宣称立即中断全部在飞 HTTP。[旧结果](ux-evidence/2026-10-13-stability/subtitle-lifecycle/before/results.json)、[新版合并专项](ux-evidence/2026-10-13-stability/lifecycle-browser-after/results.json)。`test-subtranslate.mjs` 另验证退出后批次失败不能被当作可重试错误，原排序/翻译/cache/LRU 行为共 **13 组通过**。
+- **C-STAB-FOCUS-01 / S-08**：`test-playback-lifecycle-tv.mjs` 在同一 document 三轮热身后、正式循环结束时各采至少 30 次（目标 32 次）真实 D-pad 焦点变化，保存 key/from/to 和全部毫秒样本，核对起点和导航路线相同。量的是 keydown→focused 类变更，不能称为面板绘制延迟。p95 >50ms 或相对前测增加 >max(10ms,50%) 触发调查；尚在执行的真机数值由最终报告填入，不预先记通过。
+- **S-08 工具对照**：用实际 Chromium 和工具中的测量函数验证前后各 32 个变化、路线一致；强制第 12 次键调用失败，保留 9 个实际样本后仍释放自有监听器/observer。资源采样在测量清理之后执行，避免测试造成假泄漏；首次夹具把 Playwright 自有 observer 也计入，改为只跟踪目标 class observer，没有调整产品判据。Memory.getDOMCounters.nodes 是总节点，不是已分离节点数量；CDP HTTP 在飞计数不包含 Luna 桥/服务 WebSocket 或原生 HLS 的全部平台流量。
+
+
+### 卸载中再次改倍速失败：第二轮稳定性修复
+
+- **C-STAB-SPEED-03**：第一次 2x 取流已返回、DASH unload 暂停时选 1.5x，再让新取流失败。失败分别先于/晚于旧 unload 完成；旧候选两项均 **0/2**，实际 `loads=1 / unloads=1 / nativeSources=0 / rateCalls=0`，即 UI 退回 1x 而没有可播来源。共享卸载 Promise 和卸载前位置/暂停快照后，回滚先等待旧卸载结束，才加载 DASH，避免迟到 unload 清掉新流。[旧结果](ux-evidence/2026-10-13-stability/speed-unload-before/results.json)。
+- **C-STAB-SPEED-04**：新增 **11 项**：两种失败顺序×播放/暂停、卸载中回 1x×播放/暂停、回 1x 后改画质×播放/暂停、native 已赋源但 metadata 未到时回 1x×播放/暂停，以及 2x→等待 1x→更新 1.5x。验证旧请求不赋源、不重复 unload、不在旧 unload 结束前 load、恢复原 37s 和暂停状态，三次意图以最新为准。原生播放快照在 pending seek 实际应用后才释放。[最终专项 22/22](ux-evidence/2026-10-13-stability/speed-unload-verified/results.json)含原八项倍速、三项字幕和新增十一项，完整加载套件现为 66 项。最终包真机重新验证由根报告列出，不沿用候选 1 耐久结论。
+- 新夹具初版试图用鼠标点击加载遮罩下面的控件，另直接在 native 模式点击画质被产品已有规则拦截；这三项不能作为产品失败证据。改用真实遥控键在回 1x 后导航画质/速度，保留原错误结果；没有用 force click 绕过界面，也未改变产品判据。首次基础修复通过 2/2 后补全交错意图与暂停/进度测试，以最终 22/22 为准。可用 `LOADING_BASE_URL=http://127.0.0.1:5174 LOADING_FILTER='native speed|subtitle lifecycle' node tools/test-player-loading.mjs` 在独立 Vite 端口运行，默认仍是 5173。
+
+
+### 真机暂停倍速往返定位：第三轮稳定性修复
+
+- **C-STAB-SPEED-05**：候选 2 真机暂停在约 14.9s，切 native 2x 保持暂停/位置，返回 DASH 后实际 currentTime=0。增强工具等待 loading 消失和 15 秒定位窗口仍未恢复；时间线确认 `player.load` 收到 startTime=14.9，随后新 metadata/canplay 均为 0，不能归为工具过早采样。Shaka 在先前 unload 后已清空 assetUri，而 native src 由应用手动设置，因此下一次 load 跳过其内部卸载；现原生返回 DASH 时显式等待 `unload(false)`，让新 playhead 面对已重置媒体状态。
+- 真实 React 专项加入这个**受控媒体边界模型**，旧版播放态通过、暂停态实际 0 秒（**1/2**），不再只检查传给 load 的位置参数。新版播放/暂停均在新 metadata 后实际恢复 14.9s；原八项倍速、字幕与卸载交错回归一起 **24/24**。另延迟新的 native detach，再退出或选更新 1.5x，**2/2**，过期 DASH 不加载、进度/暂停仍保留；完整加载套件现为 **70 项**。浏览器模型以真机观察为依据，不替代候选 3 的真实平台复测。[旧模型结果](ux-evidence/2026-10-13-stability/speed-paused-before/results.json)、[新版专项](ux-evidence/2026-10-13-stability/speed-paused-after/results.json)、[detach 取消专项](ux-evidence/2026-10-13-stability/speed-paused-detach/results.json)。
+
+- **C-STAB-SPEED-06 / 最终真机**：候选 3 同一台 C4 暂停往返实际 **17/17**，暂停 21.5s→native 2x→DASH 1x 后仍是 21.5s/paused，随后继续播放实际推进；播放态 2x 比率 **1.9993**、恢复 1x **0.9930**。因此这次不是仅修正测试等待；候选 2 加强观测后仍失败，候选 3 显式 detach 后通过。保留[真机旧失败时间线](ux-evidence/2026-10-13-stability/speed-paused-tv-before/results.json)与[真机新通过时间线](ux-evidence/2026-10-13-stability/speed-paused-tv-after/results.json)。
+
+### 直播重连观测与弹幕中继预算
+
+- **C-STAB-LIVE-RETRY-01**：真机直播工具包装既有 `__liveDiag.push`，仅记录媒体 connect/retry/gave-up/playing 的安全类型、次数、代次和相对毫秒；`note('retry',{why})` 覆盖事件名的既有格式也能识别。聊天 event/frame 数另存，不能冒充媒体或 relay 连接次数。每次健康 playing 可以重置应用重试预算，断言同一失败段 attempt≤12、connect≤13、无 gave-up，并保留全部累计计数；这不等于 TCP 连接上限。
+- **C-STAB-LIVE-RETRY-02**：`test-live-stability-monitor.mjs` 在 Chromium 执行实际工具注入函数，验证正常结束和中途工具失败 **2/2**；恢复原 request/push（含原来自有 push）、释放具名事件监听器/定时器/observer，导出数据不含输入的敏感文本或 URL。[本地工具结果](ux-evidence/2026-10-13-stability/live-monitor-local/results.json)。
+- **C-STAB-LIVE-RETRY-03**：`test-live-relay-reconnect.mjs` 执行完整生产 `danmaku.js`，仅控制 WebSocket 和定时器，**6/6**：连接错误、打开后无数据即关闭最多四次；stop 后不新建连接/心跳；首次服务器数据将预算重置一次后仍有限（总连接数此时可为五）。stop 并未立即清除已有重试 timeout，旧 timeout 到时受 closed guard 阻止；不把这一点写成即时定时器清零。报告带模块 SHA256。[本地真实模块结果](ux-evidence/2026-10-13-stability/live-relay-local/results.json)。电视诊断没有暴露 relay 内部 WS 重连次数，此项真机不可测；本地模块测试不等于电视 socket 测量。
+
+
+### 直播连续交付与独立房间历史对照
+
+- **C-STAB-LIVE-CONTINUITY-01**：每分钟保存聊天 `lastFrameAt` 与事件 `lastEventAt`，聊天停交付 ≥120 秒时才调用同房间 `gethistory`；仅导出条数和时间，按北京时间 `+08:00` 解析。历史证明停交付后仍有新聊天才判 `active_room_relay_stale`；非聊天 event/心跳推进不能掩盖聊天停止。历史老旧、为空、失败只记未验证，安静房间不误判产品故障，也不能算弹幕验收通过。
+- **C-STAB-LIVE-CONTINUITY-02**：确证条件包含新鲜历史时间，以及时钟偏差场景下停交付区间内两次历史继续推进；历史请求结束再采交付，避免探针期间已恢复的误判。生产 `danmakuState` 只导出安全相位/次数/时间，连接次数是模块诊断，不是电视 OS socket 数。短暂重连、媒体恢复、≥3 秒推进间隔或未确认交付记 `needs_review`，与硬失败分开；最终 `pass` 不能把待复核当全绿。
+- **C-STAB-LIVE-CONTINUITY-03**：本地运行真机工具的实际函数 **21/21**，包括正常和中途失败的注入清理、10 种交付判据、安全字段、通过/待复核/失败三个结果、历史正常/非法/失败/抛错，以及超时取消一次、忽略迟到回调。见[工具自测与命令](ux-evidence/2026-10-13-stability/live-continuity-monitor/README.md)、[21 项原始结果](ux-evidence/2026-10-13-stability/live-continuity-monitor/results.json)。
+- **C-STAB-LIVE-CONTINUITY-04 / 真机旧失败**：候选 3 完整 15 分钟后，原累计帧工具返回通过，但第 5–15 分钟聊天/事件一直 **216/956**；独立历史在北京时间 **15:02:00、15:08:12** 仍有新聊天。同判据复核 **FAIL**，不计 S04 通过。旧监测没有精确最后帧时间，保守以首次探针为上界，已证明至少 **371,927ms** 无新交付。原 JSON/日志未改，见[原始证据](ux-evidence/2026-10-13-stability/live-candidate3-stalled/README.md)与[同判据复核](ux-evidence/2026-10-13-stability/live-continuity-monitor/candidate3-reassessment.json)。此轮另有 1 次媒体重试、13.103 秒最大推进间隔，不能称为全程流畅。
+
+前述 **C-STAB-LIVE-RETRY-03** 的四次预算是旧实现已测规则，不能证明长期恢复需求被满足。后续服务修复的完整候选仍须重新做真机耐久；本地 21 项只证明工具能识别交付缺失与清理自身资源。
+
+
+### 候选 4：弹幕恢复、实际旧 WS 资源与暂停测量判据
+
+- **C-STAB-LIVE-RETRY-04**：完整生产 relay 的 18 项受控传输/时钟验证，覆盖连接与认证各 10 秒期限、只有 op8/code=0 才认证、认证后立即/每 30 秒发送心跳及 20 秒回包期限、19 秒延迟容忍、安静房间持续心跳不误重连。连续失败按 3/6/12/30/60 秒退避，只有持续至少 30 秒且收到有效数据的认证连接恢复预算；7 段健康连接仍交付，短暂认证不能清空失败计数，持续失败达到退避上限后每分钟探测一次而不永久停止。旧 socket、send/error/close 迟到回调不能影响新连接，stop 即时清理所有自有定时器。合并下述 4 个实际 socket 用例为 **22/22**，旧源码在相同新合约下 **0/22**；其中包含新增诊断接口，不能说成 22 个独立产品缺陷。[实现与对照说明](ux-evidence/2026-10-13-stability/relay-after/README.md)、[新结果](ux-evidence/2026-10-13-stability/relay-after/results.json)、[旧结果](ux-evidence/2026-10-13-stability/relay-before/results.json)。本用例替代 C-STAB-LIVE-RETRY-03 的旧生命周期次数预算，保留其历史记录。
+- **C-STAB-LIVE-RETRY-05**：真实 `ws-legacy@1.1.5` 本机 TCP/TLS/HTTP 升级测试，分别覆盖 TLS 挂起退出、TLS 完成但不返 101 时退出、OPEN 不回应 close 时退出，以及真实 10 秒握手超时→约 3 秒退避后重连→退出。以客户端 socket 的 destroyed/close、请求 close 或 upgrade、服务器端连接归零验收；新版 **4/4**，旧版四项均留下存活客户端 socket。每个连接独立 Agent 捕获并 abort 请求、destroy socket，不只断言 WS.close 被调用。首次 allowHalfOpen 服务器人为保留远端造成四项假失败，[原结果](ux-evidence/2026-10-13-stability/relay-after/initial-harness-failure.json)保留；修正夹具时未改生产代码。此处是在当前宿主运行实际旧库，不冒充旧电视或 Node 0.12 内的完整 TLS 回归。最终本地两条完整门禁均包含上述 22 项：[候选 4 本地报告](ux-evidence/2026-10-13-stability/local/final-4/REPORT.md)。
+- **C-STAB-LIVE-CONTINUITY-05 / 候选 4 真机恢复**：完成 5 次直播开关和连续 15 分钟/16 样本，收到 **833 条弹幕、2857 个事件**；诊断直接记录 `heartbeat-timeout` 后自动重连、恢复 connected 和新事件，未重启 App，退出订阅/relay 回到基线。原始 **45 条检查中 43 通过、2 个 GitHub 更新源探针失败，exit 1**，不记整轮全过。第 14/15 分钟旧探针未保存 HTTP 状态，之后独立复测 HTTP 200 不能覆盖原失败或反推其原因。视频另有 1 次自动恢复和 **13.326 秒**最大推进间隔，流畅性为 NEEDS_REVIEW；原生 HLS 帧计数全 0 视为不可测，不能说零丢帧。现场证明这次心跳失联后的恢复，不确证候选 3 停交付或历史全请求失败的唯一根因。[原始结果](ux-evidence/2026-10-13-stability/final-tv-4/live/results.json)、[分项评估](ux-evidence/2026-10-13-stability/final-tv-4/live/assessment.json)、[现场说明](ux-evidence/2026-10-13-stability/final-tv-4/live/README.md)。
+- **C-STAB-TOOLS-PAUSE-01**：`test-playback-lifecycle-tv.mjs` 旧暂停谓词仅检查 `after.time-before.time<0.15`，负向跳回 0 或仍在播放但采样相差很小会假通过。提取实际新函数，以正常暂停、明显倒退、未暂停、明显前进四组数值验证，旧判定仅 **2/4 正确**，新判定 `after.paused && Math.abs(after.time-before.time)<0.15` **4/4 正确**。[用例与复跑命令](ux-evidence/2026-10-13-stability/lifecycle-predicate/README.md)、[原始结果](ux-evidence/2026-10-13-stability/lifecycle-predicate/results.json)。这是测试工具假通过修复，不声称四组数值是电视上发生的故障；修正在最终本地门禁之后，仅用于后续真机循环，不回写旧候选结论。
+
+### 2026-10-13：最终稳定性候选的完整真机观察
+
+- Candidate 4 同一 document 实际 4K HEVC/50fps 元数据长播 60 分钟，61 个分钟样本、一次自然循环，180,118 新增解码帧/0 新增丢帧；主站/直播/更新源各 61/61。须保留已自动恢复的底层连接错误，不能将逻辑成功写成网络零故障。长任务、自然堆与 GC 后保留堆分开报告。
+- 同包直播画质补测原画 qn10000→蓝光 qn400→原画实际播放 3/3，补足 smoke 单档房间的跳过但不改写原 skip；最终设置摘要、首页播放器与订阅状态核对通过。
+- 本轮整体完成但保留三个发现：直播 13.326s 恢复间隔、更新源两次未知原因失败、同页退出后 GC 堆 +210,344 B。完整证据见 [稳定性实测报告](STABILITY-RESULTS-2026-10-13.md)，不可仅以长播通过推断历史故障根因或全机型稳定。
+
+### 稳定性复核：直播 CDN 与更新检查
+
+- **C-STAB-LIVE-CDN-01**：`liveStream.test.js` 覆盖完整签名备用地址、同画质/格式、所有 host 均失败时按最早失败顺序轮换、非法 host 不可兜底；旧版新增两项失败，新版 10/10。网络失败历史 60 秒过期，不将解码错误一律当 CDN 错误。
+- **C-STAB-LIVE-STALL-01**：`test-live-loading.mjs` 真实 React + 受控媒体事件，14 项覆盖空缓冲 8 秒内取源、有缓冲 12 秒容错、短卡顿/暂停不重连、失败 host 过期。旧版 8 秒边界失败。该时间仅指重试/赋源，不指电视恢复画面。
+- **C-STAB-UPDATE-01**：`test-update-recovery.mjs` 实际 client 模块 + Luna 边界控制，10 项覆盖正常/Base64/网关/格式错误/连接重置/双源失败/单源和双源悬挂。每路 7 秒逻辑期限、最多两路、客户端 cancel；时钟加速不当作现场网络耗时。旧版 2/9，新版最终 10/10；已加入 verify 默认门禁。
+- 结果与真机尚未验证范围见 [稳定性修复报告](STABILITY-FIXES-2026-10-13.md)。
+
+### 2026-10-14：Links 杜比视界与音轨实播核对
+
+- **C-AUDIO-SOURCE-01**：LG C4 当前安装包、有效会员会话，Linksphotograph《和李现，攀登人生第一座雪山》`BV1SSQLBREVV` / cid `37534502406`，qn126 接口只提供 AAC 65,673 / 108,071 / 189,261 bps，`dash.dolby.audio`、`dash.flac.audio` 均无候选。实际激活视频 `dvh1.08.07`、3840×2160，音频 `mp4a.40.2` / 189,261 bps：已选最高可用音轨，AAC 不表示杜比视界失效。
+- **C-AUDIO-SOURCE-02**：相同电视及会话，对照 `BV1kX4y197P4` / cid `1127214165`，API 提供 `ec-3` / 1,024,203 bps；应用自动选择该音轨与 `dvh1.05.07` / 3996×2160。实际播放 2.333→10.875 秒，视频帧 197→403，音频解码字节 942,080→2,039,808，无媒体错误。正对照证明当前播放器可自动选择并解码 E-AC-3；不证明音响实际输出 Atmos。
+- 结束恢复 Links 视频原进度、播放状态与设置，未部署或修改播放器。接口原始签名、账号字段及用户观看进度不导出。证据：[安全汇总](ux-evidence/2026-10-14-audio-selection/results.json)。短时音轨验证不代替耐久测试，也不代表所有 Links 视频只有 AAC。
+
+
+### 2026-10-14：会员身份与最高可用画质
+
+- **C-MEMBER-01**：新安装及旧默认 1080P 迁移为自动；旧非默认档、新版明确手选 1080P 保留。`qualityPreference.test.js` 同时检查有效/年度/过期/退出会员，以及自动选档的 4K 面板限制与仅提供 1080P 的账号响应。已注册 verify。
+- **C-MEMBER-02**：真实 React/受控接口与解码器验证会员标识、自动请求 qn127 后实际加载最高提供的 qn120、手选 1080P→回到自动；请求顺序必须为 127→80→127，偏好仅成功后写入。旧 HEAD 的 App/storage/PlayerPage 对照 0/2，新版基础路径 2/2；控制解码器不证明硬件兼容。
+- **C-MEMBER-03**：大字号完整档位菜单从自动到最末 360P 遥控可达，焦点与菜单均在屏内。包含该项的扩展夹具 3/3；截图已人工检查。[证据](ux-evidence/2026-10-14-membership/)。
+- 固定画质的真机测试工具同时设置 `qualityMode: manual`，避免继承用户的自动模式而测错档位。音轨的源对照见上节；真机结果完成后单列，不以本地夹具代替。
+
+- **C-MEMBER-TV-01**：`member-test.6` 包指纹匹配后，LG C4 会员与自动画质专项 6/6（含恢复）：Links 自动 4K DV→遥控 1080P→自动 4K DV，跨视频自动 Profile 5 + E-AC-3，实际 readyState=4、尺寸/编码/时间与解码计数核对。首次早于 metadata 的工具误判保留，等待真实媒体就绪后同包通过。[结果](ux-evidence/2026-10-14-membership/tv-results.json)与[说明](MEMBER-EXPERIENCE.md)。
+
+## 2026-10-14：Nerd 信息开关
+
+- `tools/test-player-loading.mjs`：默认隐藏且保留清晰度操作；设置页鼠标与遥控切换，重载后保留；显示实际音视频编码、3840×2160/60fps、完成媒体响应的累计字节及主机名（不泄露签名查询参数）；关闭后不挂载面板。旧 PlayerPage 对照无法显示面板，测试失败。
+- `tools/test-live-loading.mjs`：直播默认隐藏，共用开关；不可读的原生音轨/下载计数显示 —。受控浏览器验证不等于真机物理画面验收。

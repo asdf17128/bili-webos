@@ -1,0 +1,37 @@
+{
+  "cpuThrottle": 6,
+  "results": [
+    {
+      "measurement": "time field reads at 3500s / 100000 comments",
+      "value": 27
+    },
+    {
+      "name": "late-video lookup has bounded work",
+      "pass": true
+    },
+    {
+      "measurement": "peak animated nodes",
+      "value": 24
+    },
+    {
+      "name": "dense comments have a bounded number of animation layers",
+      "pass": true
+    },
+    {
+      "name": "forward seek clears the old screen and backward seek replays",
+      "pass": true
+    },
+    {
+      "name": "paused animations freeze and resume; hidden layer resets",
+      "pass": true
+    },
+    {
+      "name": "translation retries preserve original indices and do not flash Chinese",
+      "pass": true
+    },
+    {
+      "name": "font scales, animation cleanup and repeat render do not duplicate",
+      "pass": true
+    }
+  ]
+}

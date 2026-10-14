@@ -1,0 +1,3 @@
+PASS proxy clears account credentials and persists anonymous fingerprints
+PASS proxy rejects late Set-Cookie and old account response
+PASS proxy persistence failure is retryable

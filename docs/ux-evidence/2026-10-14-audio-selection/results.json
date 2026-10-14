@@ -1,0 +1,137 @@
+{
+  "scope": "Installed LG C4 app; no deployment or source change. Direct API response and actual Shaka active tracks; not external speaker/Atmos certification.",
+  "sources": [
+    {
+      "bvid": "BV1SSQLBREVV",
+      "cid": 37534502406,
+      "title": "和李现，攀登人生第一座雪山",
+      "creator": "Linksphotograph",
+      "apiCode": 0,
+      "qn": 126,
+      "audio": [
+        {
+          "id": 30280,
+          "codec": "mp4a.40.2",
+          "bandwidth": 189261,
+          "supported": true
+        },
+        {
+          "id": 30216,
+          "codec": "mp4a.40.2",
+          "bandwidth": 65673,
+          "supported": true
+        },
+        {
+          "id": 30232,
+          "codec": "mp4a.40.2",
+          "bandwidth": 108071,
+          "supported": true
+        }
+      ],
+      "dolby": [],
+      "flac": [],
+      "video": [
+        {
+          "id": 126,
+          "codec": "hvc1.2.4.H150.90",
+          "width": 3840,
+          "height": 2160,
+          "fps": "29.970"
+        }
+      ]
+    },
+    {
+      "bvid": "BV1kX4y197P4",
+      "cid": 1127214165,
+      "title": "【杜比视界·全景声】杜比影院映前秀： Universe 新版中文版｜更新 Profile 5 版本",
+      "creator": "翼格小和奏",
+      "apiCode": 0,
+      "qn": 126,
+      "audio": [
+        {
+          "id": 30280,
+          "codec": "mp4a.40.2",
+          "bandwidth": 201405,
+          "supported": true
+        },
+        {
+          "id": 30232,
+          "codec": "mp4a.40.2",
+          "bandwidth": 122074,
+          "supported": true
+        },
+        {
+          "id": 30216,
+          "codec": "mp4a.40.5",
+          "bandwidth": 47153,
+          "supported": true
+        }
+      ],
+      "dolby": [
+        {
+          "id": 30250,
+          "codec": "ec-3",
+          "bandwidth": 1024203,
+          "supported": true
+        }
+      ],
+      "flac": [],
+      "video": [
+        {
+          "id": 126,
+          "codec": "dvh1.05.07",
+          "width": 3996,
+          "height": 2160,
+          "fps": "24"
+        }
+      ]
+    }
+  ],
+  "linksActiveTrack": {
+    "videoCodec": "dvh1.08.07",
+    "audioCodec": "mp4a.40.2",
+    "audioBandwidth": 189261,
+    "channels": null
+  },
+  "controlStart": {
+    "time": 2.333333,
+    "paused": false,
+    "ready": 4,
+    "width": 3996,
+    "height": 2160,
+    "decodedAudioBytes": 942080,
+    "frames": 197,
+    "active": {
+      "videoCodec": "dvh1.05.07",
+      "audioCodec": "ec-3",
+      "audioBandwidth": 1024203,
+      "channels": null
+    }
+  },
+  "controlEnd": {
+    "time": 10.875,
+    "paused": false,
+    "ready": 4,
+    "width": 3996,
+    "height": 2160,
+    "decodedAudioBytes": 2039808,
+    "frames": 403,
+    "active": {
+      "videoCodec": "dvh1.05.07",
+      "audioCodec": "ec-3",
+      "audioBandwidth": 1024203,
+      "channels": null
+    }
+  },
+  "controlPass": true,
+  "restored": {
+    "track": {
+      "videoCodec": "dvh1.08.07",
+      "audioCodec": "mp4a.40.2",
+      "audioBandwidth": 189261,
+      "channels": null
+    },
+    "positionMatches": true,
+    "settingsRestored": true
+  }
+}

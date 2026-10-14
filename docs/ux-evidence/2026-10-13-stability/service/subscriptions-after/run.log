@@ -1,0 +1,5 @@
+PASS 50 cast subscribe/cancel cycles leave no references or stale broadcast
+PASS cast cancellation matches token without removing another subscriber
+PASS 50 live subscribe/cancel cycles close idle relay immediately
+PASS live relay remains while one listener survives and stops after the last
+PASS identity fallback does not treat all missing tokens as one subscription

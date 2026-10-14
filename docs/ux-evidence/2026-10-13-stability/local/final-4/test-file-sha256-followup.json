@@ -1,0 +1,89 @@
+{
+  "recordedAt": "2026-10-13T07:46:00.952070+00:00",
+  "fullGateExecutionHashFile": "test-file-sha256.json",
+  "fullGatesRerun": false,
+  "scope": "Post-gate TV tool correction/observability changes; original full-gate execution hashes retained unchanged.",
+  "productionDiffSha256": "ef1125343cec968e95406b536347b9d39765dac080b5a4d167e72b05a3c5bcd6",
+  "productionManifestFiles": 13,
+  "productionManifestStillMatches": true,
+  "files": {
+    "tools/verify.sh": {
+      "fullGateRecordedSha256": "80c26a48c58b5022f3601fdca69f46d041f1b512f27a3ed98f846db0ceb8ca99",
+      "currentSha256": "80c26a48c58b5022f3601fdca69f46d041f1b512f27a3ed98f846db0ceb8ca99",
+      "changedSinceFullGate": false
+    },
+    "tools/test-player-loading.mjs": {
+      "fullGateRecordedSha256": "486a9dad51252237fa0f650356db9856938d3f2396f1a18b3f6d630bb0473411",
+      "currentSha256": "486a9dad51252237fa0f650356db9856938d3f2396f1a18b3f6d630bb0473411",
+      "changedSinceFullGate": false
+    },
+    "tools/test-network-soak-tv.mjs": {
+      "fullGateRecordedSha256": "e8ea2b38dc3c21502e5c7cbd3fd8f2cdce1d84d3a43a15edeeed9825b3e7f4bd",
+      "currentSha256": "01abb7c98b965c64a2fa47a1d95cc1dbb02514a33f5ee4e9ae373bd9c53ade97",
+      "changedSinceFullGate": true
+    },
+    "tools/test-soak-monitor.mjs": {
+      "fullGateRecordedSha256": "a877cde45a176ba3b60bd55b3c7c64ebccb8d5b6dfabb0b2316f21924106e478",
+      "currentSha256": "a877cde45a176ba3b60bd55b3c7c64ebccb8d5b6dfabb0b2316f21924106e478",
+      "changedSinceFullGate": false
+    },
+    "tools/_tv-stability.mjs": {
+      "fullGateRecordedSha256": "611e78fb629395000b155661a8a9be5f42a734b90f1be289a8c9ecb99591ff6b",
+      "currentSha256": "611e78fb629395000b155661a8a9be5f42a734b90f1be289a8c9ecb99591ff6b",
+      "changedSinceFullGate": false
+    },
+    "tools/test-tv-stability-transport.mjs": {
+      "fullGateRecordedSha256": "fc8859f3ea7fbce3fc044e130b4f837bfc1c267a735426107f06d27e2d153093",
+      "currentSha256": "fc8859f3ea7fbce3fc044e130b4f837bfc1c267a735426107f06d27e2d153093",
+      "changedSinceFullGate": false
+    },
+    "tools/test-live-relay-reconnect.mjs": {
+      "fullGateRecordedSha256": "f892f99611befd5fdfe665b630dca833abe5045e0e4b191037356d3504c63af6",
+      "currentSha256": "f892f99611befd5fdfe665b630dca833abe5045e0e4b191037356d3504c63af6",
+      "changedSinceFullGate": false
+    },
+    "tools/test-live-stability-monitor.mjs": {
+      "fullGateRecordedSha256": "b212f38c6a4c668936085ff443fa560f147756d23137b7e05cd0b8a88006bb9d",
+      "currentSha256": "b212f38c6a4c668936085ff443fa560f147756d23137b7e05cd0b8a88006bb9d",
+      "changedSinceFullGate": false
+    },
+    "tools/test-live-stability-tv.mjs": {
+      "fullGateRecordedSha256": "84fa0d26b6b76c5f40f4c0b9be1d9f587d28cb81fbb5bffc6ef11b71a5aa7b20",
+      "currentSha256": "eb5036c7991dd6e0b8dbb4494c358522e5c99a6fb377acb35c8793ebde9299f4",
+      "changedSinceFullGate": true
+    },
+    "tools/test-playback-lifecycle-tv.mjs": {
+      "fullGateRecordedSha256": null,
+      "currentSha256": "232ae089564ecdf7295c0ce013f4742826b3dffecf538d76a05ead3ee21986b7",
+      "changedSinceFullGate": true,
+      "note": "TV-only tool was not in local full-gate hash inventory; changed paused-position predicate afterward."
+    }
+  },
+  "separateFollowupEvidence": {
+    "pausePredicate": "../../lifecycle-predicate/results.json",
+    "apiDiagnostics": "../../probe-diagnostics/results-final.json",
+    "liveMonitor": "../../probe-diagnostics/live-monitor/results.json",
+    "soakMonitor": "../../probe-diagnostics/soak-monitor/results.json"
+  },
+  "diagnosticFixtureScopeNote": "Initial 34-case source snapshot retained separately. The complete 34-case diagnostic fixture was subsequently rerun against final live/soak hashes and passed; the separate final live monitor 21 and soak monitor 8 passed. Full gates were not rerun.",
+  "diagnosticFixtureInitialSourceSnapshots": [
+    {
+      "name": "test-live-stability-tv.mjs",
+      "sha256": "1b429d14ea581206291e04e503a8abb6be62f20984486bcafdb847e1cc1bdc6f"
+    },
+    {
+      "name": "test-network-soak-tv.mjs",
+      "sha256": "01abb7c98b965c64a2fa47a1d95cc1dbb02514a33f5ee4e9ae373bd9c53ade97"
+    }
+  ],
+  "diagnosticFixtureFinalSourceSnapshots": [
+    {
+      "name": "test-live-stability-tv.mjs",
+      "sha256": "eb5036c7991dd6e0b8dbb4494c358522e5c99a6fb377acb35c8793ebde9299f4"
+    },
+    {
+      "name": "test-network-soak-tv.mjs",
+      "sha256": "01abb7c98b965c64a2fa47a1d95cc1dbb02514a33f5ee4e9ae373bd9c53ade97"
+    }
+  ]
+}

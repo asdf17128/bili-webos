@@ -1,0 +1,269 @@
+{
+  "status": "PASS",
+  "gatesPassed": true,
+  "startedAt": "2026-10-13T07:51:11.895Z",
+  "finishedAt": "2026-10-13T08:51:14.826Z",
+  "elapsedMs": 3602102,
+  "samples": 61,
+  "requestedMinutes": 60,
+  "checks": {
+    "passed": 67,
+    "failed": 0
+  },
+  "failedChecks": [],
+  "singleDocument": true,
+  "serviceHealthySamples": 61,
+  "serviceUptime": {
+    "min": 1785,
+    "max": 5385,
+    "first": 1785,
+    "last": 5385
+  },
+  "maxServiceEpochDriftMs": 560,
+  "loggedInAndVipSamples": 61,
+  "resolutions": [
+    "3840x2160"
+  ],
+  "codecs": [
+    "hvc1.1.6.L153.90"
+  ],
+  "frameRateMetadata": [
+    50
+  ],
+  "endpoints": [
+    {
+      "name": "bilibili-nav",
+      "success": 61,
+      "failed": 0,
+      "latencyMs": {
+        "min": 39,
+        "max": 316,
+        "first": 70,
+        "last": 48
+      },
+      "failures": []
+    },
+    {
+      "name": "bilibili-live-area",
+      "success": 61,
+      "failed": 0,
+      "latencyMs": {
+        "min": 67,
+        "max": 596,
+        "first": 96,
+        "last": 89
+      },
+      "failures": []
+    },
+    {
+      "name": "github-version",
+      "success": 61,
+      "failed": 0,
+      "latencyMs": {
+        "min": 1703,
+        "max": 3342,
+        "first": 2696,
+        "last": 1995
+      },
+      "failures": []
+    }
+  ],
+  "media": {
+    "newDecodedFrames": 180118,
+    "newDroppedFrames": 0,
+    "frameCountersComplete": true,
+    "gapsRequiringReview": 0,
+    "investigationRequired": []
+  },
+  "monitor": {
+    "ends": 1,
+    "longestGap": 1999,
+    "gaps": [],
+    "gapsTruncated": 0,
+    "segments": [
+      {
+        "index": 0,
+        "reason": "start",
+        "startedAtMs": 4,
+        "startMediaTime": 0.96,
+        "decodedDelta": 100488,
+        "droppedDelta": 0,
+        "counterUnavailable": false,
+        "endedAtMs": 2013005,
+        "endMediaTime": 2013.96,
+        "decodedRaw": 100710,
+        "droppedRaw": 0
+      },
+      {
+        "index": 1,
+        "reason": "natural-loop",
+        "startedAtMs": 2014007,
+        "startMediaTime": 0,
+        "decodedDelta": 79630,
+        "droppedDelta": 0,
+        "counterUnavailable": false,
+        "endedAtMs": 3602515,
+        "endMediaTime": 1586.66,
+        "decodedRaw": 180340,
+        "droppedRaw": 0
+      }
+    ],
+    "counterResets": 0,
+    "longTasksSupported": true,
+    "longTasks": 3,
+    "longTaskMs": 172,
+    "maxTaskMs": 60
+  },
+  "naturalCdpHeapBytes": {
+    "min": 6142540,
+    "max": 7983200,
+    "first": 6142540,
+    "last": 7439312
+  },
+  "heapWindowMinMax": [
+    {
+      "minutes": [
+        0,
+        9
+      ],
+      "heapBytes": {
+        "min": 6142540,
+        "max": 7722568,
+        "first": 6142540,
+        "last": 7711352
+      }
+    },
+    {
+      "minutes": [
+        10,
+        19
+      ],
+      "heapBytes": {
+        "min": 6837740,
+        "max": 7790060,
+        "first": 6874048,
+        "last": 7790060
+      }
+    },
+    {
+      "minutes": [
+        20,
+        29
+      ],
+      "heapBytes": {
+        "min": 7103964,
+        "max": 7857788,
+        "first": 7153688,
+        "last": 7560664
+      }
+    },
+    {
+      "minutes": [
+        30,
+        39
+      ],
+      "heapBytes": {
+        "min": 6922172,
+        "max": 7641564,
+        "first": 7207152,
+        "last": 7582452
+      }
+    },
+    {
+      "minutes": [
+        40,
+        49
+      ],
+      "heapBytes": {
+        "min": 6982940,
+        "max": 7600216,
+        "first": 7117920,
+        "last": 7600216
+      }
+    },
+    {
+      "minutes": [
+        50,
+        59
+      ],
+      "heapBytes": {
+        "min": 6991884,
+        "max": 7983200,
+        "first": 7462836,
+        "last": 7376780
+      }
+    },
+    {
+      "minutes": [
+        60,
+        60
+      ],
+      "heapBytes": {
+        "min": 7439312,
+        "max": 7439312,
+        "first": 7439312,
+        "last": 7439312
+      }
+    }
+  ],
+  "observedServiceErrorsDuringRun": [
+    {
+      "t": 1791877931785,
+      "tag": "retry:api.live.bilibili.com",
+      "detail": "socket hang up"
+    },
+    {
+      "t": 1791878532283,
+      "tag": "retry:api.live.bilibili.com",
+      "detail": "socket hang up"
+    },
+    {
+      "t": 1791878892282,
+      "tag": "retry:api.live.bilibili.com",
+      "detail": "socket hang up"
+    },
+    {
+      "t": 1791879192293,
+      "tag": "retry:api.live.bilibili.com",
+      "detail": "socket hang up"
+    },
+    {
+      "t": 1791879432109,
+      "tag": "retry:api.live.bilibili.com",
+      "detail": "socket hang up"
+    },
+    {
+      "t": 1791879972152,
+      "tag": "retry:api.live.bilibili.com",
+      "detail": "socket hang up"
+    },
+    {
+      "t": 1791880512134,
+      "tag": "retry:api.live.bilibili.com",
+      "detail": "socket hang up"
+    },
+    {
+      "t": 1791881112147,
+      "tag": "retry:api.live.bilibili.com",
+      "detail": "socket hang up"
+    },
+    {
+      "t": 1791881292155,
+      "tag": "retry:api.live.bilibili.com",
+      "detail": "socket hang up"
+    }
+  ],
+  "diagnosticObservationFiles": [
+    "diagnostics-final.json",
+    "diagnostics-initial.json",
+    "diagnostics-minute-15.json",
+    "diagnostics-minute-30.json",
+    "diagnostics-minute-45.json"
+  ],
+  "diagnosticLimit": "Periodic snapshots of a 30-entry ring; observations are not an exhaustive network error log. Recovered read retries do not make the final logical request fail.",
+  "limits": [
+    "Progress gaps include JS timer scheduling; >3s intervals require inspection.",
+    "Frame counters are per playback segment and exclude physical panel/audio validation.",
+    "Unavailable counters remain null; this test does not measure GPU/process memory."
+  ]
+}

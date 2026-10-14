@@ -112,3 +112,11 @@ test('partial/timeout sample is failure and banned winner yields to healthy fall
   assert.equal(cdnHostOf(r.order(playbackCdnUrls(rep, 'auto'))[0]), a);
   r.dispose(); resetCdnState();
 });
+
+test('manual route uses its API-native signature before invented mirror URL', () => {
+  const signed = `https://${b}/upgcxcode/other-path.m4s?upsig=backup%2Bsignature&x=2&x=1`;
+  const urls = playbackCdnUrls({baseUrl:url(a),backupUrl:[signed]},'hwo1');
+  assert.equal(urls[0],signed);
+  assert.equal(urls.filter(u=>cdnHostOf(u)===b).length,1);
+  assert.ok(urls.includes(url(a)));
+});

@@ -1,0 +1,131 @@
+{
+  "started": "2026-10-13T06:09:53.070Z",
+  "checks": [
+    {
+      "name": "initial DASH actually decodes",
+      "pass": true,
+      "detail": {
+        "time": 2.3,
+        "width": 640,
+        "height": 480,
+        "ready": 4,
+        "paused": false,
+        "error": null,
+        "source": "DASH"
+      }
+    },
+    {
+      "name": "speed control reachable",
+      "pass": true
+    },
+    {
+      "name": "speed option exists 2x",
+      "pass": true
+    },
+    {
+      "name": "native 2x actually advances near double speed",
+      "pass": true,
+      "detail": {
+        "rate": 2.000498380264142,
+        "state": {
+          "time": 10.131,
+          "width": 640,
+          "height": 480,
+          "ready": 4,
+          "paused": false,
+          "error": null,
+          "source": "native"
+        }
+      }
+    },
+    {
+      "name": "speed control reachable",
+      "pass": true
+    },
+    {
+      "name": "speed option exists 正常",
+      "pass": true
+    },
+    {
+      "name": "1x restores DASH near the same position",
+      "pass": true,
+      "detail": {
+        "time": 10,
+        "width": 640,
+        "height": 480,
+        "ready": 4,
+        "paused": false,
+        "error": null,
+        "source": "DASH"
+      }
+    },
+    {
+      "name": "restored DASH advances at normal speed",
+      "pass": true,
+      "detail": {
+        "rate": 0.9980285855101038,
+        "state": {
+          "time": 14.9,
+          "width": 640,
+          "height": 480,
+          "ready": 4,
+          "paused": false,
+          "error": null,
+          "source": "DASH"
+        }
+      }
+    },
+    {
+      "name": "speed control reachable",
+      "pass": true
+    },
+    {
+      "name": "speed option exists 2x",
+      "pass": true
+    },
+    {
+      "name": "paused native switch retains position and pause",
+      "pass": true,
+      "detail": {
+        "time": 14.95,
+        "width": 640,
+        "height": 480,
+        "ready": 4,
+        "paused": true,
+        "error": null,
+        "source": "native"
+      }
+    },
+    {
+      "name": "speed control reachable",
+      "pass": true
+    },
+    {
+      "name": "speed option exists 正常",
+      "pass": true
+    },
+    {
+      "name": "paused 1x restores DASH with position and pause",
+      "pass": false,
+      "detail": {
+        "time": 0,
+        "width": 640,
+        "height": 480,
+        "ready": 4,
+        "paused": true,
+        "error": null,
+        "source": "DASH"
+      }
+    },
+    {
+      "name": "completion",
+      "pass": false,
+      "detail": "paused 1x restores DASH with position and pause"
+    },
+    {
+      "name": "original preferences restored",
+      "pass": true
+    }
+  ],
+  "finished": "2026-10-13T06:10:26.965Z"
+}

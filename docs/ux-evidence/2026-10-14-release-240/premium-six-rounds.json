@@ -1,0 +1,606 @@
+[
+  {
+    "name": "remote focuses the actual quality button",
+    "pass": true
+  },
+  {
+    "name": "remote DV to 4K keeps premium audio, position and paused state",
+    "pass": true,
+    "detail": {
+      "time": 2.333333,
+      "duration": 190,
+      "paused": true,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "hev1.1.6.L153.90",
+      "audio": "ec-3",
+      "frameRate": 24.39,
+      "runtime": {
+        "epoch": 2,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 120
+    }
+  },
+  {
+    "name": "remote focuses the actual quality button",
+    "pass": true
+  },
+  {
+    "name": "network observation",
+    "at": "2026-10-14T15:08:36.695Z",
+    "request": {
+      "host": "127.0.0.1:7654",
+      "kind": "media"
+    },
+    "error": "net::ERR_ABORTED",
+    "cancelled": true
+  },
+  {
+    "name": "remote 4K to Profile 5 restores actual DV at same position",
+    "pass": true,
+    "detail": {
+      "time": 2.333333,
+      "duration": 190,
+      "paused": true,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "dvh1.05.07",
+      "audio": "ec-3",
+      "frameRate": 24,
+      "runtime": {
+        "epoch": 3,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 126
+    }
+  },
+  {
+    "name": "network observation",
+    "at": "2026-10-14T15:08:39.529Z",
+    "request": {
+      "host": "127.0.0.1:7654",
+      "kind": "media"
+    },
+    "error": "net::ERR_ABORTED",
+    "cancelled": true
+  },
+  {
+    "name": "Profile 5 plays after an unbuffered seek",
+    "pass": true,
+    "detail": {
+      "time": 31.5,
+      "duration": 190,
+      "paused": false,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "dvh1.05.07",
+      "audio": "ec-3",
+      "frameRate": 24,
+      "runtime": {
+        "epoch": 3,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 126
+    }
+  },
+  {
+    "name": "remote focuses the actual quality button",
+    "pass": true
+  },
+  {
+    "name": "remote DV to 4K keeps premium audio, position and paused state",
+    "pass": true,
+    "detail": {
+      "time": 2.25,
+      "duration": 190,
+      "paused": true,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "hev1.1.6.L153.90",
+      "audio": "ec-3",
+      "frameRate": 24.39,
+      "runtime": {
+        "epoch": 2,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 120
+    }
+  },
+  {
+    "name": "remote focuses the actual quality button",
+    "pass": true
+  },
+  {
+    "name": "remote 4K to Profile 5 restores actual DV at same position",
+    "pass": true,
+    "detail": {
+      "time": 2.25,
+      "duration": 190,
+      "paused": true,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "dvh1.05.07",
+      "audio": "ec-3",
+      "frameRate": 24,
+      "runtime": {
+        "epoch": 3,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 126
+    }
+  },
+  {
+    "name": "Profile 5 plays after an unbuffered seek",
+    "pass": true,
+    "detail": {
+      "time": 31.5,
+      "duration": 190,
+      "paused": false,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "dvh1.05.07",
+      "audio": "ec-3",
+      "frameRate": 24,
+      "runtime": {
+        "epoch": 3,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 126
+    }
+  },
+  {
+    "name": "network observation",
+    "at": "2026-10-14T15:09:03.532Z",
+    "request": {
+      "host": "127.0.0.1:7654",
+      "kind": "media"
+    },
+    "error": "net::ERR_ABORTED",
+    "cancelled": true
+  },
+  {
+    "name": "remote focuses the actual quality button",
+    "pass": true
+  },
+  {
+    "name": "remote DV to 4K keeps premium audio, position and paused state",
+    "pass": true,
+    "detail": {
+      "time": 2.291666,
+      "duration": 190,
+      "paused": true,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "hev1.1.6.L153.90",
+      "audio": "ec-3",
+      "frameRate": 24.39,
+      "runtime": {
+        "epoch": 2,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 120
+    }
+  },
+  {
+    "name": "remote focuses the actual quality button",
+    "pass": true
+  },
+  {
+    "name": "network observation",
+    "at": "2026-10-14T15:09:14.100Z",
+    "request": {
+      "host": "127.0.0.1:7654",
+      "kind": "media"
+    },
+    "error": "net::ERR_ABORTED",
+    "cancelled": true
+  },
+  {
+    "name": "network observation",
+    "at": "2026-10-14T15:09:14.100Z",
+    "request": {
+      "host": "127.0.0.1:7654",
+      "kind": "media"
+    },
+    "error": "net::ERR_ABORTED",
+    "cancelled": true
+  },
+  {
+    "name": "remote 4K to Profile 5 restores actual DV at same position",
+    "pass": true,
+    "detail": {
+      "time": 2.291666,
+      "duration": 190,
+      "paused": true,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "dvh1.05.07",
+      "audio": "ec-3",
+      "frameRate": 24,
+      "runtime": {
+        "epoch": 3,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 126
+    }
+  },
+  {
+    "name": "network observation",
+    "at": "2026-10-14T15:09:16.201Z",
+    "request": {
+      "host": "127.0.0.1:7654",
+      "kind": "media"
+    },
+    "error": "net::ERR_ABORTED",
+    "cancelled": true
+  },
+  {
+    "name": "Profile 5 plays after an unbuffered seek",
+    "pass": true,
+    "detail": {
+      "time": 31.5,
+      "duration": 190,
+      "paused": false,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "dvh1.05.07",
+      "audio": "ec-3",
+      "frameRate": 24,
+      "runtime": {
+        "epoch": 3,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 126
+    }
+  },
+  {
+    "name": "network observation",
+    "at": "2026-10-14T15:09:20.356Z",
+    "request": {
+      "host": "127.0.0.1:7654",
+      "kind": "media"
+    },
+    "error": "net::ERR_ABORTED",
+    "cancelled": true
+  },
+  {
+    "name": "remote focuses the actual quality button",
+    "pass": true
+  },
+  {
+    "name": "remote DV to 4K keeps premium audio, position and paused state",
+    "pass": true,
+    "detail": {
+      "time": 2.291666,
+      "duration": 190,
+      "paused": true,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "hev1.1.6.L153.90",
+      "audio": "ec-3",
+      "frameRate": 24.39,
+      "runtime": {
+        "epoch": 2,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 120
+    }
+  },
+  {
+    "name": "remote focuses the actual quality button",
+    "pass": true
+  },
+  {
+    "name": "remote 4K to Profile 5 restores actual DV at same position",
+    "pass": true,
+    "detail": {
+      "time": 2.291666,
+      "duration": 190,
+      "paused": true,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "dvh1.05.07",
+      "audio": "ec-3",
+      "frameRate": 24,
+      "runtime": {
+        "epoch": 3,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 126
+    }
+  },
+  {
+    "name": "network observation",
+    "at": "2026-10-14T15:09:33.750Z",
+    "request": {
+      "host": "127.0.0.1:7654",
+      "kind": "media"
+    },
+    "error": "net::ERR_ABORTED",
+    "cancelled": true
+  },
+  {
+    "name": "Profile 5 plays after an unbuffered seek",
+    "pass": true,
+    "detail": {
+      "time": 32.25,
+      "duration": 190,
+      "paused": false,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "dvh1.05.07",
+      "audio": "ec-3",
+      "frameRate": 24,
+      "runtime": {
+        "epoch": 3,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 126
+    }
+  },
+  {
+    "name": "network observation",
+    "at": "2026-10-14T15:09:38.633Z",
+    "request": {
+      "host": "127.0.0.1:7654",
+      "kind": "media"
+    },
+    "error": "net::ERR_ABORTED",
+    "cancelled": true
+  },
+  {
+    "name": "remote focuses the actual quality button",
+    "pass": true
+  },
+  {
+    "name": "remote DV to 4K keeps premium audio, position and paused state",
+    "pass": true,
+    "detail": {
+      "time": 2.416666,
+      "duration": 190,
+      "paused": true,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "hev1.1.6.L153.90",
+      "audio": "ec-3",
+      "frameRate": 24.39,
+      "runtime": {
+        "epoch": 2,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 120
+    }
+  },
+  {
+    "name": "remote focuses the actual quality button",
+    "pass": true
+  },
+  {
+    "name": "network observation",
+    "at": "2026-10-14T15:09:49.778Z",
+    "request": {
+      "host": "127.0.0.1:7654",
+      "kind": "media"
+    },
+    "error": "net::ERR_ABORTED",
+    "cancelled": true
+  },
+  {
+    "name": "network observation",
+    "at": "2026-10-14T15:09:49.779Z",
+    "request": {
+      "host": "127.0.0.1:7654",
+      "kind": "media"
+    },
+    "error": "net::ERR_ABORTED",
+    "cancelled": true
+  },
+  {
+    "name": "remote 4K to Profile 5 restores actual DV at same position",
+    "pass": true,
+    "detail": {
+      "time": 2.416666,
+      "duration": 190,
+      "paused": true,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "dvh1.05.07",
+      "audio": "ec-3",
+      "frameRate": 24,
+      "runtime": {
+        "epoch": 3,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 126
+    }
+  },
+  {
+    "name": "network observation",
+    "at": "2026-10-14T15:09:52.276Z",
+    "request": {
+      "host": "127.0.0.1:7654",
+      "kind": "media"
+    },
+    "error": "net::ERR_ABORTED",
+    "cancelled": true
+  },
+  {
+    "name": "network observation",
+    "at": "2026-10-14T15:09:52.318Z",
+    "request": {
+      "host": "127.0.0.1:7654",
+      "kind": "media"
+    },
+    "error": "net::ERR_ABORTED",
+    "cancelled": true
+  },
+  {
+    "name": "Profile 5 plays after an unbuffered seek",
+    "pass": true,
+    "detail": {
+      "time": 31.458333,
+      "duration": 190,
+      "paused": false,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "dvh1.05.07",
+      "audio": "ec-3",
+      "frameRate": 24,
+      "runtime": {
+        "epoch": 3,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 126
+    }
+  },
+  {
+    "name": "network observation",
+    "at": "2026-10-14T15:09:56.706Z",
+    "request": {
+      "host": "127.0.0.1:7654",
+      "kind": "media"
+    },
+    "error": "net::ERR_ABORTED",
+    "cancelled": true
+  },
+  {
+    "name": "remote focuses the actual quality button",
+    "pass": true
+  },
+  {
+    "name": "remote DV to 4K keeps premium audio, position and paused state",
+    "pass": true,
+    "detail": {
+      "time": 2.416666,
+      "duration": 190,
+      "paused": true,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "hev1.1.6.L153.90",
+      "audio": "ec-3",
+      "frameRate": 24.39,
+      "runtime": {
+        "epoch": 2,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 120
+    }
+  },
+  {
+    "name": "remote focuses the actual quality button",
+    "pass": true
+  },
+  {
+    "name": "remote 4K to Profile 5 restores actual DV at same position",
+    "pass": true,
+    "detail": {
+      "time": 2.416666,
+      "duration": 190,
+      "paused": true,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "dvh1.05.07",
+      "audio": "ec-3",
+      "frameRate": 24,
+      "runtime": {
+        "epoch": 3,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 126
+    }
+  },
+  {
+    "name": "network observation",
+    "at": "2026-10-14T15:10:11.617Z",
+    "request": {
+      "host": "127.0.0.1:7654",
+      "kind": "media"
+    },
+    "error": "net::ERR_ABORTED",
+    "cancelled": true
+  },
+  {
+    "name": "Profile 5 plays after an unbuffered seek",
+    "pass": true,
+    "detail": {
+      "time": 31.625,
+      "duration": 190,
+      "paused": false,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "dvh1.05.07",
+      "audio": "ec-3",
+      "frameRate": 24,
+      "runtime": {
+        "epoch": 3,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 126
+    }
+  },
+  {
+    "name": "network observation",
+    "at": "2026-10-14T15:10:16.356Z",
+    "request": {
+      "host": "127.0.0.1:7654",
+      "kind": "media"
+    },
+    "error": "net::ERR_ABORTED",
+    "cancelled": true
+  }
+]

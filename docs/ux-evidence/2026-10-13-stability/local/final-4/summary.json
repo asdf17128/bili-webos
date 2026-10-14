@@ -1,0 +1,126 @@
+{
+  "testBuild": "stability-test.4",
+  "status": "passed with explicit skips",
+  "runs": [
+    {
+      "command": "bash tools/verify.sh --no-tv --ux",
+      "startedAt": "2026-10-13T07:26:07.301936+00:00",
+      "log": "verify-ux.log",
+      "gateOutput": "/tmp/bili-stability-final4-ux-gates",
+      "endedAt": "2026-10-13T07:30:47.174571+00:00",
+      "exitCode": 0
+    },
+    {
+      "command": "bash tools/verify.sh --sim --no-tv",
+      "startedAt": "2026-10-13T07:30:52.458728+00:00",
+      "log": "verify-sim.log",
+      "gateOutput": "/tmp/bili-stability-final4-sim-gates",
+      "isolatedStateDir": "/tmp/bili-stability-final4-state",
+      "accountWrites": false,
+      "simOutput": "/tmp/bili-stability-final4-simulator",
+      "endedAt": "2026-10-13T07:34:32.105167+00:00",
+      "exitCode": 0
+    }
+  ],
+  "productionDiffSha256": "ef1125343cec968e95406b536347b9d39765dac080b5a4d167e72b05a3c5bcd6",
+  "sourceUnchanged": true,
+  "sourceAndBundleManifestMatches": true,
+  "suites": {
+    "bridge-subscriptions": {
+      "pass": 3
+    },
+    "buvid": {
+      "pass": 8
+    },
+    "cdn": {
+      "pass": 7
+    },
+    "danmaku": {
+      "measurement": 2,
+      "pass": 6
+    },
+    "dev-subscriptions": {
+      "pass": 4
+    },
+    "diagnostic-cdn": {
+      "pass": 4
+    },
+    "live-loading": {
+      "pass": 9
+    },
+    "live-monitor": {
+      "pass": 21
+    },
+    "playback-end": {
+      "pass": 26
+    },
+    "player-loading": {
+      "pass": 70
+    },
+    "relay-reconnect": {
+      "pass": 22
+    },
+    "sdk-subscriptions": {
+      "pass": 6
+    },
+    "service-stress": {
+      "pass": 20
+    },
+    "service-subscriptions": {
+      "pass": 5
+    },
+    "sessions": {
+      "pass": 9
+    },
+    "simulator": {
+      "pass": 54,
+      "skip": 3
+    },
+    "soak-monitor": {
+      "pass": 8
+    },
+    "transport": {
+      "pass": 17
+    },
+    "ui": {
+      "pass": 68
+    }
+  },
+  "otherRequiredGates": "All passed; raw logs preserve syntax/design/logic/media/service tests, Node 0.12.2/8.17.0, production build, real HTTP Range and region probe checks. Do not aggregate shared or repeated assertions.",
+  "skips": [
+    {
+      "name": "Full copyrighted Dolby 120 fps corpus",
+      "reason": "BILI_DOLBY_120_CORPUS absent; optional 35-fragment capture not available in repository"
+    },
+    {
+      "name": "Not logged in",
+      "reason": "like/coin/fav surface skipped — start tools/dev-service.mjs to seed cookies"
+    },
+    {
+      "name": "Watch Later skipped",
+      "reason": "needs a logged-in session"
+    },
+    {
+      "name": "Follow badges skipped",
+      "reason": "API session is logged out; stored cookies alone do not establish authentication"
+    }
+  ],
+  "limitations": [
+    "Anonymous simulator does not establish logged-in/premium playback coverage.",
+    "Selected live room returned zero history records; short chat rail check is not proof of sustained real chat delivery.",
+    "Real ws-legacy socket lifecycle tests used local Node v25.4.0; separate real Node 0.12.2/8.17.0 service smoke verifies parse/load/core requests, not old-TV hardware.",
+    "No TV access, deployment, release, commit or account write performed by this local regression run."
+  ],
+  "cleanup": {
+    "ownedPids": [
+      99755,
+      99705
+    ],
+    "ownedProcessesExited": true,
+    "portsAtCompletion": {
+      "5173": false,
+      "9528": false
+    },
+    "checkedAt": "2026-10-13T07:35:34.178137+00:00"
+  }
+}

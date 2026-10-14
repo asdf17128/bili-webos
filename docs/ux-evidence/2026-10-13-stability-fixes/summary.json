@@ -1,0 +1,37 @@
+{
+  "status": "LOCAL_FIXES_VERIFIED_TV_PENDING",
+  "marker": "2.3.0 stability-test.5",
+  "release": false,
+  "installedOnTv": false,
+  "sourceFreezeMatches": true,
+  "buildMatches": true,
+  "fullLocalUxExitCode": 0,
+  "finalSimulatorExitCode": 0,
+  "simulator": {
+    "pass": 54,
+    "fail": 0,
+    "skip": 3
+  },
+  "liveSelection": {
+    "pass": 10,
+    "fail": 0
+  },
+  "liveReactControlledMedia": {
+    "pass": 14,
+    "fail": 0
+  },
+  "updateClientControlledLuna": {
+    "pass": 10,
+    "fail": 0
+  },
+  "memory": {
+    "localCycles": 120,
+    "tvFinding": "NEEDS_REVIEW",
+    "newTvContinuousRun": "INTERRUPTED_APP_HIDDEN"
+  },
+  "limitations": [
+    "Controlled media recovery timing is source assignment, not hardware picture recovery.",
+    "Anonymous simulator skips account-required actions.",
+    "Candidate 4 TV long-play results do not validate candidate 5."
+  ]
+}

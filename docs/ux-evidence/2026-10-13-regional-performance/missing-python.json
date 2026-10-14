@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-13T04:41:45.571Z",
+  "execution": "local",
+  "bvid": "BV1sapi6qE72",
+  "credentials": "anonymous, newly acquired fingerprint only",
+  "checks": [
+    {
+      "name": "completion",
+      "pass": false,
+      "detail": "Probe process unavailable; check Python/SSH setup"
+    }
+  ],
+  "samples": [],
+  "location": {
+    "unavailable": true
+  }
+}

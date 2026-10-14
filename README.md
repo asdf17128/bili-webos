@@ -4,77 +4,25 @@
 
 # BiliTV for webOS
 
-### Your Bilibili. A bigger screen.
+### 把喜欢的 B 站，搬到客厅。
 
-把喜欢的 B 站，搬到客厅。
+在 LG 电视上看视频、直播和弹幕，追喜欢的 UP 主。
 
-Videos, live streams, danmaku and your favorite creators — comfortably on your LG TV.
+**中文** · [English](README.en.md)
 
-[**Get BiliTV**](https://github.com/asdf17128/bili-webos/releases/latest) · [**Homebrew Channel**](https://repo.webosbrew.org/apps/com.biliwebos.app/) · [English](#english) · [中文](#中文)
+[**下载安装**](https://github.com/asdf17128/bili-webos/releases/latest) · [**Homebrew Channel**](https://repo.webosbrew.org/apps/com.biliwebos.app/) · [更新日志](CHANGELOG.md)
 
-![Release](https://img.shields.io/github/v/release/asdf17128/bili-webos?color=fb7299) ![Platform](https://img.shields.io/badge/LG%20webOS-5.0%2B-34363e) ![License](https://img.shields.io/badge/license-MIT-34363e)
+![最新版本](https://img.shields.io/github/v/release/asdf17128/bili-webos?color=fb7299) ![支持平台](https://img.shields.io/badge/LG%20webOS-5.0%2B-34363e) ![许可证](https://img.shields.io/badge/license-MIT-34363e)
 
-<img src="docs/screenshots/v2/home.jpg" width="1200" alt="BiliTV 2.0: continue watching above a compact four-column video grid" />
+<img src="docs/screenshots/v2/home.jpg" width="1200" alt="BiliTV 首页：继续观看与紧凑的四列视频列表" />
 
-**BiliTV 2.0 — more room for what you want to watch.**
-
-更大的内容空间，更顺手的遥控体验。
+**更大的内容空间，更顺手的遥控体验。**
 
 </div>
 
-## English
-
-BiliTV is a free, open-source Bilibili client made for LG webOS TVs. Pick up the remote, find something you love, and settle in. The app runs on your TV; you don't need to leave a computer running.
-
-### Made for the sofa
-
-| | What you can do |
-|---|---|
-| **Pick up where you left off** | Continue watching from the home screen, or find a video in your watch history. Save something for later with a long press. |
-| **Browse without losing your place** | A slim sidebar opens when you need it. Return from the sidebar or player to the card you were browsing. |
-| **Make the screen yours** | Choose **2, 3 or 4 videos per row**. Adjust the interface, subtitle and danmaku text sizes separately. |
-| **Find your next favorite** | Recommendations, trending videos, followed creators, favorites and six category shortcuts. Search with trending topics, suggestions and recent searches. |
-| **Enjoy the whole video** | Up to **4K / 8K, HDR and Dolby Vision**, playback speed controls, chapter markers and thumbnail previews while seeking. |
-| **Stay part of the conversation** | Watch with danmaku and subtitles, read comments and replies alongside the video, or drop into a live stream with chat. |
-
-Also included: **bangumi and episode lists**, favorites and Watch Later playlists, **QR-code login**, Magic Remote pointer and wheel support, and **DLNA casting** from compatible phone apps.
-
-Use BiliTV in **English, Español or 中文**. English and Spanish interfaces also offer automatic translation of video titles, subtitles, chapters and danmaku.
-
-*Video quality and availability depend on the source, your Bilibili account, your TV and your region.*
-
-### A closer look
-
-| Find something worth watching | Settle into your own layout |
-|---|---|
-| ![Search with trending topics and recent searches](docs/screenshots/v2/search.png) | ![Separate controls for grid columns and text sizes](docs/screenshots/v2/settings.png) |
-
-<details>
-<summary><strong>A sidebar that gives the screen back to your videos</strong></summary>
-
-![Expanded navigation drawer in BiliTV 2.0](docs/screenshots/v2/navigation.jpg)
-
-Press **Back** to open the sidebar without resetting the list. Press **Right** to return to the same card. Press **OK** on the current section when you want a fresh list.
-
-</details>
-
-*Screenshots show the actual 2.0.0 interface in Chinese, with public sample videos and a demo account. / 截图为 2.0.0 实际界面，使用公开示例视频与演示账号。*
-
-### Get watching
-
-**Already have Homebrew Channel?** Open it on your TV, find **BiliTV**, and choose Install or Update. [View the listing →](https://repo.webosbrew.org/apps/com.biliwebos.app/)
-
-**Prefer to install the package yourself?** Download the `.ipk` from the [latest release](https://github.com/asdf17128/bili-webos/releases/latest), then install it using [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop). See the [Developer Mode guide](https://www.webosbrew.org/devmode/) to connect your TV. No source build is needed.
-
-Homebrew's catalog can take time to catch up with a new release. The latest package is always available from GitHub Releases.
-
-Supports **webOS 5.0 and later**, with community-tested compatibility for **C9 / webOS 4.x**. Codec support depends on the TV. Scan the login QR code with the Bilibili mobile app to access your subscriptions, favorites and history.
-
-## 中文
-
 BiliTV 是为 LG webOS 电视打造的免费、开源哔哩哔哩客户端。从一场现场演出，到一集番剧，再到喜欢的 UP 主更新，拿起遥控器就能接着看。安装后直接在电视上运行，不需要电脑常开。
 
-### 2.0，让大屏看 B 站更舒服
+## 为遥控器和大屏设计
 
 - **打开就能接着看。** 首页「继续观看」带你回到上次进度；想留到周末看的视频，长按卡片加入稍后再看。
 - **来回切换，不丢位置。** 精简侧栏按需展开，顶部和卡片更紧凑。返回侧栏、退出播放后，继续浏览刚才那张卡片。
@@ -87,7 +35,24 @@ BiliTV 是为 LG webOS 电视打造的免费、开源哔哩哔哩客户端。从
 
 *可用画质和内容以视频源、账号权限、电视能力及所在地区为准。*
 
-### 安装与更新
+## 界面预览
+
+| 找到想看的内容 | 按你的习惯排版 |
+|---|---|
+| ![支持热搜和历史记录的搜索页](docs/screenshots/v2/search.png) | ![分别设置每行视频数与字号](docs/screenshots/v2/settings.png) |
+
+<details>
+<summary><strong>按需展开的侧栏，把空间留给视频</strong></summary>
+
+![展开后的导航侧栏](docs/screenshots/v2/navigation.jpg)
+
+按 **返回** 打开侧栏，列表位置保持不变；按 **右** 回到原卡片。在当前栏目上按 **OK**，才会主动刷新列表。
+
+</details>
+
+*截图为 2.0.0 实际界面，使用公开示例视频与演示账号。*
+
+## 安装与更新
 
 **电视已装 Homebrew Channel：** 打开商店，搜索 **BiliTV**，选择安装或更新。[查看商店页面 →](https://repo.webosbrew.org/apps/com.biliwebos.app/)
 
@@ -95,7 +60,7 @@ BiliTV 是为 LG webOS 电视打造的免费、开源哔哩哔哩客户端。从
 
 Homebrew 目录更新可能晚于 GitHub 发布；想立即体验新版，可以直接下载发布页的安装包。支持 **webOS 5.0 及更新版本**，并提供已由社区验证的 **C9 / webOS 4.x** 兼容；具体解码能力取决于电视。登录后可同步关注、收藏与观看历史。
 
-### 几个顺手的操作
+## 遥控器操作
 
 | 操作 | 会发生什么 |
 |---|---|
@@ -107,80 +72,18 @@ Homebrew 目录更新可能晚于 GitHub 发布；想立即体验新版，可以
 | 播放时按左右 | 预览快进／快退位置；OK 确认，返回取消 |
 | 播放时按上下 | 呼出控制栏；返回逐层关闭弹层、控件，再退出播放 |
 
-## Privacy / 隐私
-
-Login information is stored on your TV and used to access your Bilibili account. Update checks contact GitHub without an app-specific device identifier; public download counts provide a rough measure of usage. Translation sends the text to Google's translation service when used.
+## 隐私
 
 登录信息保存在电视上，用于访问你的 B 站账号。更新检查访问 GitHub，不携带应用自建的设备标识；公开下载计数用于粗略了解使用量。使用翻译时，待翻译文字会发送到 Google 翻译服务。
 
-## Feedback & development / 反馈与开发
+## 反馈与开发
 
-[Report an issue / 反馈问题](https://github.com/asdf17128/bili-webos/issues) · [What's new / 更新记录](https://github.com/asdf17128/bili-webos/releases) · [Development guide / 开发文档](docs/DEVELOPMENT.md) · [2.0.0 test report / 测试报告](docs/RELEASE-2.0.0.md)
+[反馈问题](https://github.com/asdf17128/bili-webos/issues) · [更新日志](CHANGELOG.md) · [开发文档](docs/DEVELOPMENT.md) · [测试登记](docs/TESTCASES.md)
 
-[MIT licensed](LICENSE). Keep the copyright and license notices when distributing modified source or packages. Third-party dependencies and bundled assets retain their own licenses; this license does not grant rights to Bilibili/LG trademarks or imply their endorsement. An independent community project, not affiliated with Bilibili or LG.
+会员画质与设备限制见 [会员播放说明](docs/DOLBY_VISION.md)；网络问题可参考 [家庭网络检测方案](docs/NETWORK-TESTING.md)。版本更新统一记录在 [更新日志](CHANGELOG.md)，本版验证见 [2.4.0 发布记录](docs/RELEASE-2.4.0.md)。
+
+[会员身份与自动最高画质](docs/MEMBER-EXPERIENCE.md)（测试分支）。
+
+## 许可证
 
 [MIT 开源项目](LICENSE)，再发布源码或修改后的安装包时请保留版权与许可声明。第三方依赖和随附资源保留各自许可；代码许可不授予哔哩哔哩、LG 等第三方商标的使用权，也不代表官方认可。本项目由社区独立开发，与哔哩哔哩及 LG 无隶属关系。
-
-### v2.3.0 — playback recovery and creator follow / 播放恢复与 UP 关注
-
-- 服务请求为 DNS 查询、连接池排队和响应头增加总超时；提前退出会释放尚未建立的代理请求。读取请求在收到响应前断开时换新连接重试一次，避免网络故障后长期等待；写入操作不会重发。
-- 点播网络错误或持续卡顿后可在原分 P、原进度重试；网络恢复后最多自动重建播放器两次，耗尽后仍可按 OK 手动重试，返回键退出即取消。
-- 播放控制栏和视频卡片长按菜单增加 **关注 UP 主 / 取消关注 UP 主**；成功后同步首页标记，失败不改变状态，重复按键不会重复提交。
-- 整合 C9 测试包的显式 DASH 格式及首段诊断。社区 C9 用户在上海移动同片源各测试三次：自动 6.43–7.74 秒、手动腾讯 5.41–5.87 秒，六次均无卡住、网络重试为零。[用户实测](https://github.com/asdf17128/bili-webos/issues/34#issuecomment-6030725380)。这不代表所有机型或网络的起播时间。
-- 风控提示建议用官方客户端对照同一账号，不凭一个错误码断言账号被封，也不将媒体 CDN 切换当成 API 风控的解法。
-- 开发工具升级到已修补的 ws 8.22；电视服务保留兼容 Node 8 的 ws 7.5.11，Node 0.12 路径补上分片和接收队列上限。
-
-验证范围及限制见 [测试登记](docs/TESTCASES.md)。DNS 服务器或路由器故障仍需恢复网络；应用现在能释放超时请求，并在网络恢复后于原进度重试播放。
-
-This release adds bounded playback recovery and creator-follow shortcuts, incorporates the C9-tested DASH startup fix, and improves verification-error guidance. Request deadlines also cover DNS lookup and connection-pool queues; cancelled proxy requests release their upstream resources. Interrupted reads retry once over a fresh connection within the same deadline, without replaying writes.
-
-### v2.2.3 — player layout and startup diagnostics / 播放器布局与起播诊断
-
-- 修复推荐列表展开后挤压进度条的问题，控制按钮和推荐标签按内容高度排列；从列表返回时，遥控焦点自动回到可见区域。
-- **设置 → 网络诊断** 直接显示最近一次起播总耗时及各阶段耗时；扫码报告增加首个媒体响应、媒体就绪、播放事件、重试与编码信息。先播放视频，再返回设置打开诊断即可查看。
-- C9 用户反馈 v2.2.2 仍需约 16–18 秒出画面，本版增加定位数据，尚未确认其等待原因或提速效果。详情见 [发布说明](docs/releases/v2.2.3.md)。
-
-Fixes the compressed progress bar when recommendations expand and keeps remote focus visible. Startup timings now appear directly in diagnostics, with detailed media milestones in the QR report. The C9 startup delay remains under investigation.
-
-### v2.2.2 — startup and danmaku / 起播与弹幕
-
-- 起播时并行加载播放器与视频信息、续播位置与取流结果；同一分 P 复用元数据，切换分 P 后仍重新获取正确的流与字幕。
-- 弹幕、推荐、缩略图等辅助内容等媒体数据就绪后加载，避免争抢起播资源。
-- 弹幕仅查找当前时间附近的记录；密集时最多同时滚动 24 条。暂停时冻结弹幕，前后跳转清掉旧画面，翻译与字号设置保留。
-- 网络诊断新增 `startup` 耗时，便于继续定位旧电视上的起播问题。C9 / webOS 4.x 的实际改善仍需社区设备复测。
-
-Player loading overlaps independent requests and reuses resume metadata. Auxiliary content waits for media readiness. Danmaku lookup and concurrent animations are bounded; pause and seek keep the overlay in sync. See [release notes and validation limits](docs/releases/v2.2.2.md).
-
-### v2.2.1 — playback end modes / 播放结束行为
-
-设置 → 播放与显示 → **播放结束后**：
-
-- **自动连播**：按收藏夹、稍后再看或分 P / 合集顺序继续播放；普通视频保留相关推荐倒计时。
-- **播完停止**：当前视频结束后停留在播放器，可手动重播或选下一条。
-- **单集循环**：从当前视频或当前分 P 的开头重新播放，不跳到列表下一条。
-
-升级前关闭「播完自动播放下一个」的用户会继续使用「播完停止」，不会被自动改成循环播放。修复覆盖收藏夹跨页及失效视频跳转；网络失败和退出期间的迟到响应不会强行切换视频。
-
-Settings → **When playback ends** now offers **Play next automatically**, **Stop after this video**, and **Repeat current video**. Existing autoplay-off preferences remain stopped after upgrade. Based on the report in [#41](https://github.com/asdf17128/bili-webos/issues/41) and the playlist gate identified by @SSSS-VIII in [PR #42](https://github.com/asdf17128/bili-webos/pull/42).
-
-### v2.2.0 — playback, subscriptions and compatibility / 播放、订阅与兼容
-
-- DASH video has **automatic CDN selection** and an HWO1 option. It measures small media ranges while paused or with at least 15 seconds buffered, caches host health, and applies the choice to subsequent requests without restarting playback. Manual choices take priority; native Akamai signatures remain intact. Overseas performance still needs testing on the affected networks.
-- Fixed focus loss after fast feed retries and the ranking request context that caused partitions to return `-352`. Anonymous network checks from Hong Kong and Japan now cover all six partitions, video metadata fallback, stream URLs and actual media ranges; these do not replace TV testing on an affected home connection.
-- Live playback prefers the faster-starting fMP4 HLS source at the saved quality, with TS fallback. Stream and quality metadata share one request; loading remains visible until playback starts, with bounded retries and a manual retry button on failure.
-- Playback recovery and diagnostics now account for exhausted buffers and the selected CDN route. Reports include the last playback node and stall count.
-- Favorites has a **Subscriptions** tab for followed folders and creator collections, with pagination and playback across pages.
-- webOS 4.x compatibility includes Chromium 53 layout fallbacks and a Node 0.12 service compatibility layer. Community patch: [#34](https://github.com/asdf17128/bili-webos/issues/34).
-- Dolby initialization metadata and supported E-AC-3 / FLAC audio tracks are selected independently. Decoder failures during loading fall back; E-AC-3 alone is not a guarantee of Atmos output. Selection/parsing adapted from [PR #17](https://github.com/asdf17128/bili-webos/pull/17). The source-specific 4K120 frame transform from that PR is not included; sources above 60 fps or with an unknown frame rate retain their original base-layer signaling.
-
-v2.2.0 补充缓冲耗尽恢复、按所选 CDN 测速和最近播放节点记录；收藏页增加 **订阅**，支持别人的收藏夹、UP 主合集及跨页连播。webOS 4.x 的布局和旧服务运行时兼容基于社区 [#34](https://github.com/asdf17128/bili-webos/issues/34) 补丁。
-
-点播新增 **CDN 自动择优**及 **华为云 HWO1** 选项：暂停或缓冲达到 15 秒后，用小块媒体测速并缓存节点健康状态，后续分片自动采用较快的可用线路，无需重载视频。手动选择优先，保留原始签名地址与失败回退。首次无缓存播放仍立即使用原线路；已在 C4 验证实际分片选路，并在香港、日本出口实测 API 和媒体传输；海外家庭电视的实播仍待当地验证，见 [CDN 验证记录](docs/TESTCASES.md#点播-cdn-自动择优2026-10-06)。直播不套用点播域名替换策略。
-
-已修复快速重试后焦点丢失，以及排行榜请求上下文导致的分区 `-352`。香港、日本匿名出口均通过六个分区、视频信息兜底、取流和实际媒体分片检查，自动选择了各自较快的线路；这仍不代替问题用户家庭网络上的电视实播。详见 [焦点与网络复验](docs/TESTCASES.md#焦点分区与海外网络补验2026-10-06)。
-
-直播保留所选画质，优先使用本机实测起播更快的 fMP4 HLS 源，不兼容或启动超时则回退 TS；取流与画质列表合并为一次请求，真正播放后才结束加载提示，失败可按确认重试。LG C4 三个直播间的播放进度开始推进由约 7.5–9.3 秒缩短至 2.0–3.3 秒；这是本机、本次网络的小样本结果，详见 [直播实测记录](docs/TESTCASES.md#直播起播优化与回归2026-10-06)。
-
-杜比源会读取初始化段中的实际格式，并按设备能力选择 E-AC-3、FLAC 或 AAC；加载阶段解码失败会回退。显示 E-AC-3 只代表所选音轨，全景声是否输出还取决于片源、电视、音响连接和系统设置。部分实现来自 [PR #17](https://github.com/asdf17128/bili-webos/pull/17)，本版未包含其中针对特定 4K120 片源的帧变换；超过 60fps 或帧率未知时保留原有基础层信令，避免直接开启杜比信令的已知黑屏风险。webOS 4.x 整机兼容及杜比／全景声输出仍需对应设备实测。
-
-完整更新说明与已知问题见 [v2.2.0 release notes](docs/releases/v2.2.0.md)。#41 在后续 v2.2.1 中修复，见上方播放结束行为说明。

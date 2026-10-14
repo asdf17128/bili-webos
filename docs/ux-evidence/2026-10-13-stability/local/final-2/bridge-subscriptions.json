@@ -1,0 +1,31 @@
+{
+  "at": "2026-10-13T05:57:29.206Z",
+  "bridgeSourceSha256": "ff46d721c70abcf0e02d7363a76f5f0f672fa5c686ddd47f2b41e97e5969480a",
+  "serviceSourceSha256": "8ad19ce07e40a6cf5af2ea473ed92b3ada90d1f41a740b6798dad241a26ff856",
+  "results": [
+    {
+      "name": "50 real WebSocket castSubscribe close cycles return service to baseline",
+      "pass": true,
+      "cycles": 50,
+      "retained": 0,
+      "uniqueTokens": 50
+    },
+    {
+      "name": "50 real WebSocket danmakuSubscribe close cycles return service to baseline",
+      "pass": true,
+      "cycles": 50,
+      "retained": 0,
+      "uniqueTokens": 50
+    },
+    {
+      "name": "closing one bridge connection preserves another subscription",
+      "pass": true,
+      "activeListenerKept": true,
+      "finalRetained": 0
+    }
+  ],
+  "limitations": [
+    "actual bridge dispatch/HTTP/WS handler source executes with the real stub and isolated production service; bridge process startup/module-loader hook is covered by simulator separately",
+    "all WebSockets are loopback; no TV LS2 bus, real relay, real cookie files or outside hosts"
+  ]
+}

@@ -15,7 +15,7 @@ const UI_SCALES = [
   { v: 1.25, label: '特大' },
 ];
 
-export default function ConfigPage({ onLogout, user }) {
+export default function ConfigPage({ onLogout, user, loggingOut = false }) {
   const [proxyUrl] = useState(storage.getProxyUrl());
   const [updateMsg, setUpdateMsg] = useState('');
   const [hasUpdate, setHasUpdate] = useState(false);
@@ -24,6 +24,16 @@ export default function ConfigPage({ onLogout, user }) {
   const [gridCols, setGridCols] = useState(() => Math.min(4, Math.max(2, settings.gridCols || 3)));
   const [danmakuScale, setDanmakuScale] = useState(() => settings.danmakuScale || 1);
   const [cdnRoute, setCdnRoute] = useState(() => settings.cdnRoute || 'auto');
+
+  const [nerdInfo, setNerdInfo] = useState(() => settings.nerdInfo === true);
+  const { props: nerdProps } = useFocusable({
+    id: `content-${user ? 12 : 11}-0`, row: user ? 12 : 11, col: 0, group: 'content',
+    onSelect: () => {
+      const next = !nerdInfo;
+      setNerdInfo(next);
+      storage.setSettings({ ...storage.getSettings(), nerdInfo: next });
+    },
+  });
 
   // Query GitHub for the latest release and compare with the running version.
   // Shared by the auto-check on mount and the manual OK press.
@@ -248,8 +258,8 @@ export default function ConfigPage({ onLogout, user }) {
   });
 
   const { props: logoutProps } = useFocusable({
-    id: 'content-11-0', row: 11, col: 0, group: 'content',
-    onSelect: () => { if (user) { storage.clearAuth(); onLogout(); } },
+    id: `content-${user ? 11 : 12}-0`, row: user ? 11 : 12, col: 0, group: 'content',
+    onSelect: () => { if (user && !loggingOut) onLogout(); },
   });
 
   const dmScaleLabel = (DM_SCALES.find(s => s.v === danmakuScale) || DM_SCALES[0]).label;
@@ -353,11 +363,16 @@ export default function ConfigPage({ onLogout, user }) {
       )}
 
       {user && (
-        <div className="settings-row settings-row-danger" {...logoutProps}>
-          <span>{t('退出登录')}</span>
+        <div className="settings-row settings-row-danger" {...logoutProps} aria-disabled={loggingOut} aria-busy={loggingOut}>
+          <span>{t(loggingOut ? '正在退出登录…' : '退出登录')}</span>
           <span className="settings-row-value">{user.uname}</span>
         </div>
       )}
+
+      <div className="settings-row" {...nerdProps} role="switch" aria-checked={nerdInfo}>
+        <span>{t('Nerd 信息')}</span>
+        <span className="settings-row-value">{nerdInfo ? t('开') : t('关')}</span>
+      </div>
 
       <div style={{ marginTop: 28, color: '#888', fontSize: 'calc(18px * var(--ui-scale))', lineHeight: 2 }}>
         <div style={{ fontSize: 'calc(20px * var(--ui-scale))', color: '#aaa', marginBottom: 6 }}>{t('关于')}</div>

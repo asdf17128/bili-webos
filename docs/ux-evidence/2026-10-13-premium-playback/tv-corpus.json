@@ -1,0 +1,358 @@
+{
+  "pass": true,
+  "host": "upos-sz-mirrorbd.bilivideo.com",
+  "index": "validated",
+  "init": "patched",
+  "rows": [
+    {
+      "index": 0,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 7802923,
+      "output": 5240751,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 131
+    },
+    {
+      "index": 1,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 13949318,
+      "output": 11497483,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 66
+    },
+    {
+      "index": 2,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 14884108,
+      "output": 12358815,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 91
+    },
+    {
+      "index": 3,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 15519694,
+      "output": 12597662,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 100
+    },
+    {
+      "index": 4,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 16665090,
+      "output": 13609736,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 70
+    },
+    {
+      "index": 5,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 16828605,
+      "output": 13100190,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 99
+    },
+    {
+      "index": 6,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 16493376,
+      "output": 13837045,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 57
+    },
+    {
+      "index": 7,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 14111330,
+      "output": 12251220,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 54
+    },
+    {
+      "index": 8,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 16602035,
+      "output": 12543245,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 101
+    },
+    {
+      "index": 9,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 12339798,
+      "output": 10269224,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 59
+    },
+    {
+      "index": 10,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 14563215,
+      "output": 11690874,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 69
+    },
+    {
+      "index": 11,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 17083358,
+      "output": 13364091,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 116
+    },
+    {
+      "index": 12,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 17550585,
+      "output": 13318036,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 65
+    },
+    {
+      "index": 13,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 16102175,
+      "output": 11238164,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 98
+    },
+    {
+      "index": 14,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 13814478,
+      "output": 10640576,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 74
+    },
+    {
+      "index": 15,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 12795868,
+      "output": 10847456,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 85
+    },
+    {
+      "index": 16,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 18369759,
+      "output": 14419934,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 68
+    },
+    {
+      "index": 17,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 13647077,
+      "output": 10254371,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 98
+    },
+    {
+      "index": 18,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 11978243,
+      "output": 9637956,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 86
+    },
+    {
+      "index": 19,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 10708457,
+      "output": 8483534,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 60
+    },
+    {
+      "index": 20,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 13474269,
+      "output": 10544295,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 59
+    },
+    {
+      "index": 21,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 15244270,
+      "output": 11854971,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 90
+    },
+    {
+      "index": 22,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 12940386,
+      "output": 9832201,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 95
+    },
+    {
+      "index": 23,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 12178578,
+      "output": 10546930,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 64
+    },
+    {
+      "index": 24,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 10069777,
+      "output": 8510921,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 57
+    },
+    {
+      "index": 25,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 12914725,
+      "output": 11581149,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 95
+    },
+    {
+      "index": 26,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 15321909,
+      "output": 12919720,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 105
+    },
+    {
+      "index": 27,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 17502765,
+      "output": 12472993,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 61
+    },
+    {
+      "index": 28,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 16008342,
+      "output": 12618744,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 83
+    },
+    {
+      "index": 29,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 12975737,
+      "output": 10266756,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 73
+    },
+    {
+      "index": 30,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 12929695,
+      "output": 10809667,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 53
+    },
+    {
+      "index": 31,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 14039892,
+      "output": 11225627,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 70
+    },
+    {
+      "index": 32,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 15431653,
+      "output": 12447990,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 108
+    },
+    {
+      "index": 33,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 13342960,
+      "output": 10561701,
+      "samples": 300,
+      "duration": 80000,
+      "ms": 99
+    },
+    {
+      "index": 34,
+      "pass": true,
+      "reason": "compressed-domain-120-to-60",
+      "input": 13833400,
+      "output": 11837384,
+      "samples": 299,
+      "duration": 79733,
+      "ms": 72
+    }
+  ]
+}

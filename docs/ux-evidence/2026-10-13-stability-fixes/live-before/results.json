@@ -1,0 +1,16 @@
+[
+  {
+    "name": "network recovery uses fresh signed backup at unchanged format and quality",
+    "pass": false,
+    "error": "The input did not match the regular expression /backup\\.bilivideo\\.com.*fmp4\\.m3u8\\?qn=10000&signed=backup/. Input:\n\n'http://192.168.50.242:9527/proxy/live.bilivideo.com/fmp4.m3u8?qn=10000'\n"
+  },
+  {
+    "name": "unbuffered live stall retries within seven seconds",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n1 !== 2\n"
+  },
+  {
+    "name": "short live stall and deliberate pause do not reconnect",
+    "pass": true
+  }
+]

@@ -1,0 +1,16 @@
+FAIL 20 cancellations before successful discovery cannot create late bridge subscriptions left 20 active WebSockets after cancellation
+
+20 !== 0
+
+FAIL successful discovery selects one bridge transport and cleanup suppresses late frames proxy and bridge must not both subscribe
+
+2 !== 1
+
+FAIL unavailable bridge falls back once and cleanup suppresses late proxy frames Expected values to be strictly equal:
+
+2 !== 1
+
+FAIL cancel before failed discovery also suppresses fallback creation Expected values to be strictly equal:
+
+1 !== 0
+

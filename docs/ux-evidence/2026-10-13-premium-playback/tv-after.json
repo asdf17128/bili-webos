@@ -1,0 +1,765 @@
+{
+  "ua": "Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.270 Safari/537.36 WebAppManager",
+  "results": [
+    {
+      "sample": {
+        "name": "profile5-cinema",
+        "bvid": "BV1kX4y197P4",
+        "cid": 1127214165,
+        "qn": 126
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 838,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 897,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 1361,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 1374,
+          "time": 0
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 126,
+          "qualities": [
+            126,
+            120,
+            112,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 3996,
+        "height": 2160,
+        "time": 4.25,
+        "ready": 4,
+        "codec": "dvh1.05.07",
+        "audioCodec": "ec-3",
+        "frameRate": 24,
+        "bandwidth": 17700208,
+        "droppedFrames": 0,
+        "decodedFrames": 246,
+        "corruptedFrames": 0,
+        "runtime": {
+          "epoch": 1,
+          "phase": "off",
+          "indexValidated": false,
+          "fragments": 0
+        },
+        "representation": "126"
+      },
+      "pass": true
+    },
+    {
+      "sample": {
+        "name": "profile84-control",
+        "bvid": "BV1kX4y197P4",
+        "cid": 1026939788,
+        "qn": 126
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 438,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 493,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 864,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 876,
+          "time": 0
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 126,
+          "qualities": [
+            126,
+            120,
+            112,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 3840,
+        "height": 2160,
+        "time": 4.166666,
+        "ready": 4,
+        "codec": "dvh1.08.06",
+        "audioCodec": "ec-3",
+        "frameRate": 24,
+        "bandwidth": 8629472,
+        "droppedFrames": 0,
+        "decodedFrames": 241,
+        "corruptedFrames": 0,
+        "runtime": {
+          "epoch": 1,
+          "phase": "off",
+          "indexValidated": false,
+          "fragments": 0
+        },
+        "representation": "126"
+      },
+      "pass": true
+    },
+    {
+      "sample": {
+        "name": "cinema-4k120",
+        "bvid": "BV1fK4y1t7hj",
+        "cid": 196018899,
+        "qn": 120
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 321,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 366,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 1468,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 1485,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 1815,
+          "time": 0
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 4096,
+        "height": 1860,
+        "time": 4.067,
+        "ready": 4,
+        "codec": "hev1.1.6.L156.90",
+        "audioCodec": "mp4a.40.2",
+        "frameRate": 111.111,
+        "bandwidth": 6136146,
+        "droppedFrames": 0,
+        "decodedFrames": 683,
+        "corruptedFrames": 0,
+        "runtime": {
+          "epoch": 1,
+          "phase": "off",
+          "indexValidated": false,
+          "fragments": 0
+        },
+        "representation": "120"
+      },
+      "pass": true
+    },
+    {
+      "sample": {
+        "name": "sdr-4k120",
+        "bvid": "BV1rp4y1e745",
+        "cid": 244954665,
+        "qn": 120
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 339,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 405,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 1591,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 1599,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 1993,
+          "time": 0
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            125,
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 3840,
+        "height": 1920,
+        "time": 4.058,
+        "ready": 4,
+        "codec": "hev1.1.6.L156.90",
+        "audioCodec": "mp4a.40.2",
+        "frameRate": 111.111,
+        "bandwidth": 4976160,
+        "droppedFrames": 0,
+        "decodedFrames": 677,
+        "corruptedFrames": 0,
+        "runtime": {
+          "epoch": 1,
+          "phase": "off",
+          "indexValidated": false,
+          "fragments": 0
+        },
+        "representation": "120"
+      },
+      "pass": true
+    },
+    {
+      "sample": {
+        "name": "hdr120-control",
+        "bvid": "BV1rp4y1e745",
+        "cid": 244954665,
+        "qn": 125
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 366,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 415,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 1592,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 1605,
+          "time": 0
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 125,
+          "qualities": [
+            125,
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 3840,
+        "height": 1920,
+        "time": 4.267,
+        "ready": 4,
+        "codec": "hev1.2.4.L156.90",
+        "audioCodec": "mp4a.40.2",
+        "frameRate": 125,
+        "bandwidth": 13954264,
+        "droppedFrames": 0,
+        "decodedFrames": 702,
+        "corruptedFrames": 0,
+        "runtime": {
+          "epoch": 1,
+          "phase": "off",
+          "indexValidated": false,
+          "fragments": 0
+        },
+        "representation": "125"
+      },
+      "pass": true
+    },
+    {
+      "sample": {
+        "name": "pr17-cinema-dolby",
+        "bvid": "BV1Bg4vz2ENd",
+        "cid": 33076743968,
+        "qn": 126
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 468,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 519,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 1572,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 1584,
+          "time": 0
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 126,
+          "qualities": [
+            126,
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 4096,
+        "height": 1890,
+        "time": 4.15,
+        "ready": 4,
+        "codec": "dvh1.08.09",
+        "audioCodec": "ec-3",
+        "frameRate": 60,
+        "bandwidth": 9969877,
+        "droppedFrames": 0,
+        "decodedFrames": 608,
+        "corruptedFrames": 0,
+        "runtime": {
+          "epoch": 1,
+          "phase": "off",
+          "indexValidated": false,
+          "fragments": 0
+        },
+        "representation": "126"
+      },
+      "pass": true
+    },
+    {
+      "sample": {
+        "name": "pr17-dolby120",
+        "bvid": "BV1dCNC6hEzE",
+        "cid": 39933052694,
+        "qn": 126
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 522,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 605,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 2482,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 2497,
+          "time": 0
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 126,
+          "qualities": [
+            126,
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 3840,
+        "height": 2160,
+        "time": 4.216687,
+        "ready": 4,
+        "codec": "dvh1.08.10",
+        "audioCodec": "ec-3",
+        "frameRate": 60,
+        "bandwidth": 23885358,
+        "droppedFrames": 0,
+        "decodedFrames": 614,
+        "corruptedFrames": 0,
+        "runtime": {
+          "epoch": 1,
+          "phase": "playing",
+          "indexValidated": true,
+          "fragments": 3
+        },
+        "representation": "126"
+      },
+      "pass": true
+    },
+    {
+      "sample": {
+        "name": "issue34-4k50",
+        "bvid": "BV1sapi6qE72",
+        "cid": 42610460057,
+        "qn": 120
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 463,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 509,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 7635,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 7651,
+          "time": 0
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 3840,
+        "height": 2160,
+        "time": 4.26,
+        "ready": 4,
+        "codec": "hvc1.1.6.L153.90",
+        "audioCodec": "mp4a.40.2",
+        "frameRate": 50,
+        "bandwidth": 8058077,
+        "droppedFrames": 0,
+        "decodedFrames": 509,
+        "corruptedFrames": 0,
+        "runtime": {
+          "epoch": 1,
+          "phase": "off",
+          "indexValidated": false,
+          "fragments": 0
+        },
+        "representation": "120"
+      },
+      "pass": true
+    },
+    {
+      "sample": {
+        "name": "issue11-dolby60",
+        "bvid": "BV14BjU6bEo1",
+        "cid": 39346570554,
+        "qn": 126
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 671,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 783,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 2588,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 2602,
+          "time": 0
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 126,
+          "qualities": [
+            126,
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 3840,
+        "height": 2160,
+        "time": 4.120812,
+        "ready": 4,
+        "codec": "dvh1.08.09",
+        "audioCodec": "ec-3",
+        "frameRate": 59.94,
+        "bandwidth": 11044020,
+        "droppedFrames": 0,
+        "decodedFrames": 605,
+        "corruptedFrames": 0,
+        "runtime": {
+          "epoch": 1,
+          "phase": "off",
+          "indexValidated": false,
+          "fragments": 0
+        },
+        "representation": "126"
+      },
+      "pass": true
+    },
+    {
+      "sample": {
+        "name": "issue11-8k-fallback",
+        "bvid": "BV1yuJ56wEQ3",
+        "cid": 39069354913,
+        "qn": 127,
+        "expectedQn": 125
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 1016,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 1100,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 1907,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 1917,
+          "time": 0
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 127,
+          "qualities": [
+            127,
+            125,
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 3840,
+        "height": 2160,
+        "time": 4.066687,
+        "ready": 4,
+        "codec": "hvc1.2.4.L153.90",
+        "audioCodec": "mp4a.40.2",
+        "frameRate": 60,
+        "bandwidth": 14427051,
+        "droppedFrames": 0,
+        "decodedFrames": 601,
+        "corruptedFrames": 0,
+        "runtime": {
+          "epoch": 1,
+          "phase": "off",
+          "indexValidated": false,
+          "fragments": 0
+        },
+        "representation": "125"
+      },
+      "pass": true
+    },
+    {
+      "sample": {
+        "name": "vip-only-bangumi",
+        "isBangumi": true,
+        "epid": 433953,
+        "bvid": "BV1vS4y1X7xj",
+        "cid": 456488230,
+        "qn": 125
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 613,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 714,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 1182,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 1189,
+          "time": 0
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 125,
+          "qualities": [
+            125,
+            120,
+            112,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 3840,
+        "height": 2160,
+        "time": 4.213,
+        "ready": 4,
+        "codec": "hvc1.2.4.H150.90",
+        "audioCodec": "mp4a.40.2",
+        "frameRate": 23.975,
+        "bandwidth": 5400318,
+        "droppedFrames": 0,
+        "decodedFrames": 244,
+        "corruptedFrames": 0,
+        "runtime": {
+          "epoch": 1,
+          "phase": "off",
+          "indexValidated": false,
+          "fragments": 0
+        },
+        "representation": "125"
+      },
+      "pass": true
+    }
+  ]
+}

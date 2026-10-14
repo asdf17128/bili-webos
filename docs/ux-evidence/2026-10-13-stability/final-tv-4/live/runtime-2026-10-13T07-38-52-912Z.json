@@ -1,0 +1,302 @@
+{
+  "at": "2026-10-13T07:38:52.704Z",
+  "relay": null,
+  "uptime": 1043,
+  "errors": [
+    {
+      "t": 1791876124462,
+      "tag": "req:api.live.bilibili.com",
+      "d": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791876139542,
+      "tag": "req:api.live.bilibili.com",
+      "d": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791876162080,
+      "tag": "req:api.live.bilibili.com",
+      "d": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791876176906,
+      "tag": "req:api.live.bilibili.com",
+      "d": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791876210182,
+      "tag": "res:d1--cn-gotcha209.bilivideo.com",
+      "d": "aborted"
+    },
+    {
+      "t": 1791876302808,
+      "tag": "res:d1--cn-gotcha209.bilivideo.com",
+      "d": "aborted"
+    },
+    {
+      "t": 1791876315523,
+      "tag": "req:d1--cn-gotcha209.bilivideo.com",
+      "d": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791876315523,
+      "tag": "proxy:d1--cn-gotcha209.bilivideo.com",
+      "d": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791876724886,
+      "tag": "retry:api.bilibili.com",
+      "d": "socket hang up"
+    }
+  ],
+  "liveDiag": [
+    {
+      "t": 114428,
+      "type": "connect",
+      "format": null,
+      "attempt": 0,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 114512,
+      "type": "source-ready",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 116156,
+      "type": "playing",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 116774,
+      "type": "playing",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 129526,
+      "type": "connect",
+      "format": null,
+      "attempt": 0,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 129581,
+      "type": "source-ready",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 130773,
+      "type": "playing",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 130919,
+      "type": "playing",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 144203,
+      "type": "connect",
+      "format": null,
+      "attempt": 0,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 144297,
+      "type": "source-ready",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 145689,
+      "type": "playing",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 145760,
+      "type": "playing",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 152044,
+      "type": "connect",
+      "format": null,
+      "attempt": 0,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 152139,
+      "type": "source-ready",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 152782,
+      "type": "playing",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 153314,
+      "type": "playing",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 166881,
+      "type": "connect",
+      "format": null,
+      "attempt": 0,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 166968,
+      "type": "source-ready",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 167714,
+      "type": "playing",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 168535,
+      "type": "playing",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 181451,
+      "type": "connect",
+      "format": null,
+      "attempt": 0,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 181532,
+      "type": "source-ready",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 182529,
+      "type": "playing",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 183352,
+      "type": "playing",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 213892,
+      "type": "playing",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 116,
+      "type": "stall",
+      "format": null,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 309455,
+      "type": "stall",
+      "format": null,
+      "attempt": 1,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 310258,
+      "type": "connect",
+      "format": null,
+      "attempt": 1,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 310318,
+      "type": "source-ready",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 315730,
+      "type": "playing",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    },
+    {
+      "t": 315975,
+      "type": "playing",
+      "format": "fmp4",
+      "qn": 10000,
+      "from": null,
+      "to": null
+    }
+  ],
+  "video": null
+}

@@ -1,0 +1,102 @@
+{
+  "source": "service/com.biliwebos.app.service/danmaku.js",
+  "sha256": "b2c1d057f7b0dfa4b0e5c70fe8b7e5513ce72d2587730491af24f8a737863506",
+  "boundary": "Real module with controlled WebSocket and virtual timers. No television or external server contacted.",
+  "checks": [
+    {
+      "name": "connection errors stop at four attempts",
+      "pass": true,
+      "detail": {
+        "connections": 4,
+        "connectionTimesMs": [
+          0,
+          3000,
+          6000,
+          9000
+        ],
+        "timerCount": 0,
+        "delivered": 0,
+        "authPackets": 0,
+        "heartbeatPackets": 0
+      }
+    },
+    {
+      "name": "open then close without data remains bounded and clears heartbeat",
+      "pass": true,
+      "detail": {
+        "connections": 4,
+        "connectionTimesMs": [
+          0,
+          3000,
+          6000,
+          9000
+        ],
+        "timerCount": 0,
+        "delivered": 0,
+        "authPackets": 4,
+        "heartbeatPackets": 0
+      }
+    },
+    {
+      "name": "stop while reconnect timer waits prevents a new connection",
+      "pass": true,
+      "detail": {
+        "connections": 1,
+        "connectionTimesMs": [
+          0
+        ],
+        "timerCount": 0,
+        "delivered": 0,
+        "authPackets": 0,
+        "heartbeatPackets": 0
+      }
+    },
+    {
+      "name": "stop during an open connection cancels heartbeat and late close retry",
+      "pass": true,
+      "detail": {
+        "connections": 1,
+        "connectionTimesMs": [
+          0
+        ],
+        "timerCount": 0,
+        "delivered": 0,
+        "authPackets": 1,
+        "heartbeatPackets": 1
+      }
+    },
+    {
+      "name": "stop during connect prevents later close from reconnecting",
+      "pass": true,
+      "detail": {
+        "connections": 1,
+        "connectionTimesMs": [
+          0
+        ],
+        "timerCount": 0,
+        "delivered": 0,
+        "authPackets": 0,
+        "heartbeatPackets": 0
+      }
+    },
+    {
+      "name": "first server data resets budget once; subsequent closes remain finite",
+      "pass": true,
+      "detail": {
+        "connections": 5,
+        "connectionTimesMs": [
+          0,
+          3000,
+          6000,
+          9000,
+          12000
+        ],
+        "timerCount": 0,
+        "delivered": 0,
+        "authPackets": 5,
+        "heartbeatPackets": 0
+      }
+    }
+  ],
+  "pass": true
+}

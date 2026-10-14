@@ -1,0 +1,14 @@
+{
+  "live": [
+    {
+      "t": 692961,
+      "why": "connect-failed",
+      "message": "Upstream timeout before response headers"
+    },
+    {
+      "t": 711680,
+      "why": "connect-failed",
+      "message": "Upstream timeout before response headers"
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "samples": 3,
+  "elapsedMs": 122111,
+  "playbackPassed": 3,
+  "biliPassed": 3,
+  "apiResults": [
+    {
+      "target": "main",
+      "passed": 3,
+      "total": 3,
+      "p50ms": 59,
+      "p95ms": 83,
+      "maxSuccessMs": 83
+    },
+    {
+      "target": "live",
+      "passed": 3,
+      "total": 3,
+      "p50ms": 96,
+      "p95ms": 269,
+      "maxSuccessMs": 269
+    },
+    {
+      "target": "githubUpdate",
+      "passed": 2,
+      "total": 3,
+      "p50ms": 2059,
+      "p95ms": 2252,
+      "maxSuccessMs": 2252
+    }
+  ],
+  "failedSamples": [
+    "continuous playback and APIs minute 1"
+  ],
+  "settingsRestored": true,
+  "serviceUptimeStrictlyIncreases": true,
+  "codec": "hev1.1.6.L156.90",
+  "bandwidth": 4976160,
+  "dimensions": [
+    3840,
+    1920
+  ],
+  "decodedFrames": 15499,
+  "droppedFrames": 0,
+  "bufferSec": {
+    "min": 31.586666,
+    "max": 33.823333000000005,
+    "first": 31.586666,
+    "last": 31.769666000000015
+  },
+  "cdpHeapBytes": {
+    "min": 6542284,
+    "max": 7328048,
+    "first": 7328048,
+    "last": 6831780
+  },
+  "longTasks": 0,
+  "longTaskMs": 0,
+  "maxTaskMs": 0,
+  "longestSampledProgressGapMs": 1080,
+  "exitCode": 1,
+  "bvid": "BV1rp4y1e745",
+  "cid": 244954665,
+  "frameRate": 111.111,
+  "frameRateNote": "Nominal 4K120 source; Shaka track metadata reports 111.111. No claim of measured panel output frame rate."
+}

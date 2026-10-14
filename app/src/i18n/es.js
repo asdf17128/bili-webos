@@ -1,5 +1,22 @@
 // Spanish dictionary. Keys are the Chinese source strings (see index.js).
 export default {
+  "Nerd 信息": "Información técnica",
+  "分辨率": "Resolución",
+  "视频编码": "Códec de vídeo",
+  "音频编码": "Códec de audio",
+  "媒体下载": "Medios descargados",
+  "缓冲": "Búfer",
+  "丢帧": "Fotogramas perdidos",
+  "下载统计为已完成媒体请求；原生直播不可用的指标显示 —": "Cuenta solicitudes multimedia completadas; métricas nativas no disponibles: —",
+  '年度大会员': 'Premium anual',
+  '自动 · 最高可用': 'Auto · Mejor disponible',
+  '播放暂时中断，请重试播放': 'Reproducción interrumpida. Vuelve a intentarlo.',
+  '稍后自动重试，也可按 OK 立即重试': 'Se reintentará en breve. Pulsa OK para reintentar ahora.',
+  "正在退出登录…": "Cerrando sesión…",
+  "退出登录失败，请重试": "No se pudo cerrar sesión. Inténtalo de nuevo.",
+  "正在连接服务…": "Conectando al servicio…",
+  "连接服务失败，请重试": "No se pudo conectar al servicio. Reintentar.",
+
   "最近一次起播": "Último inicio de vídeo",
   "先播放一个视频，再打开诊断查看起播耗时": "Reproduce un vídeo y vuelve a abrir el diagnóstico para ver los tiempos",
   "阶段耗时（并行执行，不相加）": "Duración por etapa (se superponen; no sumar)",

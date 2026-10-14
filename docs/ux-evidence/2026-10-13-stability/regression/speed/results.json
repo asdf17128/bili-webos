@@ -1,0 +1,88 @@
+{
+  "started": "2026-10-13T05:38:08.622Z",
+  "checks": [
+    {
+      "name": "initial DASH actually decodes",
+      "pass": true,
+      "detail": {
+        "time": 2.25,
+        "width": 640,
+        "height": 480,
+        "ready": 4,
+        "paused": false,
+        "error": null,
+        "source": "DASH"
+      }
+    },
+    {
+      "name": "speed control reachable",
+      "pass": true
+    },
+    {
+      "name": "speed option exists 2x",
+      "pass": true
+    },
+    {
+      "name": "native 2x actually advances near double speed",
+      "pass": true,
+      "detail": {
+        "rate": 1.9935435808294015,
+        "state": {
+          "time": 10.503,
+          "width": 640,
+          "height": 480,
+          "ready": 4,
+          "paused": false,
+          "error": null,
+          "source": "native"
+        }
+      }
+    },
+    {
+      "name": "speed control reachable",
+      "pass": true
+    },
+    {
+      "name": "speed option exists 正常",
+      "pass": true
+    },
+    {
+      "name": "1x restores DASH near the same position",
+      "pass": true,
+      "detail": {
+        "time": 10,
+        "width": 640,
+        "height": 480,
+        "ready": 4,
+        "paused": false,
+        "error": null,
+        "source": "DASH"
+      }
+    },
+    {
+      "name": "restored DASH advances at normal speed",
+      "pass": true,
+      "detail": {
+        "rate": 0.9958200147528888,
+        "state": {
+          "time": 14.85,
+          "width": 640,
+          "height": 480,
+          "ready": 4,
+          "paused": false,
+          "error": null,
+          "source": "DASH"
+        }
+      }
+    },
+    {
+      "name": "normal Back releases player",
+      "pass": true
+    },
+    {
+      "name": "original preferences restored",
+      "pass": true
+    }
+  ],
+  "finished": "2026-10-13T05:38:35.148Z"
+}

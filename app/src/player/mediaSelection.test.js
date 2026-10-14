@@ -10,6 +10,7 @@ import {
   proxyMediaUrl,
   selectPreferredAudio,
   selectVideoRepresentation,
+  webOSVideoLimit,
 } from './mediaSelection.js';
 
 test('Dolby signaling preserves the base layer for high or unknown frame rates', () => {
@@ -199,4 +200,43 @@ test('AAC-only playback is attempted once', () => {
   const attempts = createPlaybackAttemptPlan(audio, null);
   assert.equal(attempts.length, 1);
   assert.equal(attempts[0].audioKind, 'standard');
+});
+
+
+test('premium video prefers supported HEVC over a larger AVC stream at the same quality', () => {
+  const avc = { id: 120, codecs: 'avc1.640034', bandwidth: 17000000, baseUrl: 'https://example.test/avc' };
+  const hevc = { ...avc, codecs: 'hvc1.1.6.L153.90', bandwidth: 7800000, baseUrl: 'https://example.test/hevc' };
+  const av1 = { ...avc, codecs: 'av01.0.13M.08', bandwidth: 6200000, baseUrl: 'https://example.test/av1' };
+  const selected = selectVideoRepresentation({ video: [avc, av1, hevc] }, 120, { isTypeSupported: () => true });
+  assert.equal(selected.representation, hevc);
+  assert.deepEqual(selected.representations, [hevc, av1, avc]);
+  assert.equal(selectVideoRepresentation({ video: [avc, hevc] }, 120, { isTypeSupported: type => type.includes('avc1') }).representation, avc);
+});
+
+test('no supported representation and no lower fallback never re-enable a rejected codec or upgrade quality', () => {
+  const dash = { video: [rep(120, 'hev1.1.6.L156.90', 100)] };
+  assert.equal(selectVideoRepresentation(dash, 120, { isTypeSupported: () => false }).representation, null);
+  assert.equal(selectVideoRepresentation(dash, 80, { allowFallback: true }).representation, null);
+});
+
+test('4K TV rejects 8K before loading but keeps 4096 cinema and HDR fallback', () => {
+  const dash = { video: [
+    { ...rep(127, 'hvc1.1.6.L180.90', 28000000), width: 7680, height: 4320 },
+    { ...rep(125, 'hvc1.2.4.L153.90', 14000000), width: 3840, height: 2160 },
+    { ...rep(120, 'hvc1.1.6.L153.90', 6000000), width: 4096, height: 1890 },
+  ] };
+  const options = { allowFallback: true, maxResolution: { width: 4096, height: 2160 } };
+  assert.equal(selectVideoRepresentation(dash, 127, options).actualQn, 125);
+  assert.equal(selectVideoRepresentation(dash, 120, options).actualQn, 120);
+  assert.equal(selectVideoRepresentation(dash, 127, { ...options, allowFallback: false }).representation, null);
+  assert.equal(selectVideoRepresentation(dash, 127, { maxResolution: { width: 7680, height: 4320 } }).actualQn, 127);
+});
+
+test('webOS display limits preserve 8K devices and widen only UHD cinema', () => {
+  assert.equal(webOSVideoLimit(undefined), null);
+  assert.deepEqual(webOSVideoLimit('invalid'), { width: 1920, height: 1080 });
+  assert.deepEqual(webOSVideoLimit('{}'), { width: 1920, height: 1080 });
+  for (const [screenWidth, screenHeight, expectedWidth] of [[1920,1080,1920],[3840,2160,4096],[7680,4320,7680]]) {
+    assert.deepEqual(webOSVideoLimit(JSON.stringify({screenWidth,screenHeight})), { width: expectedWidth, height: screenHeight });
+  }
 });

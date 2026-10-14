@@ -1,0 +1,22 @@
+[
+  {
+    "name": "logout clears service, persisted disk, UI and reload",
+    "pass": false,
+    "error": "service still logged in\n\ntrue !== false\n"
+  },
+  {
+    "name": "logout fences late service Set-Cookie and response body",
+    "pass": false,
+    "error": "late response restored service login\n\ntrue !== false\n"
+  },
+  {
+    "name": "logout disk failure is visible and retry clears credentials",
+    "pass": false,
+    "error": "locator.waitFor: Timeout 5500ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('退出登录失败，请重试', { exact: true }) to be visible\u001b[22m\n"
+  },
+  {
+    "name": "occupied 7654 uses negotiated port for covers and video Range",
+    "pass": false,
+    "error": "page.waitForFunction: Timeout 5500ms exceeded."
+  }
+]

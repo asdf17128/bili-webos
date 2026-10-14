@@ -1,0 +1,800 @@
+{
+  "ua": "Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.270 Safari/537.36 WebAppManager",
+  "results": [
+    {
+      "sample": {
+        "name": "profile5-cinema",
+        "bvid": "BV1kX4y197P4",
+        "cid": 1127214165,
+        "qn": 126
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 9621,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 9690,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 10088,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 10110,
+          "time": 0
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 126,
+          "qualities": [
+            126,
+            120,
+            112,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 126,
+          "qualities": [
+            126,
+            120,
+            112,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 126,
+          "qualities": [
+            126,
+            120,
+            112,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 126,
+          "qualities": [
+            126,
+            120,
+            112,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            126,
+            120,
+            112,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            126,
+            120,
+            112,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            126,
+            120,
+            112,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            126,
+            120,
+            112,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 80,
+          "qualities": [
+            126,
+            120,
+            112,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 1920,
+        "height": 1038,
+        "time": 4.042,
+        "ready": 4,
+        "codec": "avc1.640032",
+        "audioCodec": "ec-3",
+        "frameRate": 24.39,
+        "bandwidth": 2987245,
+        "droppedFrames": 0,
+        "decodedFrames": 241,
+        "corruptedFrames": 0,
+        "format": "【杜比视界·全景声】杜比影院映前秀: Universe 新版中文版|更新 Profile 5 版本\n翼格小和奏 · 2023/2/25\n暂停\n1.1万\nB\n3892\n1.5万\n稍后再看\n弹幕 开\n倍速\n1080P\n关注 UP 主\n评论 · 1382\nDolby E-AC-3 · 0:03 / 3:10"
+      }
+    },
+    {
+      "sample": {
+        "name": "profile84-control",
+        "bvid": "BV1kX4y197P4",
+        "cid": 1026939788,
+        "qn": 126
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 498,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 543,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 937,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 949,
+          "time": 0
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 126,
+          "qualities": [
+            126,
+            120,
+            112,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 3840,
+        "height": 2160,
+        "time": 4.041666,
+        "ready": 4,
+        "codec": "dvh1.08.06",
+        "audioCodec": "ec-3",
+        "frameRate": 24,
+        "bandwidth": 8629472,
+        "droppedFrames": 0,
+        "decodedFrames": 241,
+        "corruptedFrames": 0,
+        "format": "【杜比视界·全景声】杜比影院映前秀: Universe 新版中文版|更新 Profile 5 版本\n翼格小和奏 · 2023/2/25\n暂停\n1.1万\nB\n3892\n1.5万\n稍后再看\n弹幕 开\n倍速\nDolby Vision\n关注 UP 主\n评论 · 1382\nDolby E-AC-3 · 0:03 / 3:10"
+      }
+    },
+    {
+      "sample": {
+        "name": "cinema-4k120",
+        "bvid": "BV1fK4y1t7hj",
+        "cid": 196018899,
+        "qn": 120
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 6907,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 6946,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 7437,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 7445,
+          "time": 0
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 80,
+          "qualities": [
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 1920,
+        "height": 872,
+        "time": 4.267,
+        "ready": 4,
+        "codec": "avc1.640032",
+        "audioCodec": "mp4a.40.2",
+        "frameRate": 29.412,
+        "bandwidth": 2279021,
+        "droppedFrames": 0,
+        "decodedFrames": 301,
+        "corruptedFrames": 0,
+        "format": "【4K 120FPS】你的设备顶得住吗?4K120帧技术演示片\n影视飓风 · 2020/5/28\n暂停\n9.0万\nB\n3.0万\n5.2万\n稍后再看\n弹幕 开\n倍速\n1080P\n关注 UP 主\n评论 · 7995\nAAC · 0:04 / 4:56"
+      }
+    },
+    {
+      "sample": {
+        "name": "sdr-4k120",
+        "bvid": "BV1rp4y1e745",
+        "cid": 244954665,
+        "qn": 120
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 458,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 515,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 7199,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 7205,
+          "time": 0
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            125,
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 3840,
+        "height": 1920,
+        "time": 4.208,
+        "ready": 4,
+        "codec": "avc1.640034",
+        "audioCodec": "mp4a.40.2",
+        "frameRate": 111.111,
+        "bandwidth": 17129304,
+        "droppedFrames": 88,
+        "decodedFrames": 728,
+        "corruptedFrames": 0,
+        "format": "【顶级画质】B站首支4K 120FPS HDR10影片《文字大战》\n哔哩哔哩弹幕网 · 2020/9/30\n暂停\n10.4万\nB\n5.4万\n3.9万\n稍后再看\n弹幕 开\n倍速\n4K\n关注 UP 主\n评论 · 4167\nAAC · 0:03 / 5:47"
+      }
+    },
+    {
+      "sample": {
+        "name": "hdr120-control",
+        "bvid": "BV1rp4y1e745",
+        "cid": 244954665,
+        "qn": 125
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 421,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 475,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 1611,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 1622,
+          "time": 0
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 125,
+          "qualities": [
+            125,
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 3840,
+        "height": 1920,
+        "time": 4.017,
+        "ready": 4,
+        "codec": "hev1.2.4.L156.90",
+        "audioCodec": "mp4a.40.2",
+        "frameRate": 125,
+        "bandwidth": 13954264,
+        "droppedFrames": 0,
+        "decodedFrames": 672,
+        "corruptedFrames": 0,
+        "format": "【顶级画质】B站首支4K 120FPS HDR10影片《文字大战》\n哔哩哔哩弹幕网 · 2020/9/30\n暂停\n10.4万\nB\n5.4万\n3.9万\n稍后再看\n弹幕 开\n倍速\nHDR\n关注 UP 主\n评论 · 4167\nAAC · 0:03 / 5:47"
+      }
+    },
+    {
+      "sample": {
+        "name": "pr17-cinema-dolby",
+        "bvid": "BV1Bg4vz2ENd",
+        "cid": 33076743968,
+        "qn": 126
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 10818,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 10859,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 11238,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 11253,
+          "time": 0
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 126,
+          "qualities": [
+            126,
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 126,
+          "qualities": [
+            126,
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 126,
+          "qualities": [
+            126,
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 126,
+          "qualities": [
+            126,
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            126,
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            126,
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            126,
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            126,
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        },
+        {
+          "code": 0,
+          "quality": 80,
+          "qualities": [
+            126,
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 1920,
+        "height": 886,
+        "time": 4.033,
+        "ready": 4,
+        "codec": "avc1.640032",
+        "audioCodec": "ec-3",
+        "frameRate": 30,
+        "bandwidth": 1758383,
+        "droppedFrames": 0,
+        "decodedFrames": 298,
+        "corruptedFrames": 0,
+        "format": "【双杜比】「ヨルシカ - 月光 LIVE」2022\n黯雨流年 · 2025/10/14\n暂停\n2220\nB\n1791\n3420\n稍后再看\n弹幕 开\n字幕 关\n倍速\n1080P\n关注 UP 主\n评论 · 109\nDolby E-AC-3 · 0:03 / 1:20:48"
+      }
+    },
+    {
+      "sample": {
+        "name": "pr17-dolby120",
+        "bvid": "BV1dCNC6hEzE",
+        "cid": 39933052694,
+        "qn": 126
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 562,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 612,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 2867,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 2884,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 3304,
+          "time": 0.033312
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 126,
+          "qualities": [
+            126,
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 3840,
+        "height": 2160,
+        "time": 4.241687,
+        "ready": 4,
+        "codec": "hvc1.2.4.L156.90",
+        "audioCodec": "ec-3",
+        "frameRate": 120,
+        "bandwidth": 23885358,
+        "droppedFrames": 0,
+        "decodedFrames": 698,
+        "corruptedFrames": 0,
+        "format": "杜比全景声 × Hi-Res |「なんもねえ」- 「尼古喵喵」OP 完整版AMV - 忘れらんねえよ「▸」FTSC沉浸式音频体验\nFANTASONIC · 2026/7/13\n暂停\n961\nB\n305\n1240\n稍后再看\n弹幕 开\n倍速\n杜比源（基础层）\n关注 UP 主\n评论 · 76\nDolby E-AC-3 · 0:03 / 2:56"
+      }
+    },
+    {
+      "sample": {
+        "name": "issue34-4k50",
+        "bvid": "BV1sapi6qE72",
+        "cid": 42610460057,
+        "qn": 120
+      },
+      "events": [
+        {
+          "type": "waiting",
+          "ms": 529,
+          "time": 0
+        },
+        {
+          "type": "loadedmetadata",
+          "ms": 611,
+          "time": 0
+        },
+        {
+          "type": "loadeddata",
+          "ms": 3202,
+          "time": 0
+        },
+        {
+          "type": "playing",
+          "ms": 3213,
+          "time": 0
+        }
+      ],
+      "errors": [],
+      "api": [
+        {
+          "code": 0,
+          "quality": 120,
+          "qualities": [
+            120,
+            116,
+            80,
+            64,
+            32,
+            16
+          ]
+        }
+      ],
+      "end": {
+        "progress": true,
+        "width": 3840,
+        "height": 2160,
+        "time": 4.24,
+        "ready": 4,
+        "codec": "avc1.640034",
+        "audioCodec": "mp4a.40.2",
+        "frameRate": 50,
+        "bandwidth": 17242724,
+        "droppedFrames": 0,
+        "decodedFrames": 510,
+        "corruptedFrames": 0,
+        "format": "在中国最大的原始森林,我们遇上了......\n期末77 · 2026/10/9\n暂停\n2.0万\nB\n5453\n6832\n稍后再看\n弹幕 开\n字幕 关\n倍速\n4K\n关注 UP 主\n评论 · 593\nAAC · 0:03 / 33:35"
+      }
+    }
+  ]
+}

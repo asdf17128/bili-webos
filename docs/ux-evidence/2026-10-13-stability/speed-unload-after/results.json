@@ -1,0 +1,88 @@
+[
+  {
+    "name": "subtitle lifecycle cancels obsolete translation: body",
+    "pass": true
+  },
+  {
+    "name": "subtitle lifecycle cancels obsolete translation: batches",
+    "pass": true
+  },
+  {
+    "name": "subtitle lifecycle cancels obsolete translation: success",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: exit",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: normal",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: newer-speed",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: new-video",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: quality",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: exit-unloading",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: normal-unloading",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: success",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: before-unload paused=false",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: before-unload paused=true",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: after-unload paused=false",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: after-unload paused=true",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: normal paused=false",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: normal paused=true",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: quality paused=false",
+    "pass": false,
+    "error": "locator.click: Timeout 7000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.quality-option').filter({ hasText: '360P' })\u001b[22m\n"
+  },
+  {
+    "name": "native speed unload recovery: quality paused=true",
+    "pass": false,
+    "error": "locator.click: Timeout 7000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.quality-option').filter({ hasText: '360P' })\u001b[22m\n"
+  },
+  {
+    "name": "native speed unload recovery: normal-before-metadata paused=false",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: normal-before-metadata paused=true",
+    "pass": true
+  }
+]

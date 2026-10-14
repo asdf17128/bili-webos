@@ -1,0 +1,19 @@
+{
+  "app/src/App.jsx": "954c908a46df750dae05a220d0297a0f7e6c73c5c7c50d5e46bc467dd66e795a",
+  "app/src/utils/storage.js": "51097382a1f0359ede961bd7378ccc25e9595c2d411f535a2cb9afa26e6cbbf4",
+  "app/src/utils/qualityPreference.js": "17fb3927c92c325cb624c1abd71897593e9bca6efd789dcc13c43b8a303bcfba",
+  "app/src/utils/membership.js": "deb0d603ae88ff0c36061b0d62e064b00f8b7e29e8307c959099bb4f18ea5afa",
+  "app/src/components/MembershipBadge.jsx": "2fc2bf2f477228cfd4b57b56f43a571ec851e50c3ccf425ea5d3aa18742ed86f",
+  "app/src/pages/SettingsPage.jsx": "53fd621198140d705eb8e983463b58c33778a79bd4f2e81ee350c3dc89d41204",
+  "app/src/player/PlayerPage.jsx": "a004a5025c3da73de30b57e8d2aba284f4bb5caf54c3a8c56c5baaa16bd79dad",
+  "app/src/player/LivePlayerPage.jsx": "1dae84b4015edc11ef2c44ca28f974f243f1657a84948a6f8ac4cb88aad61e45",
+  "app/src/api/client.js": "b69f0d3d70202b7f5e7196549fb2d92713aa85b42503ba59fa493edac6deacc4",
+  "app/src/player/liveStream.js": "48ae29d829097b063836271f7249bca6972e6af65cf2869161aa53c42211cb16",
+  "app/src/version.js": "1f251c5e03ec0ed826802b42ea640b28243e64a7067e400788a9c4e558729961",
+  "app/src/i18n/en.js": "ce60a2ae867147b177728b2aadc72606e8f12bfb6dd542397b2737a209f5501e",
+  "app/src/i18n/es.js": "7199d3224e7c9b11204b065b6d65a67afed091f0e2dabc8c0f2f8621649da86e",
+  "app/src/tv-design.css": "45d7cff02b6e7b353630ecee2694897b896c80a8002c3536fcdaa3ccbc6bafda",
+  "tools/test-player-loading.mjs": "b1a1364d52fd36ef88dddcd2e37928d73c57f6a478871b18566de34a306683fc",
+  "app/src/utils/qualityPreference.test.js": "1375eec75a38f186ca76f58c9a7b5f2c679cf0e16d27eadfb8f1f42e65ffcbbf",
+  "tools/verify.sh": "020d890d2a4b7eb9f63e58f6cb7c652bb19477f6cf01466f6161bd250cd9d3c2"
+}

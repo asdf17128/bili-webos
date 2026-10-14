@@ -1,0 +1,47 @@
+(node:83467) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ cached measurements promote a faster mirror, retaining exact native signed URLs (1.300833ms)
+✔ Akamai-only and live URLs are never mirror templates (0.581625ms)
+✔ similar measurements preserve incumbent, all-failed restores original order (0.096292ms)
+✔ cache expires, survives restart, strips private fields and handles corrupt storage (0.090334ms)
+✔ untrusted cache host cannot insert a new destination into requests (0.183834ms)
+✔ native .cn hosts are measured once; uncacheable hosts cannot monopolize probes (1.477875ms)
+✔ two completed samples rank by slower transfer; every candidate is visited (0.60075ms)
+✔ loading/buffer gate and manual choice prevent probes and automatic override (0.175125ms)
+✔ buffer loss aborts active probe without poisoning cache (0.408166ms)
+✔ late result after source change or exit cannot update routing/cache (0.270292ms)
+✔ partial/timeout sample is failure and banned winner yields to healthy fallback (0.226958ms)
+✖ manual route uses its API-native signature before invented mirror URL (0.659333ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 11
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 70.414042
+
+✖ failing tests:
+
+test at app/src/player/cdnAuto.test.js:116:1
+✖ manual route uses its API-native signature before invented mirror URL (0.659333ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + 'https://upos-sz-mirrorhwo1.bilivideo.com/upgcxcode/fixture.m4s?upsig=fixture%2Fonly&x=1&x=2'
+  - 'https://upos-sz-mirrorhwo1.bilivideo.com/upgcxcode/other-path.m4s?upsig=backup%2Bsignature&x=2&x=1'
+
+      at TestContext.<anonymous> (file:///Users/yuanzhan/.codex/worktrees/playback-mode-41/bili_webos/app/src/player/cdnAuto.test.js:119:10)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1095:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:777:18)
+      at Test.postRun (node:internal/test_runner/test:1224:19)
+      at Test.run (node:internal/test_runner/test:1152:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:777:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'https://upos-sz-mirrorhwo1.bilivideo.com/upgcxcode/fixture.m4s?upsig=fixture%2Fonly&x=1&x=2',
+    expected: 'https://upos-sz-mirrorhwo1.bilivideo.com/upgcxcode/other-path.m4s?upsig=backup%2Bsignature&x=2&x=1',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

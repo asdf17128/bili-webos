@@ -1,0 +1,75 @@
+{
+  "checkpoints": [
+    {
+      "label": "cycle-0",
+      "heap": {
+        "usedSize": 6514156,
+        "totalSize": 7127040,
+        "embedderHeapUsedSize": 1158696,
+        "backingStorageSize": 4138752
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 174,
+        "jsEventListeners": 176
+      }
+    },
+    {
+      "label": "cycle-60",
+      "heap": {
+        "usedSize": 7400316,
+        "totalSize": 8437760,
+        "embedderHeapUsedSize": 1395112,
+        "backingStorageSize": 4138774
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 174,
+        "jsEventListeners": 176
+      }
+    },
+    {
+      "label": "cycle-90",
+      "heap": {
+        "usedSize": 7466048,
+        "totalSize": 8437760,
+        "embedderHeapUsedSize": 1455536,
+        "backingStorageSize": 4138800
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 174,
+        "jsEventListeners": 176
+      }
+    },
+    {
+      "label": "cycle-120",
+      "heap": {
+        "usedSize": 7493176,
+        "totalSize": 8437760,
+        "embedderHeapUsedSize": 1563712,
+        "backingStorageSize": 4138800
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 174,
+        "jsEventListeners": 176
+      }
+    },
+    {
+      "label": "after-console-discard",
+      "heap": {
+        "usedSize": 7493176,
+        "totalSize": 8437760,
+        "embedderHeapUsedSize": 1563712,
+        "backingStorageSize": 4138800
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 174,
+        "jsEventListeners": 176
+      }
+    }
+  ],
+  "scope": "Real React, controlled decoder; not TV memory or real Shaka decoder validation"
+}

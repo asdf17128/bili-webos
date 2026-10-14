@@ -22,6 +22,10 @@ const items = (prefix, count = 30) => Array.from({ length: count }, (_, i) => ({
 async function fixture(options = {}) {
   const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
   await context.addInitScript(options => {
+    // Keep Chromium's real geometry/scroll callbacks; remove only the API
+    // absent from Chromium 51–57 (webOS 4.x uses 53).
+    if (options.legacyIntersection) delete IntersectionObserverEntry.prototype.isIntersecting;
+    if (options.noIntersection) delete window.IntersectionObserver;
     delete window.webOS;
     localStorage.setItem('bili_proxyUrl', JSON.stringify('http://127.0.0.1:9527'));
     localStorage.setItem('bili_perfopt', JSON.stringify({ prefetchPage: !!options.prefetch, warmPlayer: false }));
@@ -787,6 +791,23 @@ await test('diagnostic network failures finish visibly and remain scannable', as
   assert.match(body, /route=auto/);
   assert.ok(!/[^\x00-\x7f]/.test(body), 'report stays ASCII');
 });
+
+for (const compatibility of ['legacyIntersection', 'noIntersection']) {
+  await test(`cover compatibility: ${compatibility} loads visible and scrolled cards`, async ({ page }) => {
+    await ready(page);
+    await page.waitForFunction(() => {
+      const img = document.querySelector('.video-card img');
+      return img && img.complete && img.naturalWidth > 0;
+    }, null, { timeout: 4000 });
+    for (let i = 0; i < 7; i++) await page.keyboard.press('ArrowDown');
+    await page.waitForFunction(() => {
+      const card = document.querySelector('.video-card.focused');
+      const img = card && card.querySelector('img');
+      return img && img.complete && img.naturalWidth > 0;
+    }, null, { timeout: 4000 });
+    await page.screenshot({ path: `${output}/covers-${compatibility}.png` });
+  }, { [compatibility]: true });
+}
 
 await writeFile(`${output}/${baseline ? 'before' : 'after'}.json`, JSON.stringify(reports, null, 2));
 await browser.close();

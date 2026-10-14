@@ -1,0 +1,10 @@
+[
+  {
+    "name": "native speed explicit detach honors exit",
+    "pass": true
+  },
+  {
+    "name": "native speed explicit detach honors newer-native",
+    "pass": true
+  }
+]

@@ -10,7 +10,7 @@ This log collects the release history previously included in the README. For ear
 
 <a id="unreleased"></a>
 
-## Unreleased premium playback fixes / 未发布的会员播放修复
+## v2.4.0 — premium playback and stability / 会员播放与稳定性
 
 ### 会员体验（2026-10-14）
 
@@ -21,11 +21,11 @@ This log collects the release history previously included in the README. For ear
 - 清晰度菜单可在自动和手动档位间切换；手动成功后记住偏好，失败保留原选择，倍速恢复不会偷偷改成手动。大字号下长画质菜单可滚动，遥控焦点保持可见。
 - 旧版未标记的 1080P 设置无法区分默认与手选，本次迁移为自动；旧版其他明确档位保留，新版手选 1080P 则按手动保存。
 
-Active Premium badges now appear beside the account identity. Playback defaults to the best available tier supported by the account and TV, with an explicit Auto option and persistent manual choices. Unmarked legacy 1080p settings migrate to Auto; other legacy tiers and new explicit choices remain manual. Premium audio selection remains independent from video quality. These changes are unreleased.
+Active Premium badges now appear beside the account identity. Playback defaults to the best available tier supported by the account and TV, with an explicit Auto option and persistent manual choices. Unmarked legacy 1080p settings migrate to Auto; other legacy tiers and new explicit choices remain manual. Premium audio selection remains independent from video quality. Included in v2.4.0.
 
-当前测试分支修复会员 4K / Dolby 影院片源退到 1080p、不同编码按码率误选、手动画质失败后的恢复；支持 3996/4096 宽片源，并保留 4K 电视的 8K 回退边界。进一步集成 [PR #17](https://github.com/asdf17128/bili-webos/pull/17) 的特定杜比 120→60fps 路径，仍保留原分辨率和音轨。当前源码与电视测试包为 `member-test.6`，**尚未发布到 Release / Homebrew**。适用片源、设备限制及真实测试范围见 [会员播放说明](docs/DOLBY_VISION.md)。
+本版修复会员 4K / Dolby 影院片源退到 1080p、不同编码按码率误选、手动画质失败后的恢复；支持 3996/4096 宽片源，并保留 4K 电视的 8K 回退边界。进一步集成 [PR #17](https://github.com/asdf17128/bili-webos/pull/17) 的特定杜比 120→60fps 路径，仍保留原分辨率和音轨。正式版验收见 [2.4.0 发布记录](docs/RELEASE-2.4.0.md)。适用片源、设备限制及真实测试范围见 [会员播放说明](docs/DOLBY_VISION.md)。
 
-The unreleased test branch preserves supported cinema-width 4K, prefers efficient codecs within the selected quality, restores failed manual switches, and integrates PR #17's source-specific Dolby 120→60fps path. Device resolution limits still apply. See [scope and verification](docs/DOLBY_VISION.md); this does not change the published 2.3.0 package.
+This release preserves supported cinema-width 4K, prefers efficient codecs within the selected quality, restores failed manual switches, and integrates PR #17's source-specific Dolby 120→60fps path. Device resolution limits still apply. See [scope and verification](docs/DOLBY_VISION.md); see the release validation report for final-package testing.
 
 测试包同时修复播放中致命错误后停住且没有重试入口的问题，保留原分 P 和进度进行有限重试；手动 CDN、杜比检测及网络诊断保留接口返回的备用签名地址。诊断测速复用实际成功的地址，不再因丢失备用地址而误报全部不可用。[故障对照与验证边界](docs/TESTCASES.md#2026-10-13其他播放失败排查未发布)。
 

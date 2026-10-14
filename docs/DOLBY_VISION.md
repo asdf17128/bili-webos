@@ -1,6 +1,6 @@
 # 会员画质、Dolby Vision 与高帧率播放
 
-本文描述 **未发布的 2.3.0 测试分支（当前 member-test.6，包含此前会员播放修复）**，不是已发布 2.3.0 的能力承诺。相关报告：[issue #11](https://github.com/asdf17128/bili-webos/issues/11)、[#33](https://github.com/asdf17128/bili-webos/issues/33)、[#34](https://github.com/asdf17128/bili-webos/issues/34)，以及 [PR #17](https://github.com/asdf17128/bili-webos/pull/17)。
+本文描述 **2.4.0 的会员播放能力及设备限制**。相关报告：[issue #11](https://github.com/asdf17128/bili-webos/issues/11)、[#33](https://github.com/asdf17128/bili-webos/issues/33)、[#34](https://github.com/asdf17128/bili-webos/issues/34)，以及 [PR #17](https://github.com/asdf17128/bili-webos/pull/17)。
 
 自动最高画质与会员身份标识见 [会员体验说明](MEMBER-EXPERIENCE.md)。
 
@@ -19,7 +19,7 @@ qn 126 的初始化段可能包含实际的 `dvcC`、`dvvC`、`dvwC`，即使 AP
 
 ## PR #17 的特定 120 → 60fps 路径
 
-`dolby120Transform.js`、`dolbyFrameReducer.js`、`dolbyTimingPatch.js` 及其测试移植自 @SSSS-VIII / linn 的 PR #17，提交 `0df9763aa7a1161a5237dff3f93f408c313f9868`。本分支按当前播放器生命周期重新集成，保留贡献者归属；移植不等于 GitHub 上该 PR 已正式合并。
+`dolby120Transform.js`、`dolbyFrameReducer.js`、`dolbyTimingPatch.js` 及其测试移植自 @SSSS-VIII / linn 的 PR #17，提交 `0df9763aa7a1161a5237dff3f93f408c313f9868`。2.4.0 按当前播放器生命周期重新集成，并将 PR 原始提交合入发布历史，保留贡献者归属。
 
 转换仅限 `BV1dCNC6hEzE` / cid `39933052694` / qn 126 的一份已审计 3840×2160 120fps 表示层。它校验身份、编码、尺寸、帧率、完整 hvcC、完整 SIDX、初始化范围及全部 35 个分片范围，再在压缩域删除已证明可安全移除的时间层图片，同步修改 sample 表和 SPS VUI 时间信息。保留 qn、分辨率及每个留存图片的 Dolby RPU；不是重新编码，也不是通用 120fps 转换器。
 

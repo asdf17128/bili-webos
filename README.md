@@ -80,7 +80,7 @@ Homebrew 目录更新可能晚于 GitHub 发布；想立即体验新版，可以
 
 [反馈问题](https://github.com/asdf17128/bili-webos/issues) · [更新日志](CHANGELOG.md) · [开发文档](docs/DEVELOPMENT.md) · [测试登记](docs/TESTCASES.md)
 
-会员画质与设备限制见 [会员播放说明](docs/DOLBY_VISION.md)；网络问题可参考 [家庭网络检测方案](docs/NETWORK-TESTING.md)。测试分支的进展和验证范围统一记录在 [未发布更新](CHANGELOG.md#unreleased)。
+会员画质与设备限制见 [会员播放说明](docs/DOLBY_VISION.md)；网络问题可参考 [家庭网络检测方案](docs/NETWORK-TESTING.md)。版本更新统一记录在 [更新日志](CHANGELOG.md)，本版验证见 [2.4.0 发布记录](docs/RELEASE-2.4.0.md)。
 
 [会员身份与自动最高画质](docs/MEMBER-EXPERIENCE.md)（测试分支）。
 

@@ -86,7 +86,7 @@ Login information is stored on your TV and used to access your Bilibili account.
 
 [Report an issue](https://github.com/asdf17128/bili-webos/issues) · [Changelog](CHANGELOG.md) · [Development guide](docs/DEVELOPMENT.md) · [Test cases](docs/TESTCASES.md)
 
-See the [premium playback guide](docs/DOLBY_VISION.md) for quality and device limits, or the [home-network testing guide](docs/NETWORK-TESTING.md) for network troubleshooting. Test-branch progress and verification limits are recorded under [Unreleased](CHANGELOG.md#unreleased). Some technical documents are in Chinese.
+See the [premium playback guide](docs/DOLBY_VISION.md) for quality and device limits, or the [home-network testing guide](docs/NETWORK-TESTING.md) for network troubleshooting. See the [changelog](CHANGELOG.md) and [2.4.0 validation report](docs/RELEASE-2.4.0.md) for release scope and verification limits. Some technical documents are in Chinese.
 
 [Premium badges and automatic quality](docs/MEMBER-EXPERIENCE.md) (test branch; Chinese documentation).
 

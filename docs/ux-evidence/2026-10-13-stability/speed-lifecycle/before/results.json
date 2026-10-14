@@ -1,0 +1,41 @@
+[
+  {
+    "name": "native speed lifecycle: exit",
+    "pass": false,
+    "error": "cancelled native switch must not assign a media URL: {\"sources\":[{\"connected\":false,\"value\":\"http://127.0.0.1:7654/proxy/media.bilivideo.com/native-1.mp4\"}],\"rates\":[],\"loads\":1,\"unloads\":1}\n\n1 !== 0\n"
+  },
+  {
+    "name": "native speed lifecycle: normal",
+    "pass": false,
+    "error": "cancelled native switch must not assign a media URL: {\"sources\":[{\"connected\":true,\"value\":\"http://127.0.0.1:7654/proxy/media.bilivideo.com/native-1.mp4\"}],\"rates\":[2],\"loads\":1,\"unloads\":1}\n\n1 !== 0\n"
+  },
+  {
+    "name": "native speed lifecycle: newer-speed",
+    "pass": false,
+    "error": "older URL must not replace newer native source\n\n2 !== 1\n"
+  },
+  {
+    "name": "native speed lifecycle: new-video",
+    "pass": false,
+    "error": "cancelled native switch must not assign a media URL: {\"sources\":[{\"connected\":false,\"value\":\"http://127.0.0.1:7654/proxy/media.bilivideo.com/native-1.mp4\"}],\"rates\":[],\"loads\":2,\"unloads\":1}\n\n1 !== 0\n"
+  },
+  {
+    "name": "native speed lifecycle: quality",
+    "pass": false,
+    "error": "page.waitForFunction: Timeout 7000ms exceeded."
+  },
+  {
+    "name": "native speed lifecycle: exit-unloading",
+    "pass": false,
+    "error": "cancelled native switch must not assign a media URL: {\"sources\":[{\"connected\":false,\"value\":\"http://127.0.0.1:7654/proxy/media.bilivideo.com/native-1.mp4\"}],\"rates\":[],\"loads\":1,\"unloads\":1}\n\n1 !== 0\n"
+  },
+  {
+    "name": "native speed lifecycle: normal-unloading",
+    "pass": false,
+    "error": "cancelled native switch must not assign a media URL: {\"sources\":[{\"connected\":true,\"value\":\"http://127.0.0.1:7654/proxy/media.bilivideo.com/native-1.mp4\"}],\"rates\":[2],\"loads\":1,\"unloads\":1}\n\n1 !== 0\n"
+  },
+  {
+    "name": "native speed lifecycle: success",
+    "pass": true
+  }
+]

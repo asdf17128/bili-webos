@@ -1,0 +1,266 @@
+[
+  {
+    "name": "subtitle lifecycle cancels obsolete translation: body",
+    "pass": true
+  },
+  {
+    "name": "subtitle lifecycle cancels obsolete translation: batches",
+    "pass": true
+  },
+  {
+    "name": "subtitle lifecycle cancels obsolete translation: success",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: exit",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: normal",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: newer-speed",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: new-video",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: quality",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: exit-unloading",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: normal-unloading",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: success",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: before-unload paused=false",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: before-unload paused=true",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: after-unload paused=false",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: after-unload paused=true",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: normal paused=false",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: normal paused=true",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: quality paused=false",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: quality paused=true",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: normal-before-metadata paused=false",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: normal-before-metadata paused=true",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: newer native supersedes waiting 1x",
+    "pass": true
+  },
+  {
+    "name": "player shelf separates progress, controls and recommendation tabs: layout-legacy scale=1",
+    "pass": true
+  },
+  {
+    "name": "player shelf separates progress, controls and recommendation tabs: layout-legacy scale=1.4",
+    "pass": true
+  },
+  {
+    "name": "player shelf separates progress, controls and recommendation tabs: layout-modern scale=1",
+    "pass": true
+  },
+  {
+    "name": "player shelf separates progress, controls and recommendation tabs: layout-modern scale=1.4",
+    "pass": true
+  },
+  {
+    "name": "auxiliary requests wait for real media data: frame-ready",
+    "pass": true
+  },
+  {
+    "name": "auxiliary requests wait for real media data: frame-cancel",
+    "pass": true
+  },
+  {
+    "name": "failed resume metadata is retried for subtitles after media data",
+    "pass": true
+  },
+  {
+    "name": "startup overlaps independent requests and preserves resume: startup-overlap",
+    "pass": true
+  },
+  {
+    "name": "startup overlaps independent requests and preserves resume: startup-part",
+    "pass": true
+  },
+  {
+    "name": "unverified Dolby frame rate keeps the original base layer: dolby-120",
+    "pass": true
+  },
+  {
+    "name": "unverified Dolby frame rate keeps the original base layer: dolby-unknown",
+    "pass": true
+  },
+  {
+    "name": "Dolby inspection uses selected native signed backup without hostname substitution",
+    "pass": true
+  },
+  {
+    "name": "comment rail renders one state and keeps controls unobscured",
+    "pass": true
+  },
+  {
+    "name": "buffer exhaustion is visible and retried without skipping video",
+    "pass": true
+  },
+  {
+    "name": "outage recovery: automatic",
+    "pass": true
+  },
+  {
+    "name": "outage recovery: manual",
+    "pass": true
+  },
+  {
+    "name": "outage recovery: exit",
+    "pass": true
+  },
+  {
+    "name": "outage recovery: new-intent",
+    "pass": true
+  },
+  {
+    "name": "critical runtime error while paused: media",
+    "pass": true
+  },
+  {
+    "name": "critical runtime error while paused: network",
+    "pass": true
+  },
+  {
+    "name": "recoverable runtime network error keeps player and retries streaming",
+    "pass": true
+  },
+  {
+    "name": "leaving after fatal runtime error cancels delayed recovery",
+    "pass": true
+  },
+  {
+    "name": "repeated fatal runtime errors exhaust bounded remount budget",
+    "pass": true
+  },
+  {
+    "name": "creator follow from player control bar",
+    "pass": true
+  },
+  {
+    "name": "outage recovery: permanent outage has a finite retry budget",
+    "pass": true
+  },
+  {
+    "name": "actual manifest and codec fallback: premium",
+    "pass": true
+  },
+  {
+    "name": "actual manifest and codec fallback: premium-fallback",
+    "pass": true
+  },
+  {
+    "name": "actual manifest and codec fallback: dolby",
+    "pass": true
+  },
+  {
+    "name": "actual manifest and codec fallback: dolby-fallback",
+    "pass": true
+  },
+  {
+    "name": "cancelled load stops retries and releases the player",
+    "pass": true
+  },
+  {
+    "name": "leaving while video information is pending prevents later streaming",
+    "pass": true
+  },
+  {
+    "name": "failed quality load restores original stream with explicit DASH MIME",
+    "pass": true
+  },
+  {
+    "name": "missing requested quality keeps existing stream and never blames membership",
+    "pass": true
+  },
+  {
+    "name": "4K TV starts 8K source at available HDR tier without loading stuck 8K",
+    "pass": true
+  },
+  {
+    "name": "same-quality HEVC decoder failure tries AVC without dropping to 1080p",
+    "pass": true
+  },
+  {
+    "name": "network failure stops after two outer attempts instead of trying every quality",
+    "pass": true
+  },
+  {
+    "name": "transient network failure can recover on the second attempt",
+    "pass": true
+  },
+  {
+    "name": "actual danmaku and subtitle font sizes: small",
+    "pass": true
+  },
+  {
+    "name": "actual danmaku and subtitle font sizes: normal",
+    "pass": true
+  },
+  {
+    "name": "actual danmaku and subtitle font sizes: large",
+    "pass": true
+  },
+  {
+    "name": "actual danmaku and subtitle font sizes: largest",
+    "pass": true
+  },
+  {
+    "name": "startup report separates slow media readiness and stays visible when diagnostics APIs fail",
+    "pass": true
+  },
+  {
+    "name": "diagnostics without a previous video explains how to obtain startup evidence",
+    "pass": true
+  },
+  {
+    "name": "Luna requests time out, cancel their bridge and ignore late success",
+    "pass": true
+  }
+]

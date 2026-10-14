@@ -1,0 +1,149 @@
+{
+  "testBuild": "stability-test.3",
+  "status": "passed with explicit skips",
+  "runs": [
+    {
+      "command": "bash tools/verify.sh --no-tv --ux",
+      "startedAt": "2026-10-13T06:27:52.554969+00:00",
+      "endedAt": "2026-10-13T06:31:31.742161+00:00",
+      "exitCode": 1,
+      "classification": "test observation race: replacement load counted before its Blob MPD finished reading",
+      "log": "verify-ux-first-failure.log"
+    },
+    {
+      "command": "bash tools/verify.sh --no-tv --ux",
+      "startedAt": "2026-10-13T06:36:12.069758+00:00",
+      "endedAt": "2026-10-13T06:40:38.550395+00:00",
+      "exitCode": 0,
+      "log": "verify-ux.log"
+    },
+    {
+      "command": "bash tools/verify.sh --sim --no-tv",
+      "startedAt": "2026-10-13T06:41:50.209724+00:00",
+      "endedAt": "2026-10-13T06:45:16.351358+00:00",
+      "exitCode": 0,
+      "isolatedStateDir": "/tmp/bili-stability-final3-state",
+      "accountWrites": false,
+      "simOutput": "/tmp/bili-stability-final3-simulator",
+      "log": "verify-sim.log"
+    }
+  ],
+  "productionDiffSha256": "491d0ebc498f910fb41c739fd8201c30244530d54aedca94a53b624f0215c69a",
+  "sourceUnchanged": true,
+  "sourceAndBundleManifestMatches": true,
+  "suites": {
+    "bridge-subscriptions": {
+      "pass": 3
+    },
+    "buvid": {
+      "pass": 8
+    },
+    "cdn": {
+      "pass": 7
+    },
+    "danmaku": {
+      "measurement": 2,
+      "pass": 6
+    },
+    "dev-subscriptions": {
+      "pass": 4
+    },
+    "diagnostic-cdn": {
+      "pass": 4
+    },
+    "live-loading": {
+      "pass": 9
+    },
+    "live-monitor": {
+      "pass": 2
+    },
+    "playback-end": {
+      "pass": 26
+    },
+    "player-loading": {
+      "pass": 70
+    },
+    "relay-reconnect": {
+      "pass": 6
+    },
+    "sdk-subscriptions": {
+      "pass": 6
+    },
+    "service-stress": {
+      "pass": 20
+    },
+    "service-subscriptions": {
+      "pass": 5
+    },
+    "sessions": {
+      "pass": 9
+    },
+    "simulator": {
+      "pass": 54,
+      "skip": 3
+    },
+    "soak-monitor": {
+      "pass": 8
+    },
+    "transport": {
+      "pass": 17
+    },
+    "ui": {
+      "pass": 68
+    }
+  },
+  "otherRequiredGates": "All passed; raw verify logs preserve ES5/ES2016 parse, design/logic tests, real Node 0.12.2/8.17.0, build, real HTTP Range and local probe results. Do not sum counts across shared/repeated assertions.",
+  "skips": [
+    {
+      "name": "Full copyrighted Dolby 120 fps corpus",
+      "reason": "BILI_DOLBY_120_CORPUS not supplied; optional 35-fragment capture is absent from repository",
+      "count": 1
+    },
+    {
+      "name": "Not logged in",
+      "reason": "like/coin/fav surface skipped — start tools/dev-service.mjs to seed cookies",
+      "count": 1
+    },
+    {
+      "name": "Watch Later skipped",
+      "reason": "needs a logged-in session",
+      "count": 1
+    },
+    {
+      "name": "Follow badges skipped",
+      "reason": "API session is logged out; stored cookies alone do not establish authentication",
+      "count": 1
+    }
+  ],
+  "limitations": [
+    "Anonymous simulator cannot establish logged-in or premium playback coverage.",
+    "Selected live room returned zero history messages. The chat rail check establishes empty-history/UI handling, not proof of fresh real chat delivery.",
+    "Modern Chromium and controlled boundary fixtures cannot establish webOS hardware decode, performance or sustained TV stability.",
+    "No TV access, deployment, release, commit or account write performed by this local regression run."
+  ],
+  "firstFailure": {
+    "classification": "test observation race",
+    "evidence": "observer-race.md",
+    "oldControlledResult": "0/1",
+    "fixedControlledResult": "2/2",
+    "productionChangeRequired": false
+  },
+  "cleanup": {
+    "ownedServiceAndViteStartedByVerify": true,
+    "portsInitiallyFree": [
+      5173,
+      9528
+    ],
+    "portsAtCompletion": {
+      "5173": {
+        "listening": false
+      },
+      "9528": {
+        "listening": false
+      }
+    },
+    "checkedAt": "2026-10-13T06:48:04.048479+00:00"
+  },
+  "candidateStatus": "superseded: television live relay stopped delivering during full 15-minute run; original local PASS retained",
+  "televisionFollowUp": "../../live-continuity-monitor/candidate3-reassessment.json"
+}

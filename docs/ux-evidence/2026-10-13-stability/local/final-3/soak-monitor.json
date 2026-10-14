@@ -1,0 +1,39 @@
+{
+  "at": "2026-10-13T06:36:31.789Z",
+  "sourceSha256": "e8ea2b38dc3c21502e5c7cbd3fd8f2cdce1d84d3a43a15edeeed9825b3e7f4bd",
+  "scope": "Exact monitor extracted from TV tool; virtual clock/video/counters; no TV, build or platform decoder",
+  "results": [
+    {
+      "name": "initial observation does not count existing cumulative frames",
+      "pass": true
+    },
+    {
+      "name": "repeated snapshots count only frame differences",
+      "pass": true
+    },
+    {
+      "name": "over-three-second gap retains buffer state and nearby event evidence",
+      "pass": true
+    },
+    {
+      "name": "advancing closes the original gap without creating duplicates",
+      "pass": true
+    },
+    {
+      "name": "natural loop splits segments even when ended was sampled earlier",
+      "pass": true
+    },
+    {
+      "name": "counter reset opens a segment without summing cumulative frame counts",
+      "pass": true
+    },
+    {
+      "name": "unavailable counters remain null and explicitly incomplete",
+      "pass": true
+    },
+    {
+      "name": "cleanup removes every listener, timer and monitor ownership",
+      "pass": true
+    }
+  ]
+}

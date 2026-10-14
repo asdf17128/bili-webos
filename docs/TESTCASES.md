@@ -693,3 +693,86 @@ C9 社区独立验证：[#34 回报](https://github.com/asdf17128/bili-webos/iss
 - **C-PERF-LONG-01**：扩展真实电视长播工具，分别保存视频、主站/直播与 GitHub 更新源状态；记录 CDP JS 堆、解码/丢帧、缓冲、主线程长任务和服务 uptime。一项失败后继续保存剩余时间线，但最终仍退出 1，不能把忽略失败当作通过。首次运行因 GitHub 超时提前结束的原始结果保留。
 
 使用方法和网络结果见 [NETWORK-TESTING](NETWORK-TESTING.md)，便携包可由 `tools/package-network-check.py` 重建。性能数值与解释见 [PERFORMANCE](PERFORMANCE.md)，完整脱敏证据在 [regional-performance](ux-evidence/2026-10-13-regional-performance)。应用仍为已经验证的 `2.3.0 playback-test.2`；本次仅添加诊断工具和测量记录，没有更改电视安装包、发布或关闭 issue。
+
+## 2026-10-13：SDK 长订阅的退出资源清理（稳定性测试发现）
+
+- **C-STAB-SUB-01**：`tools/test-subscription-cleanup.mjs` 打包完整生产 `client.js`，执行项目附带的真实 `webOSTV.js 1.2.13`，仅替换平台 `PalmServiceBridge` 边界。弹幕和投屏各重复订阅/退出 20 次，旧版均 **created=20 / cancelled=0**，证明“忽略迟到回调”没有释放 SDK 保存的请求/桥。新增保存请求句柄并执行幂等 `cancel()` 后，两条路径各 **20/20**；同时保持有效期间的事件正常、退出后成功/错误回调不再交付。
+- **C-STAB-SUB-02**：重复退出只取消一次；SDK cancel 抛错或运行环境缺少句柄时不使页面清理崩溃，仍忽略迟到事件。这两个异常场景只验证容错，不能声称异常平台上的桥已释放。新门禁进入 `verify.sh`，旧/新 6 项结果及原始日志在 [稳定性本地证据](ux-evidence/2026-10-13-stability/local/REPORT.md)。
+- 真机直播耐久工具同时记录 **SDK handle.cancel** 与 **danmakuStop 服务确认**，分别证明客户端句柄释放和服务器中继停止；不能以画面消失或没有弹幕 DOM 代替前者。电视执行结果另列于本轮稳定性报告，不把本地 SDK 边界测试写成真机证据。
+
+
+## 2026-10-13：倍速异步切源、机翻退出与同页焦点耐久
+
+- **C-STAB-SPEED-01**：真实 React 播放器与受控 Shaka/Luna 边界，延迟 html5 playurl 或 unload。旧版在退出、切视频、选正常速度、选更新的 1.5x、切画质后仍让旧 2x 请求给媒体赋源；包括已移出 DOM 的 video。八项中旧版 **1/8**（只有正常路径通过），新版 **8/8**：独立倍速意图代次阻止迟到赋源/播放，画质意图取消旧倍速意图，unload 中恢复 1x 会重建 DASH。正常 2x→1x 保持可用。首次画质夹具忽略请求 qn 导致超时，修正夹具后全部七个旧缺陷按实际赋源断言失败；两次旧结果均保留。[旧版最终](ux-evidence/2026-10-13-stability/speed-lifecycle/before-final/results.json)、[新版合并专项](ux-evidence/2026-10-13-stability/lifecycle-browser-after/results.json)。
+- **C-STAB-SPEED-02**：候选 `stability-test.1` 真机遥控专项 **10/10**，原生 2x 实测时间推进率 **1.9935**，回到同位置附近 DASH 后 **0.9958**；返回释放播放器且恢复偏好。这是实际电视媒体时钟测量，不把浏览器受控解码器当作硬件验证；本片实际 640×480，不写成 4K 倍速。[真机结果](ux-evidence/2026-10-13-stability/regression/speed/results.json)。
+- **C-STAB-MT-01**：英文界面 800 条字幕经真实 React/API 路径触发八个翻译批次。退出后再放行字幕正文，旧版新发八批；先放出四个工作请求、退出后再返回，旧版继续余下四批。旧版 **1/3**，正常翻译为通过对照；新版 **3/3**，过期轨道不再追加批次/重试/局部 UI 或完整缓存。已经发出的请求仍按原网络期限结束，不宣称立即中断全部在飞 HTTP。[旧结果](ux-evidence/2026-10-13-stability/subtitle-lifecycle/before/results.json)、[新版合并专项](ux-evidence/2026-10-13-stability/lifecycle-browser-after/results.json)。`test-subtranslate.mjs` 另验证退出后批次失败不能被当作可重试错误，原排序/翻译/cache/LRU 行为共 **13 组通过**。
+- **C-STAB-FOCUS-01 / S-08**：`test-playback-lifecycle-tv.mjs` 在同一 document 三轮热身后、正式循环结束时各采至少 30 次（目标 32 次）真实 D-pad 焦点变化，保存 key/from/to 和全部毫秒样本，核对起点和导航路线相同。量的是 keydown→focused 类变更，不能称为面板绘制延迟。p95 >50ms 或相对前测增加 >max(10ms,50%) 触发调查；尚在执行的真机数值由最终报告填入，不预先记通过。
+- **S-08 工具对照**：用实际 Chromium 和工具中的测量函数验证前后各 32 个变化、路线一致；强制第 12 次键调用失败，保留 9 个实际样本后仍释放自有监听器/observer。资源采样在测量清理之后执行，避免测试造成假泄漏；首次夹具把 Playwright 自有 observer 也计入，改为只跟踪目标 class observer，没有调整产品判据。Memory.getDOMCounters.nodes 是总节点，不是已分离节点数量；CDP HTTP 在飞计数不包含 Luna 桥/服务 WebSocket 或原生 HLS 的全部平台流量。
+
+
+### 卸载中再次改倍速失败：第二轮稳定性修复
+
+- **C-STAB-SPEED-03**：第一次 2x 取流已返回、DASH unload 暂停时选 1.5x，再让新取流失败。失败分别先于/晚于旧 unload 完成；旧候选两项均 **0/2**，实际 `loads=1 / unloads=1 / nativeSources=0 / rateCalls=0`，即 UI 退回 1x 而没有可播来源。共享卸载 Promise 和卸载前位置/暂停快照后，回滚先等待旧卸载结束，才加载 DASH，避免迟到 unload 清掉新流。[旧结果](ux-evidence/2026-10-13-stability/speed-unload-before/results.json)。
+- **C-STAB-SPEED-04**：新增 **11 项**：两种失败顺序×播放/暂停、卸载中回 1x×播放/暂停、回 1x 后改画质×播放/暂停、native 已赋源但 metadata 未到时回 1x×播放/暂停，以及 2x→等待 1x→更新 1.5x。验证旧请求不赋源、不重复 unload、不在旧 unload 结束前 load、恢复原 37s 和暂停状态，三次意图以最新为准。原生播放快照在 pending seek 实际应用后才释放。[最终专项 22/22](ux-evidence/2026-10-13-stability/speed-unload-verified/results.json)含原八项倍速、三项字幕和新增十一项，完整加载套件现为 66 项。最终包真机重新验证由根报告列出，不沿用候选 1 耐久结论。
+- 新夹具初版试图用鼠标点击加载遮罩下面的控件，另直接在 native 模式点击画质被产品已有规则拦截；这三项不能作为产品失败证据。改用真实遥控键在回 1x 后导航画质/速度，保留原错误结果；没有用 force click 绕过界面，也未改变产品判据。首次基础修复通过 2/2 后补全交错意图与暂停/进度测试，以最终 22/22 为准。可用 `LOADING_BASE_URL=http://127.0.0.1:5174 LOADING_FILTER='native speed|subtitle lifecycle' node tools/test-player-loading.mjs` 在独立 Vite 端口运行，默认仍是 5173。
+
+
+### 真机暂停倍速往返定位：第三轮稳定性修复
+
+- **C-STAB-SPEED-05**：候选 2 真机暂停在约 14.9s，切 native 2x 保持暂停/位置，返回 DASH 后实际 currentTime=0。增强工具等待 loading 消失和 15 秒定位窗口仍未恢复；时间线确认 `player.load` 收到 startTime=14.9，随后新 metadata/canplay 均为 0，不能归为工具过早采样。Shaka 在先前 unload 后已清空 assetUri，而 native src 由应用手动设置，因此下一次 load 跳过其内部卸载；现原生返回 DASH 时显式等待 `unload(false)`，让新 playhead 面对已重置媒体状态。
+- 真实 React 专项加入这个**受控媒体边界模型**，旧版播放态通过、暂停态实际 0 秒（**1/2**），不再只检查传给 load 的位置参数。新版播放/暂停均在新 metadata 后实际恢复 14.9s；原八项倍速、字幕与卸载交错回归一起 **24/24**。另延迟新的 native detach，再退出或选更新 1.5x，**2/2**，过期 DASH 不加载、进度/暂停仍保留；完整加载套件现为 **70 项**。浏览器模型以真机观察为依据，不替代候选 3 的真实平台复测。[旧模型结果](ux-evidence/2026-10-13-stability/speed-paused-before/results.json)、[新版专项](ux-evidence/2026-10-13-stability/speed-paused-after/results.json)、[detach 取消专项](ux-evidence/2026-10-13-stability/speed-paused-detach/results.json)。
+
+- **C-STAB-SPEED-06 / 最终真机**：候选 3 同一台 C4 暂停往返实际 **17/17**，暂停 21.5s→native 2x→DASH 1x 后仍是 21.5s/paused，随后继续播放实际推进；播放态 2x 比率 **1.9993**、恢复 1x **0.9930**。因此这次不是仅修正测试等待；候选 2 加强观测后仍失败，候选 3 显式 detach 后通过。保留[真机旧失败时间线](ux-evidence/2026-10-13-stability/speed-paused-tv-before/results.json)与[真机新通过时间线](ux-evidence/2026-10-13-stability/speed-paused-tv-after/results.json)。
+
+### 直播重连观测与弹幕中继预算
+
+- **C-STAB-LIVE-RETRY-01**：真机直播工具包装既有 `__liveDiag.push`，仅记录媒体 connect/retry/gave-up/playing 的安全类型、次数、代次和相对毫秒；`note('retry',{why})` 覆盖事件名的既有格式也能识别。聊天 event/frame 数另存，不能冒充媒体或 relay 连接次数。每次健康 playing 可以重置应用重试预算，断言同一失败段 attempt≤12、connect≤13、无 gave-up，并保留全部累计计数；这不等于 TCP 连接上限。
+- **C-STAB-LIVE-RETRY-02**：`test-live-stability-monitor.mjs` 在 Chromium 执行实际工具注入函数，验证正常结束和中途工具失败 **2/2**；恢复原 request/push（含原来自有 push）、释放具名事件监听器/定时器/observer，导出数据不含输入的敏感文本或 URL。[本地工具结果](ux-evidence/2026-10-13-stability/live-monitor-local/results.json)。
+- **C-STAB-LIVE-RETRY-03**：`test-live-relay-reconnect.mjs` 执行完整生产 `danmaku.js`，仅控制 WebSocket 和定时器，**6/6**：连接错误、打开后无数据即关闭最多四次；stop 后不新建连接/心跳；首次服务器数据将预算重置一次后仍有限（总连接数此时可为五）。stop 并未立即清除已有重试 timeout，旧 timeout 到时受 closed guard 阻止；不把这一点写成即时定时器清零。报告带模块 SHA256。[本地真实模块结果](ux-evidence/2026-10-13-stability/live-relay-local/results.json)。电视诊断没有暴露 relay 内部 WS 重连次数，此项真机不可测；本地模块测试不等于电视 socket 测量。
+
+
+### 直播连续交付与独立房间历史对照
+
+- **C-STAB-LIVE-CONTINUITY-01**：每分钟保存聊天 `lastFrameAt` 与事件 `lastEventAt`，聊天停交付 ≥120 秒时才调用同房间 `gethistory`；仅导出条数和时间，按北京时间 `+08:00` 解析。历史证明停交付后仍有新聊天才判 `active_room_relay_stale`；非聊天 event/心跳推进不能掩盖聊天停止。历史老旧、为空、失败只记未验证，安静房间不误判产品故障，也不能算弹幕验收通过。
+- **C-STAB-LIVE-CONTINUITY-02**：确证条件包含新鲜历史时间，以及时钟偏差场景下停交付区间内两次历史继续推进；历史请求结束再采交付，避免探针期间已恢复的误判。生产 `danmakuState` 只导出安全相位/次数/时间，连接次数是模块诊断，不是电视 OS socket 数。短暂重连、媒体恢复、≥3 秒推进间隔或未确认交付记 `needs_review`，与硬失败分开；最终 `pass` 不能把待复核当全绿。
+- **C-STAB-LIVE-CONTINUITY-03**：本地运行真机工具的实际函数 **21/21**，包括正常和中途失败的注入清理、10 种交付判据、安全字段、通过/待复核/失败三个结果、历史正常/非法/失败/抛错，以及超时取消一次、忽略迟到回调。见[工具自测与命令](ux-evidence/2026-10-13-stability/live-continuity-monitor/README.md)、[21 项原始结果](ux-evidence/2026-10-13-stability/live-continuity-monitor/results.json)。
+- **C-STAB-LIVE-CONTINUITY-04 / 真机旧失败**：候选 3 完整 15 分钟后，原累计帧工具返回通过，但第 5–15 分钟聊天/事件一直 **216/956**；独立历史在北京时间 **15:02:00、15:08:12** 仍有新聊天。同判据复核 **FAIL**，不计 S04 通过。旧监测没有精确最后帧时间，保守以首次探针为上界，已证明至少 **371,927ms** 无新交付。原 JSON/日志未改，见[原始证据](ux-evidence/2026-10-13-stability/live-candidate3-stalled/README.md)与[同判据复核](ux-evidence/2026-10-13-stability/live-continuity-monitor/candidate3-reassessment.json)。此轮另有 1 次媒体重试、13.103 秒最大推进间隔，不能称为全程流畅。
+
+前述 **C-STAB-LIVE-RETRY-03** 的四次预算是旧实现已测规则，不能证明长期恢复需求被满足。后续服务修复的完整候选仍须重新做真机耐久；本地 21 项只证明工具能识别交付缺失与清理自身资源。
+
+
+### 候选 4：弹幕恢复、实际旧 WS 资源与暂停测量判据
+
+- **C-STAB-LIVE-RETRY-04**：完整生产 relay 的 18 项受控传输/时钟验证，覆盖连接与认证各 10 秒期限、只有 op8/code=0 才认证、认证后立即/每 30 秒发送心跳及 20 秒回包期限、19 秒延迟容忍、安静房间持续心跳不误重连。连续失败按 3/6/12/30/60 秒退避，只有持续至少 30 秒且收到有效数据的认证连接恢复预算；7 段健康连接仍交付，短暂认证不能清空失败计数，持续失败达到退避上限后每分钟探测一次而不永久停止。旧 socket、send/error/close 迟到回调不能影响新连接，stop 即时清理所有自有定时器。合并下述 4 个实际 socket 用例为 **22/22**，旧源码在相同新合约下 **0/22**；其中包含新增诊断接口，不能说成 22 个独立产品缺陷。[实现与对照说明](ux-evidence/2026-10-13-stability/relay-after/README.md)、[新结果](ux-evidence/2026-10-13-stability/relay-after/results.json)、[旧结果](ux-evidence/2026-10-13-stability/relay-before/results.json)。本用例替代 C-STAB-LIVE-RETRY-03 的旧生命周期次数预算，保留其历史记录。
+- **C-STAB-LIVE-RETRY-05**：真实 `ws-legacy@1.1.5` 本机 TCP/TLS/HTTP 升级测试，分别覆盖 TLS 挂起退出、TLS 完成但不返 101 时退出、OPEN 不回应 close 时退出，以及真实 10 秒握手超时→约 3 秒退避后重连→退出。以客户端 socket 的 destroyed/close、请求 close 或 upgrade、服务器端连接归零验收；新版 **4/4**，旧版四项均留下存活客户端 socket。每个连接独立 Agent 捕获并 abort 请求、destroy socket，不只断言 WS.close 被调用。首次 allowHalfOpen 服务器人为保留远端造成四项假失败，[原结果](ux-evidence/2026-10-13-stability/relay-after/initial-harness-failure.json)保留；修正夹具时未改生产代码。此处是在当前宿主运行实际旧库，不冒充旧电视或 Node 0.12 内的完整 TLS 回归。最终本地两条完整门禁均包含上述 22 项：[候选 4 本地报告](ux-evidence/2026-10-13-stability/local/final-4/REPORT.md)。
+- **C-STAB-LIVE-CONTINUITY-05 / 候选 4 真机恢复**：完成 5 次直播开关和连续 15 分钟/16 样本，收到 **833 条弹幕、2857 个事件**；诊断直接记录 `heartbeat-timeout` 后自动重连、恢复 connected 和新事件，未重启 App，退出订阅/relay 回到基线。原始 **45 条检查中 43 通过、2 个 GitHub 更新源探针失败，exit 1**，不记整轮全过。第 14/15 分钟旧探针未保存 HTTP 状态，之后独立复测 HTTP 200 不能覆盖原失败或反推其原因。视频另有 1 次自动恢复和 **13.326 秒**最大推进间隔，流畅性为 NEEDS_REVIEW；原生 HLS 帧计数全 0 视为不可测，不能说零丢帧。现场证明这次心跳失联后的恢复，不确证候选 3 停交付或历史全请求失败的唯一根因。[原始结果](ux-evidence/2026-10-13-stability/final-tv-4/live/results.json)、[分项评估](ux-evidence/2026-10-13-stability/final-tv-4/live/assessment.json)、[现场说明](ux-evidence/2026-10-13-stability/final-tv-4/live/README.md)。
+- **C-STAB-TOOLS-PAUSE-01**：`test-playback-lifecycle-tv.mjs` 旧暂停谓词仅检查 `after.time-before.time<0.15`，负向跳回 0 或仍在播放但采样相差很小会假通过。提取实际新函数，以正常暂停、明显倒退、未暂停、明显前进四组数值验证，旧判定仅 **2/4 正确**，新判定 `after.paused && Math.abs(after.time-before.time)<0.15` **4/4 正确**。[用例与复跑命令](ux-evidence/2026-10-13-stability/lifecycle-predicate/README.md)、[原始结果](ux-evidence/2026-10-13-stability/lifecycle-predicate/results.json)。这是测试工具假通过修复，不声称四组数值是电视上发生的故障；修正在最终本地门禁之后，仅用于后续真机循环，不回写旧候选结论。
+
+### 2026-10-13：最终稳定性候选的完整真机观察
+
+- Candidate 4 同一 document 实际 4K HEVC/50fps 元数据长播 60 分钟，61 个分钟样本、一次自然循环，180,118 新增解码帧/0 新增丢帧；主站/直播/更新源各 61/61。须保留已自动恢复的底层连接错误，不能将逻辑成功写成网络零故障。长任务、自然堆与 GC 后保留堆分开报告。
+- 同包直播画质补测原画 qn10000→蓝光 qn400→原画实际播放 3/3，补足 smoke 单档房间的跳过但不改写原 skip；最终设置摘要、首页播放器与订阅状态核对通过。
+- 本轮整体完成但保留三个发现：直播 13.326s 恢复间隔、更新源两次未知原因失败、同页退出后 GC 堆 +210,344 B。完整证据见 [稳定性实测报告](STABILITY-RESULTS-2026-10-13.md)，不可仅以长播通过推断历史故障根因或全机型稳定。
+
+### 稳定性复核：直播 CDN 与更新检查
+
+- **C-STAB-LIVE-CDN-01**：`liveStream.test.js` 覆盖完整签名备用地址、同画质/格式、所有 host 均失败时按最早失败顺序轮换、非法 host 不可兜底；旧版新增两项失败，新版 10/10。网络失败历史 60 秒过期，不将解码错误一律当 CDN 错误。
+- **C-STAB-LIVE-STALL-01**：`test-live-loading.mjs` 真实 React + 受控媒体事件，14 项覆盖空缓冲 8 秒内取源、有缓冲 12 秒容错、短卡顿/暂停不重连、失败 host 过期。旧版 8 秒边界失败。该时间仅指重试/赋源，不指电视恢复画面。
+- **C-STAB-UPDATE-01**：`test-update-recovery.mjs` 实际 client 模块 + Luna 边界控制，10 项覆盖正常/Base64/网关/格式错误/连接重置/双源失败/单源和双源悬挂。每路 7 秒逻辑期限、最多两路、客户端 cancel；时钟加速不当作现场网络耗时。旧版 2/9，新版最终 10/10；已加入 verify 默认门禁。
+- 结果与真机尚未验证范围见 [稳定性修复报告](STABILITY-FIXES-2026-10-13.md)。
+
+### 2026-10-14：Links 杜比视界与音轨实播核对
+
+- **C-AUDIO-SOURCE-01**：LG C4 当前安装包、有效会员会话，Linksphotograph《和李现，攀登人生第一座雪山》`BV1SSQLBREVV` / cid `37534502406`，qn126 接口只提供 AAC 65,673 / 108,071 / 189,261 bps，`dash.dolby.audio`、`dash.flac.audio` 均无候选。实际激活视频 `dvh1.08.07`、3840×2160，音频 `mp4a.40.2` / 189,261 bps：已选最高可用音轨，AAC 不表示杜比视界失效。
+- **C-AUDIO-SOURCE-02**：相同电视及会话，对照 `BV1kX4y197P4` / cid `1127214165`，API 提供 `ec-3` / 1,024,203 bps；应用自动选择该音轨与 `dvh1.05.07` / 3996×2160。实际播放 2.333→10.875 秒，视频帧 197→403，音频解码字节 942,080→2,039,808，无媒体错误。正对照证明当前播放器可自动选择并解码 E-AC-3；不证明音响实际输出 Atmos。
+- 结束恢复 Links 视频原进度、播放状态与设置，未部署或修改播放器。接口原始签名、账号字段及用户观看进度不导出。证据：[安全汇总](ux-evidence/2026-10-14-audio-selection/results.json)。短时音轨验证不代替耐久测试，也不代表所有 Links 视频只有 AAC。
+
+
+### 2026-10-14：会员身份与最高可用画质
+
+- **C-MEMBER-01**：新安装及旧默认 1080P 迁移为自动；旧非默认档、新版明确手选 1080P 保留。`qualityPreference.test.js` 同时检查有效/年度/过期/退出会员，以及自动选档的 4K 面板限制与仅提供 1080P 的账号响应。已注册 verify。
+- **C-MEMBER-02**：真实 React/受控接口与解码器验证会员标识、自动请求 qn127 后实际加载最高提供的 qn120、手选 1080P→回到自动；请求顺序必须为 127→80→127，偏好仅成功后写入。旧 HEAD 的 App/storage/PlayerPage 对照 0/2，新版基础路径 2/2；控制解码器不证明硬件兼容。
+- **C-MEMBER-03**：大字号完整档位菜单从自动到最末 360P 遥控可达，焦点与菜单均在屏内。包含该项的扩展夹具 3/3；截图已人工检查。[证据](ux-evidence/2026-10-14-membership/)。
+- 固定画质的真机测试工具同时设置 `qualityMode: manual`，避免继承用户的自动模式而测错档位。音轨的源对照见上节；真机结果完成后单列，不以本地夹具代替。
+
+- **C-MEMBER-TV-01**：`member-test.6` 包指纹匹配后，LG C4 会员与自动画质专项 6/6（含恢复）：Links 自动 4K DV→遥控 1080P→自动 4K DV，跨视频自动 Profile 5 + E-AC-3，实际 readyState=4、尺寸/编码/时间与解码计数核对。首次早于 metadata 的工具误判保留，等待真实媒体就绪后同包通过。[结果](ux-evidence/2026-10-14-membership/tv-results.json)与[说明](MEMBER-EXPERIENCE.md)。

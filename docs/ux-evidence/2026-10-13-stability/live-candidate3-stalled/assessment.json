@@ -1,0 +1,9 @@
+{
+  "status": "FAIL",
+  "rawToolExitCode": 0,
+  "rawToolWeakness": "Only cumulative frames > 0 and stop-function presence were checked; mid-run silence was missed.",
+  "observed": "Frames/events stopped at 216/956 after approximately minute 4, remained unchanged through minute 15. Independent room history was fresh at 15:02:00 and 15:08:12 Asia/Shanghai.",
+  "video": "One automatic reconnect; maximum progress gap 13103 ms. Recovered, not evidence of uninterrupted playback.",
+  "rootCause": "Relay stopped delivery confirmed. No socket-state or protocol diagnostic available in this build; exact onsite cause unproven.",
+  "candidate": "2.3.0 stability-test.3"
+}

@@ -1,0 +1,111 @@
+{
+  "testBuild": "stability-test.2",
+  "status": "passed with explicit skips",
+  "runs": [
+    {
+      "command": "bash tools/verify.sh --no-tv --ux",
+      "startedAt": "2026-10-13T05:56:29.980912+00:00",
+      "endedAt": "2026-10-13T06:00:51.837141+00:00",
+      "exitCode": 0
+    },
+    {
+      "command": "bash tools/verify.sh --sim --no-tv",
+      "startedAt": "2026-10-13T06:01:30.022947+00:00",
+      "endedAt": "2026-10-13T06:04:54.773161+00:00",
+      "exitCode": 0,
+      "isolatedStateDir": "/tmp/bili-stability-final2-state",
+      "accountWrites": false,
+      "simOutput": "/tmp/bili-stability-final2-simulator"
+    }
+  ],
+  "productionDiffSha256": "4ee77925c506f71235761f09b00c7895085811e793d5c4736bb067897de41bf6",
+  "sourceUnchanged": true,
+  "suites": {
+    "bridge-subscriptions": {
+      "pass": 3
+    },
+    "buvid": {
+      "pass": 7
+    },
+    "cdn": {
+      "pass": 7
+    },
+    "danmaku": {
+      "measurement": 2,
+      "pass": 6
+    },
+    "diagnostic-cdn": {
+      "pass": 4
+    },
+    "live-loading": {
+      "pass": 9
+    },
+    "playback-end": {
+      "pass": 26
+    },
+    "player-loading": {
+      "pass": 66
+    },
+    "sdk-subscriptions": {
+      "pass": 6
+    },
+    "service-stress": {
+      "pass": 20
+    },
+    "service-subscriptions": {
+      "pass": 5
+    },
+    "sessions": {
+      "pass": 9
+    },
+    "simulator": {
+      "pass": 54,
+      "skip": 3
+    },
+    "transport": {
+      "pass": 8
+    },
+    "ui": {
+      "pass": 68
+    }
+  },
+  "otherRequiredGates": "All passed; raw verify logs preserve syntax, Node 0.12/8, logic tests, build, real HTTP Range and local probe results. Counts are not aggregated across repeated/shared assertions.",
+  "skips": [
+    {
+      "name": "Full copyrighted Dolby 120 fps corpus",
+      "reason": "BILI_DOLBY_120_CORPUS not supplied; full 35-fragment capture is not in the repository",
+      "count": 1
+    },
+    {
+      "name": "Not logged in",
+      "reason": "like/coin/fav surface skipped — start tools/dev-service.mjs to seed cookies",
+      "count": 1
+    },
+    {
+      "name": "Watch Later skipped",
+      "reason": "needs a logged-in session",
+      "count": 1
+    },
+    {
+      "name": "Follow badges skipped",
+      "reason": "API session is logged out; stored cookies alone do not establish authentication",
+      "count": 1
+    }
+  ],
+  "limitations": [
+    "Anonymous simulator run cannot establish logged-in or premium playback coverage.",
+    "Selected live room returned zero chat-history messages, so this run covers empty-history handling, not real chat delivery.",
+    "Modern Chrome and boundary fixtures cannot replace actual webOS decode, platform subscriptions, hardware performance or long-duration TV evidence.",
+    "No TV access, deployment, release, commit or account write performed by this local regression run."
+  ],
+  "cleanup": {
+    "ownedServicePid": 234,
+    "ownedVitePid": 358,
+    "ownedProcessesExited": true,
+    "port5173Listening": false,
+    "port9528Listening": false,
+    "checkedAt": "2026-10-13T06:05:59.401825+00:00"
+  },
+  "candidateStatus": "superseded by confirmed TV paused native-to-DASH defect; original local results retained",
+  "televisionFollowUp": "../../regression/speed-paused-candidate2-timeline/README.md"
+}

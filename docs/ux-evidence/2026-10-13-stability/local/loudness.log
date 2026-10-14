@@ -1,0 +1,8 @@
+  ✓ LUFS: 997 Hz full-scale mono sine ≈ -3.0 LUFS (BS.1770 reference tone)
+  ✓ LUFS: -20 dB sine reads ≈ -23 LUFS; amplitude ratio maps to dB delta
+  ✓ LUFS: K-weighting attenuates low frequencies (60 Hz reads quieter than 1 kHz)
+  ✓ gating: silence-padded content measures the content, not the silence
+  ✓ gain: attenuate-only, clamped, robust to garbage
+  ✓ gain: owner history ground truth (-9.2 loud / -28.9 quiet coffee reviews)
+  ✓ sidx: synthetic box parses to cumulative offsets
+PASS test-loudness (7 groups)

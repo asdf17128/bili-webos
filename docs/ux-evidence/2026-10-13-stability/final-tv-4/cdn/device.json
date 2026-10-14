@@ -1,0 +1,71 @@
+[
+  {
+    "name": "unreachable primary CDN falls back and starts actual playback",
+    "pass": true
+  },
+  {
+    "name": "unreachable primary CDN is banned",
+    "pass": true,
+    "detail": "upos-sz-mirrorbad.bilivideo.com"
+  },
+  {
+    "name": "automatic routing measures real candidate ranges",
+    "pass": true,
+    "detail": "{\"state\":\"ready\",\"preferred\":\"upos-sz-estgcos.bilivideo.com\",\"candidates\":[{\"host\":\"upos-sz-estgcos.bilivideo.com\",\"ok\":true,\"rateMbps\":16.384,\"ageMs\":16012},{\"host\":\"upos-sz-mirrorcos.bilivideo.com\",\"ok\":true,\"rateMbps\":6.967282392026578,\"ageMs\":14729},{\"host\":\"upos-sz-mirrorcosb.bilivideo.com\",\"ok\":true,\"rateMbps\":6.898526315789473,\"ageMs\":13744},{\"host\":\"upos-sz-mirrorcosov.bilivideo.com\",\"ok\":false,\"rateMbps\":0,\"ageMs\":9245},{\"host\":\"upos-sz-estgoss.bilivideo.com\",\"ok\":true,\"rateMbps\":9.446630630630631,\"ageMs\":7849},{\"host\":\"upos-sz-mirrorhwo1.bilivideo.com\",\"ok\":true,\"rateMbps\":9.279433628318584,\"ageMs\":6951},{\"host\":\"upos-sz-mirroraliov.bilivideo.com\",\"ok\":true,\"rateMbps\":0.57283583720295,\"ageMs\":1117},{\"host\":\"upos-sz-mirrorali.bilivideo.com\",\"ok\":true,\"rateMbps\":14.665398601398602,\"ageMs\":3}]}"
+  },
+  {
+    "name": "automatic selection points to a measured healthy route",
+    "pass": true
+  },
+  {
+    "name": "CDN health persists without media URLs or credentials",
+    "pass": true
+  },
+  {
+    "name": "selected route delivers actual media and playback continues",
+    "pass": true,
+    "detail": "upos-sz-mirrorali.bilivideo.com,upos-sz-mirrorali.bilivideo.com,upos-sz-mirrorali.bilivideo.com,upos-sz-mirrorali.bilivideo.com,upos-sz-mirrorali.bilivideo.com,upos-sz-mirrorali.bilivideo.com,upos-sz-mirrorali.bilivideo.com,upos-sz-mirrorali.bilivideo.com,upos-sz-mirrorali.bilivideo.com,upos-sz-mirrorali.bilivideo.com,upos-sz-mirrorali.bilivideo.com,upos-sz-mirrorali.bilivideo.com,upos-sz-mirrorali.bilivideo.com,upos-sz-mirrorali.bilivideo.com,upos-sz-mirrorali.bilivideo.com,upos-sz-mirrorali.bilivideo.com"
+  },
+  {
+    "name": "diagnostics measure the selected Ali route",
+    "pass": true,
+    "detail": "视频 CDN — ali 0.2s · cn-jsnt-ct-01-11 0.2s · cos 0.4s · cos 0.1s · cosov 5.2s · estgoss 0.2s · hwo1 0.3s"
+  },
+  {
+    "name": "diagnostics report single and concurrent throughput",
+    "pass": true
+  },
+  {
+    "name": "TV QR retains selected route and last playback evidence",
+    "pass": true
+  },
+  {
+    "name": "TV QR reports actual media readiness time",
+    "pass": true
+  },
+  {
+    "name": "TV QR includes measured startup stages and media milestones",
+    "pass": true
+  },
+  {
+    "name": "startup report separates CDN failures from Blob MIME probes",
+    "pass": true,
+    "detail": "net-retry=2: media/http/1001/upos-sz-mirrorbad.bilivideo.comx2"
+  },
+  {
+    "name": "first request host and completed audio/video appends are captured",
+    "pass": true
+  },
+  {
+    "name": "test build is identified in QR",
+    "pass": true
+  },
+  {
+    "name": "startup timing is visible without scanning",
+    "pass": true
+  },
+  {
+    "name": "TV QR body is ASCII and contains no signed media URL",
+    "pass": true
+  }
+]

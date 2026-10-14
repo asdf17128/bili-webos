@@ -1,0 +1,28 @@
+{
+  "startedAt": "2026-10-13T07:08:26.135Z",
+  "requestedMinutes": 60,
+  "expectedSamples": 61,
+  "config": {
+    "sampleVideo": {
+      "bvid": "BV1sapi6qE72",
+      "resumeMode": "none"
+    },
+    "minWidth": 3840,
+    "minHeight": 2160,
+    "codec": "hevc",
+    "minFps": 50
+  },
+  "completedSamples": 1,
+  "limits": [
+    "Progress gaps include JS timer scheduling; >3s intervals require inspection.",
+    "Frame counters are per playback segment and exclude physical panel/audio validation.",
+    "Unavailable counters remain null; this test does not measure GPU/process memory."
+  ],
+  "observationStartedAt": "2026-10-13T07:08:31.518Z",
+  "elapsedMs": 1599,
+  "stopReason": "SIGINT",
+  "finishedAt": "2026-10-13T07:08:42.913Z",
+  "gatesPassed": false,
+  "pass": false,
+  "status": "FAIL"
+}

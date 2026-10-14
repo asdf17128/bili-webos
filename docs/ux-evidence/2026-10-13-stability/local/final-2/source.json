@@ -1,0 +1,43 @@
+{
+  "startedAt": "2026-10-13T05:56:12.950399+00:00",
+  "head": "4eb77e0c14ee04c51ba07739d92dd6bd9a650e73",
+  "productionDiffSha256": "4ee77925c506f71235761f09b00c7895085811e793d5c4736bb067897de41bf6",
+  "productionDiffScope": [
+    "app/src",
+    "service/com.biliwebos.app.service"
+  ],
+  "node": "v25.4.0",
+  "testBuild": "stability-test.2",
+  "runs": [
+    {
+      "command": "bash tools/verify.sh --no-tv --ux",
+      "startedAt": "2026-10-13T05:56:29.980912+00:00",
+      "endedAt": "2026-10-13T06:00:51.837141+00:00",
+      "exitCode": 0
+    },
+    {
+      "command": "bash tools/verify.sh --sim --no-tv",
+      "startedAt": "2026-10-13T06:01:30.022947+00:00",
+      "endedAt": "2026-10-13T06:04:54.773161+00:00",
+      "exitCode": 0,
+      "isolatedStateDir": "/tmp/bili-stability-final2-state",
+      "accountWrites": false,
+      "simOutput": "/tmp/bili-stability-final2-simulator"
+    }
+  ],
+  "productionDiffSha256AfterUx": "4ee77925c506f71235761f09b00c7895085811e793d5c4736bb067897de41bf6",
+  "productionDiffSha256AfterSim": "4ee77925c506f71235761f09b00c7895085811e793d5c4736bb067897de41bf6",
+  "finishedAt": "2026-10-13T06:05:59.401825+00:00",
+  "status": "local gates passed; superseded by candidate2 TV paused native-to-DASH failure",
+  "televisionOperations": false,
+  "accountWrites": false,
+  "cleanup": {
+    "ownedServicePid": 234,
+    "ownedVitePid": 358,
+    "ownedProcessesExited": true,
+    "port5173Listening": false,
+    "port9528Listening": false,
+    "checkedAt": "2026-10-13T06:05:59.401825+00:00"
+  },
+  "televisionFollowUp": "../../regression/speed-paused-candidate2-timeline/"
+}

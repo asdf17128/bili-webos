@@ -1,0 +1,12 @@
+✔ new installs and unmarked legacy default request the full ladder (0.589167ms)
+✔ explicit new 1080p and old nondefault preferences remain manual (0.055125ms)
+✔ automatic highest respects device resolution and offered account tiers (0.187458ms)
+✔ membership uses current active status, type, expiry and login (0.071084ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 65.501042

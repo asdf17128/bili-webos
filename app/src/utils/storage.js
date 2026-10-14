@@ -1,3 +1,4 @@
+import { qualityPreference } from './qualityPreference.js';
 // Persistent storage for auth tokens and settings
 const PREFIX = 'bili_';
 let authGeneration = 0;
@@ -57,7 +58,7 @@ export const storage = {
       danmaku: true,
       // 片尾倒计时自动播下一个 (#27)。关闭后播完只展示推荐列表等手动选。
       autoplayNext: true,
-      quality: 80,
+      quality: 'auto',
       gridCols: 3,
       // Danmaku font scale (#11: the danmaku text was a bit small on 42").
       danmakuScale: 1,
@@ -67,7 +68,8 @@ export const storage = {
       // Auto uses cached spare-buffer probes; named routes keep that mirror first.
       cdnRoute: 'auto',
     };
-    return { ...defaults, ...(this.get('settings') || {}) };
+    const settings = { ...defaults, ...(this.get('settings') || {}) };
+    return { ...settings, quality: qualityPreference(settings) };
   },
 
   setSettings(settings) {

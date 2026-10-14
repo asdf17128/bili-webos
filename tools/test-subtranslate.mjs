@@ -111,6 +111,25 @@ const mkCues = (texts) => texts.map((t, i) => ({ from: i, to: i + 0.9, text: t }
   ok('translate: short/failed/garbage engine response throws (caller falls back)');
 }
 
+// A track can become obsolete while a batch is failing. Cancellation must not
+// be treated as a transient error and retried, nor complete its cache entry.
+{
+  let active = true, calls = 0, rejectBatch, partials = 0;
+  const store = mkStore();
+  const result = translateCues(mkCues(Array.from({ length: 250 }, (_, i) => '取消' + i)), 'en', () => {
+    calls++;
+    return new Promise((resolve, reject) => { rejectBatch = reject; });
+  }, 'cancelled', store, { concurrency: 1, isActive: () => active, onPartial: () => partials++ });
+  assert.equal(calls, 1);
+  active = false;
+  rejectBatch(new Error('late network failure'));
+  await assert.rejects(result, { name: 'AbortError' });
+  assert.equal(calls, 1);
+  assert.equal(partials, 0);
+  assert.equal(store.getItem('cancelled'), null);
+  ok('cancel: late batch failure neither retries nor advances/caches an obsolete track');
+}
+
 // --- LRU bound ---
 {
   const store = mkStore();

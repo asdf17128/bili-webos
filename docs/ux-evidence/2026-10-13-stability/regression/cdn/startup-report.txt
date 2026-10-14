@@ -1,0 +1,10 @@
+app v2.3.0 stability-test.3
+startup ready elapsed=1653ms: engine=179ms attach=103ms view=202ms url=116ms load=489ms
+since-open: request=580ms response=911ms video=1094ms audio=1118ms metadata=1130ms data=1653ms playing=1676ms vappend=1405ms aappend=1305ms
+media: req=9 res=7 slowest=355ms
+dispatch: engine=65ms attach=244ms view=60ms url=359ms load=500ms
+first-host: request=upos-sz-mirrorbad.bilivideo.com response=upos-sz-estgoss.bilivideo.com video=upos-sz-estgcos.bilivideo.com audio=upos-sz-estgoss.bilivideo.com
+buffer: metadata=0ms/r1 aappend=0ms/r1 vappend=4992ms/r1 data=5000ms/r4
+net-retry=2: media/http/1001/upos-sz-mirrorbad.bilivideo.comx2
+format: qn=32 video=avc1.64001E audio=mp4a.40.2
+ua Chrome/120.0.6099.270 TV

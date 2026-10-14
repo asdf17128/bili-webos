@@ -135,13 +135,14 @@ function lunaFetch(url, options) {
     if (options.range) params.range = options.range;
 
     var settled = false, request;
+    const deadlineMs = options.deadlineMs || 20000;
     var timer = setTimeout(function () {
       if (settled) return;
       settled = true;
       try { if (request && request.cancel) request.cancel(); } catch (e) { /* already closed */ }
       logErr('luna-timeout', url.split('?')[0]);
-      reject(new Error('Request timeout (20s)'));
-    }, 20000);
+      reject(new Error('Request timeout (' + (deadlineMs / 1000) + 's)'));
+    }, deadlineMs);
     function fail(err) {
       if (settled) return;
       settled = true; clearTimeout(timer);
@@ -333,7 +334,7 @@ export function castSubscribe(onEvent, onFailure) {
   }
 
   let cancelled = false;
-  window.webOS.service.request(SERVICE_URI, {
+  const request = window.webOS.service.request(SERVICE_URI, {
     method: 'castSubscribe',
     subscribe: true,
     parameters: { subscribe: true },
@@ -345,7 +346,12 @@ export function castSubscribe(onEvent, onFailure) {
     }
   });
 
-  return function () { cancelled = true; };
+  return function () {
+    if (cancelled) return;
+    cancelled = true;
+    // Suppressing callbacks alone leaves the SDK's subscription/bridge alive.
+    try { request?.cancel?.(); } catch (e) { /* already closed */ }
+  };
 }
 
 export async function castAck(payload) {
@@ -436,36 +442,42 @@ export function danmakuSubscribe(params, onDanmaku, onEvent) {
     // stays as a fallback for when only proxy/server.js is running.
     var cancelledBridge = false, stopBridge = null;
     devLunaAvailable().then(function (up) {
-      if (!up || cancelledBridge) return;
-      stopBridge = devLunaSubscribe('danmakuSubscribe', params || {}, function (res) {
-        if (!res) return;
-        if (res.danmaku && onDanmaku) onDanmaku(res.danmaku);
-        if (res.event && onEvent) onEvent(res.event);
-      });
+      if (cancelledBridge) return;
+      if (up) {
+        stopBridge = devLunaSubscribe('danmakuSubscribe', params || {}, function (res) {
+          if (cancelledBridge || !res) return;
+          if (res.danmaku && onDanmaku) onDanmaku(res.danmaku);
+          if (res.event && onEvent) onEvent(res.event);
+        });
+        return;
+      }
+      // Pick a single transport after discovery. Opening the fallback early
+      // lets a late bridge response create a second, unowned subscription.
+      try {
+        var base = storage.getProxyUrl().replace(/^http/, 'ws');
+        var p = params || {};
+        var ws = new WebSocket(base + '/danmaku?roomid=' + encodeURIComponent(p.roomid)
+          + '&token=' + encodeURIComponent(p.token || '')
+          + '&host=' + encodeURIComponent(p.host || ''));
+        ws.onmessage = function (m) {
+          if (cancelledBridge) return;
+          try {
+            var d = JSON.parse(m.data);
+            if (d.danmaku && onDanmaku) onDanmaku(d.danmaku);
+            if (d.event && onEvent) onEvent(d.event);
+          } catch (e) { /* ignore */ }
+        };
+        stopBridge = function () { try { ws.close(); } catch (e) { /* ignore */ } };
+      } catch (e) { /* unavailable fallback */ }
     });
-    if (devLunaUp === true) {
-      return function () { cancelledBridge = true; if (stopBridge) stopBridge(); };
-    }
-    try {
-      var base = storage.getProxyUrl().replace(/^http/, 'ws');
-      var p = params || {};
-      var ws = new WebSocket(base + '/danmaku?roomid=' + encodeURIComponent(p.roomid)
-        + '&token=' + encodeURIComponent(p.token || '')
-        + '&host=' + encodeURIComponent(p.host || ''));
-      ws.onmessage = function (m) {
-        try {
-          var d = JSON.parse(m.data);
-          if (d.danmaku && onDanmaku) onDanmaku(d.danmaku);
-          if (d.event && onEvent) onEvent(d.event);
-        } catch (e) { /* ignore */ }
-      };
-      return function () { try { ws.close(); } catch (e) { /* ignore */ } };
-    } catch (e) {
-      return function () {};
-    }
+    return function () {
+      if (cancelledBridge) return;
+      cancelledBridge = true;
+      if (stopBridge) stopBridge();
+    };
   }
   let cancelled = false;
-  window.webOS.service.request(SERVICE_URI, {
+  const request = window.webOS.service.request(SERVICE_URI, {
     method: 'danmakuSubscribe',
     subscribe: true,
     parameters: params || {},
@@ -477,7 +489,12 @@ export function danmakuSubscribe(params, onDanmaku, onEvent) {
     },
     onFailure: function () {},
   });
-  return function () { cancelled = true; };
+  return function () {
+    if (cancelled) return;
+    cancelled = true;
+    // danmakuStop closes the service relay; cancel releases the SDK request.
+    try { request?.cancel?.(); } catch (e) { /* already closed */ }
+  };
 }
 
 export async function danmakuStop() {
@@ -656,33 +673,48 @@ export function setUpFollow(mid, follow) {
   return biliWrite('/x/relation/modify', { fid: mid, act: follow ? 1 : 2, re_src: 11 });
 }
 
-// Latest released version from GitHub (direct fetch — github API sends CORS *,
-// so it doesn't need the B站 proxy, and no B站 cookies leak to github).
+// Manual/settings update check: release asset first, independent release API
+// once if it fails. The daily asset ping below retains its original semantics.
 export async function getLatestVersion() {
-  // On TV, read the tiny version.json release asset via the service (~20 bytes,
-  // keep-alive, allowlisted) instead of the huge releases/latest API or a flaky
-  // direct file:// fetch. GitHub serves release assets as octet-stream, so the
-  // service returns bodyBase64 (not parsed body) — decode it.
+  const normalize = value => {
+    const version = typeof value === 'string' ? value.replace(/^v/i, '') : '';
+    if (!/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(version)) throw new Error('Invalid release version');
+    return version;
+  };
+  const releaseApi = 'https://api.github.com/repos/asdf17128/bili-webos/releases/latest';
   if (hasLunaService()) {
-    var r = await lunaFetch('https://github.com/asdf17128/bili-webos/releases/latest/download/version.json', {});
-    var txt = (r && r.body) || '';
-    if (!txt && r && r.bodyBase64) { try { txt = atob(r.bodyBase64); } catch (e) { txt = ''; } }
-    try { return String(JSON.parse(txt).version || '').replace(/^v/i, ''); } catch (e) { return ''; }
+    const sources = [
+      ['https://github.com/asdf17128/bili-webos/releases/latest/download/version.json', 'version'],
+      [releaseApi, 'tag_name'],
+    ];
+    for (let i = 0; i < sources.length; i++) {
+      let status = null, category = 'transport';
+      try {
+        const response = await lunaFetch(sources[i][0], { deadlineMs: 7000 });
+        status = response?.status ?? null; category = 'http';
+        if (!response?.returnValue || status !== 200) throw new Error('Update HTTP failure');
+        category = 'encoding';
+        const text = response.body || (response.bodyBase64 ? atob(response.bodyBase64) : '');
+        category = 'json';
+        const body = JSON.parse(text);
+        category = 'version';
+        return normalize(body?.[sources[i][1]]);
+      } catch {
+        // Fixed diagnostics only: no upstream body, signed redirect or account.
+        logErr('update-check', (i === 0 ? 'asset' : 'release-api') + ' status=' + String(status) + ' category=' + category);
+      }
+    }
+    throw new Error('Update sources unavailable');
   }
-  // Dev browser: the GitHub API returns JSON with CORS.
-  var res = await fetch('https://api.github.com/repos/asdf17128/bili-webos/releases/latest', {
-    headers: { 'Accept': 'application/vnd.github+json' },
-  });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  var data = await res.json();
-  return (data.tag_name || '').replace(/^v/i, '');
+  const data = await fetchJsonWithDeadline(releaseApi, { headers: { Accept: 'application/vnd.github+json' } }, 7000);
+  return normalize(data?.tag_name);
 }
 
 // Daily countable version check ("日活 via update requests", owner-approved):
 // fetches the version.json RELEASE ASSET via the Luna service — each fetch
 // bumps the asset's public download_count, which the maintainer reads as a
-// daily-active proxy. No identifier of any kind is sent; the manual check in
-// 设置 uses the API above so it doesn't pollute the count. TV-only (the asset
+// daily-active proxy. No identifier of any kind is sent; manual checks also
+// use this asset first, so its count is an approximate activity measure. TV-only (the asset
 // redirect has no CORS for browsers; dev just skips).
 export async function pingVersionAsset() {
   if (!hasLunaService()) return null;
@@ -737,11 +769,11 @@ export async function getLiveHistory(roomId) {
     { host: 'api.live.bilibili.com' });
 }
 
-export async function getLivePlayback(roomId, qn, preferredFormat) {
+export async function getLivePlayback(roomId, qn, preferredFormat, avoidedHosts) {
   const res = await smartFetch('api.live.bilibili.com',
     '/xlive/web-room/v2/index/getRoomPlayInfo?room_id=' + roomId + '&protocol=0,1&format=0,1,2&codec=0,1,2&platform=web&ptype=8'
       + (qn ? '&qn=' + qn : ''));
-  return selectLivePlayback(res, preferredFormat);
+  return selectLivePlayback(res, preferredFormat, avoidedHosts);
 }
 
 // ============ Search ============

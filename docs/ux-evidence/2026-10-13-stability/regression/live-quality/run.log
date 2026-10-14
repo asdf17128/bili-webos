@@ -1,0 +1,11 @@
+[Environment] Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.270 Safari/537.36 WebAppManager
+
+[Live quality switch and original-quality restore]
+  ✅ Live quality popup opens: 3 options: 原画/蓝光/超清
+  ✅ Selected live quality starts actual playback: 10000 → 400
+  ✅ Original live quality starts playback again: qn=10000
+
+====================================================
+Results: 3 passed, 0 failed, 0 warned
+====================================================
+

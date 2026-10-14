@@ -75,14 +75,22 @@ export function orderRanges(ranges, startIndex) {
 // the source track and relabels; a permanently half-translated track lying
 // under an "(translated)" label is worse than falling back.
 export async function translateCues(cues, tl, translateBatchFn, cacheKey, store, opts) {
-  const { onPartial, startIndex = 0, concurrency = 4 } = opts || {};
+  const { onPartial, startIndex = 0, concurrency = 4, isActive } = opts || {};
+  // Already-issued HTTP calls finish within their own deadline. Stop queuing
+  // more batches/retries and retaining partial state once the track is obsolete.
+  const checkActive = () => {
+    if (isActive && !isActive()) throw Object.assign(new Error('Subtitle translation cancelled'), { name: 'AbortError' });
+  };
+  checkActive();
   const texts = cues.map(c => c.text);
   let out = readCache(store, cacheKey, texts.length);
   if (!out) {
     const slots = new Array(texts.length).fill(null);
     const queue = orderRanges(batchRanges(texts), startIndex);
     const runOne = async ([a, b]) => {
+      checkActive();
       const part = await translateBatchFn(texts.slice(a, b), tl);
+      checkActive();
       if (!Array.isArray(part) || part.length !== b - a) {
         throw new Error('translate misaligned: got ' + (part && part.length) + ' want ' + (b - a));
       }
@@ -106,14 +114,15 @@ export async function translateCues(cues, tl, translateBatchFn, cacheKey, store,
       workers.push((async function work() {
         while (next < queue.length) {
           const range = queue[next++];
-          try { await runOne(range); } catch (e) { failed.push(range); }
+          try { await runOne(range); } catch (e) { checkActive(); failed.push(range); }
         }
       })());
     }
     await Promise.all(workers);
+    checkActive();
     // one sequential retry round for stragglers (transient CDN/engine hiccups)
     for (const range of failed.splice(0)) {
-      try { await runOne(range); } catch (e) { failed.push(range); }
+      try { await runOne(range); } catch (e) { checkActive(); failed.push(range); }
     }
     if (failed.length > 0) throw new Error('translate failed for ' + failed.length + ' batch(es)');
     out = slots;

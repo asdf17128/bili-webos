@@ -1,0 +1,8 @@
+PASS real response envelope and evaluated value
+PASS close rejects pending commands immediately and forbids future sends
+PASS late repeated socket errors never escape or leave pending work
+PASS send callback and synchronous failures reject without a timer leak
+PASS state wait uses its remaining budget even for a hung evaluation
+PASS false state polling respects total deadline and ignores late replies
+PASS malformed events and unrelated responses do not satisfy commands
+PASS explicit disposal drains every pending command

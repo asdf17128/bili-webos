@@ -1,0 +1,488 @@
+{
+  "started": "2026-10-13T06:21:47.694Z",
+  "baseline": true,
+  "node": "v25.4.0",
+  "sourceSha256": "8ad19ce07e40a6cf5af2ea473ed92b3ada90d1f41a740b6798dad241a26ff856",
+  "realDeadlineMs": 10000,
+  "realBackoffMs": 15000,
+  "results": [
+    {
+      "mode": "dns",
+      "starts": [
+        11
+      ],
+      "closes": [
+        {
+          "attempt": 1,
+          "atMs": 10013
+        }
+      ],
+      "bodyErrors": [],
+      "logs": [
+        "[service] buvid fetch failed: Upstream timeout before response headers"
+      ],
+      "attempts": 1,
+      "afterDeadline": {
+        "atMs": 11220,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 1
+      },
+      "final": {
+        "atMs": 11221,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 1
+      },
+      "checks": {
+        "firstAttemptClosed": true,
+        "failureLogged": true,
+        "bodyErrorHandled": true,
+        "badHttpDataRejected": true,
+        "retryScheduled": true,
+        "recoveredAfterBackoff": null,
+        "boundedAttempts": true,
+        "noAccountCredentials": true,
+        "healthyServiceRequest": true
+      },
+      "pass": true
+    },
+    {
+      "mode": "headers",
+      "starts": [
+        13
+      ],
+      "closes": [
+        {
+          "attempt": 1,
+          "atMs": 10015
+        }
+      ],
+      "bodyErrors": [],
+      "logs": [
+        "[service] buvid fetch failed: Upstream timeout before response headers"
+      ],
+      "attempts": 1,
+      "afterDeadline": {
+        "atMs": 11221,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 1
+      },
+      "final": {
+        "atMs": 11225,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 1
+      },
+      "checks": {
+        "firstAttemptClosed": true,
+        "failureLogged": true,
+        "bodyErrorHandled": true,
+        "badHttpDataRejected": true,
+        "retryScheduled": true,
+        "recoveredAfterBackoff": null,
+        "boundedAttempts": true,
+        "noAccountCredentials": true,
+        "healthyServiceRequest": true
+      },
+      "pass": true
+    },
+    {
+      "mode": "truncated",
+      "starts": [
+        14
+      ],
+      "closes": [
+        {
+          "attempt": 1,
+          "atMs": 31
+        }
+      ],
+      "bodyErrors": [
+        {
+          "code": "ECONNRESET",
+          "applicationErrorListeners": 1
+        }
+      ],
+      "logs": [
+        "[service] buvid fetch failed: Upstream response aborted"
+      ],
+      "attempts": 1,
+      "afterDeadline": {
+        "atMs": 11221,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 1
+      },
+      "final": {
+        "atMs": 11227,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 1
+      },
+      "checks": {
+        "firstAttemptClosed": true,
+        "failureLogged": true,
+        "bodyErrorHandled": true,
+        "badHttpDataRejected": true,
+        "retryScheduled": true,
+        "recoveredAfterBackoff": null,
+        "boundedAttempts": true,
+        "noAccountCredentials": true,
+        "healthyServiceRequest": true
+      },
+      "pass": true
+    },
+    {
+      "mode": "body-stall",
+      "starts": [
+        14
+      ],
+      "closes": [
+        {
+          "attempt": 1,
+          "atMs": 10022
+        }
+      ],
+      "bodyErrors": [
+        {
+          "code": "ECONNRESET",
+          "applicationErrorListeners": 1
+        }
+      ],
+      "logs": [
+        "[service] buvid fetch failed: Upstream response aborted"
+      ],
+      "attempts": 1,
+      "afterDeadline": {
+        "atMs": 11221,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 1
+      },
+      "final": {
+        "atMs": 11227,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 1
+      },
+      "checks": {
+        "firstAttemptClosed": true,
+        "failureLogged": true,
+        "bodyErrorHandled": true,
+        "badHttpDataRejected": true,
+        "retryScheduled": true,
+        "recoveredAfterBackoff": null,
+        "boundedAttempts": true,
+        "noAccountCredentials": true,
+        "healthyServiceRequest": true
+      },
+      "pass": true
+    },
+    {
+      "mode": "invalid-json",
+      "starts": [
+        14
+      ],
+      "closes": [
+        {
+          "attempt": 1,
+          "atMs": 20
+        }
+      ],
+      "bodyErrors": [],
+      "logs": [
+        "[service] buvid fetch failed: Invalid fingerprint response"
+      ],
+      "attempts": 1,
+      "afterDeadline": {
+        "atMs": 11221,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 1
+      },
+      "final": {
+        "atMs": 11228,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 1
+      },
+      "checks": {
+        "firstAttemptClosed": true,
+        "failureLogged": true,
+        "bodyErrorHandled": true,
+        "badHttpDataRejected": true,
+        "retryScheduled": true,
+        "recoveredAfterBackoff": null,
+        "boundedAttempts": true,
+        "noAccountCredentials": true,
+        "healthyServiceRequest": true
+      },
+      "pass": true
+    },
+    {
+      "mode": "null-json",
+      "starts": [
+        15
+      ],
+      "closes": [
+        {
+          "attempt": 1,
+          "atMs": 20
+        }
+      ],
+      "bodyErrors": [],
+      "logs": [],
+      "attempts": 1,
+      "afterDeadline": {
+        "atMs": 11221,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 0
+      },
+      "final": {
+        "atMs": 11229,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 0
+      },
+      "checks": {
+        "firstAttemptClosed": true,
+        "failureLogged": false,
+        "bodyErrorHandled": true,
+        "badHttpDataRejected": true,
+        "retryScheduled": false,
+        "recoveredAfterBackoff": null,
+        "boundedAttempts": true,
+        "noAccountCredentials": true,
+        "healthyServiceRequest": true
+      },
+      "pass": false
+    },
+    {
+      "mode": "http503",
+      "starts": [
+        15
+      ],
+      "closes": [
+        {
+          "attempt": 1,
+          "atMs": 20
+        }
+      ],
+      "bodyErrors": [],
+      "logs": [
+        "[service] buvid fetch failed: Fingerprint HTTP 503"
+      ],
+      "attempts": 1,
+      "afterDeadline": {
+        "atMs": 11221,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 1
+      },
+      "final": {
+        "atMs": 11229,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 1
+      },
+      "checks": {
+        "firstAttemptClosed": true,
+        "failureLogged": true,
+        "bodyErrorHandled": true,
+        "badHttpDataRejected": true,
+        "retryScheduled": true,
+        "recoveredAfterBackoff": null,
+        "boundedAttempts": true,
+        "noAccountCredentials": true,
+        "healthyServiceRequest": true
+      },
+      "pass": true
+    },
+    {
+      "mode": "always-invalid",
+      "starts": [
+        16,
+        40,
+        63,
+        86,
+        108,
+        131
+      ],
+      "closes": [
+        {
+          "attempt": 1,
+          "atMs": 20
+        },
+        {
+          "attempt": 2,
+          "atMs": 41
+        },
+        {
+          "attempt": 3,
+          "atMs": 64
+        },
+        {
+          "attempt": 4,
+          "atMs": 86
+        },
+        {
+          "attempt": 5,
+          "atMs": 109
+        },
+        {
+          "attempt": 6,
+          "atMs": 131
+        }
+      ],
+      "bodyErrors": [],
+      "logs": [
+        "[service] buvid fetch failed: Invalid fingerprint response",
+        "[service] buvid fetch failed: Invalid fingerprint response",
+        "[service] buvid fetch failed: Invalid fingerprint response",
+        "[service] buvid fetch failed: Invalid fingerprint response",
+        "[service] buvid fetch failed: Invalid fingerprint response",
+        "[service] buvid fetch failed: Invalid fingerprint response"
+      ],
+      "attempts": 6,
+      "afterDeadline": {
+        "atMs": 11221,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 0
+      },
+      "final": {
+        "atMs": 11230,
+        "outstandingRequests": 0,
+        "sockets": 0,
+        "active": 0,
+        "queued": 0,
+        "idle": 0,
+        "fingerprint": null,
+        "retryTimers": 0
+      },
+      "checks": {
+        "firstAttemptClosed": true,
+        "failureLogged": true,
+        "bodyErrorHandled": true,
+        "badHttpDataRejected": true,
+        "retryScheduled": null,
+        "recoveredAfterBackoff": null,
+        "boundedAttempts": true,
+        "noAccountCredentials": true,
+        "healthyServiceRequest": true
+      },
+      "pass": true
+    }
+  ],
+  "cleanup": [
+    {
+      "requests": 0,
+      "sockets": 0
+    },
+    {
+      "requests": 0,
+      "sockets": 0
+    },
+    {
+      "requests": 0,
+      "sockets": 0
+    },
+    {
+      "requests": 0,
+      "sockets": 0
+    },
+    {
+      "requests": 0,
+      "sockets": 0
+    },
+    {
+      "requests": 0,
+      "sockets": 0
+    },
+    {
+      "requests": 0,
+      "sockets": 0
+    },
+    {
+      "requests": 0,
+      "sockets": 0
+    }
+  ],
+  "finished": "2026-10-13T06:21:58.938Z",
+  "uncaughtErrors": [
+    {
+      "name": "TypeError",
+      "message": "Cannot read properties of null (reading 'code')"
+    }
+  ],
+  "pass": false,
+  "limitations": [
+    "loopback HTTP; no TLS, actual DNS infrastructure, real fingerprint/account, or television involved",
+    "baseline ends at 11.2s and does not wait for backoff; new-source run verifies the real 15s backoff recovery",
+    "always-invalid case alone compresses the five 15s backoffs to 20ms and checks exactly six total attempts",
+    "error observer keeps old unhandled response errors from terminating the harness and records missing production listeners"
+  ]
+}

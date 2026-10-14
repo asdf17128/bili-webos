@@ -64,6 +64,10 @@ export default function LivePlayerPage({ room, onBack }) {
     let everPlayed = false;
     let preferredFormat = 'fmp4';
     let currentFormat = '';
+    let currentHost = '';
+    let failedHosts = [];
+    let sourcePending = false;
+    let gaveUp = false;
     // A live HLS stream fires `ended` on ordinary hiccups (playlist gap, mid-
     // stream discontinuity). Treating that as "this variant is broken" walked
     // the quality ladder down on every hiccup — and rung 2 is the raw FLV,
@@ -98,15 +102,17 @@ export default function LivePlayerPage({ room, onBack }) {
       }
       // B站 live: refetch on every (re)connect — the signed URL expires, so a
       // reconnect with the OLD URL would just fail again.
-      const playback = await getLivePlayback(room.roomid, qnRef.current || undefined, preferredFormat);
+      const playback = await getLivePlayback(room.roomid, qnRef.current || undefined, preferredFormat, failedHosts.filter(x => Date.now() - x.at < 60000).map(x => x.host));
       if (disposed || id !== requestId) return null;
       currentFormat = playback.format;
       setQualities(playback.accept);
       qnLadderRef.current = playback.accept.map(q => q.qn);
       if (playback.qn) { qnRef.current = playback.qn; setCurQn(playback.qn); }
-      note('source-ready', { format: currentFormat, qn: playback.qn });
+
       const proxyBase = mediaProxyBase();
       const parsed = new URL(playback.url);
+      currentHost = parsed.host;
+      note('source-ready', { format: currentFormat, qn: playback.qn, host: currentHost });
       return `${proxyBase}/proxy/${parsed.host}${parsed.pathname}${parsed.search}`;
     }
 
@@ -145,8 +151,9 @@ export default function LivePlayerPage({ room, onBack }) {
     async function connect(reason) {
       if (disposed) return;
       const id = ++requestId;
+      sourcePending = true; gaveUp = false;
       clearTimeout(retryTimer); retryTimer = null;
-      clearTimeout(startupTimer);
+      clearTimeout(startupTimer); startupTimer = null;
       setLoading(true); setLoadError(false);
       try {
         note('connect', { reason, attempt: retries });
@@ -162,16 +169,20 @@ export default function LivePlayerPage({ room, onBack }) {
         if (disposed || id !== requestId) return;
         note('connect-failed', { msg: err?.message });
         scheduleRetry('connect-failed');
+      } finally {
+        if (id === requestId) sourcePending = false;
       }
     }
 
     function scheduleRetry(why) {
       if (disposed || retryTimer != null) return;
-      clearTimeout(startupTimer);
+      clearTimeout(startupTimer); startupTimer = null;
+      sourcePending = false;
       requestId++; // Late API/import results cannot replace a newer attempt.
       // Preserve the full decoder ladder and the existing DLNA variant budget.
       const retryLimit = everPlayed || room.directUrl ? MAX_RETRIES : Math.max(2, qnLadderRef.current.length);
       if (retries >= retryLimit) {
+        gaveUp = true;
         note('gave-up', { after: retries, variant });
         setLoading(false);
         setLoadError(true);
@@ -182,6 +193,11 @@ export default function LivePlayerPage({ room, onBack }) {
           (why === 'startup-timeout' || why === 'format-error')) {
         preferredFormat = 'ts';
         note('format-fallback', { from: 'fmp4', to: 'ts' });
+      }
+      if (!room.directUrl && currentHost && ['network-error', 'media-error', 'stall', 'ended', 'play-rejected', 'startup-timeout'].includes(why)) {
+        failedHosts = failedHosts.filter(x => x.host !== currentHost && Date.now() - x.at < 60000);
+        failedHosts.push({ host: currentHost, at: Date.now() });
+        failedHosts = failedHosts.slice(-6);
       }
       // Only a repeated failure means the VARIANT is wrong; a single hiccup
       // just needs the same stream again (with a freshly resolved URL).
@@ -199,8 +215,10 @@ export default function LivePlayerPage({ room, onBack }) {
     const v = videoRef.current;
     // Honest state + self-healing: a live stream must never just sit black.
     const onPlaying = () => {
-      clearTimeout(startupTimer);
+      clearTimeout(startupTimer); startupTimer = null;
       clearTimeout(retryTimer); retryTimer = null;
+      sourcePending = false; gaveUp = false;
+      lastT = v.currentTime; stuckSince = Date.now();
       everPlayed = true;
       note('playing', { format: currentFormat, qn: qnRef.current });
       retries = 0; // healthy again — future drops get a fresh retry budget
@@ -226,7 +244,7 @@ export default function LivePlayerPage({ room, onBack }) {
           // 不该变成用户的长期偏好。
         }
       }
-      scheduleRetry(e?.code === 4 ? 'format-error' : 'media-error');
+      scheduleRetry(e?.code === 4 ? 'format-error' : e?.code === 3 ? 'decode-error' : e?.code === 2 ? 'network-error' : 'media-error');
     };
     const onWaiting = () => { if (!disposed) setLoading(true); };
     const onEnded = () => { note('ended'); scheduleRetry('ended'); }; // live never "ends" on purpose
@@ -237,23 +255,28 @@ export default function LivePlayerPage({ room, onBack }) {
       v.addEventListener('waiting', onWaiting);
     }
 
-    // Stall watchdog: frozen currentTime while "playing" = silent black screen.
+    // Empty-buffer freezes need prompt recovery. Buffered stalls get a longer
+    // grace period so short decoder/scheduling hiccups do not discard media.
     let lastT = -1;
     let stuckSince = 0;
     const watchdog = setInterval(() => {
-      if (disposed || !v || v.paused || !everPlayed) return;
-      if (Math.abs(v.currentTime - lastT) < 0.05) {
+      if (disposed || !v || !everPlayed || gaveUp || sourcePending || retryTimer != null || startupTimer != null) return;
+      if (v.paused || v.seeking) { lastT = v.currentTime; stuckSince = Date.now(); return; }
+      if (Math.abs(v.currentTime - lastT) >= 0.05) stuckSince = Date.now();
+      else {
+        let ahead = 0;
+        for (let i = 0; i < v.buffered.length; i++) {
+          if (v.currentTime >= v.buffered.start(i) && v.currentTime <= v.buffered.end(i)) ahead = v.buffered.end(i) - v.currentTime;
+        }
         if (!stuckSince) stuckSince = Date.now();
-        else if (Date.now() - stuckSince > 8000) {
-          note('stall', { t: Math.round(v.currentTime) });
-          stuckSince = 0;
+        else if (Date.now() - stuckSince >= (ahead > 1.5 ? 12000 : 6000)) {
+          note('stall', { t: Math.round(v.currentTime), bufferMs: Math.round(ahead * 1000) });
+          stuckSince = Date.now();
           scheduleRetry('stall');
         }
-      } else {
-        stuckSince = 0;
       }
       lastT = v.currentTime;
-    }, 2000);
+    }, 1000);
 
     if (!room.directUrl) storage.addRecentLive(room); // local "recent live" history
     reconnectRef.current = reason => { retries = 0; everPlayed = false; connect(reason); };

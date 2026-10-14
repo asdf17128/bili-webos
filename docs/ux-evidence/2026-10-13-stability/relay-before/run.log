@@ -1,0 +1,98 @@
+FAIL six healthy reconnects restore budget and continue delivery healthy connections exhausted lifetime retry budget
+
+5 !== 6
+
+FAIL handshake deadline terminates hung CONNECTING socket Expected values to be strictly equal:
+
+0 !== 3
+
+FAIL chat and heartbeat cannot replace authentication; auth has a deadline Expected values to be strictly equal:
+
+1 !== 0
+
+FAIL auth rejection is visible and waits sixty seconds before retry Expected values to be strictly equal:
+
+1 !== 3
+
+FAIL quiet room with heartbeat replies remains connected for ten minutes actual state must be observable
++ actual - expected
+
++ 'undefined'
+- 'function'
+
+FAIL half-open heartbeat timeout destroys connection and schedules recovery Expected values to be strictly equal:
+
+1 !== 3
+
+FAIL nineteen-second heartbeat delay is tolerated actual state must be observable
++ actual - expected
+
++ 'undefined'
+- 'function'
+
+FAIL persistent failures use capped backoff with one retry and no permanent stop error and close must not duplicate retry
+
+2 !== 1
+
+FAIL brief authenticated connections do not wash repeated-failure backoff Expected values to be strictly equal:
+
+3 !== 2
+
+FAIL late old socket open/message/error/close cannot touch newer connection Expected values to be strictly equal:
+
+1 !== 0
+
+FAIL stop clears retry immediately and prevents reconnect Expected values to be strictly equal:
+
+1 !== 0
+
+FAIL stop during connect suppresses late auth send and message delivery closed transport
+FAIL stop while connected suppresses late messages and releases all timers Expected values to be strictly equal:
+
+1 !== 0
+
+FAIL async heartbeat send failure and close create exactly one retry Expected values to be strictly equal:
+
+1 !== 3
+
+FAIL async auth send failure and constructor exceptions remain bounded actual state must be observable
++ actual - expected
+
++ 'undefined'
+- 'function'
+
+FAIL malformed authentication does not authorize or throw actual state must be observable
++ actual - expected
+
++ 'undefined'
+- 'function'
+
+FAIL compressed multiple packets and malformed lengths are isolated actual state must be observable
++ actual - expected
+
++ 'undefined'
+- 'function'
+
+FAIL diagnostic snapshot exposes state and counters without credentials or content actual state must be observable
++ actual - expected
+
++ 'undefined'
+- 'function'
+
+FAIL real ws-legacy tls-stall: stop releases transport stop left an owned legacy client socket alive
+
+1 !== 0
+
+FAIL real ws-legacy upgrade-stall: stop releases transport stop left an owned legacy client socket alive
+
+1 !== 0
+
+FAIL real ws-legacy open-no-close-reply: stop releases transport stop left an owned legacy client socket alive
+
+1 !== 0
+
+FAIL real ws-legacy tls-stall: deadline, recovery and stop ten-second handshake timeout must destroy the old client socket
+
+1 !== 0
+
+0/22 passed

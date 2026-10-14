@@ -1,0 +1,72 @@
+{
+  "startedAt": "2026-10-13T07:51:06.902Z",
+  "requestedMinutes": 60,
+  "expectedSamples": 61,
+  "config": {
+    "sampleVideo": {
+      "bvid": "BV1sapi6qE72",
+      "resumeMode": "none"
+    },
+    "minWidth": 3840,
+    "minHeight": 2160,
+    "codec": "hevc",
+    "minFps": 50
+  },
+  "completedSamples": 61,
+  "limits": [
+    "Progress gaps include JS timer scheduling; >3s intervals require inspection.",
+    "Frame counters are per playback segment and exclude physical panel/audio validation.",
+    "Unavailable counters remain null; this test does not measure GPU/process memory."
+  ],
+  "observationStartedAt": "2026-10-13T07:51:11.895Z",
+  "elapsedMs": 3602102,
+  "monitor": {
+    "ends": 1,
+    "longestGap": 1999,
+    "gaps": [],
+    "gapsTruncated": 0,
+    "segments": [
+      {
+        "index": 0,
+        "reason": "start",
+        "startedAtMs": 4,
+        "startMediaTime": 0.96,
+        "decodedDelta": 100488,
+        "droppedDelta": 0,
+        "counterUnavailable": false,
+        "endedAtMs": 2013005,
+        "endMediaTime": 2013.96,
+        "decodedRaw": 100710,
+        "droppedRaw": 0
+      },
+      {
+        "index": 1,
+        "reason": "natural-loop",
+        "startedAtMs": 2014007,
+        "startMediaTime": 0,
+        "decodedDelta": 79630,
+        "droppedDelta": 0,
+        "counterUnavailable": false,
+        "endedAtMs": 3602515,
+        "endMediaTime": 1586.66,
+        "decodedRaw": 180340,
+        "droppedRaw": 0
+      }
+    ],
+    "counterResets": 0,
+    "longTasksSupported": true,
+    "longTasks": 3,
+    "longTaskMs": 172,
+    "maxTaskMs": 60
+  },
+  "gapsRequiringReview": 0,
+  "frameCountersComplete": true,
+  "newDroppedFrames": 0,
+  "newDecodedFrames": 180118,
+  "investigationRequired": [],
+  "finishedAt": "2026-10-13T08:51:14.826Z",
+  "stopReason": null,
+  "gatesPassed": true,
+  "pass": true,
+  "status": "PASS"
+}

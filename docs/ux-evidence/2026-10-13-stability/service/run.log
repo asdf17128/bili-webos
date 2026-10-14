@@ -1,0 +1,21 @@
+PASS positive controls distinguish raw socket failure and incomplete body
+PASS 50 × GET healthy, followed by healthy recovery
+PASS 50 × GET gzip-good, followed by healthy recovery
+PASS 50 × GET reset-once, followed by healthy recovery
+PASS 50 × GET reset-always, followed by healthy recovery
+PASS 50 × POST reset-always, followed by healthy recovery
+PASS 50 × GET http503, followed by healthy recovery
+PASS 50 × GET truncate, followed by healthy recovery
+PASS 50 × GET body-stall, followed by healthy recovery
+PASS 50 × GET header-stall, followed by healthy recovery
+PASS 50 × GET gzip-bad, followed by healthy recovery
+PASS 50 × pending DNS deadline and cancellation
+PASS 50 × cancel active retry then reuse connection pool
+PASS 50 × saturated pool, 12 expirations + 6 cancellations, then recovery
+PASS isolated production service starts without account files or external sockets
+PASS 50 × production proxy header-stall/headers then recovery
+PASS 50 × production proxy body-stall/body then recovery
+PASS 50 × production proxy truncate/error then recovery
+PASS 50 × production proxy reset-always/error then recovery
+PASS all owned upstream requests, server sockets and pool slots are released
+20/20 passed; docs/ux-evidence/2026-10-13-stability/service/results.json

@@ -1,0 +1,82 @@
+[
+  {
+    "name": "active membership badge",
+    "pass": true
+  },
+  {
+    "name": "Links automatic highest supported: 4K Dolby + supplied AAC",
+    "pass": true,
+    "detail": {
+      "t": 3.43675,
+      "width": 3840,
+      "height": 2160,
+      "paused": false,
+      "ready": 4,
+      "frames": 279,
+      "audioBytes": 201038,
+      "videoCodec": "dvh1.08.07",
+      "audioCodec": "mp4a.40.2",
+      "qn": 126,
+      "preference": "auto",
+      "mode": "auto"
+    }
+  },
+  {
+    "name": "remote manual 1080p persists explicitly",
+    "pass": true,
+    "detail": {
+      "t": 8.57525,
+      "width": 1920,
+      "height": 1080,
+      "paused": false,
+      "ready": 4,
+      "frames": 160,
+      "audioBytes": 102697,
+      "videoCodec": "avc1.640032",
+      "audioCodec": "mp4a.40.2",
+      "qn": 80,
+      "preference": 80,
+      "mode": "manual"
+    }
+  },
+  {
+    "name": "remote return to auto restores best available",
+    "pass": true,
+    "detail": {
+      "t": 9.81,
+      "width": 3840,
+      "height": 2160,
+      "paused": false,
+      "ready": 4,
+      "frames": 209,
+      "audioBytes": 133668,
+      "videoCodec": "dvh1.08.07",
+      "audioCodec": "mp4a.40.2",
+      "qn": 126,
+      "preference": "auto",
+      "mode": "auto"
+    }
+  },
+  {
+    "name": "auto persists across videos and retains E-AC-3 audio",
+    "pass": true,
+    "detail": {
+      "t": 11.291666,
+      "width": 3996,
+      "height": 2160,
+      "paused": false,
+      "ready": 4,
+      "frames": 413,
+      "audioBytes": 2093056,
+      "videoCodec": "dvh1.05.07",
+      "audioCodec": "ec-3",
+      "qn": 126,
+      "preference": "auto",
+      "mode": "auto"
+    }
+  },
+  {
+    "name": "restored original viewing session; automatic quality enabled",
+    "pass": true
+  }
+]

@@ -1,0 +1,41 @@
+{
+  "results": [
+    {
+      "name": "valid asset succeeds without a fallback",
+      "pass": true
+    },
+    {
+      "name": "octet-stream asset is decoded",
+      "pass": true
+    },
+    {
+      "name": "HTML gateway response falls back once to independent release API",
+      "pass": true
+    },
+    {
+      "name": "invalid JSON falls back once to independent release API",
+      "pass": true
+    },
+    {
+      "name": "null JSON falls back once to independent release API",
+      "pass": true
+    },
+    {
+      "name": "invalid version falls back once to independent release API",
+      "pass": true
+    },
+    {
+      "name": "transport reset falls back once to independent release API",
+      "pass": true
+    },
+    {
+      "name": "both failed sources reject instead of claiming latest",
+      "pass": true
+    },
+    {
+      "name": "hung source is cancelled; fallback succeeds within bounded configured deadlines",
+      "pass": true
+    }
+  ],
+  "limits": "Luna boundary fixture; deadline values checked with accelerated timer, not real elapsed network time."
+}

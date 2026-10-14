@@ -1,0 +1,79 @@
+[
+  {
+    "name": "real response envelope and evaluated value",
+    "pass": true
+  },
+  {
+    "name": "close rejects pending commands immediately and forbids future sends",
+    "pass": true
+  },
+  {
+    "name": "late repeated socket errors never escape or leave pending work",
+    "pass": true
+  },
+  {
+    "name": "send callback and synchronous failures reject without a timer leak",
+    "pass": true
+  },
+  {
+    "name": "state wait uses its remaining budget even for a hung evaluation",
+    "pass": true
+  },
+  {
+    "name": "false state polling respects total deadline and ignores late replies",
+    "pass": true
+  },
+  {
+    "name": "malformed events and unrelated responses do not satisfy commands",
+    "pass": true
+  },
+  {
+    "name": "explicit disposal drains every pending command",
+    "pass": true
+  },
+  {
+    "name": "inventory: normal complete JSON",
+    "pass": true,
+    "elapsedMs": 8
+  },
+  {
+    "name": "inventory: malformed JSON",
+    "pass": true,
+    "elapsedMs": 1
+  },
+  {
+    "name": "inventory: non-list JSON",
+    "pass": true,
+    "elapsedMs": 1
+  },
+  {
+    "name": "inventory: headers then truncated body",
+    "pass": true,
+    "elapsedMs": 18
+  },
+  {
+    "name": "inventory: no headers reaches absolute deadline",
+    "pass": true,
+    "elapsedMs": 102
+  },
+  {
+    "name": "inventory: active body still reaches absolute deadline",
+    "pass": true,
+    "elapsedMs": 102
+  },
+  {
+    "name": "inventory: connection closes before headers",
+    "pass": true,
+    "elapsedMs": 1
+  },
+  {
+    "name": "inventory: non-success HTTP status",
+    "pass": true,
+    "elapsedMs": 1
+  },
+  {
+    "name": "inventory: all fixture connections closed",
+    "pass": true,
+    "connections": 0
+  }
+]

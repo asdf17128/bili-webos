@@ -1,0 +1,22 @@
+PASS normal cleanup
+PASS mid-test failure cleanup
+PASS recent delivered chat is receiving
+PASS active history proves relay delivery stalled
+PASS quiet history is unverified rather than failed
+PASS empty history is unverified
+PASS history API failure is unverified
+PASS future server time alone does not prove activity
+PASS history advancement during stall works despite clock skew
+PASS delivery recovering during history probe cancels stale verdict
+PASS non-chat events cannot conceal fresh-room chat loss
+PASS no first chat despite active independent room fails
+PASS service connection diagnostics use explicit safe fields
+PASS healthy measured run passes
+PASS quiet or recovered run needs review instead of full pass
+PASS proven stale relay fails
+PASS history boundary success
+PASS history boundary malformed
+PASS history boundary failure
+PASS history boundary throw
+PASS history timeout cancels once and ignores late body
+21/21 passed

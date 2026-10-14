@@ -3,6 +3,7 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
+const baseURL = process.env.LOADING_BASE_URL || 'http://127.0.0.1:5173';
 const output = process.env.LOADING_TEST_OUTPUT || '/tmp/bili-player-loading';
 await mkdir(output, { recursive:true });
 const browser = await chromium.launch();
@@ -10,9 +11,11 @@ const results = [];
 const stub = `class Player {
  static isBrowserSupported(){return true}
  async attach(v){this.video=v}
+ async unload(initializeMediaSource=true){window.__probe.unloads=(window.__probe.unloads||0)+1;window.__probe.unloading=true;if(window.__holdUnload)await new Promise(r=>window.__releaseUnload=r);if(window.__nativeClock){window.__nativeClock.position=0;window.__nativeClock.paused=true}this.video.__fixtureSrc='';Object.defineProperty(this.video,'readyState',{configurable:true,get:()=>0});window.__probe.unloading=false}
  configure(config){window.__probe.configs=(window.__probe.configs||[]).concat(config)} addEventListener(n,f){(this.events||(this.events={}))[n]=f} getNetworkingEngine(){return this.net||(this.net={registerRequestFilter(f){this.request=f},registerResponseFilter(f){this.response=f},addEventListener(n,f){this.retry=f}})}
  getVariantTracks(){return []} retryStreaming(){window.__probe.retries++;return true} getStats(){return {}}
- async load(url,position,mime){window.__probe.loads++;window.__probe.mimes.push(mime);
+ async load(url,position,mime){const stalePausedNative=window.__mode==='native-speed-paused-boundary'&&this.video.__fixtureSrc?.startsWith('http')&&this.video.paused&&this.video.readyState>=1;if(window.__probe.unloading)window.__probe.loadDuringUnload=true;window.__probe.loads++;window.__probe.mimes.push(mime);
+ if(window.__mode==='runtime-media'&&window.__probe.loads===2)await new Promise(resolve=>window.__releasePausedRecovery=resolve);
  if(window.__mode==='quality-restore'&&window.__probe.loads===2)throw Object.assign(new Error('network failed'),{category:1});
  const mpd=await (await fetch(url)).text();window.__probe.mpds.push(mpd);window.__probe.positions.push(position);
  if(window.__mode==='codec-fallback' && /codecs="hvc1/.test(mpd)){this.events.error({detail:{category:3,code:3016,severity:2}});throw Object.assign(new Error('HEVC decode failed'),{category:3});}
@@ -29,9 +32,9 @@ const stub = `class Player {
  this.events?.segmentappended?.({contentType:'video'});
  await new Promise(r=>setTimeout(r,650));
  }
- Object.defineProperty(this.video,'currentTime',{configurable:true,get:()=>1,set:()=>{}});
+ if(window.__mode==='native-speed-paused-boundary'&&window.__nativeClock){window.__nativeClock.position=stalePausedNative?0:position||0;Object.defineProperty(this.video,'currentTime',{configurable:true,get:()=>window.__nativeClock.position,set:value=>window.__nativeClock.position=value});}else Object.defineProperty(this.video,'currentTime',{configurable:true,get:()=>1,set:()=>{}});
  Object.defineProperty(this.video,'duration',{configurable:true,get:()=>100});
- const ready=()=>{Object.defineProperty(this.video,'readyState',{configurable:true,get:()=>4});this.video.dispatchEvent(new Event('loadeddata'));};
+ const ready=()=>{Object.defineProperty(this.video,'readyState',{configurable:true,get:()=>4});this.video.dispatchEvent(new Event('loadeddata'));if(window.__mode==='native-speed-paused-boundary')this.video.dispatchEvent(new Event('loadedmetadata'));};
  if(window.__mode.startsWith('frame-'))window.__releaseFrame=ready;else ready();
  }
  async destroy(){this.reject?.(Object.assign(new Error('load interrupted'),{code:7000}));window.__probe.destroyed++}
@@ -42,8 +45,9 @@ async function run(name, mode, fn, scale) {
  const context=await browser.newContext({viewport:{width:1920,height:1080}});
  await context.addInitScript(({mode,scale})=>{
    delete window.webOS;window.__mode=mode;window.__probe={loads:0,destroyed:0,retries:0,mpds:[],positions:[],mimes:[]};
-   localStorage.setItem('bili_settings',JSON.stringify({language:'zh',uiScale:scale?.ui||1,gridCols:3,subtitle:true,danmaku:true,subtitleScale:scale?.sub||1,danmakuScale:scale?.dm||1}));
-   if(mode.startsWith('layout')||mode.startsWith('follow'))localStorage.setItem('bili_auth',JSON.stringify({SESSDATA:'fixture'}));
+   localStorage.setItem('bili_settings',JSON.stringify({language:mode.startsWith('subtitle-lifecycle')?'en':'zh',uiScale:scale?.ui||1,gridCols:3,subtitle:true,danmaku:!mode.startsWith('subtitle-lifecycle'),subtitleScale:scale?.sub||1,danmakuScale:scale?.dm||1,quality:80,qualityMode:'manual'}));
+   if(mode.startsWith('member-')){const settings=JSON.parse(localStorage.getItem('bili_settings'));delete settings.qualityMode;localStorage.setItem('bili_settings',JSON.stringify(settings));}
+   if(mode.startsWith('member-')||mode.startsWith('layout')||mode.startsWith('follow'))localStorage.setItem('bili_auth',JSON.stringify({SESSDATA:'fixture'}));
    localStorage.setItem('bili_perfopt',JSON.stringify({prefetchPage:false,warmPlayer:false}));
    HTMLMediaElement.prototype.play=function(){if(this.readyState>=2)this.dispatchEvent(new Event('playing'));return Promise.resolve()};
    if (/premium|dolby|codec|resolution/.test(mode)) MediaSource.isTypeSupported=type=>!type.includes('av01');
@@ -53,7 +57,7 @@ async function run(name, mode, fn, scale) {
  await page.route('**/*',async route=>{
   const u=new URL(route.request().url());
   if(u.pathname.includes('shaka-player')) { if(mode==='startup-overlap')await new Promise(r=>setTimeout(r,650));calls.events.push({type:'shaka',at:Date.now()});return route.fulfill({contentType:'application/javascript',body:stub}); }
-  if(u.port==='5173') {
+  if(u.origin===new URL(baseURL).origin) {
     if(mode==='layout-legacy' && /\.css$/.test(u.pathname)) {
       const response=await route.fetch();
       return route.fulfill({response,body:(await response.text()).replace('@supports not (display: grid)','@supports (display: grid)')});
@@ -65,12 +69,16 @@ async function run(name, mode, fn, scale) {
   let data={};
   if(u.pathname.endsWith('/x/relation'))data={attribute:0};
   if(u.pathname.endsWith('/x/relation/modify')) { calls.follow=(calls.follow||0)+1; const form=new URLSearchParams(route.request().postData()); assert.equal(form.get('fid'),'1'); assert.equal(form.get('act'),'1'); }
-  if(u.pathname.endsWith('/nav'))data={wbi_img:{img_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png',sub_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png'}};
+  if(u.pathname.endsWith('/nav'))data={...(mode.startsWith('member-')?{isLogin:true,uname:'Member fixture',mid:1,vipStatus:1,vipType:2}:{}),wbi_img:{img_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png',sub_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png'}};
   if(u.pathname.endsWith('/view')){calls.info++;calls.events.push({type:'view',at:Date.now()});if(mode==='slow-info')await new Promise(r=>setTimeout(r,1200));data={aid:1,cid:2,bvid:'BVtest',pages:mode==='startup-part'?[{cid:2},{cid:3}]:[{cid:2}],title:mode.startsWith('layout')?'日本有钱人的小别墅能有多离谱！超迷你设计成这样就问你敢住吗':'加载回归',owner:{mid:1,name:mode.startsWith('layout')?'11区小豪的故事':'测试'},pubdate:1790323200,stat:{}};}
   if(u.pathname.endsWith('/playurl')){
-    calls.playurl++;calls.events.push({type:'playurl',cid:u.searchParams.get('cid'),at:Date.now()});if(mode.startsWith('startup'))await new Promise(r=>setTimeout(r,500));
-    const qn=mode==='quality-restore'?Number(u.searchParams.get('qn')||80):mode==='resolution-8k'?127:mode==='codec-fallback'?120:mode.startsWith('dolby')?126:80;
+    calls.playurl++;(calls.requestedQualities||(calls.requestedQualities=[])).push(Number(u.searchParams.get('qn')));calls.events.push({type:'playurl',cid:u.searchParams.get('cid'),at:Date.now()});if(mode.startsWith('startup'))await new Promise(r=>setTimeout(r,500));
+    const qn=mode==='quality-restore'||mode.startsWith('native-speed')?Number(u.searchParams.get('qn')||80):mode==='resolution-8k'?127:mode==='codec-fallback'?120:mode.startsWith('dolby')?126:80;
     data={quality:qn,accept_quality:[qn,16],dash:{duration:100,video:[{id:qn,bandwidth:1000,baseUrl:'https://media.bilivideo.com/video',codecs:qn===126?'hvc1.2.4.L156.90':'avc1.640028',width:1920,height:1080,frameRate:mode==='dolby-120'?'120000/1001':mode==='dolby-unknown'?'':'60000/1001',SegmentBase:{Initialization:'0-51',indexRange:'52-70'}}],audio:[]}};
+    if(mode.startsWith('member-')) {
+      const requested=Number(u.searchParams.get('qn'));data.quality=requested===80?80:120;data.accept_quality=mode==='member-tall'?[127,126,125,120,116,112,100,80,74,64,32,16]:[120,80];
+      data.dash.video=[{...data.dash.video[0],id:120,width:3840,height:2160},{...data.dash.video[0],id:80}];
+    }
     if(mode==='dolby-signed-route') {
       data.dash.video[0].baseUrl='https://upos-sz-mirrorcosov.bilivideo.com/upgcxcode/video?upsig=primary';
       data.dash.video[0].backupUrl=['https://upos-sz-mirrorhwo1.bilivideo.com/upgcxcode/native/video?upsig=native%2Bsignature'];
@@ -100,18 +108,212 @@ async function run(name, mode, fn, scale) {
   }
   if(/videoshot|list.so|archive\/related/.test(u.pathname))calls.extras++;
   if(u.pathname.endsWith('/v2')) { calls.meta++;calls.events.push({type:'meta-start',cid:u.searchParams.get('cid'),at:Date.now()});if(mode.startsWith('startup'))await new Promise(r=>setTimeout(r,500));calls.events.push({type:'meta-end',at:Date.now()});if(mode==='startup-meta-error' && calls.meta===1)return route.fulfill({json:{code:-352}});data={last_play_cid:mode==='startup-part'?3:2,last_play_time:12000,subtitle:{subtitles:[{lan:'zh-CN',lan_doc:'中文',subtitle_url:'https://aisubtitle.hdslb.com/test.json'}]}}; }
-  if(u.pathname.endsWith('/test.json'))return route.fulfill({json:{body:[{from:0,to:20,content:'字幕字号验证'}]}});
+  if(u.pathname.endsWith('/test.json')){
+   if(mode==='subtitle-lifecycle-body')await new Promise(r=>calls.releaseSubtitle=r);
+   return route.fulfill({json:{body:mode.startsWith('subtitle-lifecycle')?Array.from({length:800},(_,i)=>({from:i,to:i+.99,content:'稳定字幕 '+i})):[{from:0,to:20,content:'字幕字号验证'}]}});
+  }
+  if(u.pathname.endsWith('/translate_a/t')){
+   const texts=new URLSearchParams(route.request().postData()).getAll('q');
+   if(texts[0]?.startsWith('稳定字幕')){
+    calls.translations=(calls.translations||0)+1;
+    if(mode==='subtitle-lifecycle-batches'&&!calls.translationReleased)await new Promise(r=>(calls.releaseTranslations||(calls.releaseTranslations=[])).push(r));
+   }
+   return route.fulfill({json:texts.map(text=>'EN:'+text)});
+  }
   if(u.pathname.endsWith('/list.so'))return route.fulfill({contentType:'text/xml',body:'<i><d p="1,1,28,16777215,0,0,0,0">弹幕字号验证</d></i>'});
   if(u.pathname.endsWith('/archive/related') && mode.startsWith('layout'))data=Array.from({length:30},(_,i)=>({bvid:'BVrelated'+i,title:'推荐视频 '+i,owner:{name:'测试UP'},duration:553}));
   if(u.pathname.endsWith('/x/v2/reply')) data={page:{count:3},replies:Array.from({length:3},(_,i)=>({rpid:i+1,member:{uname:'测试用户'},content:{message:'评论内容 '+i},like:1}))};
   return route.fulfill({json:{code:0,data}});
  });
- try {await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>!!window.__openVideo);await fn(page,calls);assert.ok((await page.evaluate(()=>window.__probe.mimes)).every(m=>'application/dash+xml'===m),'every generated MPD load, including recovery, supplies DASH MIME');results.push({name,pass:true});console.log('PASS',name);}
+ try {await page.goto(baseURL);await page.waitForFunction(()=>!!window.__openVideo);await fn(page,calls);assert.ok((await page.evaluate(()=>window.__probe.mimes)).every(m=>'application/dash+xml'===m),'every generated MPD load, including recovery, supplies DASH MIME');results.push({name,pass:true});console.log('PASS',name);}
  catch(e){results.push({name,pass:false,error:e.message});console.log('FAIL',name,e.message.split('\n')[0]);await page.screenshot({path:`${output}/failure-${results.length}.png`});}
  finally{await context.close();}
 }
 const report=page=>page.evaluate(async()=>{const url=performance.getEntriesByType('resource').find(e=>new URL(e.name).pathname==='/src/player/playbackHealth.js').name;return (await import(url)).getPlaybackReport()});
 const open=page=>page.evaluate(()=>window.__openVideo({bvid:'BVtest',resumeMode:'none'}));
+for(const stage of ['body','batches','success'])await run('subtitle lifecycle cancels obsolete translation: '+stage,'subtitle-lifecycle-'+stage,async(page,calls)=>{
+ await open(page);await page.waitForFunction(()=>window.__probe.loads===1);
+ const deadline=Date.now()+5000;
+ if(stage==='body'){
+  while(!calls.releaseSubtitle&&Date.now()<deadline)await page.waitForTimeout(20);
+  assert.equal(typeof calls.releaseSubtitle,'function','subtitle body request is actually held');
+  await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('video'));
+  calls.releaseSubtitle();await page.waitForTimeout(400);
+  assert.equal(calls.translations||0,0,'late body must not start translation after exit');
+ }else if(stage==='batches'){
+  while((calls.releaseTranslations?.length||0)<4&&Date.now()<deadline)await page.waitForTimeout(20);
+  assert.equal(calls.translations,4,'initial four workers reached the real translation API');
+  await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('video'));
+  calls.translationReleased=true;calls.releaseTranslations.forEach(r=>r());await page.waitForTimeout(400);
+  assert.equal(calls.translations,4,'exit must not schedule the remaining four batches');
+  assert.equal(await page.evaluate(()=>localStorage.getItem('bili_subtr:2:en')),null,'cancelled track must not write a complete cache');
+ }else{
+  await page.waitForFunction(()=>document.querySelector('.subtitle-text')?.textContent.startsWith('EN:稳定字幕'));
+  assert.equal(calls.translations,8);assert.ok(await page.evaluate(()=>localStorage.getItem('bili_subtr:2:en')));
+ }
+});
+async function nativeFixture(page) {
+ await open(page);await page.waitForFunction(()=>window.__probe.mpds.length===1);
+ await page.evaluate(()=>{
+  window.__probe.nativeSources=[];window.__probe.rateCalls=[];window.__speedPending=[];window.__speedFailures=[];
+  const source=Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype,'src');
+  Object.defineProperty(HTMLMediaElement.prototype,'src',{configurable:true,get(){return this.__fixtureSrc||source.get.call(this)},set(value){this.__fixtureSrc=value;window.__probe.nativeSources.push({connected:this.isConnected,value})}});
+  Object.defineProperty(HTMLMediaElement.prototype,'mediaId',{configurable:true,get(){return 'fixture-media'}});
+  window.PalmServiceBridge=function(){};
+  window.webOS={service:{request(uri,opts){
+   let cancelled=false;const deliver=data=>{if(!cancelled)opts.onSuccess?.(data)};
+   if(opts.method==='fetch'){
+    const url=new URL(opts.parameters.url);
+    if(url.searchParams.get('platform')==='html5'){window.__speedFailures.push(()=>deliver({returnValue:true,status:200,body:JSON.stringify({code:-1,message:'fixture html5 unavailable'})}));window.__speedPending.push(()=>deliver({returnValue:true,status:200,body:JSON.stringify({code:0,data:{durl:[{url:'https://media.bilivideo.com/native-'+window.__speedPending.length+'.mp4'}]}})}));}
+    else fetch(url.href).then(r=>r.text()).then(body=>deliver({returnValue:true,status:200,body}));
+   }else{if(opts.method==='setPlayRate')window.__probe.rateCalls.push(opts.parameters.playRate);queueMicrotask(()=>deliver({returnValue:true}));}
+   return {cancel(){cancelled=true}};
+  }}};
+ });
+ await page.keyboard.press('ArrowUp');
+}
+async function chooseSpeed(page,label) {
+ await page.locator('.player-btn').filter({hasText:/倍速|^[0-9.]+x$/}).click();
+ await page.locator('.quality-option').filter({hasText:new RegExp('^'+label.replace('.','\\.')+'$')}).click();
+}
+for(const scenario of ['exit','normal','newer-speed','new-video','quality','exit-unloading','normal-unloading','success']) await run('native speed lifecycle: '+scenario,'native-speed-'+scenario,async page=>{
+ await nativeFixture(page);
+ if(scenario.endsWith('unloading'))await page.evaluate(()=>window.__holdUnload=true);
+ await chooseSpeed(page,'2x');await page.waitForFunction(()=>window.__speedPending.length===1);
+ if(scenario.endsWith('unloading')){await page.evaluate(()=>window.__speedPending[0]());await page.waitForFunction(()=>!!window.__releaseUnload);}
+ if(scenario==='exit'||scenario==='exit-unloading'){
+  await page.keyboard.press('Escape');await page.keyboard.press('Escape');
+  await page.waitForFunction(()=>!document.querySelector('video'));
+ }else if(scenario==='normal'||scenario==='normal-unloading')await chooseSpeed(page,'正常');
+ else if(scenario==='newer-speed'){
+  await chooseSpeed(page,'1.5x');await page.waitForFunction(()=>window.__speedPending.length===2);
+  await page.evaluate(()=>window.__speedPending[1]());await page.waitForFunction(()=>window.__probe.rateCalls.length===1);
+ }else if(scenario==='new-video'){
+  await page.evaluate(()=>window.__openVideo({bvid:'BVnext',resumeMode:'none'}));
+  await page.waitForFunction(()=>window.__probe.destroyed===1&&window.__probe.loads===2);
+ }else if(scenario==='quality'){
+  await page.locator('.player-btn').filter({hasText:'1080P'}).click();
+  await page.locator('.quality-option').filter({hasText:'360P'}).click();
+  await page.waitForFunction(()=>window.__probe.loads===2);
+ }
+ await page.evaluate(unloading=>unloading?window.__releaseUnload():window.__speedPending[0](),scenario.endsWith('unloading'));
+ await page.waitForTimeout(300);
+ const observed=await page.evaluate(()=>({sources:window.__probe.nativeSources,rates:window.__probe.rateCalls,loads:window.__probe.loads,unloads:window.__probe.unloads||0}));
+ if(scenario==='success'){
+  assert.equal(observed.sources.length,1);assert.equal(observed.sources[0].connected,true);assert.deepEqual(observed.rates,[2]);
+  await chooseSpeed(page,'正常');await page.waitForFunction(()=>window.__probe.loads===2);
+ }else if(scenario==='newer-speed'){
+  assert.equal(observed.sources.length,1,'older URL must not replace newer native source');assert.deepEqual(observed.rates,[1.5]);
+ }else{
+  assert.equal(observed.sources.length,0,'cancelled native switch must not assign a media URL: '+JSON.stringify(observed));
+  assert.deepEqual(observed.rates,[]);
+  if(scenario==='normal-unloading')assert.equal(observed.loads,2,'returning to 1x during unload must restore DASH');
+ }
+});
+for(const order of ['before-unload','after-unload','normal','quality','normal-before-metadata'])for(const paused of [false,true])await run('native speed unload recovery: '+order+' paused='+paused,'native-speed-unload-recovery-'+order,async page=>{
+ await nativeFixture(page);
+ await page.evaluate(paused=>{
+  const v=document.querySelector('video');window.__holdUnload=true;
+  window.__nativeClock={position:37,paused,plays:0};
+  Object.defineProperty(v,'currentTime',{configurable:true,get:()=>window.__nativeClock.position,set:value=>window.__nativeClock.position=value});
+  Object.defineProperty(v,'paused',{configurable:true,get:()=>window.__nativeClock.paused});
+  v.play=()=>{window.__nativeClock.paused=false;window.__nativeClock.plays++;return Promise.resolve()};
+ },paused);
+ await chooseSpeed(page,'2x');await page.waitForFunction(()=>window.__speedPending.length===1);
+ await page.evaluate(()=>window.__speedPending[0]());await page.waitForFunction(()=>!!window.__releaseUnload);
+ if(order==='normal-before-metadata'){
+  await page.evaluate(()=>{window.__holdUnload=false;window.__releaseUnload()});await page.waitForFunction(()=>window.__probe.rateCalls.length===1);
+  await chooseSpeed(page,'正常');
+ }else if(order==='normal'||order==='quality'){
+  if(order==='normal')await chooseSpeed(page,'正常');
+  else {await chooseSpeed(page,'正常');await page.keyboard.press('ArrowRight');await page.keyboard.press('Enter');await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');}
+  await page.waitForTimeout(100);assert.equal(await page.evaluate(()=>window.__probe.loads),1,'replacement load waits for old unload');
+  await page.evaluate(()=>{window.__holdUnload=false;window.__releaseUnload()});
+ }else{
+  await chooseSpeed(page,'1.5x');await page.waitForFunction(()=>window.__speedPending.length===2);
+  if(order==='before-unload'){
+   await page.evaluate(()=>window.__speedFailures[1]());await page.waitForTimeout(100);
+   assert.equal(await page.evaluate(()=>window.__probe.loads),1,'failure recovery waits for old unload');
+   await page.evaluate(()=>{window.__holdUnload=false;window.__releaseUnload()});
+  }else{
+   await page.evaluate(()=>{window.__holdUnload=false;window.__releaseUnload()});await page.waitForTimeout(100);
+   await page.evaluate(()=>window.__speedFailures[1]());
+  }
+ }
+ await page.waitForTimeout(400);
+ const observed=await page.evaluate(()=>({loads:window.__probe.loads,positions:window.__probe.positions,loadDuringUnload:window.__probe.loadDuringUnload||false,sources:window.__probe.nativeSources,rates:window.__probe.rateCalls,clock:window.__nativeClock}));
+ assert.equal(observed.loads,2,'latest intent must restore unloaded DASH: '+JSON.stringify(observed));
+ assert.equal(observed.loadDuringUnload,false,'late unload cannot clear replacement DASH');
+ assert.equal(observed.positions[1],37,'restore position captured before unload resets currentTime');
+ assert.equal(observed.clock.paused,paused,'preserve user pause/play intent');
+ if(order!=='normal-before-metadata'){assert.equal(observed.sources.length,0,'stale old native URL must stay discarded');assert.deepEqual(observed.rates,[]);}
+ else {assert.equal(observed.sources.length,1);assert.deepEqual(observed.rates,[2]);}
+});
+await run('native speed unload recovery: newer native supersedes waiting 1x','native-speed-unload-newer-native',async page=>{
+ await nativeFixture(page);await page.evaluate(()=>window.__holdUnload=true);
+ await chooseSpeed(page,'2x');await page.waitForFunction(()=>window.__speedPending.length===1);
+ await page.evaluate(()=>window.__speedPending[0]());await page.waitForFunction(()=>!!window.__releaseUnload);
+ await chooseSpeed(page,'正常');await page.keyboard.press('Enter');await page.keyboard.press('ArrowDown');await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');await page.waitForFunction(()=>window.__speedPending.length===2);
+ await page.evaluate(()=>window.__speedPending[1]());await page.waitForTimeout(50);
+ await page.evaluate(()=>{window.__holdUnload=false;window.__releaseUnload()});await page.waitForTimeout(400);
+ const observed=await page.evaluate(()=>({loads:window.__probe.loads,unloads:window.__probe.unloads,sources:window.__probe.nativeSources,rates:window.__probe.rateCalls}));
+ assert.equal(observed.loads,1,'obsolete waiting 1x must not reload DASH after newer native intent: '+JSON.stringify(observed));
+ assert.equal(observed.unloads,1,'newer native intent reuses one pending unload');
+ assert.equal(observed.sources.length,1);assert.deepEqual(observed.rates,[1.5]);
+ await chooseSpeed(page,'正常');await page.waitForFunction(()=>window.__probe.loads===2);
+});
+// The C4 trace shows native readyState can remain 4 at load() entry, then
+// reset to 0 before new metadata. Model that decoder boundary explicitly;
+// passing startTime alone must not count as a successful paused restore.
+for(const paused of [false,true])await run('native speed restores actual time after metadata paused='+paused,'native-speed-paused-boundary',async page=>{
+ await nativeFixture(page);
+ await page.evaluate(paused=>{
+  const v=document.querySelector('video');window.__nativeClock={position:14.9,paused,plays:0};
+  Object.defineProperty(v,'currentTime',{configurable:true,get:()=>window.__nativeClock.position,set:value=>window.__nativeClock.position=value});
+  Object.defineProperty(v,'paused',{configurable:true,get:()=>window.__nativeClock.paused});
+  v.play=()=>{window.__nativeClock.paused=false;window.__nativeClock.plays++;return Promise.resolve()};
+ },paused);
+ await chooseSpeed(page,'2x');await page.waitForFunction(()=>window.__speedPending.length===1);
+ await page.evaluate(()=>window.__speedPending[0]());await page.waitForFunction(()=>window.__probe.rateCalls.length===1);
+ await page.evaluate(()=>{const v=document.querySelector('video');Object.defineProperty(v,'readyState',{configurable:true,get:()=>4});v.dispatchEvent(new Event('loadedmetadata'));});
+ assert.equal(await page.evaluate(()=>document.querySelector('video').currentTime),14.9,'native metadata applies original position');
+ await chooseSpeed(page,'正常');await page.waitForFunction(()=>window.__probe.loads===2);await page.waitForTimeout(200);
+ const observed=await page.evaluate(()=>({time:document.querySelector('video').currentTime,paused:document.querySelector('video').paused,ready:document.querySelector('video').readyState,positions:window.__probe.positions,unloads:window.__probe.unloads}));
+ assert.equal(observed.time,14.9,'new DASH metadata must retain actual position, not just load startTime: '+JSON.stringify(observed));
+ assert.equal(observed.paused,paused,'native round trip preserves pause/play');
+ assert.equal(observed.ready,4);
+});
+for(const intent of ['exit','newer-native'])await run('native speed explicit detach honors '+intent,'native-speed-paused-boundary',async page=>{
+ await nativeFixture(page);
+ await page.evaluate(()=>{
+  const v=document.querySelector('video');window.__nativeClock={position:14.9,paused:true,plays:0};
+  Object.defineProperty(v,'currentTime',{configurable:true,get:()=>window.__nativeClock.position,set:value=>window.__nativeClock.position=value});
+  Object.defineProperty(v,'paused',{configurable:true,get:()=>window.__nativeClock.paused});
+  v.play=()=>{window.__nativeClock.paused=false;window.__nativeClock.plays++;return Promise.resolve()};
+ });
+ await chooseSpeed(page,'2x');await page.waitForFunction(()=>window.__speedPending.length===1);
+ await page.evaluate(()=>window.__speedPending[0]());await page.waitForFunction(()=>window.__probe.rateCalls.length===1);
+ await page.evaluate(()=>{const v=document.querySelector('video');Object.defineProperty(v,'readyState',{configurable:true,get:()=>4});v.dispatchEvent(new Event('loadedmetadata'));window.__holdUnload=true});
+ await chooseSpeed(page,'正常');await page.waitForFunction(()=>window.__probe.unloads===2&&!!window.__releaseUnload);
+ if(intent==='exit'){
+  await page.keyboard.press('Escape');await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('video'));
+ }else{
+  await page.keyboard.press('Enter');await page.keyboard.press('ArrowDown');await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
+  await page.waitForFunction(()=>window.__speedPending.length===2);
+  await page.evaluate(()=>window.__speedPending[1]());await page.waitForTimeout(50);
+ }
+ await page.evaluate(()=>{window.__holdUnload=false;window.__releaseUnload()});await page.waitForTimeout(200);
+ const observed=await page.evaluate(()=>({loads:window.__probe.loads,unloads:window.__probe.unloads,sources:window.__probe.nativeSources,rates:window.__probe.rateCalls}));
+ assert.equal(observed.loads,1,'obsolete DASH restore must not load after a newer intent: '+JSON.stringify(observed));
+ assert.equal(observed.unloads,2,'newer intent shares the ongoing native detach');
+ if(intent==='exit'){assert.equal(observed.sources.length,1);assert.deepEqual(observed.rates,[2]);}
+ else{
+  assert.equal(observed.sources.length,2);assert.deepEqual(observed.rates,[2,1.5]);
+  await chooseSpeed(page,'正常');await page.waitForFunction(()=>window.__probe.loads===2);await page.waitForTimeout(100);
+  assert.equal(await page.evaluate(()=>document.querySelector('video').currentTime),14.9);
+  assert.equal(await page.evaluate(()=>document.querySelector('video').paused),true);
+ }
+});
 for (const mode of ['layout-legacy','layout-modern']) for(const ui of [1,1.4]) await run('player shelf separates progress, controls and recommendation tabs: '+mode+' scale='+ui,mode,async page=>{
  if(mode==='layout-legacy')await page.addStyleTag({content:'.player-controls,.panel-tab-row {gap:0!important}'});
  await open(page);await page.waitForFunction(()=>window.__probe.mpds.length===1);await page.waitForTimeout(200);
@@ -270,7 +472,14 @@ for (const kind of ['media', 'network']) await run('critical runtime error while
  assert.doesNotMatch(JSON.stringify(errors),/upsig|private-signature/);
  await page.screenshot({path:output+'/runtime-'+kind+'.png'});
  await page.clock.fastForward(8100);
- await page.waitForFunction(()=>window.__probe.loads===2);
+ if(kind==='media'){
+  // Deliberately hold the replacement load before reading its Blob MPD. The
+  // load-call counter alone must never be used as proof of completed recovery.
+  await page.waitForFunction(()=>typeof window.__releasePausedRecovery==='function');
+  assert.equal(await page.evaluate(()=>window.__probe.positions.length),1,'second load is still pending');
+  await page.evaluate(()=>window.__releasePausedRecovery());
+ }
+ await page.waitForFunction(()=>window.__probe.loads===2&&window.__probe.positions.length===2&&!document.querySelector('.player-page .loading'));
  assert.equal(await page.evaluate(()=>window.__probe.positions[1]),47);
  assert.equal(calls.events.filter(x=>x.type==='playurl').pop().cid,'3');
  assert.equal(await page.getByText('重试播放',{exact:true}).count(),0);
@@ -455,5 +664,34 @@ await run('Luna requests time out, cancel their bridge and ignore late success',
  await page.evaluate(()=>window.__late({returnValue:true,newCookies:{shouldNeverBeSaved:true}}));
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('bili_auth')||'{}').shouldNeverBeSaved),undefined);
 });
+await run('member identity displays active annual badge','member-identity',async page=>{
+ await page.waitForFunction(()=>document.querySelector('.membership-badge')?.textContent==='年度大会员');
+ await page.locator('.sidebar-item').filter({hasText:'我的'}).click();
+ await page.waitForFunction(()=>document.querySelectorAll('.membership-badge').length===2);
+ await page.waitForTimeout(250); // let drawer opacity transition finish before visual evidence
+ await page.screenshot({path:output+'/member-identity.png'});
+});
+await run('member default requests highest and supports explicit manual and automatic choices','member-auto',async(page,calls)=>{
+ await open(page);await page.waitForFunction(()=>window.__probe.loads===1&&!document.querySelector('.loading'));
+ assert.equal(calls.requestedQualities[0],127);
+ assert.match(await page.evaluate(()=>window.__lastMpd),/id="120"/);
+ await page.keyboard.press('ArrowUp');await page.locator('.player-btn').filter({hasText:'4K'}).click();
+ assert.equal(await page.locator('.quality-option.active').textContent(),'自动 · 最高可用');
+ await page.locator('.quality-option').filter({hasText:'1080P'}).click();
+ await page.waitForFunction(()=>window.__appStorage.getSettings().quality===80&&window.__appStorage.getSettings().qualityMode==='manual');
+ await page.locator('.player-btn').filter({hasText:'1080P'}).click();
+ await page.locator('.quality-option').filter({hasText:'自动 · 最高可用'}).click();
+ await page.waitForFunction(()=>window.__appStorage.getSettings().quality==='auto');
+ assert.deepEqual(calls.requestedQualities,[127,80,127]);
+ assert.match(await page.evaluate(()=>window.__lastMpd),/id="120"/);
+});
+await run('member full quality ladder scrolls with remote at large UI size','member-tall',async page=>{
+ await open(page);await page.waitForFunction(()=>window.__probe.loads===1&&!document.querySelector('.loading'));
+ await page.keyboard.press('ArrowUp');await page.locator('.player-btn').filter({hasText:'4K'}).click();
+ for(let i=0;i<12;i++)await page.keyboard.press('ArrowDown');
+ const bounds=await page.locator('.quality-popup .focused').evaluate(el=>{const r=el.getBoundingClientRect(),p=el.parentElement.getBoundingClientRect();return {top:r.top,bottom:r.bottom,parentTop:p.top,parentBottom:p.bottom,text:el.textContent}});
+ assert.match(bounds.text,/360P/);assert.ok(bounds.top>=bounds.parentTop&&bounds.bottom<=bounds.parentBottom+1&&bounds.parentTop>=0,JSON.stringify(bounds));
+ await page.screenshot({path:output+'/member-quality-menu.png'});
+},{ui:1.25});
 await writeFile(`${output}/results.json`,JSON.stringify(results,null,2));await browser.close();
 console.log(`${results.filter(r=>r.pass).length}/${results.length} passed`);process.exitCode=results.some(r=>!r.pass)?1:0;

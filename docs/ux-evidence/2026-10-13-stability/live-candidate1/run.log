@@ -1,0 +1,5 @@
+PASS service subscriber diagnostics available at idle {"danmakuSubscribers":0,"danmakuActive":false,"castSubscribers":1}
+FAIL currently active production live room found {"roomId":null,"recommendationCode":0,"candidates":[{"roomId":22142427,"code":null,"liveStatus":null}]}
+FAIL test completed "No current live room available"
+PASS original settings restored 
+PASS all live monitor injection removed {"requestRestored":true,"forcedCancels":0,"cancelFailures":0,"injectionsRemoved":true}

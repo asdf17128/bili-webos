@@ -1,0 +1,3 @@
+PASS critical runtime error while paused: media
+PASS critical runtime error while paused: network
+2/2 passed

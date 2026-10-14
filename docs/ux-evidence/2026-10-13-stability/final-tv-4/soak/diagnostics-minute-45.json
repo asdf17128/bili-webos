@@ -1,0 +1,159 @@
+{
+  "at": "2026-10-13T08:36:45.799Z",
+  "uptime": 4516,
+  "castSubscribers": 1,
+  "danmakuSubscribers": 0,
+  "danmakuActive": false,
+  "recentErrors": [
+    {
+      "t": 1791876315523,
+      "tag": "proxy:d1--cn-gotcha209.bilivideo.com",
+      "detail": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791876724886,
+      "tag": "retry:api.bilibili.com",
+      "detail": "socket hang up"
+    },
+    {
+      "t": 1791877312854,
+      "tag": "body:api.bilibili.com",
+      "detail": "Upstream response aborted"
+    },
+    {
+      "t": 1791877312856,
+      "tag": "res:api.bilibili.com",
+      "detail": "aborted"
+    },
+    {
+      "t": 1791877410715,
+      "tag": "body:api.bilibili.com",
+      "detail": "Upstream response aborted"
+    },
+    {
+      "t": 1791877410715,
+      "tag": "res:api.bilibili.com",
+      "detail": "aborted"
+    },
+    {
+      "t": 1791877514020,
+      "tag": "req:upos-sz-mirrorbad.bilivideo.com",
+      "detail": "getaddrinfo ENOTFOUND upos-sz-mirrorbad.bilivideo.com"
+    },
+    {
+      "t": 1791877514020,
+      "tag": "proxy:upos-sz-mirrorbad.bilivideo.com",
+      "detail": "getaddrinfo ENOTFOUND upos-sz-mirrorbad.bilivideo.com"
+    },
+    {
+      "t": 1791877514058,
+      "tag": "req:upos-sz-mirrorbad.bilivideo.com",
+      "detail": "getaddrinfo ENOTFOUND upos-sz-mirrorbad.bilivideo.com"
+    },
+    {
+      "t": 1791877514058,
+      "tag": "proxy:upos-sz-mirrorbad.bilivideo.com",
+      "detail": "getaddrinfo ENOTFOUND upos-sz-mirrorbad.bilivideo.com"
+    },
+    {
+      "t": 1791877694986,
+      "tag": "req:i0.hdslb.com",
+      "detail": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791877694986,
+      "tag": "proxy:i0.hdslb.com",
+      "detail": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791877710503,
+      "tag": "req:api.live.bilibili.com",
+      "detail": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791877724348,
+      "tag": "req:i2.hdslb.com",
+      "detail": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791877724348,
+      "tag": "proxy:i2.hdslb.com",
+      "detail": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791877726295,
+      "tag": "req:i0.hdslb.com",
+      "detail": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791877726295,
+      "tag": "proxy:i0.hdslb.com",
+      "detail": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791877730313,
+      "tag": "req:api.live.bilibili.com",
+      "detail": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791877763406,
+      "tag": "req:api.live.bilibili.com",
+      "detail": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791877821882,
+      "tag": "req:i0.hdslb.com",
+      "detail": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791877821882,
+      "tag": "proxy:i0.hdslb.com",
+      "detail": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791877840188,
+      "tag": "req:i0.hdslb.com",
+      "detail": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791877840188,
+      "tag": "proxy:i0.hdslb.com",
+      "detail": "Upstream timeout before response headers"
+    },
+    {
+      "t": 1791877931785,
+      "tag": "retry:api.live.bilibili.com",
+      "detail": "socket hang up"
+    },
+    {
+      "t": 1791878532283,
+      "tag": "retry:api.live.bilibili.com",
+      "detail": "socket hang up"
+    },
+    {
+      "t": 1791878892282,
+      "tag": "retry:api.live.bilibili.com",
+      "detail": "socket hang up"
+    },
+    {
+      "t": 1791879192293,
+      "tag": "retry:api.live.bilibili.com",
+      "detail": "socket hang up"
+    },
+    {
+      "t": 1791879432109,
+      "tag": "retry:api.live.bilibili.com",
+      "detail": "socket hang up"
+    },
+    {
+      "t": 1791879972152,
+      "tag": "retry:api.live.bilibili.com",
+      "detail": "socket hang up"
+    },
+    {
+      "t": 1791880512134,
+      "tag": "retry:api.live.bilibili.com",
+      "detail": "socket hang up"
+    }
+  ]
+}

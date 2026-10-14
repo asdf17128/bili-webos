@@ -1,0 +1,3 @@
+PASS 50 real WebSocket castSubscribe close cycles return service to baseline
+PASS 50 real WebSocket danmakuSubscribe close cycles return service to baseline
+PASS closing one bridge connection preserves another subscription

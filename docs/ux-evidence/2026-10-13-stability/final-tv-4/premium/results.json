@@ -1,0 +1,164 @@
+[
+  {
+    "name": "remote focuses the actual quality button",
+    "pass": true
+  },
+  {
+    "name": "remote DV to 4K keeps premium audio, position and paused state",
+    "pass": true,
+    "detail": {
+      "time": 2.166666,
+      "duration": 190,
+      "paused": true,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "hev1.1.6.L153.90",
+      "audio": "ec-3",
+      "frameRate": 24.39,
+      "runtime": {
+        "epoch": 2,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 120
+    }
+  },
+  {
+    "name": "remote focuses the actual quality button",
+    "pass": true
+  },
+  {
+    "name": "remote 4K to Profile 5 restores actual DV at same position",
+    "pass": true,
+    "detail": {
+      "time": 2.166666,
+      "duration": 190,
+      "paused": true,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "dvh1.05.07",
+      "audio": "ec-3",
+      "frameRate": 24,
+      "runtime": {
+        "epoch": 3,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 126
+    }
+  },
+  {
+    "name": "Profile 5 plays after an unbuffered seek",
+    "pass": true,
+    "detail": {
+      "time": 31.5,
+      "duration": 190,
+      "paused": false,
+      "width": 3996,
+      "height": 2160,
+      "ready": 4,
+      "codec": "dvh1.05.07",
+      "audio": "ec-3",
+      "frameRate": 24,
+      "runtime": {
+        "epoch": 3,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 126
+    }
+  },
+  {
+    "name": "audited source uses transformed 60fps DV on hardware",
+    "pass": true,
+    "detail": {
+      "time": 2.333312,
+      "duration": 176,
+      "paused": false,
+      "width": 3840,
+      "height": 2160,
+      "ready": 4,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "frameRate": 60,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 2
+      },
+      "qn": 126
+    }
+  },
+  {
+    "name": "short final transformed fragment decodes after seek",
+    "pass": true,
+    "detail": {
+      "time": 171.266687,
+      "duration": 174.983374,
+      "paused": false,
+      "width": 3840,
+      "height": 2160,
+      "ready": 4,
+      "codec": "dvh1.08.10",
+      "audio": "ec-3",
+      "frameRate": 60,
+      "runtime": {
+        "epoch": 1,
+        "phase": "playing",
+        "indexValidated": true,
+        "fragments": 4
+      },
+      "qn": 126
+    }
+  },
+  {
+    "name": "injected decoder error reloads same-qn HLG preserving audio, position and pause",
+    "pass": true,
+    "detail": {
+      "time": 2.1,
+      "duration": 176,
+      "paused": true,
+      "width": 3840,
+      "height": 2160,
+      "ready": 4,
+      "codec": "hvc1.2.4.L156.90",
+      "audio": "ec-3",
+      "frameRate": 120,
+      "runtime": {
+        "epoch": 2,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 126
+    }
+  },
+  {
+    "name": "real base-layer playback advances after controlled failure",
+    "pass": true,
+    "detail": {
+      "time": 3.775,
+      "duration": 176,
+      "paused": false,
+      "width": 3840,
+      "height": 2160,
+      "ready": 4,
+      "codec": "hvc1.2.4.L156.90",
+      "audio": "ec-3",
+      "frameRate": 120,
+      "runtime": {
+        "epoch": 2,
+        "phase": "off",
+        "indexValidated": false,
+        "fragments": 0
+      },
+      "qn": 126
+    }
+  }
+]

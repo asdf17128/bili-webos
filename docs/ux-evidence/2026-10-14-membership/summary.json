@@ -1,0 +1,28 @@
+{
+  "status": "MEMBERSHIP_FEATURE_VERIFIED",
+  "marker": "2.3.0 member-test.6",
+  "installedOnTv": true,
+  "published": false,
+  "sourceAndInstalledBuildMatch": true,
+  "fullUxExitCode": 0,
+  "fullSimExitCode": 0,
+  "playerCases": {
+    "pass": 73,
+    "fail": 0
+  },
+  "simulator": {
+    "pass": 54,
+    "fail": 0,
+    "skip": 3
+  },
+  "tvMemberChecks": {
+    "pass": 6,
+    "fail": 0
+  },
+  "limitations": [
+    "New package long-duration soak not run.",
+    "No Atmos output or panel Dolby badge certification.",
+    "Anonymous simulator skips account write features.",
+    "Dedicated member content channel not added."
+  ]
+}

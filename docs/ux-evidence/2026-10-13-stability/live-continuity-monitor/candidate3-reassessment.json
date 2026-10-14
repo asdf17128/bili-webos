@@ -1,0 +1,197 @@
+{
+  "kind": "retrospective adjudication, original outputs unchanged",
+  "candidate": "stability-test.3",
+  "sources": [
+    {
+      "path": "../live-candidate3-stalled/results.json",
+      "sha256": "1693ab06c22ef8cf9715dc6765279214bd08fd4fbd35e62490d09bbd762d10b3"
+    },
+    {
+      "path": "../live-candidate3-stalled/live-chat-freshness-probe-1.json",
+      "sha256": "5b543a0f33abb32261967d817b1f3b22164a47a8db4eebaec11acd07f55eb20c"
+    },
+    {
+      "path": "../live-candidate3-stalled/live-chat-freshness-probe.json",
+      "sha256": "2bbb9283932dcd10fa3ca505ac4ac8b490b1b5639fd7ba0ef738b10a560a82e4"
+    }
+  ],
+  "originalTool": {
+    "pass": true,
+    "checks": 45
+  },
+  "boundary": "The old monitor did not record exact lastFrameAt. Use the earlier independent probe time as a conservative upper bound: both probes and intervening minute samples have identical monotonic counts. This is at least six minutes with no new delivery, not an inferred precise last-frame timestamp.",
+  "timeline": [
+    {
+      "minute": 0,
+      "frames": 6,
+      "events": 48,
+      "mediaRetries": 0,
+      "maxGapMs": 2396
+    },
+    {
+      "minute": 1,
+      "frames": 51,
+      "events": 302,
+      "mediaRetries": 0,
+      "maxGapMs": 3064
+    },
+    {
+      "minute": 2,
+      "frames": 90,
+      "events": 494,
+      "mediaRetries": 0,
+      "maxGapMs": 3064
+    },
+    {
+      "minute": 3,
+      "frames": 156,
+      "events": 718,
+      "mediaRetries": 0,
+      "maxGapMs": 3064
+    },
+    {
+      "minute": 4,
+      "frames": 213,
+      "events": 925,
+      "mediaRetries": 0,
+      "maxGapMs": 3064
+    },
+    {
+      "minute": 5,
+      "frames": 216,
+      "events": 956,
+      "mediaRetries": 0,
+      "maxGapMs": 3064
+    },
+    {
+      "minute": 6,
+      "frames": 216,
+      "events": 956,
+      "mediaRetries": 0,
+      "maxGapMs": 3064
+    },
+    {
+      "minute": 7,
+      "frames": 216,
+      "events": 956,
+      "mediaRetries": 0,
+      "maxGapMs": 3064
+    },
+    {
+      "minute": 8,
+      "frames": 216,
+      "events": 956,
+      "mediaRetries": 0,
+      "maxGapMs": 3064
+    },
+    {
+      "minute": 9,
+      "frames": 216,
+      "events": 956,
+      "mediaRetries": 0,
+      "maxGapMs": 3064
+    },
+    {
+      "minute": 10,
+      "frames": 216,
+      "events": 956,
+      "mediaRetries": 1,
+      "maxGapMs": 13103
+    },
+    {
+      "minute": 11,
+      "frames": 216,
+      "events": 956,
+      "mediaRetries": 1,
+      "maxGapMs": 13103
+    },
+    {
+      "minute": 12,
+      "frames": 216,
+      "events": 956,
+      "mediaRetries": 1,
+      "maxGapMs": 13103
+    },
+    {
+      "minute": 13,
+      "frames": 216,
+      "events": 956,
+      "mediaRetries": 1,
+      "maxGapMs": 13103
+    },
+    {
+      "minute": 14,
+      "frames": 216,
+      "events": 956,
+      "mediaRetries": 1,
+      "maxGapMs": 13103
+    },
+    {
+      "minute": 15,
+      "frames": 216,
+      "events": 956,
+      "mediaRetries": 1,
+      "maxGapMs": 13103
+    }
+  ],
+  "independentHistory": [
+    {
+      "observedAtMs": 1791874920030,
+      "code": 0,
+      "count": 10,
+      "timestamps": [
+        1791874912000,
+        1791874912000,
+        1791874913000,
+        1791874915000,
+        1791874916000,
+        1791874917000,
+        1791874918000,
+        1791874918000,
+        1791874919000,
+        1791874920000
+      ],
+      "latestAt": 1791874920000,
+      "frames": 216,
+      "events": 956
+    },
+    {
+      "observedAtMs": 1791875291957,
+      "code": 0,
+      "count": 10,
+      "timestamps": [
+        1791875280000,
+        1791875282000,
+        1791875283000,
+        1791875284000,
+        1791875286000,
+        1791875286000,
+        1791875287000,
+        1791875287000,
+        1791875290000,
+        1791875292000
+      ],
+      "latestAt": 1791875292000,
+      "frames": 216,
+      "events": 956
+    }
+  ],
+  "appliedLastDeliveryUpperBoundMs": 1791874920030,
+  "decision": {
+    "status": "active_room_relay_stale",
+    "failed": true,
+    "verified": false,
+    "frameGapMs": 371927,
+    "eventGapMs": 371927,
+    "historyAgeMs": -43,
+    "historyCount": 10,
+    "evidence": "fresh_chat_after_last_delivery"
+  },
+  "gatesPassed": false,
+  "pass": false,
+  "status": "failed",
+  "additionalReview": {
+    "mediaRetries": 1,
+    "maxPlaybackGapMs": 13103
+  }
+}

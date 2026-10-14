@@ -1,3 +1,5 @@
+import { membership } from './utils/membership';
+import MembershipBadge from './components/MembershipBadge';
 import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { initKeyboardNav, setFocus, onFocusChange, getCurrentFocusId, focusFirstContent, setLastSidebarFocus, isPointerFocus, isHoverDriven, setContentContext, cancelContentFocus, resetContentMemory } from './hooks/useFocus';
 import { castAck, castSubscribe, castGetStatus, getNavInfo, pingVersionAsset, logout } from './api/client';
@@ -141,7 +143,7 @@ function Sidebar({ activePage, onPreview, onSelect, user }) {
             <div className="sidebar-user-avatar">
               {user.face && <img src={thumbUrl(user.face, 4)} alt="" />}
             </div>
-            <div className="sidebar-user-name">{user.uname}</div>
+            <div className="sidebar-user-name"><span className="sidebar-user-label">{user.uname}</span><MembershipBadge membership={user.membership} /></div>
           </>
         ) : (
           <><div className="sidebar-user-avatar"><Icon name="follow" /></div><div className="sidebar-user-login">{t('未登录')}</div></>
@@ -314,8 +316,10 @@ export default function App() {
       const res = await getNavInfo();
       if (generation !== storage.getAuthGeneration()) return;
       if (res?.data?.isLogin) {
-        setUser({ mid: res.data.mid, uname: res.data.uname, face: res.data.face });
+        setUser({ mid: res.data.mid, uname: res.data.uname, face: res.data.face, membership: membership(res.data) });
         setLoggedIn(true);
+      } else if (res?.code === 0 && res?.data?.isLogin === false) {
+        setUser(null); setLoggedIn(false);
       }
     } catch (err) {
       console.error('Nav info error:', err);

@@ -1,0 +1,18 @@
+✔ TS-first API ordering still selects fMP4 with matching original-quality metadata (1.228667ms)
+✔ explicit fallback selects TS without reducing quality (0.079ms)
+✔ rooms missing usable fMP4 AVC keep working through TS (0.056375ms)
+✔ FLV-only and missing HLS URL responses are errors rather than endless loading (0.193708ms)
+✔ failed API response is not mistaken for an empty room (0.049416ms)
+✔ failed live CDN uses the exact signed backup at identical format and quality (0.058459ms)
+✔ all recently failed nodes still allow bounded recovery with fresh API source (0.068542ms)
+✔ network preference never chooses another codec or container (0.0445ms)
+✔ all failed CDN candidates rotate to the least recently failed host (0.053125ms)
+✔ malformed hosts never become the recovery fallback (0.093292ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 67.1125

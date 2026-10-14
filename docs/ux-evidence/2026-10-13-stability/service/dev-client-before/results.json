@@ -1,0 +1,30 @@
+{
+  "sourceSha256": "c43f7daf8216331fa462948710b8d9442d396894e9f12513857eb0d13dc54d67",
+  "at": "2026-10-13T06:22:40.213Z",
+  "results": [
+    {
+      "name": "20 cancellations before successful discovery cannot create late bridge subscriptions",
+      "pass": false,
+      "error": "left 20 active WebSockets after cancellation\n\n20 !== 0\n"
+    },
+    {
+      "name": "successful discovery selects one bridge transport and cleanup suppresses late frames",
+      "pass": false,
+      "error": "proxy and bridge must not both subscribe\n\n2 !== 1\n"
+    },
+    {
+      "name": "unavailable bridge falls back once and cleanup suppresses late proxy frames",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n2 !== 1\n"
+    },
+    {
+      "name": "cancel before failed discovery also suppresses fallback creation",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n1 !== 0\n"
+    }
+  ],
+  "limitations": [
+    "production DEV client logic; discovery and WebSocket events are deterministic fixtures, not a network throughput or native TV test",
+    "module is compiled in memory with write:false; no production build output is touched"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "rawChecks": 145,
+  "rawFailures": 0,
+  "cleanup": "PASS within observed 2-second post-exit windows",
+  "retainedHeapBytes": [
+    5708112,
+    5800312,
+    5852092,
+    5877828,
+    5918456
+  ],
+  "deltaBytes": 210344,
+  "deltaPercent": 3.685,
+  "retainedHeapTrend": "NEEDS_REVIEW: monotonic small growth, source not attributed; below preset budget is not proof of no leak.",
+  "domAfterGC": {
+    "documents": 1,
+    "nodes": 608,
+    "listeners": 210
+  },
+  "focus": [
+    {
+      "label": "before",
+      "p50": 3.1999999955296516,
+      "p95": 4.200000002980232
+    },
+    {
+      "label": "after",
+      "p50": 3.5,
+      "p95": 6
+    }
+  ]
+}

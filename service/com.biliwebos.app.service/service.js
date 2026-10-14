@@ -15,6 +15,7 @@ var os = require('os');
 var childProcess = require('child_process');
 var biliReferer = require('./biliReferer');
 var upstreamRequest = require('./upstreamRequest');
+var decompressResponse = require('./httpBody');
 // The WHATWG URL GLOBAL only exists on Node 10+. webOS 5 runs Node 8, where
 // every `new URL(...)` threw ReferenceError — caught by the surrounding
 // try/catch and turned into "Invalid URL"/400 for EVERY api/proxy call. That
@@ -108,36 +109,39 @@ function serializeCookies(cookies) {
 // overseas (HK) exit: /x/web-interface/popular flips -352 → 0 with these set.
 function ensureBuvid(attempt) {
   if (storedCookies['buvid3']) return;
-  var req = https.request({
+  function fail(err) {
+    console.error('[service] buvid fetch failed:', err.message);
+    logSvcErr('buvid', err.message);
+    // Keep the existing finite startup retry budget. The network may come up
+    // after the service; malformed/truncated bodies also need this recovery.
+    if ((attempt || 0) < 5) setTimeout(function () { ensureBuvid((attempt || 0) + 1); }, 15000);
+  }
+  upstreamRequest(https.request.bind(https), {
     hostname: 'api.bilibili.com', port: 443, path: '/x/frontend/finger/spi', method: 'GET',
     headers: {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       'Referer': 'https://www.bilibili.com/'
     },
-    rejectUnauthorized: false
-  }, function (res) {
-    var chunks = [];
-    res.on('data', function (c) { chunks.push(c); });
-    res.on('end', function () {
-      try {
-        var j = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
-        if (j.code === 0 && j.data && j.data.b_3) {
-          storedCookies['buvid3'] = j.data.b_3;
-          if (j.data.b_4) storedCookies['buvid4'] = j.data.b_4;
-          if (!storedCookies['b_nut']) storedCookies['b_nut'] = String(Math.floor(Date.now() / 1000));
-          saveCookies();
-          console.log('[service] buvid bootstrapped');
-        }
-      } catch (e) { console.error('[service] buvid parse failed:', e.message); }
+    rejectUnauthorized: false,
+    agent: keepAliveAgent
+  }, null, function (err, res) {
+    if (err) { fail(err); return; }
+    decompressResponse(res, function (err, body) {
+      if (err) { fail(err); return; }
+      if (res.statusCode !== 200) { fail(new Error('Fingerprint HTTP ' + res.statusCode)); return; }
+      var j;
+      try { j = JSON.parse(body.toString('utf-8')); }
+      catch (e) { fail(new Error('Invalid fingerprint response')); return; }
+      if (!j || j.code !== 0 || !j.data || typeof j.data.b_3 !== 'string' || !j.data.b_3) {
+        fail(new Error('Fingerprint response has no usable buvid')); return;
+      }
+      storedCookies['buvid3'] = j.data.b_3;
+      if (j.data.b_4) storedCookies['buvid4'] = j.data.b_4;
+      if (!storedCookies['b_nut']) storedCookies['b_nut'] = String(Math.floor(Date.now() / 1000));
+      saveCookies();
+      console.log('[service] buvid bootstrapped');
     });
-  });
-  req.on('error', function (e) {
-    console.error('[service] buvid fetch failed:', e.message);
-    logSvcErr('buvid', e.message);
-    // Retry a few times with backoff — the TV's network may come up after us.
-    if ((attempt || 0) < 5) setTimeout(function () { ensureBuvid((attempt || 0) + 1); }, 15000);
-  });
-  req.end();
+  }, 10000);
 }
 ensureBuvid(0);
 
@@ -229,9 +233,6 @@ function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity,
     callback(null, res);
   }, 10000, function (err) { logSvcErr('retry:' + hostname, err.message); });
 }
-
-// API response reader handles successful completion and truncated bodies.
-var decompressResponse = require('./httpBody');
 
 function getLanIp() {
   var nets = os.networkInterfaces();
@@ -417,6 +418,14 @@ var danmakuSubscribers = [];
 var danmakuStop = null;
 var danmakuRoom = null;
 
+// Luna cancellation can deliver another Message wrapper for the same request.
+// Match its stable token, with identity fallback for local development bridges.
+function removeSubscription(messages, cancelled) {
+  return messages.filter(function (message) {
+    return message !== cancelled && !(cancelled.uniqueToken != null && message.uniqueToken === cancelled.uniqueToken);
+  });
+}
+
 // text = chat line (null for non-danmaku events); evt = typed event object.
 // Both ride the same subscription: `danmaku` keeps the old contract, `event`
 // is additive so older app builds simply ignore it.
@@ -446,6 +455,11 @@ service.register('danmakuSubscribe', function (message) {
     }, broadcastDanmaku);
   }
   message.respond({ returnValue: true, subscribed: true });
+}, function (message) {
+  danmakuSubscribers = removeSubscription(danmakuSubscribers, message);
+  if (danmakuSubscribers.length === 0 && danmakuStop) {
+    danmakuStop(); danmakuStop = null; danmakuRoom = null;
+  }
 });
 
 service.register('danmakuStop', function (message) {
@@ -480,6 +494,7 @@ service.register('ping', function (message) {
 // health, including the recent failure ring (invisible any other way on a
 // user's TV).
 service.register('getDiagnostics', function (message) {
+  var danmakuState = danmakuStop && typeof danmakuStop.getState === 'function' ? danmakuStop.getState() : null;
   message.respond({
     returnValue: true,
     nodeVersion: process.version,
@@ -488,6 +503,10 @@ service.register('getDiagnostics', function (message) {
     loggedIn: !!storedCookies['SESSDATA'],
     cookieKeys: Object.keys(storedCookies),
     danmakuModule: !!danmakuRelay,
+    danmakuSubscribers: danmakuSubscribers.length,
+    danmakuActive: danmakuState ? danmakuState.connected : !!danmakuStop,
+    danmakuState: danmakuState,
+    castSubscribers: castSubscribers.length,
     localProxyPort: LOCAL_PROXY_PORT,
     recentErrors: recentErrors,
   });
@@ -510,6 +529,8 @@ service.register('castSubscribe', function (message) {
     subscribed: false,
     status: castController.getStatus(),
   });
+}, function (message) {
+  castSubscribers = removeSubscription(castSubscribers, message);
 });
 
 service.register('castAck', function (message) {

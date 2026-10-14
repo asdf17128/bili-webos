@@ -1,0 +1,12 @@
+FAIL 50 real WebSocket castSubscribe close cycles return service to baseline retained 50 service messages after 50 WebSocket closes
+
+50 !== 0
+
+FAIL 50 real WebSocket danmakuSubscribe close cycles return service to baseline retained 50 service messages after 50 WebSocket closes
+
+50 !== 0
+
+FAIL closing one bridge connection preserves another subscription Expected values to be strictly equal:
+
+2 !== 1
+

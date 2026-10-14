@@ -1,0 +1,14 @@
+{
+  "pass": true,
+  "scope": "Exact TV monitor function exercised offline; no television connection",
+  "checks": [
+    "live HLS initial time is not counted as progress",
+    "actual subsequent time advance counted",
+    "subscription ACK/frame/native dimensions counted",
+    "SDK cancel and relay stop recorded independently",
+    "post-exit DOM remains empty",
+    "token/chat bodies excluded from export",
+    "injection/event/timer/observer restoration",
+    "abandoned test subscriptions cleaned without being marked product cancellation"
+  ]
+}

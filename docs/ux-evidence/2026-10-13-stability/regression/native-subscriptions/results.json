@@ -1,0 +1,145 @@
+{
+  "started": "2026-10-13T06:27:19.751Z",
+  "scope": "Real SDK cast subscription, LS2 cancellation, production service counters; no cast commands",
+  "checks": [
+    {
+      "name": "20 actual native subscriptions cancel back to the service baseline",
+      "pass": true
+    }
+  ],
+  "result": {
+    "before": {
+      "cast": 1,
+      "danmaku": 0,
+      "active": false
+    },
+    "rows": [
+      {
+        "cycle": 1,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 2,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 3,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 4,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 5,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 6,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 7,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 8,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 9,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 10,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 11,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 12,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 13,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 14,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 15,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 16,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 17,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 18,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 19,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      },
+      {
+        "cycle": 20,
+        "during": 2,
+        "after": 1,
+        "pass": true
+      }
+    ],
+    "after": {
+      "cast": 1,
+      "danmaku": 0,
+      "active": false
+    }
+  },
+  "finished": "2026-10-13T06:27:20.608Z"
+}

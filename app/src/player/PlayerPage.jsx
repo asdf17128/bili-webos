@@ -1,3 +1,4 @@
+import { requestedQuality } from '../utils/qualityPreference';
 import Icon from '../components/Icon';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getLibraryPage, getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies, getReplyReplies, tripleVideo, likeVideo, coinVideo, favVideo, getFavFoldersFor, getVideoRelation, getHtml5PlayUrl, mediaProxyBase, addToView, delToView } from '../api/client';
@@ -118,6 +119,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   const [showControls, setShowControls] = useState(false);
   const [qualities, setQualities] = useState([]);
   const [currentQuality, setCurrentQuality] = useState(80);
+  const [autoQuality, setAutoQuality] = useState(() => storage.getSettings().quality === 'auto');
   const [showQuality, setShowQuality] = useState(false);
   const [showRelated, setShowRelated] = useState(false);
   const [danmakus, setDanmakus] = useState([]);
@@ -309,12 +311,13 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
 
   const selectSubtitle = useCallback((track) => {
     const req = ++subReqRef.current;
+    const isActive = () => mountedRef.current && subReqRef.current === req;
     if (!track) { setSubLan(null); setSubCues(null); return; }
     setSubLan(track.lan);
     setSubCues(null);
     fetchSubBody(track.subtitle_url)
       .then(body => {
-        if (subReqRef.current !== req) return;
+        if (!isActive()) return;
         const cues = parseSubtitleBody(body);
         // MT track: show NOTHING until translated batches land (a Chinese
         // flash before the swap reads as a bug on non-zh UIs — owner report).
@@ -328,18 +331,20 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
           if (startIndex < 0) { startIndex = cues.findIndex(c => c.to > t); if (startIndex < 0) startIndex = 0; }
           translateCues(cues, track.mt, gtxTranslate, `bili_subtr:${cidRef.current || ''}:${track.mt}`, window.localStorage, {
             startIndex,
-            onPartial: pc => { if (subReqRef.current === req) setSubCues(pc); },
+            isActive,
+            onPartial: pc => { if (isActive()) setSubCues(pc); },
           })
-            .then(tc => { if (subReqRef.current === req) setSubCues(tc); })
+            .then(tc => { if (isActive()) setSubCues(tc); })
             .catch(e => {
+              if (!isActive()) return;
               console.warn('[subtitle] MT failed, falling back to source:', e?.message || e);
               // Revert to the source cues + label — the button must not claim
               // a translation that isn't (fully) showing.
-              if (subReqRef.current === req) { setSubLan(track.srcLan); setSubCues(cues); }
+              setSubLan(track.srcLan); setSubCues(cues);
             });
         }
       })
-      .catch(() => { if (subReqRef.current === req) setSubCues(null); });
+      .catch(() => { if (isActive()) setSubCues(null); });
   }, [fetchSubBody]);
 
   const makeMtTrack = useCallback((tracks, loc) => {
@@ -398,16 +403,20 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   // drives the rate over the Luna bus; speed=1 swaps back to DASH.
   // Verified on-device 2026-07-22: 1.25/1.5/2.0 all play at true rate.
   const nativeModeRef = useRef(false);
+  const speedGenerationRef = useRef(0);
+  const nativeSwitchRef = useRef(null);
+  const nativeUnloadRef = useRef(null);
   const onWebOS = typeof window !== 'undefined' && !!(window.PalmServiceBridge && window.webOS && window.webOS.service);
 
-  const lunaSetPlayRate = useCallback(async (rate) => {
-    if (!onWebOS) return false;
+  const lunaSetPlayRate = useCallback(async (rate, isActive = () => mountedRef.current) => {
+    if (!onWebOS || !isActive()) return false;
     const v = videoRef.current;
     if (!v) return false;
     // mediaId populates shortly after the native pipeline spins up.
     let id = v.mediaId;
     for (let i = 0; i < 20 && !id; i++) {
       await new Promise(r => setTimeout(r, 250));
+      if (!isActive() || videoRef.current !== v) return false;
       id = v.mediaId;
     }
     if (!id) return false;
@@ -423,27 +432,48 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     });
   }, [onWebOS]);
 
-  const enterNativeSpeed = useCallback(async (s) => {
+  const enterNativeSpeed = useCallback(async (s, generation) => {
     const v = videoRef.current;
     if (!v || !cidRef.current) return false;
+    const player = shakaRef.current;
+    const isActive = () => mountedRef.current && generation === speedGenerationRef.current && videoRef.current === v;
+    nativeSwitchRef.current = generation;
     try {
       const res = await getHtml5PlayUrl(video, cidRef.current);
+      if (!isActive()) return null;
       const durl = res?.data?.durl && res.data.durl[0] && res.data.durl[0].url;
       if (!durl) throw new Error('no durl (html5 playurl)');
-      const pos = v.currentTime || 0;
-      try { await shakaRef.current?.unload(); } catch (e) { /* ignore */ }
+      // All speed intents during one DASH unload share its original playback
+      // position/state. Reading currentTime after unload would lose that state.
+      let transition = nativeUnloadRef.current;
+      if (!transition) {
+        transition = { pos: v.currentTime || 0, wasPaused: v.paused, promise: null };
+        nativeUnloadRef.current = transition;
+        transition.promise = Promise.resolve().then(() => player?.unload()).catch(() => {});
+      }
+      // Reusing an unload still supersedes any intervening 1x/quality intent.
+      streamGenerationRef.current++;
       nativeModeRef.current = true;
+      await transition.promise;
+      if (!isActive()) return null;
       v.src = proxyImgRaw(durl);
-      pendingSeekRef.current = pos > 1 ? pos : null; // flushed on loadedmetadata
-      const p = v.play();
-      if (p && p.catch) p.catch(() => {});
-      const ok = await lunaSetPlayRate(s);
+      pendingSeekRef.current = transition.pos > 1 ? transition.pos : null; // flushed on loadedmetadata
+      transition.attached = true;
+      if (!transition.wasPaused) {
+        const p = v.play();
+        if (p && p.catch) p.catch(() => {});
+      }
+      setLoading(false); setBuffering(false);
+      const ok = await lunaSetPlayRate(s, isActive);
+      if (!isActive()) return null;
       if (!ok) console.warn('[speed] setPlayRate declined');
       return true;
     } catch (e) {
+      if (!isActive()) return null;
       console.warn('[speed] native switch failed:', e?.message || e);
-      nativeModeRef.current = false;
       return false;
+    } finally {
+      if (nativeSwitchRef.current === generation) nativeSwitchRef.current = null;
     }
   }, [video, lunaSetPlayRate]);
 
@@ -770,7 +800,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         // cid. Rejections are handled here so cancellation never leaks one.
         if (cid) {
           initialCid = cid;
-          initialPlay = trace.measure('url', () => getPlayUrl(video, cid, storage.getSettings().quality || 80))
+          initialPlay = trace.measure('url', () => getPlayUrl(video, cid, requestedQuality(storage.getSettings().quality)))
             .then(value => ({ value }), error => ({ error }));
         }
         // 续播: casual opens (resumeMode 'auto', see playIntent.js) resume at the
@@ -891,12 +921,12 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
             if (isBangumi) {
               // Request the full ladder so HDR/4K reps are present; pick the
               // top rep by default, or the forced fallback quality.
-              const res = await activeResult(trace.measure('url', () => getBangumiPlayUrl({ epid, cid }, 127)));
+              const res = await activeResult(trace.measure('url', () => getBangumiPlayUrl({ epid, cid }, fallbackQn || requestedQuality(settings.quality))));
               meta = res?.result || res?.data;
               dash = meta?.dash;
               if (!dash) throw new Error('No DASH stream (bangumi — region/VIP locked?)');
               wantQn = fallbackQn != null ? fallbackQn
-                : (Math.max.apply(null, (dash.video || []).map(v => v.id || 0)) || undefined);
+                : (settings.quality === 'auto' ? undefined : settings.quality);
             } else {
               // Pass the whole `video` so a cast-initiated, aid-only payload
               // still resolves via getPlayUrl's object overload.
@@ -907,7 +937,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
                 if (result.error) throw result.error;
                 res = result.value;
               } else {
-                res = await activeResult(trace.measure('url', () => getPlayUrl(video, cid, fallbackQn || settings.quality || 80)));
+                res = await activeResult(trace.measure('url', () => getPlayUrl(video, cid, fallbackQn || requestedQuality(settings.quality))));
               }
               initialPlay = null;
               mark('po-playurl', perfNow() - _tPu);
@@ -927,11 +957,9 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
               meta = res?.data;
               dash = meta?.dash;
               if (!dash) throw new Error('No DASH stream in playurl (DRM/bangumi?)');
-              // Default to the quality id B站 actually served (meta.quality), NOT
-              // the highest bitrate. HDR=125 / Dolby Vision=126 reps are usually
-              // lower bitrate than an SDR 4K rep, so picking by bitrate selected
-              // SDR and left HDR unlit until the user manually switched (#11).
-              wantQn = fallbackQn != null ? fallbackQn : (meta?.quality || undefined);
+              // Auto asks for the full ladder and selects the highest supported
+              // representation. Manual startup respects the server's served tier.
+              wantQn = fallbackQn != null ? fallbackQn : (settings.quality === 'auto' ? undefined : (meta?.quality || undefined));
             }
 
             // Same-qn codec/audio attempts run inside loadDash. Only descend
@@ -941,7 +969,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
               qualityLadder.push(...Array.from(new Set(dash.video.map(rep => Number(rep.id))))
                 .filter(qn => Number.isFinite(qn) && qn < ceiling).sort((a, b) => b - a));
             }
-            setQualities((meta?.accept_quality || []).map(q => ({ qn: q, label: QUALITY_MAP[q] || `${q}` })));
+            setQualities([{ qn: 'auto', label: t('自动 · 最高可用') }, ...(meta?.accept_quality || []).map(q => ({ qn: q, label: QUALITY_MAP[q] || `${q}` }))]);
             const resumeAt = (resumeProgress > 0 && resumeProgress < (dash.duration || 9999) - 10)
               ? resumeProgress : 0;
             const _tLoad = perfNow();
@@ -1333,8 +1361,12 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         lunaSetPlayRate(speedRef.current).catch(() => {});
       }
     };
-    const handleLoadedMetadata = () => { flushPendingSeek(); applyRate(); };
-    const handleCanPlay = () => { flushPendingSeek(); applyRate(); reassertLunaRate(); };
+    const flushNativeSeek = () => {
+      flushPendingSeek();
+      if (nativeUnloadRef.current?.attached && pendingSeekRef.current == null) nativeUnloadRef.current = null;
+    };
+    const handleLoadedMetadata = () => { flushNativeSeek(); applyRate(); };
+    const handleCanPlay = () => { flushNativeSeek(); applyRate(); reassertLunaRate(); };
     const handleSeeked = () => { reassertLunaRate(); };
 
     const handlePause = () => {
@@ -1453,14 +1485,16 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   // The grid can scroll the entire shelf. Restore the focused row, including
   // wrapped controls at large text sizes, without moving the page behind it.
   useEffect(() => {
-    if (focusArea === 'tabs') {
+    if (focusArea === 'quality' && showQuality) {
+      document.querySelector('.quality-popup .focused')?.scrollIntoView({ block: 'nearest' });
+    } else if (focusArea === 'tabs') {
       const el = document.querySelector('.panel-tab-row');
       if (el) el.scrollIntoView({ block: 'nearest' });
     } else if (showControls && focusArea === 'controls') {
       const el = btnRefs.current[controlsRef.current[focusIdx]];
       if (el) el.scrollIntoView({ block: 'nearest' });
     }
-  }, [focusArea, focusIdx, showControls]);
+  }, [focusArea, focusIdx, showControls, showQuality]);
 
   // ===== Scrub (deferred seek) =====
   const clearScrub = useCallback(() => {
@@ -1761,7 +1795,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       setFocusArea('quality');
       // Open ON the current tier (same as the subtitle/speed panels) — the
       // panel opening at the top made OK-from-muscle-memory switch quality.
-      setFocusIdx(Math.max(0, qualities.findIndex(q => q.qn === currentQuality)));
+      setFocusIdx(Math.max(0, qualities.findIndex(q => q.qn === (autoQuality ? 'auto' : currentQuality))));
       if (controlsTimer.current) clearTimeout(controlsTimer.current);
       return;
     } else if (btn === 'coin') {
@@ -1776,7 +1810,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     // 'like' never routes here: its press/release runs the long-press machinery
     // (keydown/keyup + mousedown/mouseup on the button itself).
     hideControlsLater();
-  }, [subOptions, subLan, subTracks, fetchSubBody, hideControlsLater, doCoin, doFav, doToView, showPlayerToast, anchorFor, qualities, currentQuality, comments, follow.toggle]);
+  }, [subOptions, subLan, subTracks, fetchSubBody, hideControlsLater, doCoin, doFav, doToView, showPlayerToast, anchorFor, qualities, currentQuality, autoQuality, comments, follow.toggle]);
 
   // Load more related videos
   const loadingRelatedRef = useRef(false);
@@ -1959,27 +1993,54 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   }, [comments, video]);
 
   // Change quality
-  const changeQuality = useCallback(async (qn) => {
+  const changeQuality = useCallback(async (qn, persistPreference = true) => {
     const isBangumi = !!(video?.isBangumi || video?.epid || video?.seasonId);
     if ((!video?.bvid && !video?.aid && !isBangumi) || !shakaRef.current) return;
     const player = shakaRef.current;
     const generation = ++streamGenerationRef.current;
+    speedGenerationRef.current++;
+    let transition = nativeUnloadRef.current;
+    const needsDashRestore = nativeModeRef.current || !!transition;
+    if (nativeModeRef.current && (!transition || transition.attached)) {
+      // The MP4 src was set outside Shaka, after its assetUri was cleared.
+      // load() therefore skips its normal unload. Detach that native source
+      // explicitly so the new playhead cannot observe its old metadata/time.
+      transition = {
+        pos: transition ? transition.pos : videoRef.current.currentTime,
+        wasPaused: transition ? transition.wasPaused : videoRef.current.paused,
+        promise: Promise.resolve().then(() => player.unload(false)),
+      };
+      nativeUnloadRef.current = transition;
+    }
+    nativeModeRef.current = false;
+    setCurrentSpeed(1);
     const isActive = () => mountedRef.current && generation === streamGenerationRef.current;
-    const pos = videoRef.current.currentTime;
-    const wasPaused = videoRef.current.paused;
+    const pos = transition ? transition.pos : videoRef.current.currentTime;
+    const wasPaused = transition ? transition.wasPaused : videoRef.current.paused;
     const previous = loadedStreamRef.current;
     let loadStarted = false;
     setLoading(true); setBuffering(false);
     cdnAutoRef.current?.setSource(null);
     try {
+      // A late unload must finish before any replacement DASH load starts.
+      if (transition) {
+        await transition.promise;
+        if (!isActive()) return;
+        if (nativeUnloadRef.current === transition) nativeUnloadRef.current = null;
+      }
+      pendingSeekRef.current = null;
       const cid = video.cid || cidRef.current;
-      const res = isBangumi ? await getBangumiPlayUrl({ epid: video.epid, cid }, qn) : await getPlayUrl(video, cid, qn);
+      const requestQn = requestedQuality(qn);
+      const res = isBangumi ? await getBangumiPlayUrl({ epid: video.epid, cid }, requestQn) : await getPlayUrl(video, cid, requestQn);
       if (!isActive()) return;
       const meta = res?.result || res?.data;
       if (!meta?.dash) throw new Error('No DASH stream');
-      const served = await loadDash(player, meta.dash, qn, pos, isActive, null, { strict: true, onLoad: () => { loadStarted = true; } });
+      const served = await loadDash(player, meta.dash, qn === 'auto' ? undefined : qn, pos, isActive, null, { strict: qn !== 'auto', onLoad: () => { loadStarted = true; } });
       if (!isActive()) return;
-      storage.setSettings({ ...storage.getSettings(), quality: served });
+      if (persistPreference) {
+        storage.setSettings({ ...storage.getSettings(), quality: qn === 'auto' ? 'auto' : served, qualityMode: qn === 'auto' ? 'auto' : 'manual' });
+        setAutoQuality(qn === 'auto');
+      }
       selectBestVariant(player);
       if (!wasPaused) videoRef.current.play();
     } catch (e) {
@@ -1988,7 +2049,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       // A failed decoder load can unload the old stream; restore it at the
       // captured position, including the user's paused state.
       if (previous) cdnAutoRef.current?.setSource(previous.representation);
-      if (previous && loadStarted) {
+      if (previous && (loadStarted || needsDashRestore)) {
         try {
           await loadDash(player, { ...previous.dash, video: [previous.representation] }, previous.quality, pos, isActive, null,
             { strict: true, preferredAudioKind: previous.audioKind });
@@ -2003,6 +2064,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   // 倍速: apply for THIS video only (no persistence). Browser = plain
   // playbackRate; TV = native-pipeline swap (speed≠1) / back to DASH (speed=1).
   const applySpeed = useCallback(async (s) => {
+    const generation = ++speedGenerationRef.current;
+    const isActive = () => mountedRef.current && generation === speedGenerationRef.current;
     setCurrentSpeed(s);
     setShowSpeedPanel(false);
     setFocusArea('controls');
@@ -2014,16 +2077,17 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     }
     if (s === 1) {
       if (nativeModeRef.current) {
-        nativeModeRef.current = false;
-        changeQuality(currentQuality); // captures position, reloads DASH, seeks back
+        changeQuality(currentQuality, false); // waits for unload, then restores DASH and playback state
       }
-    } else if (nativeModeRef.current) {
-      lunaSetPlayRate(s).catch(() => {});
+    } else if (nativeModeRef.current && nativeSwitchRef.current === null) {
+      lunaSetPlayRate(s, isActive).catch(() => {});
     } else {
-      const ok = await enterNativeSpeed(s);
+      const ok = await enterNativeSpeed(s, generation);
+      if (!isActive()) return;
       if (!ok) {
         showPlayerToast(t('倍速切换失败'));
         setCurrentSpeed(1);
+        if (nativeModeRef.current || nativeUnloadRef.current) await changeQuality(currentQuality, false);
       }
     }
   }, [hideControlsLater, onWebOS, changeQuality, currentQuality, lunaSetPlayRate, enterNativeSpeed, showPlayerToast]);
@@ -2889,9 +2953,9 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       )}
 
       {showQuality && (
-        <div className="ctrl-popup" style={popupPos ? { left: popupPos.left, bottom: popupPos.bottom } : { right: 60, bottom: 120, transform: 'none' }}>
+        <div className="ctrl-popup quality-popup" style={popupPos ? { left: popupPos.left, bottom: popupPos.bottom, maxHeight: Math.max(120, 1080 - popupPos.bottom - 24) } : { right: 60, bottom: 120, maxHeight: 936, transform: 'none' }}>
           {qualities.map((q, i) => (
-            <div key={q.qn} className={`quality-option ${focusArea === 'quality' && focusIdx === i ? 'focused' : ''} ${currentQuality === q.qn ? 'active' : ''}`}
+            <div key={q.qn} className={`quality-option ${focusArea === 'quality' && focusIdx === i ? 'focused' : ''} ${(q.qn === 'auto' ? autoQuality : !autoQuality && currentQuality === q.qn) ? 'active' : ''}`}
               onMouseEnter={() => { setFocusArea('quality'); setFocusIdx(i); }}
               onClick={() => { changeQuality(q.qn); setShowQuality(false); setFocusArea('controls'); setFocusIdx(CONTROLS.indexOf('quality')); hideControlsLater(); }}>
               {q.label}{q.qn >= 112 ? <span className="vip-tag">{t('大会员')}</span> : null}

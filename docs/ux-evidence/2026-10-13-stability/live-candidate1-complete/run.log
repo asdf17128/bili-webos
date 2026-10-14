@@ -1,0 +1,39 @@
+PASS service subscriber diagnostics available at idle {"danmakuSubscribers":0,"danmakuActive":false,"castSubscribers":1}
+PASS currently active production live room found {"roomId":1931167176,"recommendationCode":null,"candidates":[{"roomId":1931167176,"code":0,"liveStatus":1}]}
+PASS live open/exit cycle 1: native playback and subscription {"firstPlayingMs":1437,"tokenCode":0,"subscriptionAcks":1,"mediaErrors":[],"video":{"time":0.816,"ready":4,"paused":false,"width":1080,"height":1920,"error":null,"bufferSec":7.184,"totalFrames":0,"decodedFrames":0,"droppedFrames":0}}
+PASS cycle 1: SDK subscription cancelled, relay stopped, no late live DOM {"stopCalls":1,"stopSuccess":1,"stopFailures":0,"postExitSubscribes":0,"subscribes":1,"handleCancelCalls":1,"handleCancelSuccess":1,"handleCancelFailures":0,"postExitVideoSamples":0,"postExitDanmakuSamples":0,"lateFrames":0,"framesAfterStop":0}
+PASS cycle 1: service relay and subscription counts return to baseline {"danmakuSubscribers":0,"danmakuActive":false,"castSubscribers":1}
+PASS live open/exit cycle 2: native playback and subscription {"firstPlayingMs":684,"tokenCode":0,"subscriptionAcks":1,"mediaErrors":[],"video":{"time":1.565,"ready":4,"paused":false,"width":1080,"height":1920,"error":null,"bufferSec":9.435,"totalFrames":0,"decodedFrames":0,"droppedFrames":0}}
+PASS cycle 2: SDK subscription cancelled, relay stopped, no late live DOM {"stopCalls":1,"stopSuccess":1,"stopFailures":0,"postExitSubscribes":0,"subscribes":1,"handleCancelCalls":1,"handleCancelSuccess":1,"handleCancelFailures":0,"postExitVideoSamples":0,"postExitDanmakuSamples":0,"lateFrames":0,"framesAfterStop":0}
+PASS cycle 2: service relay and subscription counts return to baseline {"danmakuSubscribers":0,"danmakuActive":false,"castSubscribers":1}
+PASS live open/exit cycle 3: native playback and subscription {"firstPlayingMs":572,"tokenCode":0,"subscriptionAcks":1,"mediaErrors":[],"video":{"time":1.474,"ready":4,"paused":false,"width":1080,"height":1920,"error":null,"bufferSec":9.526,"totalFrames":0,"decodedFrames":0,"droppedFrames":0}}
+PASS cycle 3: SDK subscription cancelled, relay stopped, no late live DOM {"stopCalls":1,"stopSuccess":1,"stopFailures":0,"postExitSubscribes":0,"subscribes":1,"handleCancelCalls":1,"handleCancelSuccess":1,"handleCancelFailures":0,"postExitVideoSamples":0,"postExitDanmakuSamples":0,"lateFrames":0,"framesAfterStop":0}
+PASS cycle 3: service relay and subscription counts return to baseline {"danmakuSubscribers":0,"danmakuActive":false,"castSubscribers":1}
+PASS live open/exit cycle 4: native playback and subscription {"firstPlayingMs":602,"tokenCode":0,"subscriptionAcks":1,"mediaErrors":[],"video":{"time":1.273,"ready":4,"paused":false,"width":1080,"height":1920,"error":null,"bufferSec":9.727,"totalFrames":0,"decodedFrames":0,"droppedFrames":0}}
+PASS cycle 4: SDK subscription cancelled, relay stopped, no late live DOM {"stopCalls":1,"stopSuccess":1,"stopFailures":0,"postExitSubscribes":0,"subscribes":1,"handleCancelCalls":1,"handleCancelSuccess":1,"handleCancelFailures":0,"postExitVideoSamples":0,"postExitDanmakuSamples":0,"lateFrames":0,"framesAfterStop":0}
+PASS cycle 4: service relay and subscription counts return to baseline {"danmakuSubscribers":0,"danmakuActive":false,"castSubscribers":1}
+PASS live open/exit cycle 5: native playback and subscription {"firstPlayingMs":12584,"tokenCode":0,"subscriptionAcks":1,"mediaErrors":[],"video":{"time":0.979,"ready":4,"paused":false,"width":1080,"height":1920,"error":null,"bufferSec":7.021,"totalFrames":0,"decodedFrames":0,"droppedFrames":0}}
+PASS cycle 5: SDK subscription cancelled, relay stopped, no late live DOM {"stopCalls":1,"stopSuccess":1,"stopFailures":0,"postExitSubscribes":0,"subscribes":1,"handleCancelCalls":1,"handleCancelSuccess":1,"handleCancelFailures":0,"postExitVideoSamples":0,"postExitDanmakuSamples":0,"lateFrames":0,"framesAfterStop":0}
+PASS cycle 5: service relay and subscription counts return to baseline {"danmakuSubscribers":0,"danmakuActive":false,"castSubscribers":1}
+PASS live endurance minute 0 {"playback":true,"bili":true,"update":true,"service":true,"relay":true,"time":4.5,"width":1080,"height":1920,"maxGapMs":1381,"frames":5,"heapBytes":6819700}
+PASS live endurance minute 1 {"playback":true,"bili":true,"update":true,"service":true,"relay":true,"time":63.492,"width":1080,"height":1920,"maxGapMs":1381,"frames":7,"heapBytes":6863508}
+PASS live endurance minute 2 {"playback":true,"bili":true,"update":true,"service":true,"relay":true,"time":124.296,"width":1080,"height":1920,"maxGapMs":1381,"frames":10,"heapBytes":6974148}
+PASS live endurance minute 3 {"playback":true,"bili":true,"update":true,"service":true,"relay":true,"time":183.288,"width":1080,"height":1920,"maxGapMs":1381,"frames":12,"heapBytes":7006124}
+PASS live endurance minute 4 {"playback":true,"bili":true,"update":true,"service":true,"relay":true,"time":243.682,"width":1080,"height":1920,"maxGapMs":1381,"frames":13,"heapBytes":7037628}
+PASS live endurance minute 5 {"playback":true,"bili":true,"update":true,"service":true,"relay":true,"time":303.877,"width":1080,"height":1920,"maxGapMs":1381,"frames":15,"heapBytes":7126080}
+PASS live endurance minute 6 {"playback":true,"bili":true,"update":true,"service":true,"relay":true,"time":363.876,"width":1080,"height":1920,"maxGapMs":1381,"frames":16,"heapBytes":6230236}
+PASS live endurance minute 7 {"playback":true,"bili":true,"update":true,"service":true,"relay":true,"time":425.475,"width":1080,"height":1920,"maxGapMs":1381,"frames":17,"heapBytes":6255248}
+PASS live endurance minute 8 {"playback":true,"bili":true,"update":true,"service":true,"relay":true,"time":484.263,"width":1080,"height":1920,"maxGapMs":1381,"frames":18,"heapBytes":6874092}
+PASS live endurance minute 9 {"playback":true,"bili":true,"update":true,"service":true,"relay":true,"time":544.26,"width":1080,"height":1920,"maxGapMs":1381,"frames":19,"heapBytes":6959480}
+PASS live endurance minute 10 {"playback":true,"bili":true,"update":true,"service":true,"relay":true,"time":603.855,"width":1080,"height":1920,"maxGapMs":1381,"frames":21,"heapBytes":6078228}
+PASS live endurance minute 11 {"playback":true,"bili":true,"update":true,"service":true,"relay":true,"time":663.85,"width":1080,"height":1920,"maxGapMs":1381,"frames":22,"heapBytes":6091748}
+PASS live endurance minute 12 {"playback":true,"bili":true,"update":true,"service":true,"relay":true,"time":724.043,"width":1080,"height":1920,"maxGapMs":1381,"frames":22,"heapBytes":6104432}
+PASS live endurance minute 13 {"playback":true,"bili":true,"update":true,"service":true,"relay":true,"time":783.631,"width":1080,"height":1920,"maxGapMs":1381,"frames":23,"heapBytes":6131248}
+PASS live endurance minute 14 {"playback":true,"bili":true,"update":true,"service":true,"relay":true,"time":844.221,"width":1080,"height":1920,"maxGapMs":1381,"frames":25,"heapBytes":6170152}
+PASS live endurance minute 15 {"playback":true,"bili":true,"update":true,"service":true,"relay":true,"time":903.808,"width":1080,"height":1920,"maxGapMs":1381,"frames":25,"heapBytes":6169436}
+PASS real-time relay frames reached visible bounded overlay {"frames":25,"events":554,"peakDanmaku":3}
+PASS endurance exit: SDK subscription cancelled, relay stopped, no late live DOM {"stopCalls":1,"stopSuccess":1,"stopFailures":0,"postExitSubscribes":0,"subscribes":1,"handleCancelCalls":1,"handleCancelSuccess":1,"handleCancelFailures":0,"postExitVideoSamples":0,"postExitDanmakuSamples":0,"lateFrames":0,"framesAfterStop":0}
+PASS endurance exit: service relay and subscription counts return to baseline {"danmakuSubscribers":0,"danmakuActive":false,"castSubscribers":1}
+PASS no uncaught page exceptions {"count":0}
+PASS original settings restored 
+PASS all live monitor injection removed {"requestRestored":true,"forcedCancels":0,"cancelFailures":0,"injectionsRemoved":true}

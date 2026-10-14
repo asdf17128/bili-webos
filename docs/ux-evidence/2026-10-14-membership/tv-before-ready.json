@@ -1,0 +1,51 @@
+[
+  {
+    "name": "active membership badge",
+    "pass": true
+  },
+  {
+    "name": "Links automatic highest supported: 4K Dolby + supplied AAC",
+    "pass": true,
+    "detail": {
+      "t": 3.103125,
+      "width": 3840,
+      "height": 2160,
+      "paused": false,
+      "ready": 4,
+      "frames": 271,
+      "audioBytes": 190117,
+      "videoCodec": "dvh1.08.07",
+      "audioCodec": "mp4a.40.2",
+      "qn": 126,
+      "preference": "auto",
+      "mode": "auto"
+    }
+  },
+  {
+    "name": "remote manual 1080p persists explicitly",
+    "pass": false,
+    "detail": {
+      "t": 0,
+      "width": 0,
+      "height": 0,
+      "paused": false,
+      "ready": 0,
+      "frames": 0,
+      "audioBytes": 0,
+      "videoCodec": "avc1.640032",
+      "audioCodec": "mp4a.40.2",
+      "qn": 80,
+      "preference": 80,
+      "mode": "manual"
+    }
+  },
+  {
+    "name": "run failure",
+    "pass": false,
+    "error": "remote manual 1080p persists explicitly"
+  },
+  {
+    "name": "restored original viewing session; automatic quality enabled",
+    "pass": true
+  }
+]

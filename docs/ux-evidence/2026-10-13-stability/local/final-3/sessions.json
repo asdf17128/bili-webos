@@ -1,0 +1,38 @@
+[
+  {
+    "name": "logout clears service, persisted disk, UI and reload",
+    "pass": true
+  },
+  {
+    "name": "logout fences late service Set-Cookie and response body",
+    "pass": true
+  },
+  {
+    "name": "logout disk failure is visible and retry clears credentials",
+    "pass": true
+  },
+  {
+    "name": "development bridge reports clear failure and uses the real service on retry",
+    "pass": true
+  },
+  {
+    "name": "browser fallback logout uses POST clear and does not accept failure",
+    "pass": true
+  },
+  {
+    "name": "late Luna reply cannot restore browser credentials",
+    "pass": true
+  },
+  {
+    "name": "logout pending blocks writes, repeated OK, and times out with retry",
+    "pass": true
+  },
+  {
+    "name": "startup rejects invalid port and remote Enter retries",
+    "pass": true
+  },
+  {
+    "name": "occupied 7654 uses negotiated port for covers and video Range",
+    "pass": true
+  }
+]

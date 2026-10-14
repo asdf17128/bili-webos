@@ -1,0 +1,179 @@
+{
+  "completedAt": "2026-10-13T08:56:35.304595+00:00",
+  "status": "COMPLETED_WITH_FINDINGS",
+  "releaseReadiness": "NOT_ALL_ACCEPTED",
+  "published": false,
+  "pushed": false,
+  "candidate": "2.3.0 stability-test.4",
+  "environment": "environment.json",
+  "finalInstalledIdentity": "package-final-confirmation.json",
+  "matrix": [
+    {
+      "id": "S01",
+      "status": "PASS_WITH_EXPLICIT_SKIPS",
+      "evidence": "local/final-4/REPORT.md",
+      "fullGates": 2,
+      "simulator": {
+        "pass": 54,
+        "fail": 0,
+        "skip": 3
+      }
+    },
+    {
+      "id": "S02",
+      "status": "PASS",
+      "evidence": "final-tv-4/soak/README.md",
+      "durationMs": 3602102,
+      "samples": 61,
+      "checks": {
+        "passed": 67,
+        "failed": 0
+      },
+      "apiSuccess": [
+        61,
+        61,
+        61
+      ],
+      "apiFailure": [
+        0,
+        0,
+        0
+      ],
+      "newDecodedFrames": 180118,
+      "newDroppedFrames": 0
+    },
+    {
+      "id": "S03",
+      "status": "NEEDS_REVIEW",
+      "checksPassed": 145,
+      "checksFailed": 0,
+      "finding": "retained heap grew 210344 bytes monotonically after standardized GC; not attributed",
+      "evidence": "final-tv-4/lifecycle/README.md"
+    },
+    {
+      "id": "S04",
+      "status": "COMPLETED_WITH_FAILURES_AND_FINDINGS",
+      "checksPassed": 43,
+      "checksFailed": 2,
+      "durationMinutes": 15,
+      "samples": 16,
+      "finding": "two update probes failed; media recovery gap 13326ms; heartbeat reconnect recovered chat",
+      "evidence": "final-tv-4/live/README.md"
+    },
+    {
+      "id": "S05",
+      "status": "PASS",
+      "evidence": [
+        "final-tv-4/runtime/results.json",
+        "final-tv-4/cdn/device.json"
+      ]
+    },
+    {
+      "id": "S06",
+      "status": "PASS",
+      "evidence": [
+        "service/README.md",
+        "relay-after/README.md",
+        "final-tv-4/native-subscriptions/results.json"
+      ]
+    },
+    {
+      "id": "S07",
+      "status": "PASS_WITH_EXPLICIT_SCOPE_LIMITS",
+      "evidence": [
+        "final-tv-4/speed/results.json",
+        "final-tv-4/premium/results.json",
+        "final-tv-4/scrub/device.json",
+        "final-tv-4/ended/device.json",
+        "final-tv-4/live-quality/README.md"
+      ],
+      "vipSamples": 61,
+      "liveQuality": {
+        "pass": 3,
+        "fail": 0,
+        "skip": 0
+      }
+    },
+    {
+      "id": "S08",
+      "status": "NEEDS_REVIEW",
+      "focusP95Ms": [
+        4.2,
+        6.0
+      ],
+      "naturalHeapBytes": {
+        "min": 6142540,
+        "max": 7983200,
+        "first": 6142540,
+        "last": 7439312
+      },
+      "longTasks": 3,
+      "maxLongTaskMs": 60,
+      "finding": "natural heap recovery does not clear retained-heap finding",
+      "evidence": [
+        "final-tv-4/lifecycle/assessment.json",
+        "final-tv-4/soak/assessment.json"
+      ]
+    },
+    {
+      "id": "S09",
+      "status": "PASS",
+      "evidence": [
+        "final-tv-4/cdn/device.json",
+        "final-review.md"
+      ]
+    }
+  ],
+  "uiSmoke": {
+    "pass": 53,
+    "fail": 0,
+    "skip": 3,
+    "evidence": "final-tv-4/smoke/results.json",
+    "skipHandling": "Quiet-room chat and single-quality gaps have separate later evidence; original skips retained. Account list writes not executed."
+  },
+  "cleanup": {
+    "status": "PASS",
+    "evidence": [
+      "final-tv-4/idle-before-quality.json",
+      "final-tv-4/idle-after-quality.json"
+    ]
+  },
+  "findingDisposition": [
+    {
+      "id": "F01",
+      "status": "OPEN",
+      "finding": "Live media progression gap 13.326s with automatic recovery",
+      "nextStep": "Compare actual same-format/quality backup CDN and segment deadlines on affected network; no exact CDN vs intermediary cause established."
+    },
+    {
+      "id": "F02",
+      "status": "OPEN",
+      "finding": "Two original update probes failed without enough response metadata",
+      "nextStep": "Retain original failures. Probe tool now records safe status/parse/error categories for next occurrence."
+    },
+    {
+      "id": "F03",
+      "status": "OPEN",
+      "finding": "Post-GC retained heap +210344 bytes (3.685%) across 20 cycles",
+      "nextStep": "Attribute retained object paths with isolated component heap snapshots; no no-leak claim."
+    }
+  ],
+  "notVerified": [
+    "historical all-requests-fail root cause",
+    "24-hour endurance",
+    "other physical TV models",
+    "overseas household signed-media path",
+    "router disconnect/power/wake",
+    "account list writes",
+    "complete 35-fragment Dolby120 corpus",
+    "physical HDR/DV/Atmos/audio sync",
+    "GPU and process memory"
+  ],
+  "countingRule": "Per-tool assertions overlap; do not sum them as independent test cases.",
+  "finalAudit": {
+    "completedAt": "2026-10-13T09:00:47.479655+00:00",
+    "status": "PASS",
+    "evidence": "final-review.md",
+    "limits": "Read-only source and evidence review; not an additional hardware run."
+  }
+}

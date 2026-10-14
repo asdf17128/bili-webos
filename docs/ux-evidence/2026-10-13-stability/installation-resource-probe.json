@@ -1,0 +1,73 @@
+{
+  "recordedAt": "2026-10-13T05:54:04.951639+00:00",
+  "baseCommit": "4eb77e0c14ee04c51ba07739d92dd6bd9a650e73",
+  "testBuild": "2.3.0 stability-test.2",
+  "packageSha256": "f3c53563d051313e2cfb61c2b30da57602b7378a8e647075a5a1900e3f162a6c",
+  "files": {
+    "app/src/version.js": "1f11bd4ad3715321e70d4a45ac5c8e87d50bc382e737338906b85139148e5c87",
+    "app/src/api/client.js": "c43f7daf8216331fa462948710b8d9442d396894e9f12513857eb0d13dc54d67",
+    "app/src/player/PlayerPage.jsx": "a4fe70c6f1097f8bd51126b98f62eb7bbad4d13bc85efab9392074cbd38ccb71",
+    "app/src/player/subTranslate.js": "5c0b031f3212a49ce53154fa8ba709bf608033fc63f7f9bf2db3d07a7c6f569c",
+    "service/com.biliwebos.app.service/service.js": "8ad19ce07e40a6cf5af2ea473ed92b3ada90d1f41a740b6798dad241a26ff856",
+    "app/src/player/LivePlayerPage.jsx": "5dd76049edff99e1e6b7a306df4f4d3b90642402090070ea4c4c5ab02ee4ed5a",
+    "app/dist/assets/shaka-player.compiled-legacy-01vuRLq-.js": "e7555409c7b44282543f08a2c96f3b10f4925540208e22735c90e90c84138b0f",
+    "app/dist/assets/PlayerPage-legacy-Du4Bxnxq.js": "b73f1d6f8d1242dd58bfbbc3f0486c179894dca7f993a176fb4e51f9840ab868",
+    "app/dist/assets/index-legacy-DwzW6dmt.js": "67929b86ae007e13f82a6564cb729d7eb9a718fc5463cf1cac4de1a4f06aacf7",
+    "app/dist/assets/react-vendor-legacy-B2h5bzJ7.js": "35b6eec340e5d94be0db7cb0978d708b51ed326b6b5144b1afb1d9a2d28cad7c",
+    "app/dist/assets/polyfills-legacy-BM5L0Uut.js": "70f60ce348e3017fc4a5649b93772dec6959305b99e1eb7303c4727687e8a4d5",
+    "app/dist/assets/LivePlayerPage-legacy-Xk8dMafx.js": "f286f03a2c36fa8c64469218400f2b04a672a901ca1405a8648dca3d62f3b2b4"
+  },
+  "hardware": {
+    "modelName": "OLED65C4PCA.ACNQLJD",
+    "sdkVersion": "10.3.1",
+    "screenWidth": 3840,
+    "screenHeight": 2160
+  },
+  "installedFiles": {
+    "service/com.biliwebos.app.service/service.js": {
+      "sha256": "8ad19ce07e40a6cf5af2ea473ed92b3ada90d1f41a740b6798dad241a26ff856",
+      "match": true
+    },
+    "app/dist/assets/shaka-player.compiled-legacy-01vuRLq-.js": {
+      "sha256": "e7555409c7b44282543f08a2c96f3b10f4925540208e22735c90e90c84138b0f",
+      "match": true
+    },
+    "app/dist/assets/PlayerPage-legacy-Du4Bxnxq.js": {
+      "sha256": "b73f1d6f8d1242dd58bfbbc3f0486c179894dca7f993a176fb4e51f9840ab868",
+      "match": true
+    },
+    "app/dist/assets/index-legacy-DwzW6dmt.js": {
+      "sha256": "67929b86ae007e13f82a6564cb729d7eb9a718fc5463cf1cac4de1a4f06aacf7",
+      "match": true
+    },
+    "app/dist/assets/react-vendor-legacy-B2h5bzJ7.js": {
+      "sha256": "35b6eec340e5d94be0db7cb0978d708b51ed326b6b5144b1afb1d9a2d28cad7c",
+      "match": true
+    },
+    "app/dist/assets/polyfills-legacy-BM5L0Uut.js": {
+      "sha256": "70f60ce348e3017fc4a5649b93772dec6959305b99e1eb7303c4727687e8a4d5",
+      "match": true
+    },
+    "app/dist/assets/LivePlayerPage-legacy-Xk8dMafx.js": {
+      "sha256": "f286f03a2c36fa8c64469218400f2b04a672a901ca1405a8648dca3d62f3b2b4",
+      "match": true
+    }
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.270 Safari/537.36 WebAppManager",
+    "visible": "visible",
+    "node": "v16.20.2",
+    "uptime": 15,
+    "loggedIn": true,
+    "castSubscribers": 1,
+    "danmakuSubscribers": 0,
+    "danmakuActive": false,
+    "scripts": [
+      "webOSTV.js",
+      "polyfills-legacy-BM5L0Uut.js"
+    ],
+    "loadedBundles": []
+  },
+  "loadedEntryMatches": false,
+  "installedAt": "2026-10-13T06:08:06.927Z"
+}

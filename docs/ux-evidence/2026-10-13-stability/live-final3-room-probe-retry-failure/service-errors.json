@@ -1,0 +1,65 @@
+{
+  "uptime": 1329,
+  "recentErrors": [
+    {
+      "tag": "proxy:upos-sz-mirrorbad.bilivideo.com",
+      "t": 1791873210581,
+      "message": "getaddrinfo ENOTFOUND upos-sz-mirrorbad.bilivideo.com"
+    },
+    {
+      "tag": "req:upos-sz-mirrorbad.bilivideo.com",
+      "t": 1791873210582,
+      "message": "getaddrinfo ENOTFOUND upos-sz-mirrorbad.bilivideo.com"
+    },
+    {
+      "tag": "proxy:upos-sz-mirrorbad.bilivideo.com",
+      "t": 1791873210582,
+      "message": "getaddrinfo ENOTFOUND upos-sz-mirrorbad.bilivideo.com"
+    },
+    {
+      "tag": "req:api.bilibili.com",
+      "t": 1791873376445,
+      "message": "Upstream timeout before response headers"
+    },
+    {
+      "tag": "req:api.live.bilibili.com",
+      "t": 1791873398468,
+      "message": "Upstream timeout before response headers"
+    },
+    {
+      "tag": "body:api.bilibili.com",
+      "t": 1791873420288,
+      "message": "Upstream response aborted"
+    },
+    {
+      "tag": "res:api.bilibili.com",
+      "t": 1791873420289,
+      "message": "aborted"
+    },
+    {
+      "tag": "req:api.live.bilibili.com",
+      "t": 1791873555378,
+      "message": "Upstream timeout before response headers"
+    },
+    {
+      "tag": "req:api.live.bilibili.com",
+      "t": 1791873555389,
+      "message": "Upstream timeout before response headers"
+    },
+    {
+      "tag": "req:api.live.bilibili.com",
+      "t": 1791873573661,
+      "message": "Upstream timeout before response headers"
+    },
+    {
+      "tag": "req:api.live.bilibili.com",
+      "t": 1791873907001,
+      "message": "Upstream timeout before response headers"
+    },
+    {
+      "tag": "req:api.live.bilibili.com",
+      "t": 1791874072748,
+      "message": "Upstream timeout before response headers"
+    }
+  ]
+}

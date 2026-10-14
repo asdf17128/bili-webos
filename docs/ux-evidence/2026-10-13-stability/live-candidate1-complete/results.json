@@ -1,0 +1,2493 @@
+{
+  "startedAt": "2026-10-13T05:50:52.803Z",
+  "minutes": 15,
+  "cycles": 5,
+  "checks": [
+    {
+      "name": "service subscriber diagnostics available at idle",
+      "pass": true,
+      "detail": {
+        "danmakuSubscribers": 0,
+        "danmakuActive": false,
+        "castSubscribers": 1
+      }
+    },
+    {
+      "name": "currently active production live room found",
+      "pass": true,
+      "detail": {
+        "roomId": 1931167176,
+        "recommendationCode": null,
+        "candidates": [
+          {
+            "roomId": 1931167176,
+            "code": 0,
+            "liveStatus": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "live open/exit cycle 1: native playback and subscription",
+      "pass": true,
+      "detail": {
+        "firstPlayingMs": 1437,
+        "tokenCode": 0,
+        "subscriptionAcks": 1,
+        "mediaErrors": [],
+        "video": {
+          "time": 0.816,
+          "ready": 4,
+          "paused": false,
+          "width": 1080,
+          "height": 1920,
+          "error": null,
+          "bufferSec": 7.184,
+          "totalFrames": 0,
+          "decodedFrames": 0,
+          "droppedFrames": 0
+        }
+      }
+    },
+    {
+      "name": "cycle 1: SDK subscription cancelled, relay stopped, no late live DOM",
+      "pass": true,
+      "detail": {
+        "stopCalls": 1,
+        "stopSuccess": 1,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "subscribes": 1,
+        "handleCancelCalls": 1,
+        "handleCancelSuccess": 1,
+        "handleCancelFailures": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "lateFrames": 0,
+        "framesAfterStop": 0
+      }
+    },
+    {
+      "name": "cycle 1: service relay and subscription counts return to baseline",
+      "pass": true,
+      "detail": {
+        "danmakuSubscribers": 0,
+        "danmakuActive": false,
+        "castSubscribers": 1
+      }
+    },
+    {
+      "name": "live open/exit cycle 2: native playback and subscription",
+      "pass": true,
+      "detail": {
+        "firstPlayingMs": 684,
+        "tokenCode": 0,
+        "subscriptionAcks": 1,
+        "mediaErrors": [],
+        "video": {
+          "time": 1.565,
+          "ready": 4,
+          "paused": false,
+          "width": 1080,
+          "height": 1920,
+          "error": null,
+          "bufferSec": 9.435,
+          "totalFrames": 0,
+          "decodedFrames": 0,
+          "droppedFrames": 0
+        }
+      }
+    },
+    {
+      "name": "cycle 2: SDK subscription cancelled, relay stopped, no late live DOM",
+      "pass": true,
+      "detail": {
+        "stopCalls": 1,
+        "stopSuccess": 1,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "subscribes": 1,
+        "handleCancelCalls": 1,
+        "handleCancelSuccess": 1,
+        "handleCancelFailures": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "lateFrames": 0,
+        "framesAfterStop": 0
+      }
+    },
+    {
+      "name": "cycle 2: service relay and subscription counts return to baseline",
+      "pass": true,
+      "detail": {
+        "danmakuSubscribers": 0,
+        "danmakuActive": false,
+        "castSubscribers": 1
+      }
+    },
+    {
+      "name": "live open/exit cycle 3: native playback and subscription",
+      "pass": true,
+      "detail": {
+        "firstPlayingMs": 572,
+        "tokenCode": 0,
+        "subscriptionAcks": 1,
+        "mediaErrors": [],
+        "video": {
+          "time": 1.474,
+          "ready": 4,
+          "paused": false,
+          "width": 1080,
+          "height": 1920,
+          "error": null,
+          "bufferSec": 9.526,
+          "totalFrames": 0,
+          "decodedFrames": 0,
+          "droppedFrames": 0
+        }
+      }
+    },
+    {
+      "name": "cycle 3: SDK subscription cancelled, relay stopped, no late live DOM",
+      "pass": true,
+      "detail": {
+        "stopCalls": 1,
+        "stopSuccess": 1,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "subscribes": 1,
+        "handleCancelCalls": 1,
+        "handleCancelSuccess": 1,
+        "handleCancelFailures": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "lateFrames": 0,
+        "framesAfterStop": 0
+      }
+    },
+    {
+      "name": "cycle 3: service relay and subscription counts return to baseline",
+      "pass": true,
+      "detail": {
+        "danmakuSubscribers": 0,
+        "danmakuActive": false,
+        "castSubscribers": 1
+      }
+    },
+    {
+      "name": "live open/exit cycle 4: native playback and subscription",
+      "pass": true,
+      "detail": {
+        "firstPlayingMs": 602,
+        "tokenCode": 0,
+        "subscriptionAcks": 1,
+        "mediaErrors": [],
+        "video": {
+          "time": 1.273,
+          "ready": 4,
+          "paused": false,
+          "width": 1080,
+          "height": 1920,
+          "error": null,
+          "bufferSec": 9.727,
+          "totalFrames": 0,
+          "decodedFrames": 0,
+          "droppedFrames": 0
+        }
+      }
+    },
+    {
+      "name": "cycle 4: SDK subscription cancelled, relay stopped, no late live DOM",
+      "pass": true,
+      "detail": {
+        "stopCalls": 1,
+        "stopSuccess": 1,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "subscribes": 1,
+        "handleCancelCalls": 1,
+        "handleCancelSuccess": 1,
+        "handleCancelFailures": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "lateFrames": 0,
+        "framesAfterStop": 0
+      }
+    },
+    {
+      "name": "cycle 4: service relay and subscription counts return to baseline",
+      "pass": true,
+      "detail": {
+        "danmakuSubscribers": 0,
+        "danmakuActive": false,
+        "castSubscribers": 1
+      }
+    },
+    {
+      "name": "live open/exit cycle 5: native playback and subscription",
+      "pass": true,
+      "detail": {
+        "firstPlayingMs": 12584,
+        "tokenCode": 0,
+        "subscriptionAcks": 1,
+        "mediaErrors": [],
+        "video": {
+          "time": 0.979,
+          "ready": 4,
+          "paused": false,
+          "width": 1080,
+          "height": 1920,
+          "error": null,
+          "bufferSec": 7.021,
+          "totalFrames": 0,
+          "decodedFrames": 0,
+          "droppedFrames": 0
+        }
+      }
+    },
+    {
+      "name": "cycle 5: SDK subscription cancelled, relay stopped, no late live DOM",
+      "pass": true,
+      "detail": {
+        "stopCalls": 1,
+        "stopSuccess": 1,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "subscribes": 1,
+        "handleCancelCalls": 1,
+        "handleCancelSuccess": 1,
+        "handleCancelFailures": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "lateFrames": 0,
+        "framesAfterStop": 0
+      }
+    },
+    {
+      "name": "cycle 5: service relay and subscription counts return to baseline",
+      "pass": true,
+      "detail": {
+        "danmakuSubscribers": 0,
+        "danmakuActive": false,
+        "castSubscribers": 1
+      }
+    },
+    {
+      "name": "live endurance minute 0",
+      "pass": true,
+      "detail": {
+        "playback": true,
+        "bili": true,
+        "update": true,
+        "service": true,
+        "relay": true,
+        "time": 4.5,
+        "width": 1080,
+        "height": 1920,
+        "maxGapMs": 1381,
+        "frames": 5,
+        "heapBytes": 6819700
+      }
+    },
+    {
+      "name": "live endurance minute 1",
+      "pass": true,
+      "detail": {
+        "playback": true,
+        "bili": true,
+        "update": true,
+        "service": true,
+        "relay": true,
+        "time": 63.492,
+        "width": 1080,
+        "height": 1920,
+        "maxGapMs": 1381,
+        "frames": 7,
+        "heapBytes": 6863508
+      }
+    },
+    {
+      "name": "live endurance minute 2",
+      "pass": true,
+      "detail": {
+        "playback": true,
+        "bili": true,
+        "update": true,
+        "service": true,
+        "relay": true,
+        "time": 124.296,
+        "width": 1080,
+        "height": 1920,
+        "maxGapMs": 1381,
+        "frames": 10,
+        "heapBytes": 6974148
+      }
+    },
+    {
+      "name": "live endurance minute 3",
+      "pass": true,
+      "detail": {
+        "playback": true,
+        "bili": true,
+        "update": true,
+        "service": true,
+        "relay": true,
+        "time": 183.288,
+        "width": 1080,
+        "height": 1920,
+        "maxGapMs": 1381,
+        "frames": 12,
+        "heapBytes": 7006124
+      }
+    },
+    {
+      "name": "live endurance minute 4",
+      "pass": true,
+      "detail": {
+        "playback": true,
+        "bili": true,
+        "update": true,
+        "service": true,
+        "relay": true,
+        "time": 243.682,
+        "width": 1080,
+        "height": 1920,
+        "maxGapMs": 1381,
+        "frames": 13,
+        "heapBytes": 7037628
+      }
+    },
+    {
+      "name": "live endurance minute 5",
+      "pass": true,
+      "detail": {
+        "playback": true,
+        "bili": true,
+        "update": true,
+        "service": true,
+        "relay": true,
+        "time": 303.877,
+        "width": 1080,
+        "height": 1920,
+        "maxGapMs": 1381,
+        "frames": 15,
+        "heapBytes": 7126080
+      }
+    },
+    {
+      "name": "live endurance minute 6",
+      "pass": true,
+      "detail": {
+        "playback": true,
+        "bili": true,
+        "update": true,
+        "service": true,
+        "relay": true,
+        "time": 363.876,
+        "width": 1080,
+        "height": 1920,
+        "maxGapMs": 1381,
+        "frames": 16,
+        "heapBytes": 6230236
+      }
+    },
+    {
+      "name": "live endurance minute 7",
+      "pass": true,
+      "detail": {
+        "playback": true,
+        "bili": true,
+        "update": true,
+        "service": true,
+        "relay": true,
+        "time": 425.475,
+        "width": 1080,
+        "height": 1920,
+        "maxGapMs": 1381,
+        "frames": 17,
+        "heapBytes": 6255248
+      }
+    },
+    {
+      "name": "live endurance minute 8",
+      "pass": true,
+      "detail": {
+        "playback": true,
+        "bili": true,
+        "update": true,
+        "service": true,
+        "relay": true,
+        "time": 484.263,
+        "width": 1080,
+        "height": 1920,
+        "maxGapMs": 1381,
+        "frames": 18,
+        "heapBytes": 6874092
+      }
+    },
+    {
+      "name": "live endurance minute 9",
+      "pass": true,
+      "detail": {
+        "playback": true,
+        "bili": true,
+        "update": true,
+        "service": true,
+        "relay": true,
+        "time": 544.26,
+        "width": 1080,
+        "height": 1920,
+        "maxGapMs": 1381,
+        "frames": 19,
+        "heapBytes": 6959480
+      }
+    },
+    {
+      "name": "live endurance minute 10",
+      "pass": true,
+      "detail": {
+        "playback": true,
+        "bili": true,
+        "update": true,
+        "service": true,
+        "relay": true,
+        "time": 603.855,
+        "width": 1080,
+        "height": 1920,
+        "maxGapMs": 1381,
+        "frames": 21,
+        "heapBytes": 6078228
+      }
+    },
+    {
+      "name": "live endurance minute 11",
+      "pass": true,
+      "detail": {
+        "playback": true,
+        "bili": true,
+        "update": true,
+        "service": true,
+        "relay": true,
+        "time": 663.85,
+        "width": 1080,
+        "height": 1920,
+        "maxGapMs": 1381,
+        "frames": 22,
+        "heapBytes": 6091748
+      }
+    },
+    {
+      "name": "live endurance minute 12",
+      "pass": true,
+      "detail": {
+        "playback": true,
+        "bili": true,
+        "update": true,
+        "service": true,
+        "relay": true,
+        "time": 724.043,
+        "width": 1080,
+        "height": 1920,
+        "maxGapMs": 1381,
+        "frames": 22,
+        "heapBytes": 6104432
+      }
+    },
+    {
+      "name": "live endurance minute 13",
+      "pass": true,
+      "detail": {
+        "playback": true,
+        "bili": true,
+        "update": true,
+        "service": true,
+        "relay": true,
+        "time": 783.631,
+        "width": 1080,
+        "height": 1920,
+        "maxGapMs": 1381,
+        "frames": 23,
+        "heapBytes": 6131248
+      }
+    },
+    {
+      "name": "live endurance minute 14",
+      "pass": true,
+      "detail": {
+        "playback": true,
+        "bili": true,
+        "update": true,
+        "service": true,
+        "relay": true,
+        "time": 844.221,
+        "width": 1080,
+        "height": 1920,
+        "maxGapMs": 1381,
+        "frames": 25,
+        "heapBytes": 6170152
+      }
+    },
+    {
+      "name": "live endurance minute 15",
+      "pass": true,
+      "detail": {
+        "playback": true,
+        "bili": true,
+        "update": true,
+        "service": true,
+        "relay": true,
+        "time": 903.808,
+        "width": 1080,
+        "height": 1920,
+        "maxGapMs": 1381,
+        "frames": 25,
+        "heapBytes": 6169436
+      }
+    },
+    {
+      "name": "real-time relay frames reached visible bounded overlay",
+      "pass": true,
+      "detail": {
+        "frames": 25,
+        "events": 554,
+        "peakDanmaku": 3
+      }
+    },
+    {
+      "name": "endurance exit: SDK subscription cancelled, relay stopped, no late live DOM",
+      "pass": true,
+      "detail": {
+        "stopCalls": 1,
+        "stopSuccess": 1,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "subscribes": 1,
+        "handleCancelCalls": 1,
+        "handleCancelSuccess": 1,
+        "handleCancelFailures": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "lateFrames": 0,
+        "framesAfterStop": 0
+      }
+    },
+    {
+      "name": "endurance exit: service relay and subscription counts return to baseline",
+      "pass": true,
+      "detail": {
+        "danmakuSubscribers": 0,
+        "danmakuActive": false,
+        "castSubscribers": 1
+      }
+    },
+    {
+      "name": "no uncaught page exceptions",
+      "pass": true,
+      "detail": {
+        "count": 0
+      }
+    },
+    {
+      "name": "original settings restored",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "all live monitor injection removed",
+      "pass": true,
+      "detail": {
+        "requestRestored": true,
+        "forcedCancels": 0,
+        "cancelFailures": 0,
+        "injectionsRemoved": true
+      }
+    }
+  ],
+  "samples": [
+    {
+      "minute": 0,
+      "elapsedMs": 3008,
+      "session": {
+        "index": 5,
+        "openedAt": 1791870701646,
+        "exitedAt": null,
+        "tokenCode": 0,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 1,
+        "subscriptionFailures": 0,
+        "frames": 5,
+        "events": 30,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 0,
+        "handleCancelSuccess": 0,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 3,
+        "mediaErrors": [],
+        "firstPlayingMs": 12325,
+        "playingEvents": 2,
+        "waitingEvents": 2,
+        "endedEvents": 0,
+        "lastTime": 4.5,
+        "lastAdvance": 1791870719604,
+        "maxGapMs": 1381,
+        "advancedSeconds": 4.484
+      },
+      "video": {
+        "time": 4.5,
+        "ready": 4,
+        "paused": false,
+        "width": 1080,
+        "height": 1920,
+        "error": null,
+        "bufferSec": 10.5,
+        "totalFrames": 0,
+        "decodedFrames": 0,
+        "droppedFrames": 0
+      },
+      "danmakuItems": 2,
+      "currentGapMs": 0,
+      "services": {
+        "main": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 327
+        },
+        "live": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 190
+        },
+        "update": {
+          "status": 200,
+          "code": null,
+          "version": "2.3.0",
+          "ms": 2814
+        },
+        "service": {
+          "uptime": 915,
+          "node": "v16.20.2",
+          "relayAvailable": true,
+          "requestErrors": 5,
+          "danmakuSubscribers": 1,
+          "danmakuActive": true,
+          "castSubscribers": 1,
+          "ms": 49
+        }
+      },
+      "metrics": {
+        "heapBytes": 6819700,
+        "documents": 1,
+        "nodes": 801,
+        "listeners": 251,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "completedMedia": 0,
+          "failedMedia": 0
+        }
+      },
+      "playbackHealthy": true,
+      "biliHealthy": true,
+      "updateHealthy": true,
+      "serviceHealthy": true,
+      "relayHealthy": true
+    },
+    {
+      "minute": 1,
+      "elapsedMs": 61973,
+      "session": {
+        "index": 5,
+        "openedAt": 1791870701646,
+        "exitedAt": null,
+        "tokenCode": 0,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 1,
+        "subscriptionFailures": 0,
+        "frames": 7,
+        "events": 63,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 0,
+        "handleCancelSuccess": 0,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 3,
+        "mediaErrors": [],
+        "firstPlayingMs": 12325,
+        "playingEvents": 2,
+        "waitingEvents": 2,
+        "endedEvents": 0,
+        "lastTime": 63.492,
+        "lastAdvance": 1791870778571,
+        "maxGapMs": 1381,
+        "advancedSeconds": 63.476
+      },
+      "video": {
+        "time": 63.492,
+        "ready": 4,
+        "paused": false,
+        "width": 1080,
+        "height": 1920,
+        "error": null,
+        "bufferSec": 8.508000000000003,
+        "totalFrames": 0,
+        "decodedFrames": 0,
+        "droppedFrames": 0
+      },
+      "danmakuItems": 0,
+      "currentGapMs": 0,
+      "services": {
+        "main": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 46
+        },
+        "live": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 81
+        },
+        "update": {
+          "status": 200,
+          "code": null,
+          "version": "2.3.0",
+          "ms": 1799
+        },
+        "service": {
+          "uptime": 975,
+          "node": "v16.20.2",
+          "relayAvailable": true,
+          "requestErrors": 5,
+          "danmakuSubscribers": 1,
+          "danmakuActive": true,
+          "castSubscribers": 1,
+          "ms": 16
+        }
+      },
+      "metrics": {
+        "heapBytes": 6863508,
+        "documents": 1,
+        "nodes": 805,
+        "listeners": 253,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "completedMedia": 0,
+          "failedMedia": 0
+        }
+      },
+      "playbackHealthy": true,
+      "biliHealthy": true,
+      "updateHealthy": true,
+      "serviceHealthy": true,
+      "relayHealthy": true
+    },
+    {
+      "minute": 2,
+      "elapsedMs": 122732,
+      "session": {
+        "index": 5,
+        "openedAt": 1791870701646,
+        "exitedAt": null,
+        "tokenCode": 0,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 1,
+        "subscriptionFailures": 0,
+        "frames": 10,
+        "events": 99,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 0,
+        "handleCancelSuccess": 0,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 3,
+        "mediaErrors": [],
+        "firstPlayingMs": 12325,
+        "playingEvents": 2,
+        "waitingEvents": 2,
+        "endedEvents": 0,
+        "lastTime": 124.296,
+        "lastAdvance": 1791870839353,
+        "maxGapMs": 1381,
+        "advancedSeconds": 124.28
+      },
+      "video": {
+        "time": 124.296,
+        "ready": 4,
+        "paused": false,
+        "width": 1080,
+        "height": 1920,
+        "error": null,
+        "bufferSec": 7.7039999999999935,
+        "totalFrames": 0,
+        "decodedFrames": 0,
+        "droppedFrames": 0
+      },
+      "danmakuItems": 1,
+      "currentGapMs": 16,
+      "services": {
+        "main": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 351
+        },
+        "live": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 317
+        },
+        "update": {
+          "status": 200,
+          "code": null,
+          "version": "2.3.0",
+          "ms": 2447
+        },
+        "service": {
+          "uptime": 1035,
+          "node": "v16.20.2",
+          "relayAvailable": true,
+          "requestErrors": 5,
+          "danmakuSubscribers": 1,
+          "danmakuActive": true,
+          "castSubscribers": 1,
+          "ms": 84
+        }
+      },
+      "metrics": {
+        "heapBytes": 6974148,
+        "documents": 1,
+        "nodes": 811,
+        "listeners": 256,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "completedMedia": 0,
+          "failedMedia": 0
+        }
+      },
+      "playbackHealthy": true,
+      "biliHealthy": true,
+      "updateHealthy": true,
+      "serviceHealthy": true,
+      "relayHealthy": true
+    },
+    {
+      "minute": 3,
+      "elapsedMs": 181790,
+      "session": {
+        "index": 5,
+        "openedAt": 1791870701646,
+        "exitedAt": null,
+        "tokenCode": 0,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 1,
+        "subscriptionFailures": 0,
+        "frames": 12,
+        "events": 136,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 0,
+        "handleCancelSuccess": 0,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 3,
+        "mediaErrors": [],
+        "firstPlayingMs": 12325,
+        "playingEvents": 2,
+        "waitingEvents": 2,
+        "endedEvents": 0,
+        "lastTime": 183.288,
+        "lastAdvance": 1791870898353,
+        "maxGapMs": 1381,
+        "advancedSeconds": 183.272
+      },
+      "video": {
+        "time": 183.288,
+        "ready": 4,
+        "paused": false,
+        "width": 1080,
+        "height": 1920,
+        "error": null,
+        "bufferSec": 11.711999999999989,
+        "totalFrames": 0,
+        "decodedFrames": 0,
+        "droppedFrames": 0
+      },
+      "danmakuItems": 1,
+      "currentGapMs": 63,
+      "services": {
+        "main": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 130
+        },
+        "live": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 171
+        },
+        "update": {
+          "status": 200,
+          "code": null,
+          "version": "2.3.0",
+          "ms": 1646
+        },
+        "service": {
+          "uptime": 1095,
+          "node": "v16.20.2",
+          "relayAvailable": true,
+          "requestErrors": 5,
+          "danmakuSubscribers": 1,
+          "danmakuActive": true,
+          "castSubscribers": 1,
+          "ms": 32
+        }
+      },
+      "metrics": {
+        "heapBytes": 7006124,
+        "documents": 1,
+        "nodes": 815,
+        "listeners": 258,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "completedMedia": 0,
+          "failedMedia": 0
+        }
+      },
+      "playbackHealthy": true,
+      "biliHealthy": true,
+      "updateHealthy": true,
+      "serviceHealthy": true,
+      "relayHealthy": true
+    },
+    {
+      "minute": 4,
+      "elapsedMs": 242242,
+      "session": {
+        "index": 5,
+        "openedAt": 1791870701646,
+        "exitedAt": null,
+        "tokenCode": 0,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 1,
+        "subscriptionFailures": 0,
+        "frames": 13,
+        "events": 160,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 0,
+        "handleCancelSuccess": 0,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 3,
+        "mediaErrors": [],
+        "firstPlayingMs": 12325,
+        "playingEvents": 2,
+        "waitingEvents": 2,
+        "endedEvents": 0,
+        "lastTime": 243.682,
+        "lastAdvance": 1791870958837,
+        "maxGapMs": 1381,
+        "advancedSeconds": 243.66599999999997
+      },
+      "video": {
+        "time": 243.682,
+        "ready": 4,
+        "paused": false,
+        "width": 1080,
+        "height": 1920,
+        "error": null,
+        "bufferSec": 8.318000000000012,
+        "totalFrames": 0,
+        "decodedFrames": 0,
+        "droppedFrames": 0
+      },
+      "danmakuItems": 1,
+      "currentGapMs": 0,
+      "services": {
+        "main": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 53
+        },
+        "live": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 82
+        },
+        "update": {
+          "status": 200,
+          "code": null,
+          "version": "2.3.0",
+          "ms": 2054
+        },
+        "service": {
+          "uptime": 1155,
+          "node": "v16.20.2",
+          "relayAvailable": true,
+          "requestErrors": 5,
+          "danmakuSubscribers": 1,
+          "danmakuActive": true,
+          "castSubscribers": 1,
+          "ms": 12
+        }
+      },
+      "metrics": {
+        "heapBytes": 7037628,
+        "documents": 1,
+        "nodes": 817,
+        "listeners": 259,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "completedMedia": 0,
+          "failedMedia": 0
+        }
+      },
+      "playbackHealthy": true,
+      "biliHealthy": true,
+      "updateHealthy": true,
+      "serviceHealthy": true,
+      "relayHealthy": true
+    },
+    {
+      "minute": 5,
+      "elapsedMs": 302305,
+      "session": {
+        "index": 5,
+        "openedAt": 1791870701646,
+        "exitedAt": null,
+        "tokenCode": 0,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 1,
+        "subscriptionFailures": 0,
+        "frames": 15,
+        "events": 198,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 0,
+        "handleCancelSuccess": 0,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 3,
+        "mediaErrors": [],
+        "firstPlayingMs": 12325,
+        "playingEvents": 2,
+        "waitingEvents": 2,
+        "endedEvents": 0,
+        "lastTime": 303.877,
+        "lastAdvance": 1791871018963,
+        "maxGapMs": 1381,
+        "advancedSeconds": 303.861
+      },
+      "video": {
+        "time": 303.877,
+        "ready": 4,
+        "paused": false,
+        "width": 1080,
+        "height": 1920,
+        "error": null,
+        "bufferSec": 7.1229999999999905,
+        "totalFrames": 0,
+        "decodedFrames": 0,
+        "droppedFrames": 0
+      },
+      "danmakuItems": 0,
+      "currentGapMs": 1,
+      "services": {
+        "main": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 77
+        },
+        "live": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 94
+        },
+        "update": {
+          "status": 200,
+          "code": null,
+          "version": "2.3.0",
+          "ms": 2188
+        },
+        "service": {
+          "uptime": 1215,
+          "node": "v16.20.2",
+          "relayAvailable": true,
+          "requestErrors": 5,
+          "danmakuSubscribers": 1,
+          "danmakuActive": true,
+          "castSubscribers": 1,
+          "ms": 11
+        }
+      },
+      "metrics": {
+        "heapBytes": 7126080,
+        "documents": 1,
+        "nodes": 821,
+        "listeners": 261,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "completedMedia": 0,
+          "failedMedia": 0
+        }
+      },
+      "playbackHealthy": true,
+      "biliHealthy": true,
+      "updateHealthy": true,
+      "serviceHealthy": true,
+      "relayHealthy": true
+    },
+    {
+      "minute": 6,
+      "elapsedMs": 362324,
+      "session": {
+        "index": 5,
+        "openedAt": 1791870701646,
+        "exitedAt": null,
+        "tokenCode": 0,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 1,
+        "subscriptionFailures": 0,
+        "frames": 16,
+        "events": 230,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 0,
+        "handleCancelSuccess": 0,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 3,
+        "mediaErrors": [],
+        "firstPlayingMs": 12325,
+        "playingEvents": 2,
+        "waitingEvents": 2,
+        "endedEvents": 0,
+        "lastTime": 363.876,
+        "lastAdvance": 1791871078977,
+        "maxGapMs": 1381,
+        "advancedSeconds": 363.85999999999996
+      },
+      "video": {
+        "time": 363.876,
+        "ready": 4,
+        "paused": false,
+        "width": 1080,
+        "height": 1920,
+        "error": null,
+        "bufferSec": 11.124000000000024,
+        "totalFrames": 0,
+        "decodedFrames": 0,
+        "droppedFrames": 0
+      },
+      "danmakuItems": 0,
+      "currentGapMs": 0,
+      "services": {
+        "main": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 53
+        },
+        "live": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 76
+        },
+        "update": {
+          "status": 200,
+          "code": null,
+          "version": "2.3.0",
+          "ms": 2222
+        },
+        "service": {
+          "uptime": 1275,
+          "node": "v16.20.2",
+          "relayAvailable": true,
+          "requestErrors": 5,
+          "danmakuSubscribers": 1,
+          "danmakuActive": true,
+          "castSubscribers": 1,
+          "ms": 13
+        }
+      },
+      "metrics": {
+        "heapBytes": 6230236,
+        "documents": 1,
+        "nodes": 823,
+        "listeners": 262,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "completedMedia": 0,
+          "failedMedia": 0
+        }
+      },
+      "playbackHealthy": true,
+      "biliHealthy": true,
+      "updateHealthy": true,
+      "serviceHealthy": true,
+      "relayHealthy": true
+    },
+    {
+      "minute": 7,
+      "elapsedMs": 423992,
+      "session": {
+        "index": 5,
+        "openedAt": 1791870701646,
+        "exitedAt": null,
+        "tokenCode": 0,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 1,
+        "subscriptionFailures": 0,
+        "frames": 17,
+        "events": 265,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 0,
+        "handleCancelSuccess": 0,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 3,
+        "mediaErrors": [],
+        "firstPlayingMs": 12325,
+        "playingEvents": 2,
+        "waitingEvents": 2,
+        "endedEvents": 0,
+        "lastTime": 425.475,
+        "lastAdvance": 1791871140616,
+        "maxGapMs": 1381,
+        "advancedSeconds": 425.459
+      },
+      "video": {
+        "time": 425.475,
+        "ready": 4,
+        "paused": false,
+        "width": 1080,
+        "height": 1920,
+        "error": null,
+        "bufferSec": 9.524999999999977,
+        "totalFrames": 0,
+        "decodedFrames": 0,
+        "droppedFrames": 0
+      },
+      "danmakuItems": 0,
+      "currentGapMs": 0,
+      "services": {
+        "main": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 182
+        },
+        "live": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 99
+        },
+        "update": {
+          "status": 200,
+          "code": null,
+          "version": "2.3.0",
+          "ms": 3810
+        },
+        "service": {
+          "uptime": 1335,
+          "node": "v16.20.2",
+          "relayAvailable": true,
+          "requestErrors": 5,
+          "danmakuSubscribers": 1,
+          "danmakuActive": true,
+          "castSubscribers": 1,
+          "ms": 14
+        }
+      },
+      "metrics": {
+        "heapBytes": 6255248,
+        "documents": 1,
+        "nodes": 825,
+        "listeners": 263,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "completedMedia": 0,
+          "failedMedia": 0
+        }
+      },
+      "playbackHealthy": true,
+      "biliHealthy": true,
+      "updateHealthy": true,
+      "serviceHealthy": true,
+      "relayHealthy": true
+    },
+    {
+      "minute": 8,
+      "elapsedMs": 482687,
+      "session": {
+        "index": 5,
+        "openedAt": 1791870701646,
+        "exitedAt": null,
+        "tokenCode": 0,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 1,
+        "subscriptionFailures": 0,
+        "frames": 18,
+        "events": 309,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 0,
+        "handleCancelSuccess": 0,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 3,
+        "mediaErrors": [],
+        "firstPlayingMs": 12325,
+        "playingEvents": 2,
+        "waitingEvents": 2,
+        "endedEvents": 0,
+        "lastTime": 484.263,
+        "lastAdvance": 1791871199323,
+        "maxGapMs": 1381,
+        "advancedSeconds": 484.24699999999996
+      },
+      "video": {
+        "time": 484.263,
+        "ready": 4,
+        "paused": false,
+        "width": 1080,
+        "height": 1920,
+        "error": null,
+        "bufferSec": 7.737000000000023,
+        "totalFrames": 0,
+        "decodedFrames": 0,
+        "droppedFrames": 0
+      },
+      "danmakuItems": 0,
+      "currentGapMs": 0,
+      "services": {
+        "main": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 134
+        },
+        "live": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 152
+        },
+        "update": {
+          "status": 200,
+          "code": null,
+          "version": "2.3.0",
+          "ms": 2485
+        },
+        "service": {
+          "uptime": 1395,
+          "node": "v16.20.2",
+          "relayAvailable": true,
+          "requestErrors": 5,
+          "danmakuSubscribers": 1,
+          "danmakuActive": true,
+          "castSubscribers": 1,
+          "ms": 43
+        }
+      },
+      "metrics": {
+        "heapBytes": 6874092,
+        "documents": 1,
+        "nodes": 827,
+        "listeners": 264,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "completedMedia": 0,
+          "failedMedia": 0
+        }
+      },
+      "playbackHealthy": true,
+      "biliHealthy": true,
+      "updateHealthy": true,
+      "serviceHealthy": true,
+      "relayHealthy": true
+    },
+    {
+      "minute": 9,
+      "elapsedMs": 542736,
+      "session": {
+        "index": 5,
+        "openedAt": 1791870701646,
+        "exitedAt": null,
+        "tokenCode": 0,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 1,
+        "subscriptionFailures": 0,
+        "frames": 19,
+        "events": 354,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 0,
+        "handleCancelSuccess": 0,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 3,
+        "mediaErrors": [],
+        "firstPlayingMs": 12325,
+        "playingEvents": 2,
+        "waitingEvents": 2,
+        "endedEvents": 0,
+        "lastTime": 544.26,
+        "lastAdvance": 1791871259353,
+        "maxGapMs": 1381,
+        "advancedSeconds": 544.2439999999999
+      },
+      "video": {
+        "time": 544.26,
+        "ready": 4,
+        "paused": false,
+        "width": 1080,
+        "height": 1920,
+        "error": null,
+        "bufferSec": 10.740000000000009,
+        "totalFrames": 0,
+        "decodedFrames": 0,
+        "droppedFrames": 0
+      },
+      "danmakuItems": 0,
+      "currentGapMs": 23,
+      "services": {
+        "main": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 46
+        },
+        "live": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 201
+        },
+        "update": {
+          "status": 200,
+          "code": null,
+          "version": "2.3.0",
+          "ms": 2560
+        },
+        "service": {
+          "uptime": 1455,
+          "node": "v16.20.2",
+          "relayAvailable": true,
+          "requestErrors": 5,
+          "danmakuSubscribers": 1,
+          "danmakuActive": true,
+          "castSubscribers": 1,
+          "ms": 21
+        }
+      },
+      "metrics": {
+        "heapBytes": 6959480,
+        "documents": 1,
+        "nodes": 829,
+        "listeners": 265,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "completedMedia": 0,
+          "failedMedia": 0
+        }
+      },
+      "playbackHealthy": true,
+      "biliHealthy": true,
+      "updateHealthy": true,
+      "serviceHealthy": true,
+      "relayHealthy": true
+    },
+    {
+      "minute": 10,
+      "elapsedMs": 602247,
+      "session": {
+        "index": 5,
+        "openedAt": 1791870701646,
+        "exitedAt": null,
+        "tokenCode": 0,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 1,
+        "subscriptionFailures": 0,
+        "frames": 21,
+        "events": 385,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 0,
+        "handleCancelSuccess": 0,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 3,
+        "mediaErrors": [],
+        "firstPlayingMs": 12325,
+        "playingEvents": 2,
+        "waitingEvents": 2,
+        "endedEvents": 0,
+        "lastTime": 603.855,
+        "lastAdvance": 1791871318896,
+        "maxGapMs": 1381,
+        "advancedSeconds": 603.8389999999999
+      },
+      "video": {
+        "time": 603.855,
+        "ready": 4,
+        "paused": false,
+        "width": 1080,
+        "height": 1920,
+        "error": null,
+        "bufferSec": 8.144999999999982,
+        "totalFrames": 0,
+        "decodedFrames": 0,
+        "droppedFrames": 0
+      },
+      "danmakuItems": 0,
+      "currentGapMs": 0,
+      "services": {
+        "main": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 106
+        },
+        "live": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 78
+        },
+        "update": {
+          "status": 200,
+          "code": null,
+          "version": "2.3.0",
+          "ms": 2091
+        },
+        "service": {
+          "uptime": 1515,
+          "node": "v16.20.2",
+          "relayAvailable": true,
+          "requestErrors": 5,
+          "danmakuSubscribers": 1,
+          "danmakuActive": true,
+          "castSubscribers": 1,
+          "ms": 17
+        }
+      },
+      "metrics": {
+        "heapBytes": 6078228,
+        "documents": 1,
+        "nodes": 731,
+        "listeners": 246,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "completedMedia": 0,
+          "failedMedia": 0
+        }
+      },
+      "playbackHealthy": true,
+      "biliHealthy": true,
+      "updateHealthy": true,
+      "serviceHealthy": true,
+      "relayHealthy": true
+    },
+    {
+      "minute": 11,
+      "elapsedMs": 662420,
+      "session": {
+        "index": 5,
+        "openedAt": 1791870701646,
+        "exitedAt": null,
+        "tokenCode": 0,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 1,
+        "subscriptionFailures": 0,
+        "frames": 22,
+        "events": 419,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 0,
+        "handleCancelSuccess": 0,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 3,
+        "mediaErrors": [],
+        "firstPlayingMs": 12325,
+        "playingEvents": 2,
+        "waitingEvents": 2,
+        "endedEvents": 0,
+        "lastTime": 663.85,
+        "lastAdvance": 1791871379018,
+        "maxGapMs": 1381,
+        "advancedSeconds": 663.834
+      },
+      "video": {
+        "time": 663.85,
+        "ready": 4,
+        "paused": false,
+        "width": 1080,
+        "height": 1920,
+        "error": null,
+        "bufferSec": 8.149999999999977,
+        "totalFrames": 0,
+        "decodedFrames": 0,
+        "droppedFrames": 0
+      },
+      "danmakuItems": 0,
+      "currentGapMs": 0,
+      "services": {
+        "main": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 227
+        },
+        "live": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 275
+        },
+        "update": {
+          "status": 200,
+          "code": null,
+          "version": "2.3.0",
+          "ms": 2168
+        },
+        "service": {
+          "uptime": 1575,
+          "node": "v16.20.2",
+          "relayAvailable": true,
+          "requestErrors": 5,
+          "danmakuSubscribers": 1,
+          "danmakuActive": true,
+          "castSubscribers": 1,
+          "ms": 69
+        }
+      },
+      "metrics": {
+        "heapBytes": 6091748,
+        "documents": 1,
+        "nodes": 733,
+        "listeners": 247,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "completedMedia": 0,
+          "failedMedia": 0
+        }
+      },
+      "playbackHealthy": true,
+      "biliHealthy": true,
+      "updateHealthy": true,
+      "serviceHealthy": true,
+      "relayHealthy": true
+    },
+    {
+      "minute": 12,
+      "elapsedMs": 722519,
+      "session": {
+        "index": 5,
+        "openedAt": 1791870701646,
+        "exitedAt": null,
+        "tokenCode": 0,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 1,
+        "subscriptionFailures": 0,
+        "frames": 22,
+        "events": 448,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 0,
+        "handleCancelSuccess": 0,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 3,
+        "mediaErrors": [],
+        "firstPlayingMs": 12325,
+        "playingEvents": 2,
+        "waitingEvents": 2,
+        "endedEvents": 0,
+        "lastTime": 724.043,
+        "lastAdvance": 1791871439121,
+        "maxGapMs": 1381,
+        "advancedSeconds": 724.0269999999999
+      },
+      "video": {
+        "time": 724.043,
+        "ready": 4,
+        "paused": false,
+        "width": 1080,
+        "height": 1920,
+        "error": null,
+        "bufferSec": 10.956999999999994,
+        "totalFrames": 0,
+        "decodedFrames": 0,
+        "droppedFrames": 0
+      },
+      "danmakuItems": 0,
+      "currentGapMs": 0,
+      "services": {
+        "main": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 83
+        },
+        "live": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 205
+        },
+        "update": {
+          "status": 200,
+          "code": null,
+          "version": "2.3.0",
+          "ms": 2246
+        },
+        "service": {
+          "uptime": 1635,
+          "node": "v16.20.2",
+          "relayAvailable": true,
+          "requestErrors": 5,
+          "danmakuSubscribers": 1,
+          "danmakuActive": true,
+          "castSubscribers": 1,
+          "ms": 17
+        }
+      },
+      "metrics": {
+        "heapBytes": 6104432,
+        "documents": 1,
+        "nodes": 733,
+        "listeners": 247,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "completedMedia": 0,
+          "failedMedia": 0
+        }
+      },
+      "playbackHealthy": true,
+      "biliHealthy": true,
+      "updateHealthy": true,
+      "serviceHealthy": true,
+      "relayHealthy": true
+    },
+    {
+      "minute": 13,
+      "elapsedMs": 782118,
+      "session": {
+        "index": 5,
+        "openedAt": 1791870701646,
+        "exitedAt": null,
+        "tokenCode": 0,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 1,
+        "subscriptionFailures": 0,
+        "frames": 23,
+        "events": 483,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 0,
+        "handleCancelSuccess": 0,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 3,
+        "mediaErrors": [],
+        "firstPlayingMs": 12325,
+        "playingEvents": 2,
+        "waitingEvents": 2,
+        "endedEvents": 0,
+        "lastTime": 783.631,
+        "lastAdvance": 1791871498703,
+        "maxGapMs": 1381,
+        "advancedSeconds": 783.6149999999999
+      },
+      "video": {
+        "time": 783.631,
+        "ready": 4,
+        "paused": false,
+        "width": 1080,
+        "height": 1920,
+        "error": null,
+        "bufferSec": 8.369000000000028,
+        "totalFrames": 0,
+        "decodedFrames": 0,
+        "droppedFrames": 0
+      },
+      "danmakuItems": 0,
+      "currentGapMs": 1,
+      "services": {
+        "main": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 53
+        },
+        "live": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 65
+        },
+        "update": {
+          "status": 200,
+          "code": null,
+          "version": "2.3.0",
+          "ms": 1966
+        },
+        "service": {
+          "uptime": 1695,
+          "node": "v16.20.2",
+          "relayAvailable": true,
+          "requestErrors": 5,
+          "danmakuSubscribers": 1,
+          "danmakuActive": true,
+          "castSubscribers": 1,
+          "ms": 12
+        }
+      },
+      "metrics": {
+        "heapBytes": 6131248,
+        "documents": 1,
+        "nodes": 735,
+        "listeners": 248,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "completedMedia": 0,
+          "failedMedia": 0
+        }
+      },
+      "playbackHealthy": true,
+      "biliHealthy": true,
+      "updateHealthy": true,
+      "serviceHealthy": true,
+      "relayHealthy": true
+    },
+    {
+      "minute": 14,
+      "elapsedMs": 842733,
+      "session": {
+        "index": 5,
+        "openedAt": 1791870701646,
+        "exitedAt": null,
+        "tokenCode": 0,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 1,
+        "subscriptionFailures": 0,
+        "frames": 25,
+        "events": 520,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 0,
+        "handleCancelSuccess": 0,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 3,
+        "mediaErrors": [],
+        "firstPlayingMs": 12325,
+        "playingEvents": 2,
+        "waitingEvents": 2,
+        "endedEvents": 0,
+        "lastTime": 844.221,
+        "lastAdvance": 1791871559310,
+        "maxGapMs": 1381,
+        "advancedSeconds": 844.2049999999999
+      },
+      "video": {
+        "time": 844.221,
+        "ready": 4,
+        "paused": false,
+        "width": 1080,
+        "height": 1920,
+        "error": null,
+        "bufferSec": 7.778999999999996,
+        "totalFrames": 0,
+        "decodedFrames": 0,
+        "droppedFrames": 0
+      },
+      "danmakuItems": 1,
+      "currentGapMs": 0,
+      "services": {
+        "main": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 402
+        },
+        "live": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 349
+        },
+        "update": {
+          "status": 200,
+          "code": null,
+          "version": "2.3.0",
+          "ms": 2540
+        },
+        "service": {
+          "uptime": 1755,
+          "node": "v16.20.2",
+          "relayAvailable": true,
+          "requestErrors": 5,
+          "danmakuSubscribers": 1,
+          "danmakuActive": true,
+          "castSubscribers": 1,
+          "ms": 226
+        }
+      },
+      "metrics": {
+        "heapBytes": 6170152,
+        "documents": 1,
+        "nodes": 739,
+        "listeners": 250,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "completedMedia": 0,
+          "failedMedia": 0
+        }
+      },
+      "playbackHealthy": true,
+      "biliHealthy": true,
+      "updateHealthy": true,
+      "serviceHealthy": true,
+      "relayHealthy": true
+    },
+    {
+      "minute": 15,
+      "elapsedMs": 902393,
+      "session": {
+        "index": 5,
+        "openedAt": 1791870701646,
+        "exitedAt": null,
+        "tokenCode": 0,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 1,
+        "subscriptionFailures": 0,
+        "frames": 25,
+        "events": 554,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 0,
+        "handleCancelSuccess": 0,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 3,
+        "mediaErrors": [],
+        "firstPlayingMs": 12325,
+        "playingEvents": 2,
+        "waitingEvents": 2,
+        "endedEvents": 0,
+        "lastTime": 903.808,
+        "lastAdvance": 1791871618966,
+        "maxGapMs": 1381,
+        "advancedSeconds": 903.7919999999999
+      },
+      "video": {
+        "time": 903.808,
+        "ready": 4,
+        "paused": false,
+        "width": 1080,
+        "height": 1920,
+        "error": null,
+        "bufferSec": 11.192000000000007,
+        "totalFrames": 0,
+        "decodedFrames": 0,
+        "droppedFrames": 0
+      },
+      "danmakuItems": 0,
+      "currentGapMs": 0,
+      "services": {
+        "main": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 116
+        },
+        "live": {
+          "status": 200,
+          "code": 0,
+          "version": null,
+          "ms": 133
+        },
+        "update": {
+          "status": 200,
+          "code": null,
+          "version": "2.3.0",
+          "ms": 2248
+        },
+        "service": {
+          "uptime": 1815,
+          "node": "v16.20.2",
+          "relayAvailable": true,
+          "requestErrors": 5,
+          "danmakuSubscribers": 1,
+          "danmakuActive": true,
+          "castSubscribers": 1,
+          "ms": 21
+        }
+      },
+      "metrics": {
+        "heapBytes": 6169436,
+        "documents": 1,
+        "nodes": 739,
+        "listeners": 250,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "completedMedia": 0,
+          "failedMedia": 0
+        }
+      },
+      "playbackHealthy": true,
+      "biliHealthy": true,
+      "updateHealthy": true,
+      "serviceHealthy": true,
+      "relayHealthy": true
+    }
+  ],
+  "sessions": [
+    {
+      "index": 0,
+      "openedAt": 1791870653683,
+      "exitedAt": 1791870657857,
+      "tokenCode": 0,
+      "tokenMalformed": 0,
+      "subscribes": 1,
+      "subscriptionAcks": 1,
+      "subscriptionFailures": 0,
+      "frames": 0,
+      "events": 1,
+      "lateFrames": 0,
+      "framesAfterStop": 0,
+      "handleCancelCalls": 1,
+      "handleCancelSuccess": 1,
+      "handleCancelFailures": 0,
+      "stopCalls": 1,
+      "stopSuccess": 1,
+      "stopFailures": 0,
+      "postExitSubscribes": 0,
+      "postExitVideoSamples": 0,
+      "postExitDanmakuSamples": 0,
+      "peakDanmaku": 0,
+      "mediaErrors": [],
+      "firstPlayingMs": 1437,
+      "playingEvents": 2,
+      "waitingEvents": 2,
+      "endedEvents": 0,
+      "lastTime": 1.017,
+      "lastAdvance": 1791870656861,
+      "maxGapMs": 1233,
+      "advancedSeconds": 1.011
+    },
+    {
+      "index": 1,
+      "openedAt": 1791870661687,
+      "exitedAt": 1791870665304,
+      "tokenCode": 0,
+      "tokenMalformed": 0,
+      "subscribes": 1,
+      "subscriptionAcks": 1,
+      "subscriptionFailures": 0,
+      "frames": 0,
+      "events": 0,
+      "lateFrames": 0,
+      "framesAfterStop": 0,
+      "handleCancelCalls": 1,
+      "handleCancelSuccess": 1,
+      "handleCancelFailures": 0,
+      "stopCalls": 1,
+      "stopSuccess": 1,
+      "stopFailures": 0,
+      "postExitSubscribes": 0,
+      "postExitVideoSamples": 0,
+      "postExitDanmakuSamples": 0,
+      "peakDanmaku": 0,
+      "mediaErrors": [],
+      "firstPlayingMs": 684,
+      "playingEvents": 2,
+      "waitingEvents": 2,
+      "endedEvents": 0,
+      "lastTime": 1.565,
+      "lastAdvance": 1791870664729,
+      "maxGapMs": 1000,
+      "advancedSeconds": 1.559
+    },
+    {
+      "index": 2,
+      "openedAt": 1791870669128,
+      "exitedAt": 1791870672333,
+      "tokenCode": 0,
+      "tokenMalformed": 0,
+      "subscribes": 1,
+      "subscriptionAcks": 1,
+      "subscriptionFailures": 0,
+      "frames": 0,
+      "events": 5,
+      "lateFrames": 0,
+      "framesAfterStop": 0,
+      "handleCancelCalls": 1,
+      "handleCancelSuccess": 1,
+      "handleCancelFailures": 0,
+      "stopCalls": 1,
+      "stopSuccess": 1,
+      "stopFailures": 0,
+      "postExitSubscribes": 0,
+      "postExitVideoSamples": 0,
+      "postExitDanmakuSamples": 0,
+      "peakDanmaku": 0,
+      "mediaErrors": [],
+      "firstPlayingMs": 572,
+      "playingEvents": 2,
+      "waitingEvents": 2,
+      "endedEvents": 0,
+      "lastTime": 1.474,
+      "lastAdvance": 1791870671800,
+      "maxGapMs": 1653,
+      "advancedSeconds": 1.468
+    },
+    {
+      "index": 3,
+      "openedAt": 1791870676117,
+      "exitedAt": 1791870679134,
+      "tokenCode": 0,
+      "tokenMalformed": 0,
+      "subscribes": 1,
+      "subscriptionAcks": 1,
+      "subscriptionFailures": 0,
+      "frames": 0,
+      "events": 11,
+      "lateFrames": 0,
+      "framesAfterStop": 0,
+      "handleCancelCalls": 1,
+      "handleCancelSuccess": 1,
+      "handleCancelFailures": 0,
+      "stopCalls": 1,
+      "stopSuccess": 1,
+      "stopFailures": 0,
+      "postExitSubscribes": 0,
+      "postExitVideoSamples": 0,
+      "postExitDanmakuSamples": 0,
+      "peakDanmaku": 0,
+      "mediaErrors": [],
+      "firstPlayingMs": 602,
+      "playingEvents": 2,
+      "waitingEvents": 2,
+      "endedEvents": 0,
+      "lastTime": 1.273,
+      "lastAdvance": 1791870678647,
+      "maxGapMs": 999,
+      "advancedSeconds": 1.257
+    },
+    {
+      "index": 4,
+      "openedAt": 1791870682913,
+      "exitedAt": 1791870697842,
+      "tokenCode": 0,
+      "tokenMalformed": 0,
+      "subscribes": 1,
+      "subscriptionAcks": 1,
+      "subscriptionFailures": 0,
+      "frames": 0,
+      "events": 20,
+      "lateFrames": 0,
+      "framesAfterStop": 0,
+      "handleCancelCalls": 1,
+      "handleCancelSuccess": 1,
+      "handleCancelFailures": 0,
+      "stopCalls": 1,
+      "stopSuccess": 1,
+      "stopFailures": 0,
+      "postExitSubscribes": 0,
+      "postExitVideoSamples": 0,
+      "postExitDanmakuSamples": 0,
+      "peakDanmaku": 0,
+      "mediaErrors": [],
+      "firstPlayingMs": 12584,
+      "playingEvents": 2,
+      "waitingEvents": 2,
+      "endedEvents": 0,
+      "lastTime": 0.979,
+      "lastAdvance": 1791870697247,
+      "maxGapMs": 1380,
+      "advancedSeconds": 0.973
+    },
+    {
+      "index": 5,
+      "openedAt": 1791870701646,
+      "exitedAt": 1791871619617,
+      "tokenCode": 0,
+      "tokenMalformed": 0,
+      "subscribes": 1,
+      "subscriptionAcks": 1,
+      "subscriptionFailures": 0,
+      "frames": 25,
+      "events": 554,
+      "lateFrames": 0,
+      "framesAfterStop": 0,
+      "handleCancelCalls": 1,
+      "handleCancelSuccess": 1,
+      "handleCancelFailures": 0,
+      "stopCalls": 1,
+      "stopSuccess": 1,
+      "stopFailures": 0,
+      "postExitSubscribes": 0,
+      "postExitVideoSamples": 0,
+      "postExitDanmakuSamples": 0,
+      "peakDanmaku": 3,
+      "mediaErrors": [],
+      "firstPlayingMs": 12325,
+      "playingEvents": 2,
+      "waitingEvents": 2,
+      "endedEvents": 0,
+      "lastTime": 904.009,
+      "lastAdvance": 1791871619074,
+      "maxGapMs": 1381,
+      "advancedSeconds": 903.9929999999999
+    }
+  ],
+  "metrics": [
+    {
+      "phase": "before",
+      "heapBytes": 5734624,
+      "documents": 1,
+      "nodes": 608,
+      "listeners": 214,
+      "network": {
+        "active": 0,
+        "media": 0,
+        "completedMedia": 0,
+        "failedMedia": 0
+      }
+    },
+    {
+      "phase": "cycle 1",
+      "heapBytes": 5803764,
+      "documents": 1,
+      "nodes": 608,
+      "listeners": 214,
+      "network": {
+        "active": 0,
+        "media": 0,
+        "completedMedia": 0,
+        "failedMedia": 0
+      }
+    },
+    {
+      "phase": "cycle 2",
+      "heapBytes": 5847028,
+      "documents": 1,
+      "nodes": 608,
+      "listeners": 214,
+      "network": {
+        "active": 0,
+        "media": 0,
+        "completedMedia": 0,
+        "failedMedia": 0
+      }
+    },
+    {
+      "phase": "cycle 3",
+      "heapBytes": 5869740,
+      "documents": 1,
+      "nodes": 608,
+      "listeners": 214,
+      "network": {
+        "active": 0,
+        "media": 0,
+        "completedMedia": 0,
+        "failedMedia": 0
+      }
+    },
+    {
+      "phase": "cycle 4",
+      "heapBytes": 5897272,
+      "documents": 1,
+      "nodes": 608,
+      "listeners": 214,
+      "network": {
+        "active": 0,
+        "media": 0,
+        "completedMedia": 0,
+        "failedMedia": 0
+      }
+    },
+    {
+      "phase": "cycle 5",
+      "heapBytes": 5911148,
+      "documents": 1,
+      "nodes": 608,
+      "listeners": 214,
+      "network": {
+        "active": 0,
+        "media": 0,
+        "completedMedia": 0,
+        "failedMedia": 0
+      }
+    },
+    {
+      "phase": "endurance exit",
+      "heapBytes": 5956976,
+      "documents": 1,
+      "nodes": 608,
+      "listeners": 214,
+      "network": {
+        "active": 0,
+        "media": 0,
+        "completedMedia": 0,
+        "failedMedia": 0
+      }
+    }
+  ],
+  "limits": [
+    "Native video time/dimensions/frame counters are not a photograph of the physical panel.",
+    "A quiet room without received chat frames cannot validate real-time chat rendering.",
+    "SDK cancellation, service acknowledgement and production diagnostic subscriber counts are measured separately.",
+    "JS heap and DOM counters exclude GPU/process memory; one television and network do not establish fleet-wide stability."
+  ],
+  "baseline": {
+    "danmakuSubscribers": 0,
+    "danmakuActive": false,
+    "castSubscribers": 1
+  },
+  "fixture": {
+    "roomId": 1931167176,
+    "recommendationCode": null,
+    "candidates": [
+      {
+        "roomId": 1931167176,
+        "code": 0,
+        "liveStatus": 1
+      }
+    ]
+  },
+  "completedAt": "2026-10-13T06:07:03.753Z",
+  "pass": true
+}

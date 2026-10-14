@@ -1,0 +1,157 @@
+{
+  "startedAt": "2026-10-13T06:50:19.326Z",
+  "minutes": 15,
+  "cycles": 5,
+  "checks": [
+    {
+      "name": "service subscriber diagnostics settled at idle",
+      "pass": true,
+      "detail": [
+        {
+          "at": "2026-10-13T06:50:20.186Z",
+          "danmakuSubscribers": 0,
+          "danmakuActive": false,
+          "castSubscribers": 1
+        },
+        {
+          "at": "2026-10-13T06:50:20.713Z",
+          "danmakuSubscribers": 0,
+          "danmakuActive": false,
+          "castSubscribers": 1
+        },
+        {
+          "at": "2026-10-13T06:50:21.245Z",
+          "danmakuSubscribers": 0,
+          "danmakuActive": false,
+          "castSubscribers": 1
+        }
+      ]
+    },
+    {
+      "name": "currently active production live room found",
+      "pass": false,
+      "detail": {
+        "roomId": null,
+        "recommendationCode": null,
+        "candidates": [
+          {
+            "roomId": 34348,
+            "code": null,
+            "liveStatus": null,
+            "probe": {
+              "failed": true,
+              "errorText": "Upstream timeout before response headers"
+            }
+          },
+          {
+            "roomId": 34348,
+            "code": null,
+            "liveStatus": null,
+            "probe": {
+              "failed": true,
+              "errorText": "Upstream timeout before response headers"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "test completed",
+      "pass": false,
+      "detail": "No current live room available"
+    },
+    {
+      "name": "original settings restored",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "all live monitor injection removed",
+      "pass": true,
+      "detail": {
+        "requestRestored": true,
+        "diagPushRestored": true,
+        "forcedCancels": 0,
+        "cancelFailures": 0,
+        "injectionsRemoved": true
+      }
+    }
+  ],
+  "samples": [],
+  "sessions": [],
+  "metrics": [
+    {
+      "phase": "before",
+      "heapBytes": 4786748,
+      "documents": 1,
+      "nodes": 608,
+      "listeners": 214,
+      "network": {
+        "active": 0,
+        "media": 0,
+        "startedMedia": 0,
+        "completedMedia": 0,
+        "failedMedia": 0
+      }
+    }
+  ],
+  "limits": [
+    "Native video time/dimensions/frame counters are not a photograph of the physical panel.",
+    "A quiet room without received chat frames cannot validate real-time chat rendering.",
+    "SDK cancellation, service acknowledgement and production diagnostic subscriber counts are measured separately.",
+    "Media connect/retry/gave-up breadcrumbs are application attempts, not native HTTP socket counts.",
+    "Relay internal WebSocket attempts are not exposed by TV diagnostics; chat event/frame counts cannot establish a reconnect budget. The real relay module budget is tested separately with a local controlled WebSocket boundary.",
+    "JS heap and DOM counters exclude GPU/process memory; one television and network do not establish fleet-wide stability."
+  ],
+  "baselineSamples": [
+    {
+      "at": "2026-10-13T06:50:20.186Z",
+      "danmakuSubscribers": 0,
+      "danmakuActive": false,
+      "castSubscribers": 1
+    },
+    {
+      "at": "2026-10-13T06:50:20.713Z",
+      "danmakuSubscribers": 0,
+      "danmakuActive": false,
+      "castSubscribers": 1
+    },
+    {
+      "at": "2026-10-13T06:50:21.245Z",
+      "danmakuSubscribers": 0,
+      "danmakuActive": false,
+      "castSubscribers": 1
+    }
+  ],
+  "baseline": {
+    "danmakuSubscribers": 0,
+    "danmakuActive": false,
+    "castSubscribers": 1
+  },
+  "fixture": {
+    "roomId": null,
+    "recommendationCode": null,
+    "candidates": [
+      {
+        "roomId": 34348,
+        "code": null,
+        "liveStatus": null,
+        "probe": {
+          "failed": true,
+          "errorText": "Upstream timeout before response headers"
+        }
+      },
+      {
+        "roomId": 34348,
+        "code": null,
+        "liveStatus": null,
+        "probe": {
+          "failed": true,
+          "errorText": "Upstream timeout before response headers"
+        }
+      }
+    ]
+  },
+  "completedAt": "2026-10-13T06:50:41.649Z",
+  "pass": false
+}

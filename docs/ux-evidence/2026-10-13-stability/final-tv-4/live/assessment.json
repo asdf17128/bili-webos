@@ -1,0 +1,12 @@
+{
+  "overall": "COMPLETED_WITH_FINDINGS",
+  "rawStatus": "failed",
+  "checksPassed": 43,
+  "checksTotal": 45,
+  "chatDelivery": "PASS: live chat persisted through 15 minutes; heartbeat timeout recovered without application restart.",
+  "mediaRecovery": "PASS for bounded automatic recovery, not uninterrupted playback.",
+  "fluidity": "NEEDS_REVIEW: max progress gap 13326 ms, upstream aborted/header timeout; exact CDN vs middle-network cause not established.",
+  "updateSource": "FAIL in minute 14/15 probes; failure lacks response status in original tool. Separate followup returned HTTP 200 and valid version JSON. Do not rewrite failed samples.",
+  "limits": "Native HLS frame counters are all zero/unavailable and do not establish zero frame drops.",
+  "supplementalObservation": "Two read-only getDiagnostics probes, one fresh play-info hostname inventory, and a post-run update probe; no alternate chat WS or media mutations."
+}

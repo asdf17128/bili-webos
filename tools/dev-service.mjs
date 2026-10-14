@@ -78,14 +78,23 @@ if (!isolatedState && svc.methods.setCookies && fs.existsSync(MAC_COOKIES)) {
   } catch (e) { console.warn('[dev-service] cookie seed failed:', e.message); }
 }
 
+let nextMessageToken = 0;
 const call = (method, payload, onRespond, isSub) => {
   const handler = svc.methods[method];
   if (!handler) { onRespond({ returnValue: false, errorText: 'no such method: ' + method }); return; }
+  let cancelled = false;
+  const message = { payload: payload || {}, uniqueToken: 'dev-' + (++nextMessageToken), isSubscription: !!isSub, respond: onRespond, cancel() {} };
   try {
-    handler({ payload: payload || {}, isSubscription: !!isSub, respond: onRespond, cancel() {} });
+    handler(message);
   } catch (e) {
     onRespond({ returnValue: false, errorText: e.message });
   }
+  return () => {
+    if (cancelled) return;
+    cancelled = true;
+    const cancel = svc.cancels && svc.cancels[method];
+    if (isSub && cancel) cancel(message);
+  };
 };
 
 const server = http.createServer((req, res) => {
@@ -128,9 +137,11 @@ server.on('upgrade', (req, socket, head) => {
     const payload = {};
     u.searchParams.forEach((v, k) => { payload[k] = /^\d+$/.test(v) ? parseInt(v, 10) : v; });
     console.log('[dev-service] subscribe', m[1], JSON.stringify(payload).slice(0, 80));
-    call(m[1], payload, (r) => {
+    const cancel = call(m[1], payload, (r) => {
       if (ws.readyState === 1) { try { ws.send(JSON.stringify(r || {})); } catch (e) { /* ignore */ } }
     }, true);
+    ws.once('close', () => cancel && cancel());
+    ws.on('error', () => cancel && cancel());
   });
 });
 

@@ -1,0 +1,12 @@
+FAIL danmaku: 20 real SDK subscriptions release every bridge exactly once created=20, cancelled=0
+
+0 !== 20
+
+PASS danmaku: cleanup tolerates throwingCancel and still ignores late callbacks {"cancelled":0,"lateDelivered":0}
+PASS danmaku: cleanup tolerates missingHandle and still ignores late callbacks {"cancelled":0,"lateDelivered":0}
+FAIL cast: 20 real SDK subscriptions release every bridge exactly once created=20, cancelled=0
+
+0 !== 20
+
+PASS cast: cleanup tolerates throwingCancel and still ignores late callbacks {"cancelled":0,"lateDelivered":0}
+PASS cast: cleanup tolerates missingHandle and still ignores late callbacks {"cancelled":0,"lateDelivered":0}

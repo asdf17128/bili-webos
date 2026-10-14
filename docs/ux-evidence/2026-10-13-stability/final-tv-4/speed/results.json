@@ -1,0 +1,1460 @@
+{
+  "started": "2026-10-13T07:38:54.021Z",
+  "checks": [
+    {
+      "name": "initial DASH actually decodes",
+      "pass": true,
+      "detail": {
+        "time": 2.2,
+        "width": 640,
+        "height": 480,
+        "ready": 4,
+        "paused": false,
+        "error": null,
+        "loading": false,
+        "seeking": false,
+        "source": "DASH"
+      }
+    },
+    {
+      "name": "speed control reachable",
+      "pass": true
+    },
+    {
+      "name": "speed option exists 2x",
+      "pass": true
+    },
+    {
+      "name": "native 2x actually advances near double speed",
+      "pass": true,
+      "detail": {
+        "rate": 1.9766067471066238,
+        "state": {
+          "time": 10.12,
+          "width": 640,
+          "height": 480,
+          "ready": 4,
+          "paused": false,
+          "error": null,
+          "loading": false,
+          "seeking": false,
+          "source": "native"
+        }
+      }
+    },
+    {
+      "name": "speed control reachable",
+      "pass": true
+    },
+    {
+      "name": "speed option exists 正常",
+      "pass": true
+    },
+    {
+      "name": "1x restores DASH near the same position",
+      "pass": true,
+      "detail": {
+        "time": 16.549,
+        "width": 640,
+        "height": 480,
+        "ready": 4,
+        "paused": false,
+        "error": null,
+        "loading": false,
+        "seeking": false,
+        "source": "DASH"
+      }
+    },
+    {
+      "name": "restored DASH advances at normal speed",
+      "pass": true,
+      "detail": {
+        "rate": 0.9932952570151478,
+        "state": {
+          "time": 21.4,
+          "width": 640,
+          "height": 480,
+          "ready": 4,
+          "paused": false,
+          "error": null,
+          "loading": false,
+          "seeking": false,
+          "source": "DASH"
+        }
+      }
+    },
+    {
+      "name": "speed control reachable",
+      "pass": true
+    },
+    {
+      "name": "speed option exists 2x",
+      "pass": true
+    },
+    {
+      "name": "paused native switch retains position and pause",
+      "pass": true,
+      "detail": {
+        "time": 21.45,
+        "width": 640,
+        "height": 480,
+        "ready": 4,
+        "paused": true,
+        "error": null,
+        "loading": false,
+        "seeking": false,
+        "source": "native"
+      }
+    },
+    {
+      "name": "speed control reachable",
+      "pass": true
+    },
+    {
+      "name": "speed option exists 正常",
+      "pass": true
+    },
+    {
+      "name": "paused 1x restores DASH with position and pause",
+      "pass": true,
+      "detail": {
+        "time": 21.45,
+        "width": 640,
+        "height": 480,
+        "ready": 4,
+        "paused": true,
+        "error": null,
+        "loading": false,
+        "seeking": false,
+        "source": "DASH"
+      }
+    },
+    {
+      "name": "paused round trip can resume actual decoding",
+      "pass": true
+    },
+    {
+      "name": "normal Back releases player",
+      "pass": true
+    },
+    {
+      "name": "original preferences restored",
+      "pass": true
+    }
+  ],
+  "pausedRestoreSettled": true,
+  "timeline": [
+    {
+      "event": "sample",
+      "at": 1070793,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1070886.700000003,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1070986.8999999985,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1071087,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1071186.8999999985,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1071287.200000003,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1071386.700000003,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1071487,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1071586.5,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1071687.200000003,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1071787.5,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1071886.700000003,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1071986.5,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1072087.1000000015,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1072187.5,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1072286.3999999985,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1072386.299999997,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1072486.799999997,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1072586.799999997,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1072686.8999999985,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1072787.1000000015,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1072887.299999997,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1072989.3999999985,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1073086.799999997,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1073186.799999997,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1073286.799999997,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1073386.200000003,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1073487.1000000015,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1073587,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1073687.299999997,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "emptied",
+      "at": 1073742.6000000015,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "emptied",
+      "at": 1073796.1000000015,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1073819.799999997,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1073886.799999997,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1073987.299999997,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1074087.1000000015,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1074190.1000000015,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1074286.6000000015,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "loadedmetadata",
+      "at": 1074344.8999999985,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": true,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "canplay",
+      "at": 1074356.8999999985,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": true,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "seeking",
+      "at": 1074358.8999999985,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": true,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1074386.799999997,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": true,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1074487.1000000015,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": true,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1074586.8999999985,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": true,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "seeked",
+      "at": 1074645.700000003,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1074706.5,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1074786.799999997,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1074886.3999999985,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1074987,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1075086.3999999985,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1075186.3999999985,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1075287.1000000015,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1075387,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1075486.6000000015,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1075586.6000000015,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1075686.6000000015,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1075787.200000003,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1075887.200000003,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1075987.6000000015,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1076086.200000003,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1076186.5,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1076287.299999997,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1076387.200000003,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1076486.799999997,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1076587,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1076686.799999997,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1076786.299999997,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1076886.799999997,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "native"
+    },
+    {
+      "event": "emptied",
+      "at": 1077015.799999997,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": true,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1077017.5,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": true,
+      "source": "native"
+    },
+    {
+      "event": "sample",
+      "at": 1077087.1000000015,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": true,
+      "source": "native"
+    },
+    {
+      "event": "load-called",
+      "at": 1077115.1000000015,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": true,
+      "source": "native",
+      "startTime": 21.45
+    },
+    {
+      "event": "sample",
+      "at": 1077200,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": true,
+      "source": "native"
+    },
+    {
+      "event": "emptied",
+      "at": 1077223,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": true,
+      "source": "native"
+    },
+    {
+      "event": "load-resolved",
+      "at": 1077251.3999999985,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": true,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1077310.700000003,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "loadedmetadata",
+      "at": 1077351.1000000015,
+      "time": 0,
+      "ready": 1,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "seeking",
+      "at": 1077366,
+      "time": 21.45,
+      "ready": 1,
+      "paused": true,
+      "seeking": true,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1077400.700000003,
+      "time": 21.45,
+      "ready": 1,
+      "paused": true,
+      "seeking": true,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1077496.3999999985,
+      "time": 21.45,
+      "ready": 1,
+      "paused": true,
+      "seeking": true,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1077586.299999997,
+      "time": 21.45,
+      "ready": 1,
+      "paused": true,
+      "seeking": true,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1077690.700000003,
+      "time": 21.45,
+      "ready": 1,
+      "paused": true,
+      "seeking": true,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1077786.299999997,
+      "time": 21.45,
+      "ready": 1,
+      "paused": true,
+      "seeking": true,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1077898,
+      "time": 21.45,
+      "ready": 1,
+      "paused": true,
+      "seeking": true,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1077987.200000003,
+      "time": 21.45,
+      "ready": 1,
+      "paused": true,
+      "seeking": true,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "seeked",
+      "at": 1078007.1000000015,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "canplay",
+      "at": 1078007.700000003,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1078086.5,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1078186.3999999985,
+      "time": 21.45,
+      "ready": 4,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "playing",
+      "at": 1078245.299999997,
+      "time": 21.45,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1078291.200000003,
+      "time": 21.45,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1078387.1000000015,
+      "time": 21.45,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1078487.200000003,
+      "time": 21.45,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1078587.1000000015,
+      "time": 21.45,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1078693.700000003,
+      "time": 21.5,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1078787.1000000015,
+      "time": 21.55,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1078888.6000000015,
+      "time": 21.7,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1078987.1000000015,
+      "time": 21.75,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1079087.5,
+      "time": 21.9,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1079187.299999997,
+      "time": 21.95,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1079286.299999997,
+      "time": 22.1,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1079386.299999997,
+      "time": 22.15,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1079487.1000000015,
+      "time": 22.3,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1079587.299999997,
+      "time": 22.35,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1079688.6000000015,
+      "time": 22.5,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1079787,
+      "time": 22.6,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1079892.299999997,
+      "time": 22.7,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1079987.200000003,
+      "time": 22.8,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1080087.5,
+      "time": 22.9,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1080189.6000000015,
+      "time": 23,
+      "ready": 4,
+      "paused": false,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "emptied",
+      "at": 1080438.8999999985,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1080440.299999997,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1080487,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1080586.700000003,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1080686.299999997,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1080786.299999997,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1080886.799999997,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1080987.299999997,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1081086.799999997,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1081186.6000000015,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1081287.1000000015,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1081386.6000000015,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1081486.3999999985,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1081586.799999997,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1081687.200000003,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1081786.700000003,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1081886.799999997,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1081986.3999999985,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1082086.8999999985,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1082186.3999999985,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    },
+    {
+      "event": "sample",
+      "at": 1082286.799999997,
+      "time": 0,
+      "ready": 0,
+      "paused": true,
+      "seeking": false,
+      "loading": false,
+      "source": "DASH"
+    }
+  ],
+  "finished": "2026-10-13T07:39:30.851Z"
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "name": "native speed unload failure: before-unload",
+    "pass": false,
+    "error": "failed newer native URL must restore unloaded DASH: {\"loads\":1,\"unloads\":1,\"sources\":[],\"rates\":[]}\n\n1 !== 2\n"
+  },
+  {
+    "name": "native speed unload failure: after-unload",
+    "pass": false,
+    "error": "failed newer native URL must restore unloaded DASH: {\"loads\":1,\"unloads\":1,\"sources\":[],\"rates\":[]}\n\n1 !== 2\n"
+  }
+]

@@ -1,0 +1,657 @@
+=== [1/6] Service syntax (ES5 / Node 0.12) ===
+OK: all service files parse as ES5
+
+=== [2/6] Static gates (design spec + logic) ===
+OK: no <16px inline text
+OK: no aspect-ratio CSS
+OK: no inset shorthand
+PASS  feed card (cid present) → auto-resume
+PASS  history row (progress 300) → at/300
+PASS  选集 pick → none/0
+PASS  连播 advance strips stale progress → none/0
+PASS  cast seekTs → at
+PASS  explicit intent passes through normalize
+PASS  playFresh always auto
+PASS  全新三连 → 三项全亮
+PASS  之前已赞已投(接口只回 fav)→ 仍然三项全亮
+PASS  本地状态是空的(relation 请求失败)→ 三连后照样全亮
+PASS  投币数封顶 2
+PASS  计数:已赞过 → like 不再 +1
+PASS  计数:本次新增收藏 → favorite +1
+PASS  计数:本次投 2 币 → coin +2
+PASS  校准:服务端还没同步(全 false)也不会把已亮的按灭
+PASS  校准:服务端说已赞已投已藏 → 从暗变亮
+PASS  校准:字段名以实测为准(favorite 不是 fav)
+PASS  未登录时:提示先登录
+PASS  已登录时:先在官方客户端对照同账号
+PASS  已登录时:不能再劝"先试试登录"
+PASS  -352 同样提示风控
+PASS  不将 API 风控直接归因账号或建议 CDN 绕过
+PASS  -10403 提示地区限制
+PASS  -404 提示稿件失效
+PASS  -403 提示权限/大会员
+PASS  未知码返回 null(调用方回落默认文案)
+PASS  code=0 也返回 null
+PASS  解码错误(code 3)要降档
+PASS  网络错误(code 2)不降档,交给重试
+PASS  格式错误(code 4)不降档
+PASS  投屏流不走这套降档(它有自己的 variant 阶梯)
+PASS  没有 error 对象时不降档
+PASS  原画 → 蓝光
+PASS  蓝光 → 超清
+PASS  已在最低档 → null(不再退)
+PASS  阶梯为空 → null(不乱退)
+PASS  当前档不在表里 → 回到最高档重来
+PASS  MEDIA_ERR_DECODE 常量就是 3
+✔ TS-first API ordering still selects fMP4 with matching original-quality metadata (1.170291ms)
+✔ explicit fallback selects TS without reducing quality (0.077334ms)
+✔ rooms missing usable fMP4 AVC keep working through TS (0.060083ms)
+✔ FLV-only and missing HLS URL responses are errors rather than endless loading (0.18225ms)
+✔ failed API response is not mistaken for an empty room (0.050875ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 65.926291
+(node:92798) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ cached measurements promote a faster mirror, retaining exact native signed URLs (1.376ms)
+✔ Akamai-only and live URLs are never mirror templates (0.611458ms)
+✔ similar measurements preserve incumbent, all-failed restores original order (0.106625ms)
+✔ cache expires, survives restart, strips private fields and handles corrupt storage (0.099ms)
+✔ untrusted cache host cannot insert a new destination into requests (0.199541ms)
+✔ native .cn hosts are measured once; uncacheable hosts cannot monopolize probes (1.508041ms)
+✔ two completed samples rank by slower transfer; every candidate is visited (0.568125ms)
+✔ loading/buffer gate and manual choice prevent probes and automatic override (0.173333ms)
+✔ buffer loss aborts active probe without poisoning cache (0.478541ms)
+✔ late result after source change or exit cannot update routing/cache (0.318333ms)
+✔ partial/timeout sample is failure and banned winner yields to healthy fallback (0.23625ms)
+✔ manual route uses its API-native signature before invented mirror URL (0.073834ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 69.561792
+✔ concurrent stage durations are measured from dispatch and preserve repeated failures (0.916042ms)
+✔ media milestones distinguish response, metadata, data and playing; stop network counting after readiness (0.9925ms)
+✔ failed keeps partial evidence and ignores late events (0.102542ms)
+✔ cancelled keeps partial evidence and ignores late events (0.058ms)
+✔ a previous video cannot publish startup evidence into a later report (0.0845ms)
+✔ retry classification uses Shaka error layouts and bounds retained failure groups (0.191167ms)
+✔ first hosts, append completion and buffer snapshots remain stable across later responses (0.156333ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 67.741541
+PASS en.js: covers all 275 source keys (+59 dynamic/extra)
+PASS es.js: covers all 275 source keys (+59 dynamic/extra)
+PASS zh
+PASS en
+PASS es
+  ✓ parse: null/garbage input → []
+  ✓ parse: drops empty/invalid cues, keeps valid ones
+  ✓ parse: sorts unsorted bodies by from
+  ✓ pick: inside / boundary / gap / before / after
+  ✓ pick: overlapping earlier cue still live is found
+  ✓ pick: sweep never crashes and matches linear scan (1000 cues)
+  ✓ isAiLan / AI_LEAD
+  ✓ lan name: known enum localized, unknown falls back to lan_doc/lan
+  ✓ match: exact lan wins regardless of track order
+  ✓ match: language family bridges region/ai variants, human preferred
+  ✓ match: no same-language track / no saved lan → null (caller falls back)
+  ✓ lan names covered by every i18n dictionary
+PASS test-subtitle (12 groups)
+  ✓ batch: line limit splits 250 → 100/100/50
+  ✓ batch: char limit forces a split (one giant line alone in its batch)
+  ✓ batch: empty input → no ranges
+  ✓ orderRanges: playhead batch first, wraps, tolerates out-of-range
+  ✓ translate: all batches issued (concurrent), preserves order+timings
+  ✓ translate: cache hit → zero engine calls
+  ✓ translate: stale cache (wrong length) ignored, re-fetched
+  ✓ translate: onPartial per batch, playhead first, translated-only
+  ✓ translate: transient batch failure recovered by retry round
+  ✓ translate: short/failed/garbage engine response throws (caller falls back)
+  ✓ cancel: late batch failure neither retries nor advances/caches an obsolete track
+  ✓ cache: LRU evicts beyond 8 entries (oldest first)
+  ✓ translate: null store tolerated
+PASS test-subtranslate (13 groups)
+  ✓ window + dedup: unique texts once, dupes filled, out-of-window skipped
+  ✓ global text cache: repeated memes translate once across videos
+  ✓ engine failure leaves item untranslated; next tick retries
+  ✓ batch cap honored; stop() makes it inert
+PASS test-dmtranslate (4 groups)
+PASS test-aigc (9 asserts)
+PASS test-casturl (17 asserts)
+✔ binds the transform only to the audited video, cid and representation (1.351833ms)
+✔ media transform fails closed until the exact source index is validated (0.100208ms)
+✔ binds all media responses to the exact audited SIDX entries (0.174084ms)
+✔ finds a controlled transform error through Shaka-style wrapping (0.088834ms)
+✔ reduces a strict five-second Dolby 120 fps fragment to an exact 60fps grid (10.117625ms)
+✔ reduces the shorter final 598-sample fragment to 299 pictures (3.688208ms)
+✔ fails closed when a discarded picture can be depended on (1.886583ms)
+▶ fails closed for unsupported sample and HEVC formats
+  ✔ lengthSize other than four (0.903917ms)
+  ✔ fragment without 600 samples (1.004959ms)
+  ✔ access unit without a Dolby RPU (1.617458ms)
+  ✔ one sample with a non-120fps duration (2.078333ms)
+  ✔ closed segment boundary was not proven by the index validator (0.979625ms)
+  ✔ a media response containing sidx cannot be shortened safely (0.935375ms)
+✔ fails closed for unsupported sample and HEVC formats (8.106ms)
+﹣ all 35 captured fragments satisfy the closed-GOP reduction proof (0.046542ms) # SKIP
+✔ normal media remains byte-identical and never triggers transform recovery (1.049375ms)
+✔ validated index required, including requests already rewritten through another local port (1.1375ms)
+✔ wrong ranges, missing context and corrupted index fail closed (0.198084ms)
+✔ late transformed responses cannot enter a new stream (0.084417ms)
+✔ runtime transform/media/stall failure queues one fallback and changing video cancels queued work (0.249375ms)
+✔ load-time transform failures never trigger generic media retries or a stale runtime fallback (0.538417ms)
+✔ patches only the target SPS VUI time_scale byte (1.419208ms)
+✔ patches the exact hvcC record without growing VPS or the record (0.141167ms)
+✔ patches exactly one complete hvcC box in a bounded init segment (0.175291ms)
+✔ validates the exact 35-fragment index and rejects neighboring bytes (0.164708ms)
+✔ patches the target SPS in the segment-leading access unit (0.257042ms)
+✔ is idempotent for the already-patched target structures (0.100333ms)
+✔ fails closed for neighboring but non-target encodes and layouts (0.080833ms)
+✔ Dolby signaling preserves the base layer for high or unknown frame rates (0.770958ms)
+✔ parses Bilibili Profile 8 Level 9 dvvC signaling (0.351584ms)
+✔ rejects truncated and non-box Dolby markers (0.091291ms)
+✔ proxy media URLs preserve ranges and reject non-network protocols (0.209875ms)
+✔ Dolby init probing is bounded and requires a complete body (0.393583ms)
+✔ strict video selection never disguises a lower quality as 4K (0.199709ms)
+✔ automatic video fallback reports the quality it actually selected (0.064791ms)
+✔ true Dolby audio wins over Hi-Res and AAC (0.578916ms)
+✔ Hi-Res-only video selects FLAC and never pretends AAC is EC-3 (0.140958ms)
+✔ unsupported premium codecs fall back to the highest AAC representation (0.157125ms)
+✔ unsupported EC-3 falls through to supported Hi-Res FLAC (0.079042ms)
+✔ runtime audio fallbacks remain Dolby to Hi-Res to AAC without duplicates (0.716125ms)
+✔ Dolby signaling failure retries the same audio ladder on the base layer (0.106125ms)
+✔ AAC-only playback is attempted once (0.046333ms)
+✔ premium video prefers supported HEVC over a larger AVC stream at the same quality (0.127125ms)
+✔ no supported representation and no lower fallback never re-enable a rejected codec or upgrade quality (0.04675ms)
+✔ 4K TV rejects 8K before loading but keeps 4096 cinema and HDR fallback (0.075625ms)
+✔ webOS display limits preserve 8K devices and widen only UHD cinema (0.136125ms)
+ℹ tests 46
+ℹ suites 0
+ℹ pass 45
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 93.731083
+PASS favorites/collections mapping, pagination, cross-page playback, duplicates, network failure and end of list
+PASS test-searchhistory (5 asserts)
+PASS danmaku: 20 real SDK subscriptions release every bridge exactly once {"created":20,"cancelled":20,"delivered":20,"lateFailures":0}
+PASS danmaku: cleanup tolerates throwingCancel and still ignores late callbacks {"cancelled":1,"lateDelivered":0}
+PASS danmaku: cleanup tolerates missingHandle and still ignores late callbacks {"cancelled":0,"lateDelivered":0}
+PASS cast: 20 real SDK subscriptions release every bridge exactly once {"created":20,"cancelled":20,"delivered":20,"lateFailures":0}
+PASS cast: cleanup tolerates throwingCancel and still ignores late callbacks {"cancelled":1,"lateDelivered":0}
+PASS cast: cleanup tolerates missingHandle and still ignores late callbacks {"cancelled":0,"lateDelivered":0}
+PASS real response envelope and evaluated value
+PASS close rejects pending commands immediately and forbids future sends
+PASS late repeated socket errors never escape or leave pending work
+PASS send callback and synchronous failures reject without a timer leak
+PASS state wait uses its remaining budget even for a hung evaluation
+PASS false state polling respects total deadline and ignores late replies
+PASS malformed events and unrelated responses do not satisfy commands
+PASS explicit disposal drains every pending command
+PASS inventory: normal complete JSON
+PASS inventory: malformed JSON
+PASS inventory: non-list JSON
+PASS inventory: headers then truncated body
+PASS inventory: no headers reaches absolute deadline
+PASS inventory: active body still reaches absolute deadline
+PASS inventory: connection closes before headers
+PASS inventory: non-success HTTP status
+PASS initial observation does not count existing cumulative frames
+PASS repeated snapshots count only frame differences
+PASS over-three-second gap retains buffer state and nearby event evidence
+PASS advancing closes the original gap without creating duplicates
+PASS natural loop splits segments even when ended was sampled earlier
+PASS counter reset opens a segment without summing cumulative frame counts
+PASS unavailable counters remain null and explicitly incomplete
+PASS cleanup removes every listener, timer and monitor ownership
+
+> test
+> node --test service/com.biliwebos.app.service/test/*.test.js
+
+✔ parse play command into video intent (0.734125ms)
+✔ parse play command into live intent (0.071208ms)
+✔ parse playurl command via nva_ext payload into video intent (0.337917ms)
+✔ unsupported playurl payload is ignored without clobbering active session (0.643083ms)
+✔ reporting state and progress produces outbound NVA events (0.132334ms)
+✔ parse seek command with seekTs field (0.054958ms)
+✔ description xml exposes AVTransport and NirvanaControl services (0.8725ms)
+✔ default device profile matches official-style bilibili renderer fields (0.086708ms)
+✔ ssdp packets advertise media renderer and nirvana service (0.097708ms)
+✔ ssdp search response points to description xml and echoes the requested ST (1.069459ms)
+✔ ssdp search response falls back to rootdevice when ST is empty (0.165208ms)
+✔ complete API response: identity (2.112709ms)
+✔ complete API response: gzip (2.384209ms)
+✔ complete API response: deflate (0.668584ms)
+✔ complete API response: raw-deflate (1.210292ms)
+✔ partial API response settles exactly once on error (0.536416ms)
+✔ partial API response settles exactly once on aborted (0.288125ms)
+✔ partial API response settles exactly once on close (0.231791ms)
+✔ invalid compressed API response rejects (0.397667ms)
+✔ decode command frame with json body (0.853708ms)
+✔ encode json reply and command frames (0.194292ms)
+✔ encode empty reply frame (0.607375ms)
+✔ positive control: socket timeout does not bound a pending DNS lookup (109.475625ms)
+✔ deadline bounds pending DNS and settles exactly once (102.64325ms)
+✔ deadline frees a request queued behind a full connection pool (108.342542ms)
+✔ headers clear total deadline while socket timeout still destroys a stalled body (65.3745ms)
+✔ explicit cancellation clears deadline and rejects late headers without callback (85.105ms)
+✔ early network error settles once and clears deadline (62.340625ms)
+✔ positive control: a peer reset fails a plain GET (11.088125ms)
+✔ GET retries once on a fresh connection after reset before headers (5.147292ms)
+✔ HEAD also retries a reset and a second reset is final (1.247ms)
+✔ POST is never replayed, including an empty body (0.957542ms)
+✔ GET with a body is never replayed (0.679459ms)
+✔ HTTP errors are returned without retry (1.354542ms)
+✔ a truncated response after headers is never replayed (22.158ms)
+✔ retry shares the original response-header deadline (253.271291ms)
+✔ cancel follows the active retry and suppresses later callbacks (165.576917ms)
+✔ positive control: unbounded legacy receiver retains 4100 empty fragments (10.775ms)
+✔ legacy receiver rejects excessive fragments, including one socket chunk (10.146375ms)
+✔ legacy receiver bounds queued socket chunks (0.25725ms)
+✔ normal fragmented and separate messages still work (7.782542ms)
+ℹ tests 41
+ℹ suites 0
+ℹ pass 41
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 610.273708
+PASS positive controls distinguish raw socket failure and incomplete body
+PASS 50 × GET healthy, followed by healthy recovery
+PASS 50 × GET gzip-good, followed by healthy recovery
+PASS 50 × GET reset-once, followed by healthy recovery
+PASS 50 × GET reset-always, followed by healthy recovery
+PASS 50 × POST reset-always, followed by healthy recovery
+PASS 50 × GET http503, followed by healthy recovery
+PASS 50 × GET truncate, followed by healthy recovery
+PASS 50 × GET body-stall, followed by healthy recovery
+PASS 50 × GET header-stall, followed by healthy recovery
+PASS 50 × GET gzip-bad, followed by healthy recovery
+PASS 50 × pending DNS deadline and cancellation
+PASS 50 × cancel active retry then reuse connection pool
+PASS 50 × saturated pool, 12 expirations + 6 cancellations, then recovery
+PASS isolated production service starts without account files or external sockets
+PASS 50 × production proxy header-stall/headers then recovery
+PASS 50 × production proxy body-stall/body then recovery
+PASS 50 × production proxy truncate/error then recovery
+PASS 50 × production proxy reset-always/error then recovery
+PASS all owned upstream requests, server sockets and pool slots are released
+20/20 passed; /tmp/bili-stability-final4-ux-gates/service/results.json
+PASS dns {"firstAttemptClosed":true,"failureLogged":true,"bodyErrorHandled":true,"badHttpDataRejected":true,"retryScheduled":true,"recoveredAfterBackoff":true,"boundedAttempts":true,"noAccountCredentials":true,"healthyServiceRequest":true}
+PASS headers {"firstAttemptClosed":true,"failureLogged":true,"bodyErrorHandled":true,"badHttpDataRejected":true,"retryScheduled":true,"recoveredAfterBackoff":true,"boundedAttempts":true,"noAccountCredentials":true,"healthyServiceRequest":true}
+PASS truncated {"firstAttemptClosed":true,"failureLogged":true,"bodyErrorHandled":true,"badHttpDataRejected":true,"retryScheduled":true,"recoveredAfterBackoff":true,"boundedAttempts":true,"noAccountCredentials":true,"healthyServiceRequest":true}
+PASS body-stall {"firstAttemptClosed":true,"failureLogged":true,"bodyErrorHandled":true,"badHttpDataRejected":true,"retryScheduled":true,"recoveredAfterBackoff":true,"boundedAttempts":true,"noAccountCredentials":true,"healthyServiceRequest":true}
+PASS invalid-json {"firstAttemptClosed":true,"failureLogged":true,"bodyErrorHandled":true,"badHttpDataRejected":true,"retryScheduled":true,"recoveredAfterBackoff":true,"boundedAttempts":true,"noAccountCredentials":true,"healthyServiceRequest":true}
+PASS null-json {"firstAttemptClosed":true,"failureLogged":true,"bodyErrorHandled":true,"badHttpDataRejected":true,"retryScheduled":true,"recoveredAfterBackoff":true,"boundedAttempts":true,"noAccountCredentials":true,"healthyServiceRequest":true}
+PASS http503 {"firstAttemptClosed":true,"failureLogged":true,"bodyErrorHandled":true,"badHttpDataRejected":true,"retryScheduled":true,"recoveredAfterBackoff":true,"boundedAttempts":true,"noAccountCredentials":true,"healthyServiceRequest":true}
+PASS always-invalid {"firstAttemptClosed":true,"failureLogged":true,"bodyErrorHandled":true,"badHttpDataRejected":true,"retryScheduled":null,"recoveredAfterBackoff":null,"boundedAttempts":true,"noAccountCredentials":true,"healthyServiceRequest":true}
+PASS 50 cast subscribe/cancel cycles leave no references or stale broadcast
+PASS cast cancellation matches token without removing another subscriber
+PASS 50 live subscribe/cancel cycles close idle relay immediately
+PASS live relay remains while one listener survives and stops after the last
+PASS identity fallback does not treat all missing tokens as one subscription
+PASS 50 real WebSocket castSubscribe close cycles return service to baseline
+PASS 50 real WebSocket danmakuSubscribe close cycles return service to baseline
+PASS closing one bridge connection preserves another subscription
+PASS 20 cancellations before successful discovery cannot create late bridge subscriptions
+PASS successful discovery selects one bridge transport and cleanup suppresses late frames
+PASS unavailable bridge falls back once and cleanup suppresses late proxy frames
+PASS cancel before failed discovery also suppresses fallback creation
+PASS six healthy reconnects restore budget and continue delivery 
+PASS handshake deadline terminates hung CONNECTING socket 
+PASS chat and heartbeat cannot replace authentication; auth has a deadline 
+PASS auth rejection is visible and waits sixty seconds before retry 
+PASS quiet room with heartbeat replies remains connected for ten minutes 
+PASS half-open heartbeat timeout destroys connection and schedules recovery 
+PASS nineteen-second heartbeat delay is tolerated 
+PASS persistent failures use capped backoff with one retry and no permanent stop 
+PASS brief authenticated connections do not wash repeated-failure backoff 
+PASS late old socket open/message/error/close cannot touch newer connection 
+PASS stop clears retry immediately and prevents reconnect 
+PASS stop during connect suppresses late auth send and message delivery 
+PASS stop while connected suppresses late messages and releases all timers 
+PASS async heartbeat send failure and close create exactly one retry 
+PASS async auth send failure and constructor exceptions remain bounded 
+PASS malformed authentication does not authorize or throw 
+PASS compressed multiple packets and malformed lengths are isolated 
+PASS diagnostic snapshot exposes state and counters without credentials or content 
+PASS real ws-legacy tls-stall: stop releases transport 
+PASS real ws-legacy upgrade-stall: stop releases transport 
+PASS real ws-legacy open-no-close-reply: stop releases transport 
+PASS real ws-legacy tls-stall: deadline, recovery and stop 
+22/22 passed
+PASS normal cleanup
+PASS mid-test failure cleanup
+PASS recent delivered chat is receiving
+PASS active history proves relay delivery stalled
+PASS quiet history is unverified rather than failed
+PASS empty history is unverified
+PASS history API failure is unverified
+PASS future server time alone does not prove activity
+PASS history advancement during stall works despite clock skew
+PASS delivery recovering during history probe cancels stale verdict
+PASS non-chat events cannot conceal fresh-room chat loss
+PASS no first chat despite active independent room fails
+PASS service connection diagnostics use explicit safe fields
+PASS healthy measured run passes
+PASS quiet or recovered run needs review instead of full pass
+PASS proven stale relay fails
+PASS history boundary success
+PASS history boundary malformed
+PASS history boundary failure
+PASS history boundary throw
+PASS history timeout cancels once and ignores late body
+21/21 passed
+
+OK: version 2.3.0 consistent (appinfo == src/version.js)
+=== [3/6] Service on REAL Node 0.12.2 + Node 8 (docker) ===
+Testing Node 0.12.2
+legacy fragment guard OK on v0.12.2
+persisted logout OK on v0.12.2
+ready proxy handshake OK on v0.12.2
+fresh GET retry OK on v0.12.2
+queued request deadline OK on v0.12.2
+fetch OK on real Node v0.12.2: status=200
+api code=-101 (expect -101 anonymous or 0)
+getDiagnostics OK: node=v0.12.2 buvid=true dm=true
+ranking on real Node v0.12.2: code=0 count=100
+Testing Node 8
+legacy fragment guard OK on v8.17.0
+persisted logout OK on v8.17.0
+ready proxy handshake OK on v8.17.0
+fresh GET retry OK on v8.17.0
+queued request deadline OK on v8.17.0
+fetch OK on real Node v8.17.0: status=200
+api code=-101 (expect -101 anonymous or 0)
+getDiagnostics OK: node=v8.17.0 buvid=true dm=true
+ranking on real Node v8.17.0: code=0 count=100
+
+=== [4/6] App build ===
+✓ built in 7.31s
+OK: production bundles parse as ES2016 (Chromium 53)
+=== [UX] Browser interaction regressions ===
+PASS creator follow completes after menu closes
+PASS creator follow menu: success
+PASS creator follow menu: failure
+PASS creator follow menu: read-failure
+PASS creator follow menu: guest
+PASS long-press menu requires release then a new confirmation and can reopen
+PASS loading retains a usable sidebar focus
+PASS pointer hover does not scroll the grid
+PASS wheel still moves a row that the pointer already highlights
+PASS sidebar keeps scroll; Right restores the same card
+PASS OK intentionally refreshes the current sidebar section
+PASS passing follow in sidebar never opens login
+PASS native search editing keeps Backspace and caret arrows
+PASS feed failure offers a focusable retry
+PASS retry recovers a failed feed
+PASS remote retry restores first card (immediate response)
+PASS remote retry restores first card (0ms response)
+PASS remote retry restores first card (300ms response)
+PASS retry does not steal focus after the user returns to sidebar
+PASS immediate short-feed retry remains navigable with resume shelf and prefetch
+PASS failed retry remains reachable and a later retry recovers
+PASS rapid sidebar traversal commits only the settled section
+PASS switching sections restores the cached feed and scroll
+PASS slow content never steals focus after navigating away
+PASS latest search wins even if an older response arrives last
+PASS search network failures have their own retry state
+PASS login isolates navigation and provides retry / cancel
+PASS favorites empty response resolves loading
+PASS favorites failures can be retried
+PASS favorites return to the selected folder and fit the viewport
+PASS late favorite-folder responses never replace the current folder
+PASS favorites last row accounts for the folder header height
+PASS subscriptions show folders and collections, paginate and keep remote focus
+PASS empty subscriptions stop loading and keep tabs reachable
+PASS subscription request failure exposes retry and preserves the mode
+PASS loading player can be cancelled without moving background focus
+PASS visual / deep scrolling / large text (zh)
+PASS visual / deep scrolling / large text (en)
+PASS visual / deep scrolling / large text (es)
+PASS design: drawer overlays without shifting content or losing the card
+PASS design: reopening navigation keeps the bottom item visible
+PASS design: resume shelf uses unfinished history and supports remote navigation
+PASS design: resume and a two-column large-text feed share a safe viewport
+PASS design: late history preserves a deep card position
+PASS design: history failure leaves discovery usable
+PASS design: search has connected trending and recent columns
+PASS late title height changes keep a deep focused card in place
+PASS design: mixed title lengths keep card and resume metadata aligned
+PASS design: card metadata stays inside compact cards
+PASS design: settings remain readable with large text (zh)
+PASS design: settings remain readable with large text (en)
+PASS design: settings remain readable with large text (es)
+PASS leaving search preserves the next page first focus cell
+PASS settings font rows follow visual order in both directions
+PASS font pickers update their own setting and resume at the same row
+PASS library native scrolling keeps the last large card visible
+PASS settings matrix: 2 columns, scale 1, applies and persists
+PASS settings matrix: 2 columns, scale 1.12, applies and persists
+PASS settings matrix: 2 columns, scale 1.25, applies and persists
+PASS settings matrix: 3 columns, scale 1, applies and persists
+PASS settings matrix: 3 columns, scale 1.12, applies and persists
+PASS settings matrix: 3 columns, scale 1.25, applies and persists
+PASS settings matrix: 4 columns, scale 1, applies and persists
+PASS settings matrix: 4 columns, scale 1.12, applies and persists
+PASS settings matrix: 4 columns, scale 1.25, applies and persists
+PASS diagnostic network failures finish visibly and remain scannable
+PASS cover compatibility: legacyIntersection loads visible and scrolled cards
+PASS cover compatibility: noIntersection loads visible and scrolled cards
+68/68 passed; evidence: /tmp/bili-tv-ux
+PASS logout clears service, persisted disk, UI and reload
+PASS logout fences late service Set-Cookie and response body
+PASS logout disk failure is visible and retry clears credentials
+PASS development bridge reports clear failure and uses the real service on retry
+PASS browser fallback logout uses POST clear and does not accept failure
+PASS late Luna reply cannot restore browser credentials
+PASS logout pending blocks writes, repeated OK, and times out with retry
+PASS startup rejects invalid port and remote Enter retries
+PASS occupied 7654 uses negotiated port for covers and video Range
+9/9 passed; /tmp/bili-session-proxy
+PASS proxy clears account credentials and persists anonymous fingerprints
+PASS proxy rejects late Set-Cookie and old account response
+PASS proxy persistence failure is retryable
+[
+  {
+    "explicit": false,
+    "requests": [
+      {
+        "type": 0,
+        "method": "HEAD",
+        "scheme": "blob"
+      },
+      {
+        "type": 0,
+        "method": "GET",
+        "scheme": "blob"
+      },
+      {
+        "type": 0,
+        "method": "GET",
+        "scheme": "blob"
+      }
+    ],
+    "retries": [
+      {
+        "code": 1002,
+        "scheme": "blob"
+      },
+      {
+        "code": 1002,
+        "scheme": "blob"
+      },
+      {
+        "code": 1002,
+        "scheme": "blob"
+      },
+      {
+        "code": 1002,
+        "scheme": "blob"
+      }
+    ],
+    "error": 4004,
+    "ms": 477
+  },
+  {
+    "explicit": true,
+    "requests": [
+      {
+        "type": 0,
+        "method": "GET",
+        "scheme": "blob"
+      }
+    ],
+    "retries": [],
+    "error": 4004,
+    "ms": 2
+  }
+]
+PASS real Blob MIME detection: 4 failed HEAD attempts -> 0 with explicit DASH type
+PASS subtitle lifecycle cancels obsolete translation: body
+PASS subtitle lifecycle cancels obsolete translation: batches
+PASS subtitle lifecycle cancels obsolete translation: success
+PASS native speed lifecycle: exit
+PASS native speed lifecycle: normal
+PASS native speed lifecycle: newer-speed
+PASS native speed lifecycle: new-video
+PASS native speed lifecycle: quality
+PASS native speed lifecycle: exit-unloading
+PASS native speed lifecycle: normal-unloading
+PASS native speed lifecycle: success
+PASS native speed unload recovery: before-unload paused=false
+PASS native speed unload recovery: before-unload paused=true
+PASS native speed unload recovery: after-unload paused=false
+PASS native speed unload recovery: after-unload paused=true
+PASS native speed unload recovery: normal paused=false
+PASS native speed unload recovery: normal paused=true
+PASS native speed unload recovery: quality paused=false
+PASS native speed unload recovery: quality paused=true
+PASS native speed unload recovery: normal-before-metadata paused=false
+PASS native speed unload recovery: normal-before-metadata paused=true
+PASS native speed unload recovery: newer native supersedes waiting 1x
+PASS native speed restores actual time after metadata paused=false
+PASS native speed restores actual time after metadata paused=true
+PASS native speed explicit detach honors exit
+PASS native speed explicit detach honors newer-native
+PASS player shelf separates progress, controls and recommendation tabs: layout-legacy scale=1
+PASS player shelf separates progress, controls and recommendation tabs: layout-legacy scale=1.4
+PASS player shelf separates progress, controls and recommendation tabs: layout-modern scale=1
+PASS player shelf separates progress, controls and recommendation tabs: layout-modern scale=1.4
+PASS auxiliary requests wait for real media data: frame-ready
+PASS auxiliary requests wait for real media data: frame-cancel
+PASS failed resume metadata is retried for subtitles after media data
+PASS startup overlaps independent requests and preserves resume: startup-overlap
+PASS startup overlaps independent requests and preserves resume: startup-part
+PASS unverified Dolby frame rate keeps the original base layer: dolby-120
+PASS unverified Dolby frame rate keeps the original base layer: dolby-unknown
+PASS Dolby inspection uses selected native signed backup without hostname substitution
+PASS comment rail renders one state and keeps controls unobscured
+PASS buffer exhaustion is visible and retried without skipping video
+PASS outage recovery: automatic
+PASS outage recovery: manual
+PASS outage recovery: exit
+PASS outage recovery: new-intent
+PASS critical runtime error while paused: media
+PASS critical runtime error while paused: network
+PASS recoverable runtime network error keeps player and retries streaming
+PASS leaving after fatal runtime error cancels delayed recovery
+PASS repeated fatal runtime errors exhaust bounded remount budget
+PASS creator follow from player control bar
+PASS outage recovery: permanent outage has a finite retry budget
+PASS actual manifest and codec fallback: premium
+PASS actual manifest and codec fallback: premium-fallback
+PASS actual manifest and codec fallback: dolby
+PASS actual manifest and codec fallback: dolby-fallback
+PASS cancelled load stops retries and releases the player
+PASS leaving while video information is pending prevents later streaming
+PASS failed quality load restores original stream with explicit DASH MIME
+PASS missing requested quality keeps existing stream and never blames membership
+PASS 4K TV starts 8K source at available HDR tier without loading stuck 8K
+PASS same-quality HEVC decoder failure tries AVC without dropping to 1080p
+PASS network failure stops after two outer attempts instead of trying every quality
+PASS transient network failure can recover on the second attempt
+PASS actual danmaku and subtitle font sizes: small
+PASS actual danmaku and subtitle font sizes: normal
+PASS actual danmaku and subtitle font sizes: large
+PASS actual danmaku and subtitle font sizes: largest
+PASS startup report separates slow media readiness and stays visible when diagnostics APIs fail
+PASS diagnostics without a previous video explains how to obtain startup evidence
+PASS Luna requests time out, cancel their bridge and ignore late success
+70/70 passed
+PASS late-video lookup has bounded work
+PASS dense comments have a bounded number of animation layers
+PASS forward seek clears the old screen and backward seek replays
+PASS paused animations freeze and resume; hidden layer resets
+PASS translation retries preserve original indices and do not flash Chinese
+PASS font scales, animation cleanup and repeat render do not duplicate
+PASS legacy off stops home
+PASS repeat stays on current home
+PASS legacy off stops playlist
+PASS repeat stays on current playlist
+PASS legacy off stops watchlater
+PASS repeat stays on current watchlater
+PASS legacy off stops parts
+PASS repeat stays on current parts
+PASS legacy off stops season
+PASS repeat stays on current season
+PASS legacy off stops paged
+PASS repeat stays on current paged
+PASS next advances playlist
+PASS next advances watchlater
+PASS next advances parts
+PASS next advances season
+PASS next advances paged
+PASS next keeps related countdown
+PASS explicit stop overrides legacy on
+PASS repeat rejection stops with replay controls
+PASS watch later removal still occurs once while repeating
+PASS pending playlist respects leave
+PASS pending playlist respects stop
+PASS playlist request failure stops without related countdown
+PASS stop does not skip an unavailable playlist video
+PASS settings picker persists modes and cancels with Back
+26/26 passed
+PASS one request selects fast HLS without lowering saved quality
+PASS loading remains until actual playing event
+PASS unsupported fast HLS falls back to TS at the same quality
+PASS startup timeout cannot remain black indefinitely
+PASS decode fallback keeps the original quality preference
+PASS exit cancels a queued live retry
+PASS startup budget preserves every decoder quality rung
+PASS late stream response after exit cannot attach media
+PASS empty play info ends with retryable error
+9/9 live loading tests passed
+PASS selected CDN ordering, exhausted-buffer recovery, pause/seek/end and retry budget
+PASS real HTTP range probes: success, ignored/wrong/short Range, short body, valid EOF, stalled body timeout, cancellation
+PASS cached fastest route reaches actual media request without reloading
+PASS cold start stays immediate then spare-buffer probes improve later requests
+PASS pending load and low buffer do not trigger probes; pause enables them
+PASS manual CDN keeps priority and avoids automatic probes
+PASS all probe failures retain original media route
+PASS network reconnect invalidates stale cached winner
+PASS exit cancels in-flight probe without caching a failure
+7/7 passed
+PASS backup-host
+PASS backup-signature
+PASS manual-native
+PASS all-fail
+PASS local probe: exact Range, HTTP 403, bad Range, stalled-body deadline, API error, IP redaction, system DNS
+
+=== --no-tv: done ===

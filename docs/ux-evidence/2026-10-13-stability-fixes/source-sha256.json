@@ -1,0 +1,10 @@
+{
+  "app/src/api/client.js": "b69f0d3d70202b7f5e7196549fb2d92713aa85b42503ba59fa493edac6deacc4",
+  "app/src/player/LivePlayerPage.jsx": "1dae84b4015edc11ef2c44ca28f974f243f1657a84948a6f8ac4cb88aad61e45",
+  "app/src/player/liveStream.js": "48ae29d829097b063836271f7249bca6972e6af65cf2869161aa53c42211cb16",
+  "app/src/version.js": "875122aea262ee21c498809bf438bda69f5a6ad5c7f1a0d517265ce20e68489a",
+  "app/src/player/liveStream.test.js": "902fcc8ac63cfd6e5304cc7ba024372e875ebecb3bcf828fffa1535c55c929fd",
+  "tools/test-live-loading.mjs": "819d6869e00ffc0b45f2218d9540c1e70680e95453a7be92dbb5cbcdefb83eae",
+  "tools/test-update-recovery.mjs": "7734031398ddb1dc50f5318e4dd9586e4406146bc40222e58cee6d8fd05f30c8",
+  "tools/verify.sh": "64e0a654016d171e167e1805d5b9f506105023db7152d2a5b988dba82d58b4d3"
+}

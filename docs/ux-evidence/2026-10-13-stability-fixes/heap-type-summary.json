@@ -1,0 +1,325 @@
+{
+  "scope": "Chromium controlled decoder, self-size aggregates; not retained-size attribution or TV proof",
+  "checkpoints": [
+    {
+      "checkpoint": "cycle-0",
+      "types": {
+        "synthetic": {
+          "count": 32,
+          "selfBytes": 0
+        },
+        "native": {
+          "count": 25785,
+          "selfBytes": 8785389
+        },
+        "string": {
+          "count": 24522,
+          "selfBytes": 2821740
+        },
+        "object shape": {
+          "count": 5184,
+          "selfBytes": 285428
+        },
+        "code": {
+          "count": 29345,
+          "selfBytes": 2298592
+        },
+        "array": {
+          "count": 1983,
+          "selfBytes": 236736
+        },
+        "number": {
+          "count": 9971,
+          "selfBytes": 16908
+        },
+        "symbol": {
+          "count": 85,
+          "selfBytes": 464
+        },
+        "object": {
+          "count": 5798,
+          "selfBytes": 195696
+        },
+        "closure": {
+          "count": 6472,
+          "selfBytes": 191236
+        },
+        "concatenated string": {
+          "count": 873,
+          "selfBytes": 17460
+        },
+        "regexp": {
+          "count": 28,
+          "selfBytes": 672
+        },
+        "sliced string": {
+          "count": 2,
+          "selfBytes": 40
+        }
+      },
+      "selectedObjectCounts": {
+        "Object": 3005,
+        "Array": 925,
+        "Document": 1,
+        "FiberNode": 328,
+        "HTMLVideoElement": 1
+      }
+    },
+    {
+      "checkpoint": "cycle-10",
+      "types": {
+        "synthetic": {
+          "count": 32,
+          "selfBytes": 0
+        },
+        "native": {
+          "count": 26225,
+          "selfBytes": 8822301
+        },
+        "string": {
+          "count": 24580,
+          "selfBytes": 2821740
+        },
+        "object shape": {
+          "count": 5441,
+          "selfBytes": 295996
+        },
+        "code": {
+          "count": 32168,
+          "selfBytes": 2848060
+        },
+        "array": {
+          "count": 2024,
+          "selfBytes": 236956
+        },
+        "number": {
+          "count": 10029,
+          "selfBytes": 17544
+        },
+        "symbol": {
+          "count": 85,
+          "selfBytes": 464
+        },
+        "object": {
+          "count": 6051,
+          "selfBytes": 201324
+        },
+        "closure": {
+          "count": 6472,
+          "selfBytes": 191236
+        },
+        "concatenated string": {
+          "count": 889,
+          "selfBytes": 17780
+        },
+        "sliced string": {
+          "count": 2,
+          "selfBytes": 40
+        },
+        "regexp": {
+          "count": 28,
+          "selfBytes": 672
+        }
+      },
+      "selectedObjectCounts": {
+        "Object": 3209,
+        "Array": 974,
+        "Document": 1,
+        "FiberNode": 328,
+        "HTMLVideoElement": 1
+      }
+    },
+    {
+      "checkpoint": "cycle-20",
+      "types": {
+        "synthetic": {
+          "count": 32,
+          "selfBytes": 0
+        },
+        "native": {
+          "count": 26522,
+          "selfBytes": 8890306
+        },
+        "string": {
+          "count": 24632,
+          "selfBytes": 2821792
+        },
+        "object shape": {
+          "count": 5430,
+          "selfBytes": 295460
+        },
+        "code": {
+          "count": 32527,
+          "selfBytes": 2927432
+        },
+        "array": {
+          "count": 2026,
+          "selfBytes": 237256
+        },
+        "number": {
+          "count": 10080,
+          "selfBytes": 18144
+        },
+        "symbol": {
+          "count": 85,
+          "selfBytes": 464
+        },
+        "object": {
+          "count": 6101,
+          "selfBytes": 202508
+        },
+        "closure": {
+          "count": 6472,
+          "selfBytes": 191236
+        },
+        "regexp": {
+          "count": 28,
+          "selfBytes": 672
+        },
+        "concatenated string": {
+          "count": 873,
+          "selfBytes": 17460
+        },
+        "sliced string": {
+          "count": 2,
+          "selfBytes": 40
+        }
+      },
+      "selectedObjectCounts": {
+        "Object": 3259,
+        "Array": 974,
+        "FiberNode": 328,
+        "Document": 1,
+        "HTMLVideoElement": 1
+      }
+    },
+    {
+      "checkpoint": "cycle-40",
+      "types": {
+        "synthetic": {
+          "count": 32,
+          "selfBytes": 0
+        },
+        "native": {
+          "count": 26840,
+          "selfBytes": 8945727
+        },
+        "string": {
+          "count": 24736,
+          "selfBytes": 2821844
+        },
+        "object shape": {
+          "count": 5430,
+          "selfBytes": 295712
+        },
+        "code": {
+          "count": 32859,
+          "selfBytes": 2994872
+        },
+        "array": {
+          "count": 2025,
+          "selfBytes": 237180
+        },
+        "number": {
+          "count": 10183,
+          "selfBytes": 19368
+        },
+        "symbol": {
+          "count": 85,
+          "selfBytes": 464
+        },
+        "object": {
+          "count": 6202,
+          "selfBytes": 204928
+        },
+        "closure": {
+          "count": 6473,
+          "selfBytes": 191268
+        },
+        "concatenated string": {
+          "count": 873,
+          "selfBytes": 17460
+        },
+        "regexp": {
+          "count": 28,
+          "selfBytes": 672
+        },
+        "sliced string": {
+          "count": 2,
+          "selfBytes": 40
+        }
+      },
+      "selectedObjectCounts": {
+        "Object": 3359,
+        "Array": 974,
+        "FiberNode": 328,
+        "Document": 1,
+        "HTMLVideoElement": 1
+      }
+    },
+    {
+      "checkpoint": "after-console-discard",
+      "types": {
+        "synthetic": {
+          "count": 32,
+          "selfBytes": 0
+        },
+        "native": {
+          "count": 26840,
+          "selfBytes": 8945727
+        },
+        "string": {
+          "count": 24736,
+          "selfBytes": 2821844
+        },
+        "object shape": {
+          "count": 5430,
+          "selfBytes": 295712
+        },
+        "code": {
+          "count": 32859,
+          "selfBytes": 2994872
+        },
+        "array": {
+          "count": 2025,
+          "selfBytes": 237180
+        },
+        "number": {
+          "count": 10183,
+          "selfBytes": 19368
+        },
+        "symbol": {
+          "count": 85,
+          "selfBytes": 464
+        },
+        "object": {
+          "count": 6202,
+          "selfBytes": 204928
+        },
+        "closure": {
+          "count": 6473,
+          "selfBytes": 191268
+        },
+        "concatenated string": {
+          "count": 873,
+          "selfBytes": 17460
+        },
+        "regexp": {
+          "count": 28,
+          "selfBytes": 672
+        },
+        "sliced string": {
+          "count": 2,
+          "selfBytes": 40
+        }
+      },
+      "selectedObjectCounts": {
+        "Object": 3359,
+        "Array": 974,
+        "FiberNode": 328,
+        "Document": 1,
+        "HTMLVideoElement": 1
+      }
+    }
+  ]
+}

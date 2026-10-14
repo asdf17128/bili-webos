@@ -1,0 +1,12 @@
+PASS subtitle lifecycle cancels obsolete translation: body
+PASS subtitle lifecycle cancels obsolete translation: batches
+PASS subtitle lifecycle cancels obsolete translation: success
+PASS native speed lifecycle: exit
+PASS native speed lifecycle: normal
+PASS native speed lifecycle: newer-speed
+PASS native speed lifecycle: new-video
+PASS native speed lifecycle: quality
+PASS native speed lifecycle: exit-unloading
+PASS native speed lifecycle: normal-unloading
+PASS native speed lifecycle: success
+11/11 passed

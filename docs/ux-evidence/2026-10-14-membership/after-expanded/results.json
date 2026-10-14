@@ -1,0 +1,14 @@
+[
+  {
+    "name": "member identity displays active annual badge",
+    "pass": true
+  },
+  {
+    "name": "member default requests highest and supports explicit manual and automatic choices",
+    "pass": true
+  },
+  {
+    "name": "member full quality ladder scrolls with remote at large UI size",
+    "pass": true
+  }
+]

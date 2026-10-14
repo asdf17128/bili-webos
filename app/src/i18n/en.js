@@ -2,6 +2,8 @@
 // ADDING A LANGUAGE: copy this file to <code>.js, translate values, register
 // it in index.js DICTS. That's all.
 export default {
+  '年度大会员': 'Annual Premium',
+  '自动 · 最高可用': 'Auto · Best available',
   '播放暂时中断，请重试播放': 'Playback interrupted. Please retry.',
   '稍后自动重试，也可按 OK 立即重试': 'Retrying shortly. Press OK to retry now.',
   "正在退出登录…": "Signing out…",

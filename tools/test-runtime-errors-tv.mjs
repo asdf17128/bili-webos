@@ -72,7 +72,7 @@ try {
   const state=()=>evaluate(`(()=>{const v=document.querySelector('video'),t=window.__shakaPlayer?.getVariantTracks()?.find(t=>t.active);return {time:v?.currentTime,duration:v?.duration,paused:v?.paused,width:v?.videoWidth,height:v?.videoHeight,ready:v?.readyState,error:v?.error?.code,codec:t?.videoCodec,audio:t?.audioCodec,frameRate:t?.frameRate,runtime:window.__dolbyRuntime?.(),qn:Number(new DOMParser().parseFromString(window.__lastMpd||'','application/xml').querySelector('AdaptationSet[contentType="video"] Representation')?.getAttribute('id'))}})()`);
   const open=async sample=>{
     await back();
-    await evaluate(`localStorage.setItem('bili_settings',JSON.stringify({...JSON.parse(${JSON.stringify(originalSettings)}||'{}'),quality:${sample.qn},playbackMode:'stop'}));window.__openVideo(${JSON.stringify({...sample,resumeMode:'none'})})`);
+    await evaluate(`localStorage.setItem('bili_settings',JSON.stringify({...JSON.parse(${JSON.stringify(originalSettings)}||'{}'),quality:${sample.qn},qualityMode:'manual',playbackMode:'stop'}));window.__openVideo(${JSON.stringify({...sample,resumeMode:'none'})})`);
     await wait("document.querySelector('video')?.currentTime>2 && document.querySelector('video')?.videoWidth>0",50000);
   };
   for (const kind of ['media','network']) {

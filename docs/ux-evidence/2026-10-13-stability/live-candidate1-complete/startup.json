@@ -1,0 +1,168 @@
+[
+  {
+    "t": 653771,
+    "why": "connect",
+    "attempt": 0
+  },
+  {
+    "t": 653853,
+    "why": "source-ready",
+    "qn": 10000,
+    "format": "ts"
+  },
+  {
+    "t": 655124,
+    "why": "playing",
+    "qn": 10000,
+    "format": "ts"
+  },
+  {
+    "t": 655253,
+    "why": "playing",
+    "qn": 10000,
+    "format": "ts"
+  },
+  {
+    "t": 661717,
+    "why": "connect",
+    "attempt": 0
+  },
+  {
+    "t": 661791,
+    "why": "source-ready",
+    "qn": 10000,
+    "format": "ts"
+  },
+  {
+    "t": 662374,
+    "why": "playing",
+    "qn": 10000,
+    "format": "ts"
+  },
+  {
+    "t": 662616,
+    "why": "playing",
+    "qn": 10000,
+    "format": "ts"
+  },
+  {
+    "t": 669152,
+    "why": "connect",
+    "attempt": 0
+  },
+  {
+    "t": 669232,
+    "why": "source-ready",
+    "qn": 10000,
+    "format": "ts"
+  },
+  {
+    "t": 669703,
+    "why": "playing",
+    "qn": 10000,
+    "format": "ts"
+  },
+  {
+    "t": 669834,
+    "why": "playing",
+    "qn": 10000,
+    "format": "ts"
+  },
+  {
+    "t": 676143,
+    "why": "connect",
+    "attempt": 0
+  },
+  {
+    "t": 676215,
+    "why": "source-ready",
+    "qn": 10000,
+    "format": "ts"
+  },
+  {
+    "t": 676721,
+    "why": "playing",
+    "qn": 10000,
+    "format": "ts"
+  },
+  {
+    "t": 676806,
+    "why": "playing",
+    "qn": 10000,
+    "format": "ts"
+  },
+  {
+    "t": 682939,
+    "why": "connect",
+    "attempt": 0
+  },
+  {
+    "t": 692961,
+    "why": "connect-failed"
+  },
+  {
+    "t": 692963,
+    "why": "connect-failed",
+    "attempt": 1
+  },
+  {
+    "t": 693765,
+    "why": "connect",
+    "attempt": 1
+  },
+  {
+    "t": 693871,
+    "why": "source-ready",
+    "qn": 10000,
+    "format": "ts"
+  },
+  {
+    "t": 695503,
+    "why": "playing",
+    "qn": 10000,
+    "format": "ts"
+  },
+  {
+    "t": 695743,
+    "why": "playing",
+    "qn": 10000,
+    "format": "ts"
+  },
+  {
+    "t": 701669,
+    "why": "connect",
+    "attempt": 0
+  },
+  {
+    "t": 711680,
+    "why": "connect-failed"
+  },
+  {
+    "t": 711680,
+    "why": "connect-failed",
+    "attempt": 1
+  },
+  {
+    "t": 712482,
+    "why": "connect",
+    "attempt": 1
+  },
+  {
+    "t": 712546,
+    "why": "source-ready",
+    "qn": 10000,
+    "format": "ts"
+  },
+  {
+    "t": 713972,
+    "why": "playing",
+    "qn": 10000,
+    "format": "ts"
+  },
+  {
+    "t": 714513,
+    "why": "playing",
+    "qn": 10000,
+    "format": "ts"
+  }
+]

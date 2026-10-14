@@ -1,0 +1,420 @@
+[
+  {
+    "name": "normal cleanup",
+    "pass": true,
+    "observed": {
+      "before": {
+        "index": 0,
+        "openedAt": 1791877422218,
+        "exitedAt": 1791877422218,
+        "tokenCode": null,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 0,
+        "subscriptionFailures": 0,
+        "frames": 1,
+        "events": 1,
+        "lastFrameAt": 1791877422218,
+        "lastEventAt": 1791877422218,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 1,
+        "handleCancelSuccess": 1,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 0,
+        "mediaErrors": [],
+        "firstPlayingMs": null,
+        "playingEvents": 0,
+        "mediaConnects": 3,
+        "mediaRetries": 2,
+        "mediaGaveUps": 1,
+        "maxRetryAttempt": 2,
+        "connectStreak": 1,
+        "maxConnectStreak": 2,
+        "postExitMediaAttempts": 1,
+        "mediaAttempts": [
+          {
+            "type": "connect",
+            "atMs": 0,
+            "attempt": 0
+          },
+          {
+            "type": "retry",
+            "atMs": 0,
+            "attempt": 1
+          },
+          {
+            "type": "connect",
+            "atMs": 0,
+            "attempt": 1
+          },
+          {
+            "type": "playing",
+            "atMs": 0
+          },
+          {
+            "type": "retry",
+            "atMs": 0,
+            "attempt": 2
+          },
+          {
+            "type": "gave-up",
+            "atMs": 0,
+            "after": 2
+          },
+          {
+            "type": "connect",
+            "atMs": 0,
+            "attempt": 2
+          }
+        ],
+        "omittedMediaAttempts": 0,
+        "waitingEvents": 0,
+        "endedEvents": 0,
+        "lastTime": 0,
+        "lastAdvance": 1791877422218,
+        "maxGapMs": 0,
+        "advancedSeconds": 0
+      },
+      "cleaned": {
+        "requestRestored": true,
+        "diagPushRestored": true,
+        "forcedCancels": 0,
+        "cancelFailures": 0,
+        "injectionsRemoved": true
+      },
+      "requestRestored": true,
+      "pushRestored": true,
+      "ownPushRestored": true,
+      "cancelled": 1,
+      "listenerCount": 0,
+      "timerCount": 0,
+      "observerCount": 0,
+      "monitorAbsent": true
+    }
+  },
+  {
+    "name": "mid-test failure cleanup",
+    "pass": true,
+    "observed": {
+      "before": {
+        "index": 0,
+        "openedAt": 1791877422256,
+        "exitedAt": 1791877422256,
+        "tokenCode": null,
+        "tokenMalformed": 0,
+        "subscribes": 1,
+        "subscriptionAcks": 0,
+        "subscriptionFailures": 0,
+        "frames": 1,
+        "events": 1,
+        "lastFrameAt": 1791877422256,
+        "lastEventAt": 1791877422256,
+        "lateFrames": 0,
+        "framesAfterStop": 0,
+        "handleCancelCalls": 0,
+        "handleCancelSuccess": 0,
+        "handleCancelFailures": 0,
+        "stopCalls": 0,
+        "stopSuccess": 0,
+        "stopFailures": 0,
+        "postExitSubscribes": 0,
+        "postExitVideoSamples": 0,
+        "postExitDanmakuSamples": 0,
+        "peakDanmaku": 0,
+        "mediaErrors": [],
+        "firstPlayingMs": null,
+        "playingEvents": 0,
+        "mediaConnects": 3,
+        "mediaRetries": 2,
+        "mediaGaveUps": 1,
+        "maxRetryAttempt": 2,
+        "connectStreak": 1,
+        "maxConnectStreak": 2,
+        "postExitMediaAttempts": 1,
+        "mediaAttempts": [
+          {
+            "type": "connect",
+            "atMs": 0,
+            "attempt": 0
+          },
+          {
+            "type": "retry",
+            "atMs": 0,
+            "attempt": 1
+          },
+          {
+            "type": "connect",
+            "atMs": 0,
+            "attempt": 1
+          },
+          {
+            "type": "playing",
+            "atMs": 0
+          },
+          {
+            "type": "retry",
+            "atMs": 0,
+            "attempt": 2
+          },
+          {
+            "type": "gave-up",
+            "atMs": 0,
+            "after": 2
+          },
+          {
+            "type": "connect",
+            "atMs": 0,
+            "attempt": 2
+          }
+        ],
+        "omittedMediaAttempts": 0,
+        "waitingEvents": 0,
+        "endedEvents": 0,
+        "lastTime": 0,
+        "lastAdvance": 1791877422256,
+        "maxGapMs": 0,
+        "advancedSeconds": 0
+      },
+      "cleaned": {
+        "requestRestored": true,
+        "diagPushRestored": true,
+        "forcedCancels": 1,
+        "cancelFailures": 0,
+        "injectionsRemoved": true
+      },
+      "requestRestored": true,
+      "pushRestored": true,
+      "ownPushRestored": true,
+      "cancelled": 1,
+      "listenerCount": 0,
+      "timerCount": 0,
+      "observerCount": 0,
+      "monitorAbsent": true
+    }
+  },
+  {
+    "name": "recent delivered chat is receiving",
+    "pass": true,
+    "observed": {
+      "status": "receiving",
+      "failed": false,
+      "verified": true,
+      "frameGapMs": 1000,
+      "eventGapMs": 600000
+    }
+  },
+  {
+    "name": "active history proves relay delivery stalled",
+    "pass": true,
+    "observed": {
+      "status": "active_room_relay_stale",
+      "failed": true,
+      "verified": false,
+      "frameGapMs": 600000,
+      "eventGapMs": 600000,
+      "historyAgeMs": 1000,
+      "historyCount": 10,
+      "evidence": "fresh_chat_after_last_delivery"
+    }
+  },
+  {
+    "name": "quiet history is unverified rather than failed",
+    "pass": true,
+    "observed": {
+      "status": "quiet_or_unverified",
+      "failed": false,
+      "verified": false,
+      "frameGapMs": 600000,
+      "eventGapMs": 600000,
+      "historyAgeMs": 700000,
+      "historyCount": 10,
+      "evidence": "no_independent_new_chat"
+    }
+  },
+  {
+    "name": "empty history is unverified",
+    "pass": true,
+    "observed": {
+      "status": "unverified",
+      "failed": false,
+      "verified": false,
+      "frameGapMs": 600000,
+      "eventGapMs": 600000
+    }
+  },
+  {
+    "name": "history API failure is unverified",
+    "pass": true,
+    "observed": {
+      "status": "unverified",
+      "failed": false,
+      "verified": false,
+      "frameGapMs": 600000,
+      "eventGapMs": 600000
+    }
+  },
+  {
+    "name": "future server time alone does not prove activity",
+    "pass": true,
+    "observed": {
+      "status": "quiet_or_unverified",
+      "failed": false,
+      "verified": false,
+      "frameGapMs": 600000,
+      "eventGapMs": 600000,
+      "historyAgeMs": -3600000,
+      "historyCount": 10,
+      "evidence": "no_independent_new_chat"
+    }
+  },
+  {
+    "name": "history advancement during stall works despite clock skew",
+    "pass": true,
+    "observed": {
+      "status": "active_room_relay_stale",
+      "failed": true,
+      "verified": false,
+      "frameGapMs": 600000,
+      "eventGapMs": 600000,
+      "historyAgeMs": -3600000,
+      "historyCount": 10,
+      "evidence": "history_advanced_during_stall"
+    }
+  },
+  {
+    "name": "delivery recovering during history probe cancels stale verdict",
+    "pass": true,
+    "observed": {
+      "status": "receiving",
+      "failed": false,
+      "verified": true,
+      "frameGapMs": 100,
+      "eventGapMs": 600000
+    }
+  },
+  {
+    "name": "non-chat events cannot conceal fresh-room chat loss",
+    "pass": true,
+    "observed": {
+      "status": "active_room_relay_stale",
+      "failed": true,
+      "verified": false,
+      "frameGapMs": 600000,
+      "eventGapMs": 100,
+      "historyAgeMs": 1000,
+      "historyCount": 10,
+      "evidence": "fresh_chat_after_last_delivery"
+    }
+  },
+  {
+    "name": "no first chat despite active independent room fails",
+    "pass": true,
+    "observed": {
+      "status": "active_room_relay_stale",
+      "failed": true,
+      "verified": false,
+      "frameGapMs": 900000,
+      "eventGapMs": 600000,
+      "historyAgeMs": 1000,
+      "historyCount": 10,
+      "evidence": "fresh_chat_after_last_delivery"
+    }
+  },
+  {
+    "name": "service connection diagnostics use explicit safe fields",
+    "pass": true,
+    "observed": {
+      "phase": "unknown",
+      "connected": true,
+      "hasError": true,
+      "connections": 3,
+      "consecutiveFailures": null,
+      "lastPacketAt": 1791875292000,
+      "lastMessageAt": null,
+      "lastEventAt": null,
+      "lastHeartbeatAt": null,
+      "lastHeartbeatReplyAt": null,
+      "lastCloseCode": null,
+      "retryAt": null
+    }
+  },
+  {
+    "name": "healthy measured run passes",
+    "pass": true,
+    "observed": {
+      "gatesPassed": true,
+      "pass": true,
+      "status": "passed"
+    }
+  },
+  {
+    "name": "quiet or recovered run needs review instead of full pass",
+    "pass": true,
+    "observed": {
+      "gatesPassed": true,
+      "pass": false,
+      "status": "needs_review"
+    }
+  },
+  {
+    "name": "proven stale relay fails",
+    "pass": true,
+    "observed": {
+      "gatesPassed": false,
+      "pass": false,
+      "status": "failed"
+    }
+  },
+  {
+    "name": "history boundary success",
+    "pass": true,
+    "observed": {
+      "observedAtMs": 1791877422291,
+      "code": 0,
+      "count": 2,
+      "timestamps": [
+        1791875280000
+      ],
+      "latestAt": 1791875280000
+    }
+  },
+  {
+    "name": "history boundary malformed",
+    "pass": true,
+    "observed": {
+      "observedAtMs": 1791877422322,
+      "malformed": true
+    }
+  },
+  {
+    "name": "history boundary failure",
+    "pass": true,
+    "observed": {
+      "observedAtMs": 1791877422354,
+      "failed": true
+    }
+  },
+  {
+    "name": "history boundary throw",
+    "pass": true,
+    "observed": {
+      "observedAtMs": 1791877422386,
+      "failed": true
+    }
+  },
+  {
+    "name": "history timeout cancels once and ignores late body",
+    "pass": true,
+    "observed": {
+      "observedAtMs": 1791877434420,
+      "timeout": true
+    }
+  }
+]

@@ -1,0 +1,17 @@
+PASS initial DASH actually decodes {"time":2.2,"width":640,"height":480,"ready":4,"paused":false,"error":null,"loading":false,"seeking":false,"source":"DASH"}
+PASS speed control reachable ""
+PASS speed option exists 2x ""
+PASS native 2x actually advances near double speed {"rate":1.9766067471066238,"state":{"time":10.12,"width":640,"height":480,"ready":4,"paused":false,"error":null,"loading":false,"seeking":false,"source":"native"}}
+PASS speed control reachable ""
+PASS speed option exists 正常 ""
+PASS 1x restores DASH near the same position {"time":16.549,"width":640,"height":480,"ready":4,"paused":false,"error":null,"loading":false,"seeking":false,"source":"DASH"}
+PASS restored DASH advances at normal speed {"rate":0.9932952570151478,"state":{"time":21.4,"width":640,"height":480,"ready":4,"paused":false,"error":null,"loading":false,"seeking":false,"source":"DASH"}}
+PASS speed control reachable ""
+PASS speed option exists 2x ""
+PASS paused native switch retains position and pause {"time":21.45,"width":640,"height":480,"ready":4,"paused":true,"error":null,"loading":false,"seeking":false,"source":"native"}
+PASS speed control reachable ""
+PASS speed option exists 正常 ""
+PASS paused 1x restores DASH with position and pause {"time":21.45,"width":640,"height":480,"ready":4,"paused":true,"error":null,"loading":false,"seeking":false,"source":"DASH"}
+PASS paused round trip can resume actual decoding ""
+PASS normal Back releases player ""
+PASS original preferences restored ""

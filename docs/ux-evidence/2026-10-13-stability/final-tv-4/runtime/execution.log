@@ -1,0 +1,93 @@
+PASS media critical error displays retry while media is paused {
+  time: 25.167,
+  duration: 190,
+  paused: true,
+  width: 3996,
+  height: 2160,
+  ready: 4,
+  codec: 'hev1.1.6.L153.90',
+  audio: 'ec-3',
+  frameRate: 24.39,
+  runtime: { epoch: 1, phase: 'off', indexValidated: false, fragments: 0 },
+  qn: 120,
+  errorVisible: true
+}
+PASS media recovery reloads and actually decodes near the interrupted position {
+  time: 26.5,
+  duration: 190,
+  paused: false,
+  width: 3996,
+  height: 2160,
+  ready: 4,
+  codec: 'hev1.1.6.L153.90',
+  audio: 'ec-3',
+  frameRate: 24.39,
+  runtime: { epoch: 1, phase: 'off', indexValidated: false, fragments: 0 },
+  qn: 120
+}
+PASS network critical error displays retry while media is paused {
+  time: 25.208,
+  duration: 190,
+  paused: true,
+  width: 3996,
+  height: 2160,
+  ready: 4,
+  codec: 'hev1.1.6.L153.90',
+  audio: 'ec-3',
+  frameRate: 24.39,
+  runtime: { epoch: 1, phase: 'off', indexValidated: false, fragments: 0 },
+  qn: 120,
+  errorVisible: true
+}
+PASS network recovery reloads and actually decodes near the interrupted position {
+  time: 26.708,
+  duration: 190,
+  paused: false,
+  width: 3996,
+  height: 2160,
+  ready: 4,
+  codec: 'hev1.1.6.L153.90',
+  audio: 'ec-3',
+  frameRate: 24.39,
+  runtime: { epoch: 1, phase: 'off', indexValidated: false, fragments: 0 },
+  qn: 120
+}
+PASS recoverable network notification keeps the current decoder and playback {
+  time: 30.042,
+  duration: 190,
+  paused: false,
+  width: 3996,
+  height: 2160,
+  ready: 4,
+  codec: 'hev1.1.6.L153.90',
+  audio: 'ec-3',
+  frameRate: 24.39,
+  runtime: { epoch: 1, phase: 'off', indexValidated: false, fragments: 0 },
+  qn: 120
+}
+PASS native speed decoder error has a reachable retry control {
+  time: 6.4,
+  duration: 1213.661,
+  paused: true,
+  width: 640,
+  height: 480,
+  ready: 4,
+  codec: null,
+  audio: null,
+  frameRate: null,
+  runtime: { epoch: 1, phase: 'off', indexValidated: false, fragments: 0 },
+  qn: 32
+}
+PASS native speed failure resumes real DASH decoding at interrupted position {
+  time: 7.5,
+  duration: 1214,
+  paused: false,
+  width: 640,
+  height: 480,
+  ready: 4,
+  codec: 'avc1.64001E',
+  audio: 'mp4a.40.2',
+  frameRate: 20,
+  runtime: { epoch: 1, phase: 'off', indexValidated: false, fragments: 0 },
+  qn: 32
+}

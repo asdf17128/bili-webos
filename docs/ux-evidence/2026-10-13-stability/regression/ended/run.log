@@ -1,0 +1,13 @@
+PASS legacy off stops real favorite playlist at native EOS 
+PASS remote replay is reachable after stop 
+PASS repeat retains actual stream and plays again, cycle 1 {"time":0.9,"width":640,"height":480}
+PASS repeat retains actual stream and plays again, cycle 2 {"time":0.8,"width":640,"height":480}
+PASS remote can pause repeat mode 
+PASS remote can resume repeat mode 
+PASS Back exits repeat playback 
+PASS next mode advances real playlist and decodes next video 
+PASS playback picker restores stop selection 
+PASS Back cancels mode change 
+PASS remote selects repeat and retains row focus 
+PASS repeat setting persists after app reload 
+PASS original user settings restored 

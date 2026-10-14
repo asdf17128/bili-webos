@@ -1,6 +1,8 @@
 # 会员画质、Dolby Vision 与高帧率播放
 
-本文描述 **未发布的 2.3.0 playback-test.2 分支（包含 premium-test.1 的会员修复）**，不是已发布 2.3.0 的能力承诺。相关报告：[issue #11](https://github.com/asdf17128/bili-webos/issues/11)、[#33](https://github.com/asdf17128/bili-webos/issues/33)、[#34](https://github.com/asdf17128/bili-webos/issues/34)，以及 [PR #17](https://github.com/asdf17128/bili-webos/pull/17)。
+本文描述 **未发布的 2.3.0 测试分支（当前 member-test.6，包含此前会员播放修复）**，不是已发布 2.3.0 的能力承诺。相关报告：[issue #11](https://github.com/asdf17128/bili-webos/issues/11)、[#33](https://github.com/asdf17128/bili-webos/issues/33)、[#34](https://github.com/asdf17128/bili-webos/issues/34)，以及 [PR #17](https://github.com/asdf17128/bili-webos/pull/17)。
+
+自动最高画质与会员身份标识见 [会员体验说明](MEMBER-EXPERIENCE.md)。
 
 ## 画质与设备边界
 

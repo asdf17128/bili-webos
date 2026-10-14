@@ -1,0 +1,58 @@
+{
+  "sdk": "webOSTV.js 1.2.13",
+  "productionModule": "app/src/api/client.js",
+  "results": [
+    {
+      "name": "danmaku: 20 real SDK subscriptions release every bridge exactly once",
+      "pass": true,
+      "detail": {
+        "created": 20,
+        "cancelled": 20,
+        "delivered": 20,
+        "lateFailures": 0
+      }
+    },
+    {
+      "name": "danmaku: cleanup tolerates throwingCancel and still ignores late callbacks",
+      "pass": true,
+      "detail": {
+        "cancelled": 1,
+        "lateDelivered": 0
+      }
+    },
+    {
+      "name": "danmaku: cleanup tolerates missingHandle and still ignores late callbacks",
+      "pass": true,
+      "detail": {
+        "cancelled": 0,
+        "lateDelivered": 0
+      }
+    },
+    {
+      "name": "cast: 20 real SDK subscriptions release every bridge exactly once",
+      "pass": true,
+      "detail": {
+        "created": 20,
+        "cancelled": 20,
+        "delivered": 20,
+        "lateFailures": 0
+      }
+    },
+    {
+      "name": "cast: cleanup tolerates throwingCancel and still ignores late callbacks",
+      "pass": true,
+      "detail": {
+        "cancelled": 1,
+        "lateDelivered": 0
+      }
+    },
+    {
+      "name": "cast: cleanup tolerates missingHandle and still ignores late callbacks",
+      "pass": true,
+      "detail": {
+        "cancelled": 0,
+        "lateDelivered": 0
+      }
+    }
+  ]
+}

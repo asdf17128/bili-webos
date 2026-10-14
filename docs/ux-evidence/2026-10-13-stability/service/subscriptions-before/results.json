@@ -1,0 +1,40 @@
+{
+  "at": "2026-10-13T05:34:15.527Z",
+  "sourceSha256": "81904add59fe8f021c5ba2185ae76f5a7a7a6dee7b1cdab2b71ae0b3ca671276",
+  "rounds": 50,
+  "results": [
+    {
+      "name": "50 cast subscribe/cancel cycles leave no references or stale broadcast",
+      "pass": false,
+      "error": "retained 50 cancelled cast messages\n\n50 !== 0\n"
+    },
+    {
+      "name": "cast cancellation matches token without removing another subscriber",
+      "pass": false,
+      "error": "missing registered cancel callback\n\nfalse !== true\n"
+    },
+    {
+      "name": "50 live subscribe/cancel cycles close idle relay immediately",
+      "pass": false,
+      "error": "retained 50 cancelled live messages\n\n50 !== 0\n"
+    },
+    {
+      "name": "live relay remains while one listener survives and stops after the last",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n2 !== 1\n"
+    },
+    {
+      "name": "identity fallback does not treat all missing tokens as one subscription",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\n2 !== 1\n"
+    }
+  ],
+  "limitations": [
+    "production handlers execute in VM; native LS2 cancellation delivery must also be tested on TV",
+    "relay connect/stop is a controlled boundary; no claim that this alone verifies actual WebSocket teardown"
+  ],
+  "references": [
+    "https://webostv.developer.lge.com/develop/references/webos-service-reference",
+    "https://webostv.developer.lge.com/develop/guides/js-service-usage"
+  ]
+}

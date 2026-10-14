@@ -1,0 +1,102 @@
+PASS cancel before deadline 0/200 {
+  gap: 302.3999999985099,
+  trace: [
+    { event: 'ArrowRight', at: 5253.60000000149, t: 30 },
+    { event: 'GoBack', at: 5556, t: 30.1 }
+  ]
+}
+PASS player remains open 0/cancel/200 
+PASS cancel before deadline 0/600 {
+  gap: 695.6000000014901,
+  trace: [
+    { event: 'ArrowRight', at: 7987.19999999553, t: 30 },
+    { event: 'GoBack', at: 8682.79999999702, t: 30.4 }
+  ]
+}
+PASS player remains open 0/cancel/600 
+PASS OK commits preview 0 {
+  gap: 237.60000000149012,
+  trace: [
+    { event: 'ArrowRight', at: 11235.79999999702, t: 30 },
+    { event: 'Enter', at: 11473.39999999851, t: 30.05 },
+    { event: 'seeking', at: 11480.60000000149, t: 40 }
+  ]
+}
+PASS player remains open 0/commit/200 
+PASS late Back follows automatic commit 0 {
+  gap: 1401.3000000044703,
+  trace: [
+    { event: 'ArrowRight', at: 13952.19999999553, t: 30 },
+    { event: 'seeking', at: 14960, t: 40 },
+    { event: 'GoBack', at: 15353.5, t: 40 }
+  ]
+}
+PASS player remains open 0/auto-before-late-Back/1300 
+PASS cancel before deadline 1/200 {
+  gap: 317.5,
+  trace: [
+    { event: 'ArrowRight', at: 17919.79999999702, t: 30 },
+    { event: 'GoBack', at: 18237.29999999702, t: 30.1 }
+  ]
+}
+PASS player remains open 1/cancel/200 
+PASS cancel before deadline 1/600 {
+  gap: 646.3000000044703,
+  trace: [
+    { event: 'ArrowRight', at: 20734.69999999553, t: 30 },
+    { event: 'GoBack', at: 21381, t: 30.4 }
+  ]
+}
+PASS player remains open 1/cancel/600 
+PASS OK commits preview 1 {
+  gap: 322.40000000596046,
+  trace: [
+    { event: 'ArrowRight', at: 23905.69999999553, t: 30 },
+    { event: 'Enter', at: 24228.10000000149, t: 30.05 },
+    { event: 'seeking', at: 24240.89999999851, t: 40 }
+  ]
+}
+PASS player remains open 1/commit/200 
+PASS late Back follows automatic commit 1 {
+  gap: 1425.6000000014901,
+  trace: [
+    { event: 'ArrowRight', at: 26679.89999999851, t: 30 },
+    { event: 'seeking', at: 27695.89999999851, t: 40 },
+    { event: 'GoBack', at: 28105.5, t: 40 }
+  ]
+}
+PASS player remains open 1/auto-before-late-Back/1300 
+PASS cancel before deadline 2/200 {
+  gap: 246,
+  trace: [
+    { event: 'ArrowRight', at: 30648.89999999851, t: 30 },
+    { event: 'GoBack', at: 30894.89999999851, t: 30 }
+  ]
+}
+PASS player remains open 2/cancel/200 
+PASS cancel before deadline 2/600 {
+  gap: 686.3999999985099,
+  trace: [
+    { event: 'ArrowRight', at: 33447.10000000149, t: 30 },
+    { event: 'GoBack', at: 34133.5, t: 30.45 }
+  ]
+}
+PASS player remains open 2/cancel/600 
+PASS OK commits preview 2 {
+  gap: 339.20000000298023,
+  trace: [
+    { event: 'ArrowRight', at: 36621.89999999851, t: 30 },
+    { event: 'Enter', at: 36961.10000000149, t: 30 },
+    { event: 'seeking', at: 36968.19999999553, t: 40 }
+  ]
+}
+PASS player remains open 2/commit/200 
+PASS late Back follows automatic commit 2 {
+  gap: 1388.1000000014901,
+  trace: [
+    { event: 'ArrowRight', at: 39479.19999999553, t: 30 },
+    { event: 'seeking', at: 40489.89999999851, t: 40 },
+    { event: 'GoBack', at: 40867.29999999702, t: 40 }
+  ]
+}
+PASS player remains open 2/auto-before-late-Back/1300 

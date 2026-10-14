@@ -1,0 +1,4 @@
+FAIL subtitle lifecycle cancels obsolete translation: body late body must not start translation after exit
+FAIL subtitle lifecycle cancels obsolete translation: batches exit must not schedule the remaining four batches
+PASS subtitle lifecycle cancels obsolete translation: success
+1/3 passed

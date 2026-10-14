@@ -1,0 +1,23 @@
+PASS six healthy reconnects restore budget and continue delivery 
+PASS handshake deadline terminates hung CONNECTING socket 
+PASS chat and heartbeat cannot replace authentication; auth has a deadline 
+PASS auth rejection is visible and waits sixty seconds before retry 
+PASS quiet room with heartbeat replies remains connected for ten minutes 
+PASS half-open heartbeat timeout destroys connection and schedules recovery 
+PASS nineteen-second heartbeat delay is tolerated 
+PASS persistent failures use capped backoff with one retry and no permanent stop 
+PASS brief authenticated connections do not wash repeated-failure backoff 
+PASS late old socket open/message/error/close cannot touch newer connection 
+PASS stop clears retry immediately and prevents reconnect 
+PASS stop during connect suppresses late auth send and message delivery 
+PASS stop while connected suppresses late messages and releases all timers 
+PASS async heartbeat send failure and close create exactly one retry 
+PASS async auth send failure and constructor exceptions remain bounded 
+PASS malformed authentication does not authorize or throw 
+PASS compressed multiple packets and malformed lengths are isolated 
+PASS diagnostic snapshot exposes state and counters without credentials or content 
+PASS real ws-legacy tls-stall: stop releases transport 
+PASS real ws-legacy upgrade-stall: stop releases transport 
+PASS real ws-legacy open-no-close-reply: stop releases transport 
+PASS real ws-legacy tls-stall: deadline, recovery and stop 
+22/22 passed

@@ -1,0 +1,20 @@
+FAIL 50 cast subscribe/cancel cycles leave no references or stale broadcast retained 50 cancelled cast messages
+
+50 !== 0
+
+FAIL cast cancellation matches token without removing another subscriber missing registered cancel callback
+
+false !== true
+
+FAIL 50 live subscribe/cancel cycles close idle relay immediately retained 50 cancelled live messages
+
+50 !== 0
+
+FAIL live relay remains while one listener survives and stops after the last Expected values to be strictly equal:
+
+2 !== 1
+
+FAIL identity fallback does not treat all missing tokens as one subscription Expected values to be strictly equal:
+
+2 !== 1
+

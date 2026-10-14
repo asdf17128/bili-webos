@@ -1,0 +1,11 @@
+[
+  {
+    "name": "native speed restores actual time after metadata paused=false",
+    "pass": true
+  },
+  {
+    "name": "native speed restores actual time after metadata paused=true",
+    "pass": false,
+    "error": "new DASH metadata must retain actual position, not just load startTime: {\"time\":0,\"paused\":true,\"ready\":4,\"positions\":[null,14.9],\"unloads\":1}\n\n0 !== 14.9\n"
+  }
+]

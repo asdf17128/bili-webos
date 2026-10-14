@@ -1,0 +1,32 @@
+{
+  "startedAt": "2026-10-13T05:41:28.966Z",
+  "head": "4eb77e0c14ee04c51ba07739d92dd6bd9a650e73",
+  "productionDiffSha256": "25ec9c1f4874be371b25e38b3a332bf62b17b53b488e311089115c04208c91f3",
+  "scope": [
+    "app/src",
+    "service/com.biliwebos.app.service"
+  ],
+  "node": "v25.4.0",
+  "commands": [
+    "bash tools/verify.sh --no-tv --ux",
+    "bash tools/verify.sh --sim --no-tv"
+  ],
+  "televisionOperations": false,
+  "accountWrites": false,
+  "runs": [
+    {
+      "command": "bash tools/verify.sh --no-tv --ux",
+      "exitCode": 0,
+      "completedAt": "2026-10-13T05:47:15.595Z"
+    },
+    {
+      "command": "bash tools/verify.sh --sim --no-tv",
+      "status": "not run; new native-speed race reproduced before simulator started"
+    }
+  ],
+  "status": "candidate-1 superseded by separately reproduced native-speed race",
+  "browserLoading": {
+    "pass": 55,
+    "fail": 0
+  }
+}

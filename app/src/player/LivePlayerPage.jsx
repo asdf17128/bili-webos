@@ -1,3 +1,4 @@
+import NerdInfo from './NerdInfo';
 import Icon from '../components/Icon';
 import React, { useState, useEffect, useRef } from 'react';
 import { getLivePlayback, getRoomInit, getDanmuInfo, getBuvid3, getLiveHistory, danmakuSubscribe, danmakuStop, castReportState, castReportProgress, mediaProxyBase } from '../api/client';
@@ -15,6 +16,7 @@ const VIDEO_H = Math.round(VIDEO_W * 9 / 16); // 844 — the rest holds metadata
 
 export default function LivePlayerPage({ room, onBack }) {
   const videoRef = useRef(null);
+  const [nerdInfo] = useState(() => storage.getSettings().nerdInfo === true);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const reconnectRef = useRef(null);
@@ -532,6 +534,7 @@ export default function LivePlayerPage({ room, onBack }) {
         toggleDanmaku();
         showInfoBriefly();
       }}>
+      {nerdInfo && <NerdInfo videoRef={videoRef} />}
       {/* Panel open → video is SHRUNK, never covered (YouTube TV behaviour).
           16:9 in a 1500-wide column leaves ~236px vertically; YouTube fills
           that with the video's metadata instead of black bars, so we do too. */}

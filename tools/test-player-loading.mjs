@@ -45,7 +45,7 @@ async function run(name, mode, fn, scale) {
  const context=await browser.newContext({viewport:{width:1920,height:1080}});
  await context.addInitScript(({mode,scale})=>{
    delete window.webOS;window.__mode=mode;window.__probe={loads:0,destroyed:0,retries:0,mpds:[],positions:[],mimes:[]};
-   localStorage.setItem('bili_settings',JSON.stringify({language:mode.startsWith('subtitle-lifecycle')?'en':'zh',uiScale:scale?.ui||1,gridCols:3,subtitle:true,danmaku:!mode.startsWith('subtitle-lifecycle'),subtitleScale:scale?.sub||1,danmakuScale:scale?.dm||1,quality:80,qualityMode:'manual'}));
+   localStorage.setItem('bili_settings',JSON.stringify({language:mode.startsWith('subtitle-lifecycle')?'en':'zh',uiScale:scale?.ui||1,gridCols:3,subtitle:true,danmaku:!mode.startsWith('subtitle-lifecycle'),subtitleScale:scale?.sub||1,danmakuScale:scale?.dm||1,quality:80,qualityMode:'manual',nerdInfo:mode==='nerd'&&JSON.parse(localStorage.getItem('bili_settings')||'{}').nerdInfo===true}));
    if(mode.startsWith('member-')){const settings=JSON.parse(localStorage.getItem('bili_settings'));delete settings.qualityMode;localStorage.setItem('bili_settings',JSON.stringify(settings));}
    if(mode.startsWith('member-')||mode.startsWith('layout')||mode.startsWith('follow'))localStorage.setItem('bili_auth',JSON.stringify({SESSDATA:'fixture'}));
    localStorage.setItem('bili_perfopt',JSON.stringify({prefetchPage:false,warmPlayer:false}));
@@ -693,5 +693,32 @@ await run('member full quality ladder scrolls with remote at large UI size','mem
  assert.match(bounds.text,/360P/);assert.ok(bounds.top>=bounds.parentTop&&bounds.bottom<=bounds.parentBottom+1&&bounds.parentTop>=0,JSON.stringify(bounds));
  await page.screenshot({path:output+'/member-quality-menu.png'});
 },{ui:1.25});
+await run('Nerd info defaults hidden and keeps everyday quality controls','premium',async page=>{
+ await open(page);await page.waitForFunction(()=>window.__probe.loads===1&&!document.querySelector('.loading'));
+ await page.keyboard.press('ArrowUp');
+ assert.equal(await page.locator('.nerd-info,.player-audio-format').count(),0);
+ assert.ok(await page.locator('.player-btn').filter({hasText:'1080P'}).count());
+});
+await run('Nerd switch persists by remote and reports actual completed media bytes','nerd',async page=>{
+ await page.locator('[data-focus-id="sidebar-13-0"]').click();
+ const toggle=page.getByRole('switch',{name:'Nerd 信息'});
+ await toggle.click();assert.equal(await toggle.getAttribute('aria-checked'),'true');
+ await page.keyboard.press('Enter');assert.equal(await toggle.getAttribute('aria-checked'),'false');
+ await page.keyboard.press('Enter');assert.equal(await toggle.getAttribute('aria-checked'),'true');
+ await page.reload();await page.waitForFunction(()=>!!window.__openVideo);
+ await open(page);await page.waitForFunction(()=>window.__probe.loads===1&&!document.querySelector('.loading'));
+ await page.waitForSelector('.nerd-info');
+ await page.evaluate(()=>{window.__shakaPlayer.getVariantTracks=()=>[{active:true,videoCodec:'hvc1.2.4.L153',audioCodec:'mp4a.40.2',frameRate:60}];Object.defineProperty(document.querySelector('video'),'videoWidth',{configurable:true,value:3840});Object.defineProperty(document.querySelector('video'),'videoHeight',{configurable:true,value:2160});window.__shakaPlayer.getNetworkingEngine().response(1,{uri:'https://media.example/video?secret=hidden',data:new ArrayBuffer(1048576)},{});});
+ await page.waitForFunction(()=>document.querySelector('.nerd-info').textContent.includes('1.00 MiB'));
+ const text=await page.locator('.nerd-info').innerText();
+ assert.match(text,/media.example/);assert.doesNotMatch(text,/secret|hidden/);
+ assert.match(text,/mp4a.40.2/);assert.match(text,/3840 × 2160 · 60 fps/);
+ await page.screenshot({path:output+'/nerd-info.png'});
+ await page.keyboard.press('Escape');
+ await page.locator('[data-focus-id="sidebar-13-0"]').click();
+ await page.getByRole('switch',{name:'Nerd 信息'}).click();
+ await open(page);await page.waitForFunction(()=>!document.querySelector('.loading'));
+ assert.equal(await page.locator('.nerd-info').count(),0);
+});
 await writeFile(`${output}/results.json`,JSON.stringify(results,null,2));await browser.close();
 console.log(`${results.filter(r=>r.pass).length}/${results.length} passed`);process.exitCode=results.some(r=>!r.pass)?1:0;

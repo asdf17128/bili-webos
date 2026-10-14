@@ -279,3 +279,8 @@ button, input { font-family: inherit; }
 .profile-identity .membership-badge { margin-left: 12px; }
 
 .quality-popup { overflow-y: auto; }
+
+/* Opt-in diagnostics stay separate from everyday playback controls. */
+.nerd-info { position: absolute; top: 100px; left: 40px; z-index: 45; max-width: 900px; padding: 18px 24px; border-radius: 10px; background: rgba(12,14,18,.88); color: #e5e7eb; font-size: calc(18px * var(--ui-scale)); line-height: 1.55; pointer-events: none; overflow-wrap: break-word; }
+.nerd-info strong { display: block; margin-bottom: 6px; }
+.nerd-info small { display: block; font-size: calc(16px * var(--ui-scale)); color: #aeb5bf; margin-top: 6px; }

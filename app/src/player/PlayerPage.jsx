@@ -1,3 +1,4 @@
+import NerdInfo from './NerdInfo';
 import { requestedQuality } from '../utils/qualityPreference';
 import Icon from '../components/Icon';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -101,6 +102,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   useTitlesMT(); // re-render when list-title translations land (no-op on zh)
   const videoRef = useRef(null);
   const shakaRef = useRef(null);
+  const transferRef = useRef({ bytes: 0, host: '' });
+  const [nerdInfo] = useState(() => storage.getSettings().nerdInfo === true);
   const pendingMediaLoads = useRef(0);
   const cdnAutoRef = useRef(null);
   const [playing, setPlaying] = useState(false);
@@ -659,6 +662,10 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         cdnAutoRef.current?.failed(cdnHostOf(error?.data?.[0]));
       });
       ne.registerResponseFilter((type, response, context) => {
+        if (type === 1) {
+          transferRef.current.bytes += response.data?.byteLength || 0;
+          transferRef.current.host = cdnHostOf(response.uri || response.originalUri);
+        }
         dolbyRuntime.response(type, response, context);
         if (type === 1) {
           trace.response(response, context);
@@ -1221,7 +1228,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
             } finally { if (isActive()) setLoading(false); }
           });
           const format = {
-            video: attempt.dolbyCodec || nativeDolby ? 'Dolby Vision' + (transform ? ' · 60fps' : '') : selected.actualQn === 126
+            video: attempt.dolbyCodec || nativeDolby ? 'Dolby Vision' : selected.actualQn === 126
               ? (dolby?.compatibilityId === 4 || options.disableDolby && session ? 'HLG' : t('杜比源（基础层）'))
               : (QUALITY_MAP[selected.actualQn] || String(selected.actualQn)),
             audio: attempt.audioLabel,
@@ -2497,6 +2504,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
 
   return (
     <div className="player-page" onMouseMove={handlePointerMove}>
+      {nerdInfo && <NerdInfo videoRef={videoRef} playerRef={shakaRef} transferRef={transferRef} audio={streamFormat.audio} />}
       <video ref={videoRef} className="player-video"
         style={showCommentRail ? { width: RAIL_VW, height: RAIL_VH } : undefined} />
       {/* Same treatment as the live layout: 16:9 in a 1500-wide column leaves
@@ -2851,7 +2859,6 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
             );
           })}
           <span className="player-time">
-            {streamFormat.audio && <span className="player-audio-format">{streamFormat.audio} · </span>}
             {formatDuration(currentTime)} / {formatDuration(duration)}
             {(() => {
               const ch = chapters.find(c => currentTime >= c.from && currentTime < c.to);

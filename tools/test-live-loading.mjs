@@ -146,6 +146,15 @@ await test('failed-host preference expires and never permanently bans primary',a
  await page.clock.runFor(61000);await fail();await page.clock.runFor(1000);await page.waitForFunction(()=>window.__sources.length===3);
  assert.match(await page.evaluate(()=>window.__sources[2]),/proxy\/live\.bilivideo/);
 });
+await test('Nerd live panel is opt-in and never invents native transfer counts',async page=>{
+ await open(page);await loaded(page);
+ assert.equal(await page.locator('.nerd-info').count(),0);
+ await page.keyboard.press('Escape');
+ await page.evaluate(()=>window.__appStorage.setSettings({...window.__appStorage.getSettings(),nerdInfo:true}));
+ await open(page);await page.waitForSelector('.nerd-info');
+ const text=await page.locator('.nerd-info').innerText();
+ assert.match(text,/媒体下载：—/);assert.match(text,/音频编码：—/);
+});
 await browser.close();await writeFile(`${output}/results.json`,JSON.stringify(results,null,2));
 console.log(`${results.filter(r=>r.pass).length}/${results.length} live loading tests passed`);
 process.exitCode=results.some(r=>!r.pass)?1:0;

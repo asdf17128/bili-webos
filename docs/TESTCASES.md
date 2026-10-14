@@ -778,3 +778,8 @@ C9 社区独立验证：[#34 回报](https://github.com/asdf17128/bili-webos/iss
 - 固定画质的真机测试工具同时设置 `qualityMode: manual`，避免继承用户的自动模式而测错档位。音轨的源对照见上节；真机结果完成后单列，不以本地夹具代替。
 
 - **C-MEMBER-TV-01**：`member-test.6` 包指纹匹配后，LG C4 会员与自动画质专项 6/6（含恢复）：Links 自动 4K DV→遥控 1080P→自动 4K DV，跨视频自动 Profile 5 + E-AC-3，实际 readyState=4、尺寸/编码/时间与解码计数核对。首次早于 metadata 的工具误判保留，等待真实媒体就绪后同包通过。[结果](ux-evidence/2026-10-14-membership/tv-results.json)与[说明](MEMBER-EXPERIENCE.md)。
+
+## 2026-10-14：Nerd 信息开关
+
+- `tools/test-player-loading.mjs`：默认隐藏且保留清晰度操作；设置页鼠标与遥控切换，重载后保留；显示实际音视频编码、3840×2160/60fps、完成媒体响应的累计字节及主机名（不泄露签名查询参数）；关闭后不挂载面板。旧 PlayerPage 对照无法显示面板，测试失败。
+- `tools/test-live-loading.mjs`：直播默认隐藏，共用开关；不可读的原生音轨/下载计数显示 —。受控浏览器验证不等于真机物理画面验收。

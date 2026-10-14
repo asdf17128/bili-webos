@@ -12,6 +12,10 @@ This log collects the release history previously included in the README. For ear
 
 ## v2.4.0 — premium playback and stability / 会员播放与稳定性
 
+### 播放信息
+
+- 设置新增「Nerd 信息」开关，默认关闭，点播与直播共用并记住选择。音频编码、分辨率、帧率、CDN、已完成媒体请求的下载量/速率、缓冲与丢帧集中显示；普通播放栏移除 AAC 等技术标签。原生直播无法读取的指标显示「—」。
+
 ### 会员体验（2026-10-14）
 
 [使用方式、迁移规则与验证范围](docs/MEMBER-EXPERIENCE.md)。

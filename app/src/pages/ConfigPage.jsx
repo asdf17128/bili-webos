@@ -25,6 +25,16 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
   const [danmakuScale, setDanmakuScale] = useState(() => settings.danmakuScale || 1);
   const [cdnRoute, setCdnRoute] = useState(() => settings.cdnRoute || 'auto');
 
+  const [nerdInfo, setNerdInfo] = useState(() => settings.nerdInfo === true);
+  const { props: nerdProps } = useFocusable({
+    id: 'content-12-0', row: 12, col: 0, group: 'content',
+    onSelect: () => {
+      const next = !nerdInfo;
+      setNerdInfo(next);
+      storage.setSettings({ ...storage.getSettings(), nerdInfo: next });
+    },
+  });
+
   // Query GitHub for the latest release and compare with the running version.
   // Shared by the auto-check on mount and the manual OK press.
   async function checkForUpdate() {
@@ -358,6 +368,11 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
           <span className="settings-row-value">{user.uname}</span>
         </div>
       )}
+
+      <div className="settings-row" {...nerdProps} role="switch" aria-checked={nerdInfo}>
+        <span>{t('Nerd 信息')}</span>
+        <span className="settings-row-value">{nerdInfo ? t('开') : t('关')}</span>
+      </div>
 
       <div style={{ marginTop: 28, color: '#888', fontSize: 'calc(18px * var(--ui-scale))', lineHeight: 2 }}>
         <div style={{ fontSize: 'calc(20px * var(--ui-scale))', color: '#aaa', marginBottom: 6 }}>{t('关于')}</div>

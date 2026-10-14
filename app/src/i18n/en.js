@@ -2,6 +2,14 @@
 // ADDING A LANGUAGE: copy this file to <code>.js, translate values, register
 // it in index.js DICTS. That's all.
 export default {
+  "Nerd 信息": "Nerd info",
+  "分辨率": "Resolution",
+  "视频编码": "Video codec",
+  "音频编码": "Audio codec",
+  "媒体下载": "Media downloaded",
+  "缓冲": "Buffer",
+  "丢帧": "Dropped frames",
+  "下载统计为已完成媒体请求；原生直播不可用的指标显示 —": "Counts completed media requests; unavailable native live metrics show —",
   '年度大会员': 'Annual Premium',
   '自动 · 最高可用': 'Auto · Best available',
   '播放暂时中断，请重试播放': 'Playback interrupted. Please retry.',

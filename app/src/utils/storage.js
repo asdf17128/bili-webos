@@ -67,6 +67,7 @@ export const storage = {
       subtitleScale: 1,
       // Auto uses cached spare-buffer probes; named routes keep that mirror first.
       cdnRoute: 'auto',
+      nerdInfo: false,
     };
     const settings = { ...defaults, ...(this.get('settings') || {}) };
     return { ...settings, quality: qualityPreference(settings) };

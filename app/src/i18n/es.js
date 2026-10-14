@@ -1,5 +1,13 @@
 // Spanish dictionary. Keys are the Chinese source strings (see index.js).
 export default {
+  "Nerd 信息": "Información técnica",
+  "分辨率": "Resolución",
+  "视频编码": "Códec de vídeo",
+  "音频编码": "Códec de audio",
+  "媒体下载": "Medios descargados",
+  "缓冲": "Búfer",
+  "丢帧": "Fotogramas perdidos",
+  "下载统计为已完成媒体请求；原生直播不可用的指标显示 —": "Cuenta solicitudes multimedia completadas; métricas nativas no disponibles: —",
   '年度大会员': 'Premium anual',
   '自动 · 最高可用': 'Auto · Mejor disponible',
   '播放暂时中断，请重试播放': 'Reproducción interrumpida. Vuelve a intentarlo.',

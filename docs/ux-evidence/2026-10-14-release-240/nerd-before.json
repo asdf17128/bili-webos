@@ -1,0 +1,11 @@
+[
+  {
+    "name": "Nerd info defaults hidden and keeps everyday quality controls",
+    "pass": true
+  },
+  {
+    "name": "Nerd switch persists by remote and reports actual completed media bytes",
+    "pass": false,
+    "error": "page.waitForSelector: Timeout 7000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.nerd-info') to be visible\u001b[22m\n"
+  }
+]

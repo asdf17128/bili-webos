@@ -1,0 +1,15 @@
+[
+  {
+    "name": "enabled panel has actual decoded dimensions, audio, CDN and media bytes",
+    "pass": true,
+    "detail": {
+      "text": "Nerd 信息\n分辨率：3840 × 2160 · 29.97 fps\n视频编码：dvh1.08.07\n音频编码：mp4a.40.2\nCDN：upos-sz-mirrorali.bilivideo.com\n媒体下载：13.43 MiB · 0.00 MiB/s\n缓冲：7.8 s · 丢帧：0 / 247\n下载统计为已完成媒体请求；原生直播不可用的指标显示 —",
+      "width": 3840,
+      "time": 3.06975
+    }
+  },
+  {
+    "name": "disabled panel and audio tag remain absent during playback",
+    "pass": true
+  }
+]

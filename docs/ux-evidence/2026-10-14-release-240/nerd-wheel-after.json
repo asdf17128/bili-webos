@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Nerd info defaults hidden and keeps everyday quality controls",
+    "pass": true
+  },
+  {
+    "name": "Nerd setting is reachable by wheel when signed out",
+    "pass": true
+  },
+  {
+    "name": "Nerd switch persists by remote and reports actual completed media bytes",
+    "pass": true
+  }
+]

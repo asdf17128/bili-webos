@@ -27,7 +27,7 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
 
   const [nerdInfo, setNerdInfo] = useState(() => settings.nerdInfo === true);
   const { props: nerdProps } = useFocusable({
-    id: 'content-12-0', row: 12, col: 0, group: 'content',
+    id: `content-${user ? 12 : 11}-0`, row: user ? 12 : 11, col: 0, group: 'content',
     onSelect: () => {
       const next = !nerdInfo;
       setNerdInfo(next);
@@ -258,7 +258,7 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
   });
 
   const { props: logoutProps } = useFocusable({
-    id: 'content-11-0', row: 11, col: 0, group: 'content',
+    id: `content-${user ? 11 : 12}-0`, row: user ? 11 : 12, col: 0, group: 'content',
     onSelect: () => { if (user && !loggingOut) onLogout(); },
   });
 

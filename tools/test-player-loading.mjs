@@ -699,6 +699,12 @@ await run('Nerd info defaults hidden and keeps everyday quality controls','premi
  assert.equal(await page.locator('.nerd-info,.player-audio-format').count(),0);
  assert.ok(await page.locator('.player-btn').filter({hasText:'1080P'}).count());
 });
+await run('Nerd setting is reachable by wheel when signed out','fonts',async page=>{
+ await page.locator('[data-focus-id="sidebar-13-0"]').click();
+ await page.evaluate(async()=>{const {setFocus}=await import('/src/hooks/useFocus.js');setFocus('content-10-0')});
+ await page.mouse.move(1000,500);await page.mouse.wheel(0,120);
+ await page.waitForFunction(()=>document.querySelector('.settings-row.focused')?.textContent.includes('Nerd'));
+});
 await run('Nerd switch persists by remote and reports actual completed media bytes','nerd',async page=>{
  await page.locator('[data-focus-id="sidebar-13-0"]').click();
  const toggle=page.getByRole('switch',{name:'Nerd 信息'});

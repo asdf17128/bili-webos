@@ -8,6 +8,8 @@ import net from 'node:net';
 import assert from 'node:assert/strict';
 import { tvPassphrase } from './_tvpass.mjs';
 
+const switchRounds = Number(process.env.PREMIUM_SWITCH_ROUNDS || 1);
+if (!Number.isInteger(switchRounds) || switchRounds < 1 || switchRounds > 10) throw new Error('PREMIUM_SWITCH_ROUNDS must be 1..10');
 const output = process.env.UX_OUTPUT || '/tmp/bili-premium-controls-tv';
 mkdirSync(output, { recursive: true });
 const conn = new Client(), results = [];
@@ -89,6 +91,8 @@ try {
     while(index!==target){await key(index<target?'ArrowDown':'ArrowUp');index+=index<target?1:-1}
     await key('Enter');
   };
+  for (let round = 0; round < switchRounds; round++) {
+  console.log('Switch round', round + 1, new Date().toISOString());
   await open({bvid:'BV1kX4y197P4',cid:1127214165,qn:126});
   await evaluate("document.querySelector('video').pause()");const before=await state();
   await choose('4K');await wait("window.__shakaPlayer?.getVariantTracks()?.some(t=>t.active && /^hvc1|^hev1/.test(t.videoCodec)) && document.querySelector('video')?.readyState>=2 && !document.querySelector('.player-page .loading')",25000);
@@ -100,8 +104,9 @@ try {
   await evaluate("document.querySelector('video').currentTime=30;document.querySelector('video').play()");
   await wait("document.querySelector('video').currentTime>31 && document.querySelector('video').readyState>=2",25000);
   check('Profile 5 plays after an unbuffered seek',(await state()).width===3996,await state());
+  }
   await open({bvid:'BV1dCNC6hEzE',cid:39933052694,qn:126});
-  current=await state();check('audited source uses transformed 60fps DV on hardware',current.runtime.phase==='playing'&&current.runtime.fragments>0&&current.frameRate===60&&/^dvh1/.test(current.codec),current);
+  let current=await state();check('audited source uses transformed 60fps DV on hardware',current.runtime.phase==='playing'&&current.runtime.fragments>0&&current.frameRate===60&&/^dvh1/.test(current.codec),current);
   await evaluate("document.querySelector('video').currentTime=document.querySelector('video').duration-6");
   await wait("document.querySelector('video').currentTime>document.querySelector('video').duration-4",25000);
   current=await state();check('short final transformed fragment decodes after seek',!current.error&&current.runtime.phase==='playing'&&current.ready>=2,current);
@@ -116,7 +121,11 @@ try {
   await wait(`document.querySelector('video').currentTime>${current.time+1}`,12000);
   check('real base-layer playback advances after controlled failure',true,await state());
   await back();
-} catch(error){results.push({name:'completion',pass:false,detail:error.message});console.error(error.message);process.exitCode=1}
+} catch(error){
+  let snapshot;
+  try { snapshot=await evaluateState(`(()=>{const v=document.querySelector('video'),t=window.__shakaPlayer?.getVariantTracks()?.find(t=>t.active);return {video:v&&{time:v.currentTime,ready:v.readyState,width:v.videoWidth,paused:v.paused,error:v.error?.code},track:t&&{codec:t.videoCodec,audio:t.audioCodec},loading:!!document.querySelector('.player-page .loading'),popup:document.querySelector('.quality-popup')?.innerText,focused:document.querySelector('.player-btn.focused')?.innerText,error:document.querySelector('.player-error')?.innerText,runtime:window.__dolbyRuntime?.()}})()`); } catch {}
+  results.push({name:'completion',pass:false,detail:error.message,snapshot});console.error(error.message,JSON.stringify(snapshot));process.exitCode=1;
+}
 finally{
   if(evaluateState&&originalSettings!==undefined){
     try{await evaluateState(`${originalSettings==null?"localStorage.removeItem('bili_settings')":"localStorage.setItem('bili_settings',"+JSON.stringify(originalSettings)+")"};for(let i=0;i<4;i++)window.dispatchEvent(new KeyboardEvent('keydown',{key:'Backspace',bubbles:true}))`)}catch{}

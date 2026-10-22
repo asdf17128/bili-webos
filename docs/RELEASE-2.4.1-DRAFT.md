@@ -11,8 +11,8 @@
 
 ## 尚未满足的门禁
 
-- 真实 Node 0.12/8：已有 Docker 后台无响应，未启动、重启或重配服务。
-- 真机 UI 截图、真机二维码解码及完整设备 smoke：本轮明确不操作电视/手机，未执行。
+- Docker/Linux 运行环境仍不可用；已正常启动/重启尝试，未强杀或重置。随后使用官方已校验 Darwin 二进制完成真实 Node 0.12.2/8.17.0 原运行时断言；这是实际旧 Node 覆盖，不是 Linux/webOS 集成，详见 [补验结果](ux-evidence/2026-10-22-private-diagnostics/native-runtime/results.json)。
+- 真机 UI 截图、真机二维码解码及完整设备 smoke 尚未执行。用户已授权可恢复部署，但系统拒绝全局前台查询且 biliwebos 当前无 CDP 页面，未能确认电视空闲，因此停在部署前。已有官方 2.4.0 回滚包与安装中的 7 个 JS 包哈希匹配。
 - 已有 Dolby corpus 用例缺少外部 35 分片数据而跳过，不能计入通过。
 
 可独立执行的本地门禁、浏览器交互、隐私白名单、二维码极限长度解码、生产构建和 IPK 打包均通过，详见 [检查汇总](ux-evidence/2026-10-22-private-diagnostics/pre-release/summary.json)。不能把 `--no-tv` 退出码 0 视为完整发布许可。

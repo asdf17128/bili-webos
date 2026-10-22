@@ -1,0 +1,53 @@
+{
+  "checkedAt": "2026-10-22T10:12:52.294558+00:00",
+  "platform": "darwin x64 using existing host compatibility support",
+  "artifacts": [
+    {
+      "version": "v0.12.2",
+      "source": "https://nodejs.org/dist/v0.12.2/node-v0.12.2-darwin-x64.tar.gz",
+      "checksumSource": "https://nodejs.org/dist/v0.12.2/SHASUMS256.txt",
+      "sha256": "7d382f8988ea441e2918d9d935003177affd13d4d160020df6b3d8ee7d65ec2d",
+      "verified": true,
+      "runtimeExitCode": 0
+    },
+    {
+      "version": "v8.17.0",
+      "source": "https://nodejs.org/dist/v8.17.0/node-v8.17.0-darwin-x64.tar.gz",
+      "checksumSource": "https://nodejs.org/dist/v8.17.0/SHASUMS256.txt",
+      "sha256": "3117430fc93e9865e4a1842616cc98767b5d6987fd9d727c8be4068714570e16",
+      "verified": true,
+      "runtimeExitCode": 0
+    }
+  ],
+  "assertions": "Existing tools/test-node8/run8.js unchanged",
+  "isolation": [
+    "Disposable service copy and runtime dependencies",
+    "/media redirected into disposable directory",
+    "Luna uses existing webos-service stub",
+    "SSDP startup replaced with no-op; no LAN announcement",
+    "Loopback proxy only; anonymous upstream Bilibili reads"
+  ],
+  "checksPassed": [
+    "production service and compatibility shims load",
+    "legacy WebSocket fragment guard",
+    "fixture-only persisted logout",
+    "local proxy ready handshake",
+    "queued request deadline",
+    "fresh GET retry",
+    "anonymous API HTTP 200 and code -101",
+    "getDiagnostics and danmaku module load",
+    "ranking API code 0, 100 entries"
+  ],
+  "wrongRuntimeRejected": true,
+  "limitations": [
+    "Actual Darwin runtime, not Linux/webOS integration",
+    "No real TV UI, QR or playback verification in this run"
+  ],
+  "tvPreflight": {
+    "sshVersionAndOfficialBundleHashes": "previously verified 2.4.0, 7/7",
+    "foregroundQuery": "denied by TV method permission",
+    "biliCDPPage": "not present",
+    "activity": "unknown; deployment not started"
+  },
+  "remoteWrites": false
+}

@@ -804,3 +804,9 @@ C-DIAG-PRIV-03：发布前扩展同一浏览器专项，遥控左键回到诊断
 `verify.sh --no-tv --ux` 退出码 0：设置 UX 68/68、播放器 76/76、直播 15/15、片尾 26/26、自动 CDN 7/7、CDN 诊断 4/4，以及全部本地逻辑、三语覆盖、服务稳定性、ES5/ES2016 语法与生产构建通过。已有 Dolby 35 分片外部 corpus 缺失用例跳过，不计通过。已有依赖副本完成 IPK 打包，仍为 2.4.0 的本地验证包，未安装或上传。
 
 发布仍阻挡：Docker `info` 和镜像只读检查分别 15 秒无响应，管线明确跳过真实 Node 0.12/8；本轮约束不允许操作电视/手机，故真机 UI 截图、二维码解码与 `--full` 未执行。没有把解析测试、现代 Chromium 或退出码 0 当作全部门禁通过。未推送、未创建 tag/PR/release。证据：[安全汇总](ux-evidence/2026-10-22-private-diagnostics/pre-release/summary.json)、[管线日志](ux-evidence/2026-10-22-private-diagnostics/pre-release/verify-local.log)、[二维码结果](ux-evidence/2026-10-22-private-diagnostics/pre-release/privacy-results.json)。
+
+### 同日实际旧运行时补验
+
+C-DIAG-RUNTIME-01：Docker 正常启动/重启未恢复后，经官方 SHA256 验证的 Darwin x64 Node 0.12.2 与 8.17.0 直接执行原 `run8.js`，两者均通过服务加载、WS 片段保护、隔离文件中的登出持久化、代理就绪、排队截止时间、新连接 GET 重试、真实匿名 API、诊断模块与排行榜检查。没有登出电视账号。`test-native.sh` 对错误运行时返回 2，防止现代 Node 误计为旧版本通过。首次工具启动的 `-r` 不受 Node 0.12 支持、macOS `/var` 路径别名校验问题均已修正；最终用同一运行器重跑通过。
+
+这是实际 Darwin 旧 Node 测试，不是语法解析，也不替代 Linux/webOS 集成。电视开发连接及官方 2.4.0 包哈希可核对，但全局前台查询被系统拒绝，biliwebos 无 CDP 页面，不能确认电视空闲；本轮未部署、未启动应用、未播放视频或改账号。真机验收仍未完成。证据：[运行结果](ux-evidence/2026-10-22-private-diagnostics/native-runtime/results.json)、[脱敏日志](ux-evidence/2026-10-22-private-diagnostics/native-runtime/run.log)。

@@ -225,3 +225,9 @@ node tools/_cdp.mjs tools/probe-premium-soak-tv.js          # 约 3 分钟，实
 没有自动遥测接收端、后台上传队列或新配置端点。若后续需要自动汇总，必须先明确接收方/端点、服务器 IP 日志策略、保留期、访问权限与用户同意界面；本轮不猜测或启用。原始本地缓冲只在运行时内存中，未新增持久化日志。DAU 与更新检查行为未改。
 
 本地测试：`node --test app/src/utils/diagnosticReport.test.js app/src/player/startupTrace.test.js`；浏览器专项 `DIAG_BASE_URL=http://127.0.0.1:<隔离端口> node tools/test-diagnostic-privacy.mjs`，仅连接本地 Vite，其他网络均由夹具截获。完整发布门禁、旧运行时和真机二维码验收仍需在获授权的发布流程中执行，本轮没有部署/发布。
+
+### Docker 不可用时的实际旧 Node 补验
+
+`tools/test-node8/test-native.sh` 是手动替代运行器：显式传入 `BILI_NODE012_BINARY` 和 `BILI_NODE8_BINARY`，分别指向已用 nodejs.org 官方 `SHASUMS256.txt` 校验的 Darwin x64 0.12.2 / 8.17.0 发行文件。运行器不下载或安装任何东西；先核对精确版本和空闲的本地代理端口，再将生产服务、已有依赖和未修改的 `run8.js` 复制到临时目录。机器必须已有 x86 执行能力，不能自动安装 Rosetta。
+
+`native-preload.js` 仅将 `/media` 文件操作重定向到临时目录，并禁止 SSDP 对外广播；使用原 Luna stub。服务、compat、网络传输和 WS 代码仍在真实旧 Node 内执行，匿名 B 站 API/排行榜请求仍走真实 TLS。退出清理临时数据。结果必须明确标为 Darwin 运行时覆盖，不能写成 Linux Docker、webOS 真机或播放解码通过。2026-10-22 两个真实版本均通过原运行时断言，见 [证据](ux-evidence/2026-10-22-private-diagnostics/native-runtime/results.json)。

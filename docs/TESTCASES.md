@@ -810,3 +810,7 @@ C-DIAG-PRIV-03：发布前扩展同一浏览器专项，遥控左键回到诊断
 C-DIAG-RUNTIME-01：Docker 正常启动/重启未恢复后，经官方 SHA256 验证的 Darwin x64 Node 0.12.2 与 8.17.0 直接执行原 `run8.js`，两者均通过服务加载、WS 片段保护、隔离文件中的登出持久化、代理就绪、排队截止时间、新连接 GET 重试、真实匿名 API、诊断模块与排行榜检查。没有登出电视账号。`test-native.sh` 对错误运行时返回 2，防止现代 Node 误计为旧版本通过。首次工具启动的 `-r` 不受 Node 0.12 支持、macOS `/var` 路径别名校验问题均已修正；最终用同一运行器重跑通过。
 
 这是实际 Darwin 旧 Node 测试，不是语法解析，也不替代 Linux/webOS 集成。电视开发连接及官方 2.4.0 包哈希可核对，但全局前台查询被系统拒绝，biliwebos 无 CDP 页面，不能确认电视空闲；本轮未部署、未启动应用、未播放视频或改账号。真机验收仍未完成。证据：[运行结果](ux-evidence/2026-10-22-private-diagnostics/native-runtime/results.json)、[脱敏日志](ux-evidence/2026-10-22-private-diagnostics/native-runtime/run.log)。
+
+### 同日人工扫码回执（典型测试码通过）
+
+C-DIAG-SCAN-01：用户扫描候选浏览器界面渲染的典型 synthetic 诊断二维码，先反馈“是的，是github。”在进一步明确询问是否自动带上 `[diag] v2.4.0` 标题和诊断正文后，用户确认“有的。”典型测试码的手机扫码 → GitHub → 标题/正文自动预填人工流程通过；逐字正文和精确仓库路径由此前程序解码检查覆盖，不额外推断用户逐字核对。此码不是最大负载码，亦非电视屏幕输出，电视 UI/扫码门禁仍未验收；无需提交 issue，未据此部署或发布。证据：[人工回执](ux-evidence/2026-10-22-private-diagnostics/manual-scan.json)。

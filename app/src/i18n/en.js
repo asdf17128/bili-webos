@@ -2,6 +2,16 @@
 // ADDING A LANGUAGE: copy this file to <code>.js, translate values, register
 // it in index.js DICTS. That's all.
 export default {
+  "已用 pagelist 获取视频信息": "Video info obtained via pagelist",
+  "缺少视频信息，未尝试取流": "Missing video info; stream request not attempted",
+  "未取得可测媒体流，CDN 未测试": "No testable media stream; CDN not tested",
+  "节点 {n}": "Node {n}",
+  "诊断报告预览（仅本机）": "Diagnostic report preview (local only)",
+  "报告仅含版本、阶段、错误码和计数，不含账号、IP、设备标识或观看内容。": "The report contains only versions, stages, error codes and counts. No account, IP, device ID or viewing content.",
+  "隐藏反馈二维码": "Hide feedback QR code",
+  "生成反馈二维码": "Create feedback QR code",
+  "扫码后会把预览内容带到 GitHub；只有提交 issue 后才会公开。": "Scanning sends the preview to GitHub. It becomes public only when you submit the issue.",
+
   "Nerd 信息": "Nerd info",
   "分辨率": "Resolution",
   "视频编码": "Video codec",

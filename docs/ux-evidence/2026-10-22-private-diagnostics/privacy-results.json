@@ -1,0 +1,50 @@
+[
+  {
+    "mode": "risk351",
+    "pass": true,
+    "reportBytes": 463,
+    "qrDecoded": true
+  },
+  {
+    "mode": "risk352",
+    "pass": true,
+    "reportBytes": 463,
+    "qrDecoded": true
+  },
+  {
+    "mode": "voucher",
+    "pass": true,
+    "reportBytes": 473,
+    "qrDecoded": true
+  },
+  {
+    "mode": "empty",
+    "pass": true,
+    "reportBytes": 460,
+    "qrDecoded": true
+  },
+  {
+    "mode": "offline",
+    "pass": true,
+    "reportBytes": 430,
+    "qrDecoded": true
+  },
+  {
+    "mode": "healthy",
+    "pass": true,
+    "reportBytes": 444,
+    "qrDecoded": true
+  },
+  {
+    "mode": "english",
+    "pass": true,
+    "reportBytes": 442,
+    "qrDecoded": true
+  },
+  {
+    "mode": "spanish",
+    "pass": true,
+    "reportBytes": 443,
+    "qrDecoded": true
+  }
+]

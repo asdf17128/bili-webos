@@ -639,6 +639,8 @@ await run('startup report separates slow media readiness and stays visible when 
  const summary=page.locator('.startup-summary');await summary.scrollIntoViewIfNeeded();
  assert.match(await summary.innerText(),/最近一次起播.*[0-9]+\.[0-9]+s/);
  assert.match(await summary.innerText(),/首个媒体响应.*媒体就绪.*播放事件/);
+ await page.locator('.diagnostic-preview').waitFor();
+ await page.locator('.diagnostic-export').click();
  await page.waitForFunction(()=>!!document.querySelector('.diagnostic-report svg'));
  assert.match(await page.locator('.diagnostic-panel').innerText(),/❌/);
  await page.locator('.diagnostic-panel').screenshot({path:output+'/diagnostics-api-failure.png'});

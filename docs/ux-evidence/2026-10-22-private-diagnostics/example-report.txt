@@ -1,0 +1,13 @@
+diag=1 app=2.4.0
+env chromeMajor=151 node=? platform=browser
+route=auto
+[fail] svc reason=unknown ms=1
+[ok] api code=0 ms=14
+[fail] rcmd code=0 reason=invalid_response ms=2
+[ok] view code=0 ms=1
+[fail] playurl code=-351 hasStream=no voucher=no reason=api_error ms=1
+[skip] cdn reason=no_stream ms=0
+[fail] imgproxy reason=network ms=1
+startup failed ms=170 retries=1
+stage url code=-351 hasStream=no voucher=no ms=80 attempts=2 errors=1
+error code=403 reason=http

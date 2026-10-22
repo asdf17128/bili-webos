@@ -783,3 +783,16 @@ C9 社区独立验证：[#34 回报](https://github.com/asdf17128/bili-webos/iss
 
 - `tools/test-player-loading.mjs`：默认隐藏且保留清晰度操作；设置页鼠标与遥控切换，重载后保留；显示实际音视频编码、3840×2160/60fps、完成媒体响应的累计字节及主机名（不泄露签名查询参数）；关闭后不挂载面板。旧 PlayerPage 对照无法显示面板，测试失败。
 - `tools/test-live-loading.mjs`：直播默认隐藏，共用开关；不可读的原生音轨/下载计数显示 —。受控浏览器验证不等于真机物理画面验收。
+
+
+## 本地最小化诊断与主动导出（2026-10-22）
+
+C-DIAG-PRIV-01：来自真实 #50/#51/#52。旧版中文风控提示经 ASCII 过滤确实只剩 `B`；旧版 `code=0` 不检查媒体流，且无流误用“view/pagelist 无 cid”文案。新增 `diagnosticReport.test.js` 的正对照断言保留旧过滤结果，验证新报告保留 -351/-352、区分无 cid / 无流 / voucher、支持 UGC data 与 PGC result 包装；数值与枚举白名单、字段限长、总长 1800 ASCII 字符，超限整行截断并标记。随机标签、用户名、IPv4/IPv6、Cookie、Token、BV/标题、完整 URL 及原始错误对象不得进入报告。
+
+C-DIAG-PRIV-02：`tools/test-diagnostic-privacy.mjs` 使用真实 React + Chromium 输入，所有外部请求由夹具拦截。8/8：-351、-352、code0+voucher、code0+空流、断网、正常流、英文、西文。诊断先显示本地预览，遥控右键/确认主动生成二维码；截图经 jsQR 解码等于预览全文。二维码生成没有 GitHub 请求，未执行真实扫码/提交。原始错误缓冲与最近起播夹具故意注入敏感内容，面板与报告均不包含这些值。首轮发现导出按钮 ID 不符合 `content-row-col` 的导航规则，改为 `content-9-1` 后遥控测试通过。
+
+本轮同时通过：startupTrace + diagnosticReport 14 项 Node 测试、原有 API 提示 10 项、原有 CDN 诊断 4/4、设置/离线 UI 14/14、播放器诊断 2/2；中英西文案覆盖通过，Vite 生产构建成功，7 个生产 JS 包按 ES2016 解析通过，12 个未修改服务文件按 ES5 解析通过。使用已有依赖的本地副本，未安装/升级依赖。
+
+证据：[诊断结果](ux-evidence/2026-10-22-private-diagnostics/privacy-results.json)、[CDN 回归](ux-evidence/2026-10-22-private-diagnostics/cdn-results.json)、[播放器回归](ux-evidence/2026-10-22-private-diagnostics/player-results.json)、[脱敏示例](ux-evidence/2026-10-22-private-diagnostics/example-report.txt)、[浏览器截图](ux-evidence/2026-10-22-private-diagnostics/preview-and-export.png)。
+
+边界：未部署、未发布、未跑真机/真实旧 Node 运行时。ES2016 解析和现代 Chromium 不代替旧电视验收；更新后的真机 QR 断言仅维护、未执行。没有改变播放恢复、设备标识、DAU 任务或任何上报后端。

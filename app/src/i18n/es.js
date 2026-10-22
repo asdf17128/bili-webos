@@ -1,5 +1,15 @@
 // Spanish dictionary. Keys are the Chinese source strings (see index.js).
 export default {
+  "已用 pagelist 获取视频信息": "Información de vídeo obtenida mediante pagelist",
+  "缺少视频信息，未尝试取流": "Falta información del vídeo; no se solicitó el flujo",
+  "未取得可测媒体流，CDN 未测试": "Sin flujo multimedia comprobable; CDN no probado",
+  "节点 {n}": "Nodo {n}",
+  "诊断报告预览（仅本机）": "Vista previa del diagnóstico (solo local)",
+  "报告仅含版本、阶段、错误码和计数，不含账号、IP、设备标识或观看内容。": "El informe solo contiene versiones, etapas, códigos de error y contadores. No incluye cuentas, IP, identificadores del dispositivo ni contenido visto.",
+  "隐藏反馈二维码": "Ocultar QR de comentarios",
+  "生成反馈二维码": "Crear QR de comentarios",
+  "扫码后会把预览内容带到 GitHub；只有提交 issue 后才会公开。": "Al escanear se envía la vista previa a GitHub. Solo se hace pública al enviar la incidencia.",
+
   "Nerd 信息": "Información técnica",
   "分辨率": "Resolución",
   "视频编码": "Códec de vídeo",

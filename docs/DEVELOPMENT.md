@@ -212,3 +212,16 @@ node tools/_cdp.mjs tools/probe-premium-soak-tv.js          # 约 3 分钟，实
 `probe-dolby-corpus-tv.js` 需先在电视内取得目标 playurl，将它临时放入 `window.__premiumSources[bvid+':'+cid]`。用 app 的 esbuild 将探针打包成 IIFE（globalName=`premiumCorpus`），追加 `premiumCorpus.probe()`，经 `_cdp.mjs` 执行。它在电视内读取、转换并检查全部 35 个实际分片，仅返回脱敏计数/耗时。结束删除临时变量或重新启动页面。不要把签名响应写到仓库。
 
 `__dolbyRuntime().fragments` 是已处理响应次数，不是去重分片数，Shaka 可能重复请求；完整性依据逐分片 corpus 校验及自然 ended / 时间轴 / 解码帧数共同判断。CDP 截图只核对控制栏，不能证明 GPU 画面或面板 Dolby/Atmos 输出。
+
+
+## 最小化诊断报告（2026-10-22，本地候选）
+
+`app/src/utils/diagnosticReport.js` 是预览与二维码共用的导出边界。只重建固定 schema，禁止导出整个错误/API/service 对象；版本有格式及长度约束，阶段/状态/错误类别为枚举，错误码为有限整数或指定系统错误码，耗时与计数有上限。正文最多 1800 ASCII 字符，整行截断并加 `truncated=1`。Chrome 只保留主版本，Node 保留数值版本，测试包保留受限的构建标记。
+
+导出内容：应用/运行环境版本、固定 CDN 路线枚举、诊断阶段及状态、原始错误码、`hasStream`、`voucher` 布尔值、阶段耗时/尝试次数/错误次数、已观察到的起播媒体重试次数。未知值用 `?` 或省略，不凭空填零。`voucher` 从不包含挑战值；不含账号/用户名、IP、cookie/token、设备指纹、完整 UA、主机名/签名 URL、BV/cid、标题或观看时间点。原有自由文本错误缓冲仅降为固定类别和安全错误码。
+
+设置 → 网络诊断先显示本机预览，按右键到“生成反馈二维码”后按 OK，或点击该按钮，才在本机生成 QR。预览与扫码正文完全相同。生成时不发请求；手机扫码后 URL 查询参数会到达 GitHub，只有用户提交 issue 才公开，UI 明确说明这两步。原有 B 站网络诊断探针仍按用户打开诊断时运行。
+
+没有自动遥测接收端、后台上传队列或新配置端点。若后续需要自动汇总，必须先明确接收方/端点、服务器 IP 日志策略、保留期、访问权限与用户同意界面；本轮不猜测或启用。原始本地缓冲只在运行时内存中，未新增持久化日志。DAU 与更新检查行为未改。
+
+本地测试：`node --test app/src/utils/diagnosticReport.test.js app/src/player/startupTrace.test.js`；浏览器专项 `DIAG_BASE_URL=http://127.0.0.1:<隔离端口> node tools/test-diagnostic-privacy.mjs`，仅连接本地 Vite，其他网络均由夹具截获。完整发布门禁、旧运行时和真机二维码验收仍需在获授权的发布流程中执行，本轮没有部署/发布。

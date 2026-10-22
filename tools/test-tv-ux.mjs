@@ -777,18 +777,23 @@ await test('diagnostic network failures finish visibly and remain scannable', as
   await page.route('http://127.0.0.1:9527/**', route => route.abort());
   await page.getByText('网络诊断', { exact: true }).click();
   const panel = page.locator('.diagnostic-panel');
+  await panel.locator('.diagnostic-preview').waitFor();
+  await panel.locator('.diagnostic-export').click();
   await panel.locator('svg').waitFor();
   const detail = await panel.innerText();
-  assert.equal((detail.match(/❌/g) || []).length, 7, detail);
+  assert.equal((detail.match(/❌/g) || []).length, 5, detail);
+  assert.equal((detail.match(/⏭️/g) || []).length, 2, detail);
   assert.ok(!detail.includes('⏳'), 'all probes must settle');
-  const png = PNG.sync.read(await panel.screenshot({ path: `${output}/diagnostics-offline.png` }));
+  const png = PNG.sync.read(await panel.locator('.diagnostic-report svg').screenshot({ path: `${output}/diagnostics-offline.png` }));
   const qr = jsQR(new Uint8ClampedArray(png.data), png.width, png.height);
   assert.ok(qr, 'failure report QR must decode from rendered pixels');
   const url = new URL(qr.data);
   assert.equal(url.origin, 'https://github.com');
   const body = url.searchParams.get('body');
-  for (const step of ['svc', 'api', 'rcmd', 'view', 'playurl', 'cdn', 'imgproxy']) assert.ok(body.includes('[fail] ' + step), body);
+  for (const step of ['svc', 'api', 'rcmd', 'view', 'imgproxy']) assert.ok(body.includes('[fail] ' + step), body);
   assert.match(body, /route=auto/);
+  assert.match(body, /\[skip\] playurl reason=no_cid/);
+  assert.match(body, /\[skip\] cdn reason=no_stream/);
   assert.ok(!/[^\x00-\x7f]/.test(body), 'report stays ASCII');
 });
 

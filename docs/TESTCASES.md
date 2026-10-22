@@ -796,3 +796,11 @@ C-DIAG-PRIV-02：`tools/test-diagnostic-privacy.mjs` 使用真实 React + Chromi
 证据：[诊断结果](ux-evidence/2026-10-22-private-diagnostics/privacy-results.json)、[CDN 回归](ux-evidence/2026-10-22-private-diagnostics/cdn-results.json)、[播放器回归](ux-evidence/2026-10-22-private-diagnostics/player-results.json)、[脱敏示例](ux-evidence/2026-10-22-private-diagnostics/example-report.txt)、[浏览器截图](ux-evidence/2026-10-22-private-diagnostics/preview-and-export.png)。
 
 边界：未部署、未发布、未跑真机/真实旧 Node 运行时。ES2016 解析和现代 Chromium 不代替旧电视验收；更新后的真机 QR 断言仅维护、未执行。没有改变播放恢复、设备标识、DAU 任务或任何上报后端。
+
+### 同日发布前补验（未发布）
+
+C-DIAG-PRIV-03：发布前扩展同一浏览器专项，遥控左键回到诊断入口，再右键/OK 隐藏并重新显示二维码。另将所有白名单字段填到允许上限：1794 字节 ASCII 正文、2190 字节 URL，整行截断标记保留；与产品相同的 3px/module SVG 为 495px，经真实浏览器截图和 jsQR 解码逐字匹配。专项 9/9；这不是电视屏幕扫码测试。
+
+`verify.sh --no-tv --ux` 退出码 0：设置 UX 68/68、播放器 76/76、直播 15/15、片尾 26/26、自动 CDN 7/7、CDN 诊断 4/4，以及全部本地逻辑、三语覆盖、服务稳定性、ES5/ES2016 语法与生产构建通过。已有 Dolby 35 分片外部 corpus 缺失用例跳过，不计通过。已有依赖副本完成 IPK 打包，仍为 2.4.0 的本地验证包，未安装或上传。
+
+发布仍阻挡：Docker `info` 和镜像只读检查分别 15 秒无响应，管线明确跳过真实 Node 0.12/8；本轮约束不允许操作电视/手机，故真机 UI 截图、二维码解码与 `--full` 未执行。没有把解析测试、现代 Chromium 或退出码 0 当作全部门禁通过。未推送、未创建 tag/PR/release。证据：[安全汇总](ux-evidence/2026-10-22-private-diagnostics/pre-release/summary.json)、[管线日志](ux-evidence/2026-10-22-private-diagnostics/pre-release/verify-local.log)、[二维码结果](ux-evidence/2026-10-22-private-diagnostics/pre-release/privacy-results.json)。

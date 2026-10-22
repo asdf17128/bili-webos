@@ -1,0 +1,37 @@
+{
+  "sourceCommit": "5e7cfc05ed3b86b80b25273ae9abf9361b7d7a95",
+  "command": "bash tools/verify.sh --no-tv --ux",
+  "exitCode": 0,
+  "releaseReady": false,
+  "sourceVersion": "2.4.0",
+  "package": {
+    "name": "com.biliwebos.app_2.4.0_all.ipk",
+    "sha256": "caae959397b7bd85a08949361aa0cb1bde909ca89f9bfa4f9314293cc0392293",
+    "bytes": 681758,
+    "purpose": "Local packaging validation only; not installed, uploaded or released"
+  },
+  "counts": {
+    "settingsUX": 68,
+    "playerLoading": 76,
+    "liveLoading": 15,
+    "playbackEnd": 26,
+    "cdnAuto": 7,
+    "cdnDiagnostic": 4,
+    "diagnosticPrivacy": 9
+  },
+  "blocked": [
+    "Docker daemon did not respond to info or image inspection within 15 seconds; verify skipped real Node 0.12.2/8.17.0",
+    "TV/phone operation excluded from this run: no TV UI screenshot, on-device QR decode or full device smoke"
+  ],
+  "otherSkips": [
+    "Existing 35-fragment Dolby corpus test requires external corpus; unchanged code, not counted as passed"
+  ],
+  "safety": [
+    "No dependencies installed",
+    "No TV/phone/desktop operation",
+    "No push, tag, PR, release or issue write",
+    "No DAU job or device-identity recovery change",
+    "No automatic telemetry"
+  ],
+  "nextTagAtCheck": "v2.4.1 available"
+}

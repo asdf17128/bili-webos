@@ -5,6 +5,8 @@ import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { PNG } from 'pngjs';
 import jsQR from 'jsqr';
+import qrcode from '../app/node_modules/qrcode-generator/qrcode.js';
+import { diagnosticReportText, diagnosticIssueUrl, DIAGNOSTIC_STAGES } from '../app/src/utils/diagnosticReport.js';
 const base = process.env.DIAG_BASE_URL || 'http://127.0.0.1:5173';
 const output = process.env.DIAG_TEST_OUTPUT || '/tmp/bili-diagnostic-privacy';
 await mkdir(output,{recursive:true});
@@ -80,6 +82,14 @@ for (const mode of modes) {
     await page.waitForFunction(()=>window.__focusState().current==='content-9-1');
     await page.keyboard.press('Enter');
     await page.locator('.diagnostic-report svg').waitFor();
+    await page.keyboard.press('ArrowLeft');
+    await page.waitForFunction(()=>window.__focusState().current==='content-9-0');
+    await page.keyboard.press('ArrowRight');
+    await page.waitForFunction(()=>window.__focusState().current==='content-9-1');
+    await page.keyboard.press('Enter');
+    assert.equal(await page.locator('.diagnostic-report svg').count(),0,'remote can hide the export');
+    await page.keyboard.press('Enter');
+    await page.locator('.diagnostic-report svg').waitFor();
     const png=PNG.sync.read(await page.locator('.diagnostic-report svg').screenshot());
     const qr=jsQR(new Uint8ClampedArray(png.data),png.width,png.height);
     assert.ok(qr,'QR decodes from browser pixels');
@@ -99,6 +109,32 @@ for (const mode of modes) {
     results.push({mode,pass:false,error:error.message}); console.log('FAIL',mode,error.message);
     await page.screenshot({path:`${output}/${mode}-failed.png`});
   } finally {await context.close();}
+}
+// Capacity regression: populate every permitted field, including the longest
+// valid build label and all startup stages. Decode actual 3px/module SVG pixels
+// exactly as DiagPanel renders them, not just the library's data matrix.
+if (!process.env.DIAG_FILTER) {
+  const page = await browser.newPage({viewport:{width:1920,height:1080}});
+  try {
+    const fields={code:'ECONNREFUSED',reason:'verification_required',hasStream:false,voucher:true,ms:3600000,retries:9999,attempts:9999,errors:9999};
+    const input={version:'999.999.99999 abcdefghijklmnopqrstuvwx.9999',chromeMajor:999,nodeVersion:'999.999.99999',platform:'browser',route:'cosov',
+      checks:DIAGNOSTIC_STAGES.map(stage=>({stage,status:'fail',...fields})),
+      startup:{state:'cancelled',elapsedMs:3600000,retries:9999,stages:Object.fromEntries(['engine','attach','view','resume','url','probe','load'].map(stage=>[stage,{...fields,count:9999}]))},
+      errors:[{code:'ECONNREFUSED',d:'network'},{code:'ETIMEDOUT',d:'timeout'},{code:403,d:'HTTP 403'},{code:-100000,d:'unknown'}]};
+    const body=diagnosticReportText(input), url=diagnosticIssueUrl(input);
+    assert.ok(body.length<=1800); assert.match(body,/truncated=1/);
+    assert.match(body,/^[\x20-\x7e\n]*$/);
+    const qr=qrcode(0,'L'); qr.addData(url); qr.make();
+    await page.setContent(qr.createSvgTag({cellSize:3,margin:12}));
+    const bytes=await page.locator('svg').screenshot({path:output+'/maximum-report-qr.png'});
+    const png=PNG.sync.read(bytes), decoded=jsQR(new Uint8ClampedArray(png.data),png.width,png.height);
+    assert.equal(decoded?.data,url,'maximum allowed report decodes without overflow');
+    assert.equal(new URL(decoded.data).searchParams.get('body'),body);
+    results.push({mode:'maximum-report',pass:true,reportBytes:body.length,urlBytes:url.length,qrPixels:png.width,qrDecoded:true});
+    console.log('PASS maximum-report',body.length,'body bytes,',url.length,'URL bytes');
+  } catch(error) {
+    results.push({mode:'maximum-report',pass:false,error:error.message}); console.log('FAIL maximum-report',error.message);
+  } finally {await page.close();}
 }
 await browser.close(); await writeFile(`${output}/results.json`,JSON.stringify(results,null,2));
 if(results.some(r=>!r.pass))process.exitCode=1;

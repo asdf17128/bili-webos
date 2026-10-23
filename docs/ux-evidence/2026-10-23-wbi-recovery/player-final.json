@@ -1,0 +1,22 @@
+[
+  {
+    "name": "leaving while video information is pending prevents later streaming",
+    "pass": true
+  },
+  {
+    "name": "startup report separates slow media readiness and stays visible when diagnostics APIs fail",
+    "pass": true
+  },
+  {
+    "name": "diagnostics without a previous video explains how to obtain startup evidence",
+    "pass": true
+  },
+  {
+    "name": "Luna requests time out, cancel their bridge and ignore late success",
+    "pass": true
+  },
+  {
+    "name": "member default requests highest and supports explicit manual and automatic choices",
+    "pass": true
+  }
+]

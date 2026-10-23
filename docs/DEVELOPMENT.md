@@ -226,6 +226,8 @@ node tools/_cdp.mjs tools/probe-premium-soak-tv.js          # 约 3 分钟，实
 
 本地测试：`node --test app/src/utils/diagnosticReport.test.js app/src/player/startupTrace.test.js`；浏览器专项 `DIAG_BASE_URL=http://127.0.0.1:<隔离端口> node tools/test-diagnostic-privacy.mjs`，仅连接本地 Vite，其他网络均由夹具截获。完整发布门禁、旧运行时和真机二维码验收仍需在获授权的发布流程中执行，本轮没有部署/发布。
 
+WBI 密钥缓存回归：`node --test app/src/api/wbi.test.js` 已进入 `npm test` 与 `verify.sh`；`WBI_BASE_URL=http://127.0.0.1:<隔离端口> node tools/test-wbi-recovery.mjs` 已进入 `verify.sh --ux`，覆盖真实客户端的 proxy/bridge/Luna 分支及会话代际。测试从空白夹具页面加载实际模块，外部请求全部拦截；不启动应用首页、真实服务或设备。用 `WBI_SOURCE=/tmp/<旧版wbi.js>` 覆盖浏览器加载的单个模块，可运行同一用例的旧源正对照。
+
 ### Docker 不可用时的实际旧 Node 补验
 
 `tools/test-node8/test-native.sh` 是手动替代运行器：显式传入 `BILI_NODE012_BINARY` 和 `BILI_NODE8_BINARY`，分别指向已用 nodejs.org 官方 `SHASUMS256.txt` 校验的 Darwin x64 0.12.2 / 8.17.0 发行文件。运行器不下载或安装任何东西；先核对精确版本和空闲的本地代理端口，再将生产服务、已有依赖和未修改的 `run8.js` 复制到临时目录。机器必须已有 x86 执行能力，不能自动安装 Rosetta。

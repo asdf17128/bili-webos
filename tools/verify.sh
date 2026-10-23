@@ -77,6 +77,7 @@ node --test app/src/utils/qualityPreference.test.js || { echo "FAIL: membership 
 node --test app/src/player/liveStream.test.js || { echo "FAIL: live stream selection"; exit 1; }
 node --test app/src/player/cdnAuto.test.js || { echo "FAIL: automatic CDN routing"; exit 1; }
 node --test app/src/utils/diagnosticReport.test.js app/src/player/startupTrace.test.js || { echo "FAIL: startup diagnostics"; exit 1; }
+node --test app/src/api/wbi.test.js || { echo "FAIL: WBI key recovery"; exit 1; }
 # C-I18N-01: every t('…') key covered in every dictionary (missing = zh fallback leaks)
 node tools/test-i18n-coverage.mjs || { echo "FAIL: i18n coverage"; exit 1; }
 # C-I18N-04: locale-aware formatters (万/亿 vs K/M, relative time)
@@ -154,6 +155,7 @@ if [ -n "$UX" ]; then
   fi
   node tools/test-tv-ux.mjs
   node tools/test-session-proxy.mjs
+  node tools/test-wbi-recovery.mjs
   node tools/test-proxy-logout.mjs
   node tools/test-manifest-mime.mjs
   node tools/test-player-loading.mjs

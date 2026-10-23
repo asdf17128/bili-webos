@@ -1,0 +1,26 @@
+✔ HTML nav failure cannot poison the next real WBI signature for ten minutes (2.951542ms)
+✔ null body is rejected without caching or exposing its contents (0.557792ms)
+✔ business failure without keys is rejected without caching or exposing its contents (0.318042ms)
+✔ missing image object is rejected without caching or exposing its contents (0.284333ms)
+✔ missing second key is rejected without caching or exposing its contents (0.281042ms)
+✔ non-string image URL is rejected without caching or exposing its contents (0.299708ms)
+✔ empty key is rejected without caching or exposing its contents (0.259875ms)
+✔ short key is rejected without caching or exposing its contents (0.284334ms)
+✔ overlong key is rejected without caching or exposing its contents (0.268916ms)
+✔ invalid key character is rejected without caching or exposing its contents (0.30725ms)
+✔ anonymous nav keys remain usable and successful keys are cached (0.450583ms)
+✔ complete opaque alphanumeric keys and URL query suffixes are retained (0.216458ms)
+✔ concurrent cache misses keep independent nav requests (0.253542ms)
+✔ one failed concurrent request cannot reject or poison another successful request (0.235208ms)
+✔ synchronous fetch exceptions do not cache invalid keys (0.278542ms)
+✔ cache TTL begins when valid keys arrive and refreshes at its boundary (0.215625ms)
+✔ an invalid refresh neither serves stale keys nor prevents immediate recovery (0.397416ms)
+✔ wall clock rollback expires cached keys instead of extending them (0.253916ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 81.736875

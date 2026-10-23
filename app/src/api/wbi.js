@@ -140,7 +140,16 @@ function md5(string) {
 
 let cachedWbiKeys = null;
 let wbiKeysFetchedAt = 0;
+let wbiKeysGeneration = 0;
 const WBI_KEYS_TTL = 600000; // 10 min
+
+// Invalidate pending reads as well as the cached value. A nav response that
+// started before a manual refresh must not restore the previous signing keys.
+export function clearWbiKeys() {
+  wbiKeysGeneration++;
+  cachedWbiKeys = null;
+  wbiKeysFetchedAt = 0;
+}
 
 function keyFromImageUrl(url) {
   if (typeof url !== 'string') return null;
@@ -157,7 +166,13 @@ export async function getWbiKeys(apiFetch) {
     return cachedWbiKeys;
   }
 
+  const generation = wbiKeysGeneration;
   const data = await apiFetch('/x/web-interface/nav');
+  if (generation !== wbiKeysGeneration) {
+    const error = new Error('WBI key request expired');
+    error.code = 'WBI_KEYS_STALE';
+    throw error;
+  }
   const images = data?.data?.wbi_img;
   const imgKey = keyFromImageUrl(images?.img_url);
   const subKey = keyFromImageUrl(images?.sub_url);

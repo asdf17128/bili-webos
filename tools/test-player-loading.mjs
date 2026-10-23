@@ -42,7 +42,8 @@ const stub = `class Player {
 export default {Player,polyfill:{installAll(){}}};`;
 async function run(name, mode, fn, scale) {
  if(process.env.LOADING_FILTER&&!new RegExp(process.env.LOADING_FILTER).test(name))return;
- const context=await browser.newContext({viewport:{width:1920,height:1080}});
+ const context=await browser.newContext({viewport:{width:1920,height:1080},serviceWorkers:'block'});
+ await context.routeWebSocket('**/*',socket=>socket.close());
  await context.addInitScript(({mode,scale})=>{
    delete window.webOS;window.__mode=mode;window.__probe={loads:0,destroyed:0,retries:0,mpds:[],positions:[],mimes:[]};
    localStorage.setItem('bili_settings',JSON.stringify({language:mode.startsWith('subtitle-lifecycle')?'en':'zh',uiScale:scale?.ui||1,gridCols:3,subtitle:true,danmaku:!mode.startsWith('subtitle-lifecycle'),subtitleScale:scale?.sub||1,danmakuScale:scale?.dm||1,quality:80,qualityMode:'manual',nerdInfo:mode==='nerd'&&JSON.parse(localStorage.getItem('bili_settings')||'{}').nerdInfo===true}));

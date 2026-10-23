@@ -1,7 +1,8 @@
 import NerdInfo from './NerdInfo';
 import { requestedQuality } from '../utils/qualityPreference';
 import Icon from '../components/Icon';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
+import './playerControls.css';
 import { getLibraryPage, getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies, getReplyReplies, tripleVideo, likeVideo, coinVideo, favVideo, getFavFoldersFor, getVideoRelation, getHtml5PlayUrl, mediaProxyBase, addToView, delToView } from '../api/client';
 import { nextPlaylistItem } from '../utils/library';
 import { playPart, playAdvance } from './playIntent';
@@ -31,6 +32,7 @@ import { t, getLocale } from '../i18n';
 import { cdnHostOf, isBanned, onShakaRetry, playbackCdnUrls } from './cdn';
 import { createAutoCdnRouter } from './cdnAuto';
 import { useUpFollow } from '../hooks/useUpFollow';
+import { useAuthorFollowers } from '../hooks/useAuthorFollowers';
 
 function isNetworkFailure(err) {
   return err?.category === 1 || /network|fetch|timeout|EAI_AGAIN|ENOTFOUND|ECONN|socket|upstream/i.test(String(err?.message || ''));
@@ -69,8 +71,8 @@ function proxyImg(url) {
 // B站-style coin icon (owner design pick "D"): bright-yellow disc + thin white
 // inner ring + bold white B. Inline SVG keeps the ring crisp at TV render.
 const RAIL_W = 420;                       // comment rail width (= live chat rail)
-const RAIL_VW = 1920 - RAIL_W;            // 1500
-const RAIL_VH = Math.round(RAIL_VW * 9 / 16); // 844; the rest holds metadata
+const RAIL_VIDEO_WIDTH = `calc(100% - ${RAIL_W}px)`;
+const RAIL_VIDEO_HEIGHT = `calc(56.25vw - ${RAIL_W * 9 / 16}px)`;
 
 function CoinIcon() {
   return (
@@ -212,6 +214,9 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   const [focusArea, setFocusArea] = useState('none');
   const [focusIdx, setFocusIdx] = useState(0);
   const controlsTimer = useRef(null);
+  const controlsElRef = useRef(null), progressElRef = useRef(null);
+  const controlsPinnedRef = useRef(false), lastControlRef = useRef('play');
+  const [controlsGeometry, setControlsGeometry] = useState({ lift: 190, progressBottom: 104 });
   const timeUpdateRef = useRef(null);
   const cidRef = useRef(null);
   const dolbyRuntimeRef = useRef(null);
@@ -220,6 +225,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   const upMidRef = useRef(null);
   const [ownerMid, setOwnerMid] = useState(video?.owner?.mid || null);
   const follow = useUpFollow(ownerMid, showControls && !loading);
+  const authorFollowers = useAuthorFollowers(ownerMid, showControls && !loading,
+    `${video?.bvid || video?.aid || video?.epid || ''}:${video?.cid || ''}`);
   const upLoadingRef = useRef(false);
   const upPnRef = useRef(1);
   const upSeenRef = useRef(new Set());
@@ -371,8 +378,9 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   const anchorFor = useCallback((name) => {
     const el = btnRefs.current[name];
     if (!el) return null;
-    const r = el.getBoundingClientRect(); // layout is a fixed 1920x1080
-    return { left: r.left + r.width / 2, bottom: 1080 - r.top + 12 };
+    const r = el.getBoundingClientRect();
+    const page = el.closest('.player-page').getBoundingClientRect();
+    return { left: r.left - page.left + r.width / 2, bottom: page.bottom - r.top + 12 };
   }, []);
 
   // 点赞/投币/收藏 (B站 app style). stat = the video's public counts (view
@@ -1550,7 +1558,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   const hideControlsLater = useCallback(() => {
     if (controlsTimer.current) clearTimeout(controlsTimer.current);
     controlsTimer.current = setTimeout(() => {
-      if (!ended) {
+      if (!controlsPinnedRef.current && !holdRef.current.active && !document.querySelector('.cardmenu-mask')) {
         setShowControls(false);
         setShowRelated(false);
         setShowQuality(false);
@@ -1558,12 +1566,25 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         setFocusArea('none');
       }
     }, 5000);
-  }, [ended]);
+  }, []);
 
   const openControls = useCallback(() => {
     setShowControls(true);
     setFocusArea('controls');
     setFocusIdx(0);
+    hideControlsLater();
+  }, [hideControlsLater]);
+
+  const openRelatedPanel = useCallback(() => {
+    setShowRelated(true);
+    setFocusArea('tabs');
+    if (controlsTimer.current) clearTimeout(controlsTimer.current);
+  }, []);
+  const closeRelatedPanel = useCallback(() => {
+    setShowRelated(false);
+    setFocusArea('controls');
+    setFocusIdx(Math.max(0, controlsRef.current.indexOf(lastControlRef.current)));
+    if (controlsElRef.current) controlsElRef.current.scrollTop = 0;
     hideControlsLater();
   }, [hideControlsLater]);
 
@@ -2200,8 +2221,12 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
           setFocusArea('controls');
           setFocusIdx(Math.max(0, controlsRef.current.indexOf(backTo)));
           hideControlsLater(); // resume the auto-hide clock now that no panel is up
-        } else if (showControls || showRelated) {
-          // Controls/related visible: close them
+        } else if (showRelated) {
+          // Choosing another video is one level below the playback controls.
+          endRelHold(null);
+          closeRelatedPanel();
+        } else if (showControls) {
+          // Controls visible: return to the unobstructed video.
           setShowControls(false);
           setShowRelated(false);
           setFocusArea('none');
@@ -2276,9 +2301,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         if (e.key === 'ArrowDown') {
           e.preventDefault();
           if (partsList.length > 0 || relatedVideos.length > 0 || upMidRef.current) {
-            setShowRelated(true);
-            setFocusArea('tabs');
-            if (controlsTimer.current) clearTimeout(controlsTimer.current);
+            openRelatedPanel();
           }
           return true;
         }
@@ -2400,11 +2423,11 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
           if (next === 'up' && upVideos.length === 0) loadUpVideos(true);
           if (next === 'comments' && comments.length === 0) loadComments(true);
         } else if (e.key === 'ArrowUp') {
-          setFocusArea('controls');
-          setFocusIdx(0);
+          closeRelatedPanel();
         } else if (e.key === 'ArrowDown' || e.key === 'Enter') {
-          setFocusArea('related'); // enter the grid (shows the active tab's list)
-          setFocusIdx(0);
+          const list = panelTab === 'parts' ? partsList : panelTab === 'up' ? upVideos : relatedVideos;
+          // Empty/late data stays on the visible tab, never a phantom card.
+          if (list.length) { setFocusArea('related'); setFocusIdx(0); }
         }
         return true;
       }
@@ -2485,9 +2508,30 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
 
     setCustomKeyHandler(handler);
     return () => setCustomKeyHandler(null);
-  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, showSpeedPanel, applySpeed, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, comments, loadUpVideos, loadComments, onBack, onPlayNext, openControls, hideControlsLater, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody, pressControl, startLikeHold, pressComment, showCommentRail, recoverable, errorAction, retryPlayback]);
+  }, [focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, showSpeedPanel, applySpeed, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, comments, loadUpVideos, loadComments, onBack, onPlayNext, openControls, hideControlsLater, openRelatedPanel, closeRelatedPanel, endRelHold, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody, pressControl, startLikeHold, pressComment, showCommentRail, recoverable, errorAction, retryPlayback]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const previewVideos = panelTab === 'parts' ? partsList : panelTab === 'up' ? upVideos : relatedVideos;
+  controlsPinnedRef.current = ended || showRelated || showQuality || showSubPanel || showSpeedPanel
+    || showCommentRail || focusArea === 'scrub';
+  if (focusArea === 'controls' && CONTROLS[focusIdx]) lastControlRef.current = CONTROLS[focusIdx];
+  // CSS determines the shelf height (including wrapped controls). Measure only
+  // layout-changing states, not each playback tick, and keep captions/previews
+  // above the real shelf at 720p as well as the TV's 1080p layout.
+  useLayoutEffect(() => {
+    const measure = () => {
+      const el = controlsElRef.current, progressEl = progressElRef.current;
+      if (!showControls || !el || !progressEl) return;
+      const page = el.closest('.player-page').getBoundingClientRect(), box = el.getBoundingClientRect();
+      const next = { lift: Math.max(0, page.bottom - box.top - 56 + 12),
+        progressBottom: Math.max(104, page.bottom - progressEl.getBoundingClientRect().top + 18) };
+      setControlsGeometry(previous => previous.lift === next.lift && previous.progressBottom === next.progressBottom ? previous : next);
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [showControls, showRelated, videoTitle, metaOwner, metaPubdate, argueMsg, aigcMsg, authorFollowers,
+    loggedIn, subTracks.length, follow.available, follow.label, showCommentRail, previewVideos.length, currentQuality, currentSpeed, subLan]);
 
   // Magic Remote: waving the pointer must summon the controls bar (the D-pad
   // path was the only way in). Throttled; ignored while a panel/end screen has
@@ -2499,19 +2543,20 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     lastMoveRef.current = now;
     if (ended) return;
     if (!showControls) { setShowControls(true); setFocusArea('controls'); setFocusIdx(0); }
-    if (!showSubPanel && !showQuality) hideControlsLater();
+    if (!controlsPinnedRef.current) hideControlsLater();
   }, [ended, showControls, showSubPanel, showQuality, hideControlsLater]);
 
   return (
-    <div className="player-page" onMouseMove={handlePointerMove}>
+    <div className="player-page player-page-vod" onMouseMove={handlePointerMove}>
       {nerdInfo && <NerdInfo videoRef={videoRef} playerRef={shakaRef} transferRef={transferRef} audio={streamFormat.audio} />}
       <video ref={videoRef} className="player-video"
-        style={showCommentRail ? { width: RAIL_VW, height: RAIL_VH } : undefined} />
+        style={showCommentRail ? { width: RAIL_VIDEO_WIDTH, height: RAIL_VIDEO_HEIGHT } : undefined} />
       {/* Same treatment as the live layout: 16:9 in a 1500-wide column leaves
           ~236px, so it carries the video's own metadata instead of black. */}
       {showCommentRail && !showControls && (
         <div className="player-comment-metadata" style={{
-          position: 'absolute', top: RAIL_VH, left: 0, width: RAIL_VW, height: 1080 - RAIL_VH,
+          position: 'absolute', top: RAIL_VIDEO_HEIGHT, left: 0, width: RAIL_VIDEO_WIDTH,
+          height: `calc(100vh - 56.25vw + ${RAIL_W * 9 / 16}px)`,
           padding: '20px 44px', boxSizing: 'border-box', zIndex: 20,
           display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 10,
         }}>
@@ -2532,7 +2577,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
           3m viewing distance (a 1920-wide single column did not). */}
       {showCommentRail && (
         <div style={{
-          position: 'absolute', top: 0, right: 0, width: RAIL_W, height: 1080,
+          position: 'absolute', top: 0, right: 0, width: RAIL_W, height: '100%',
           background: '#16161c', borderLeft: '1px solid #2b2c33',
           display: 'flex', flexDirection: 'column', zIndex: 45,
         }}>
@@ -2611,7 +2656,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
 
       <SubtitleLayer videoRef={videoRef} cues={subCues} enabled={subLan != null}
         lead={(isAiLan(subLan) || subLan === 'x-mt') ? AI_LEAD : 0}
-        lift={showControls ? (showRelated ? 2 : 1) : 0} fontScale={subtitleScale} />
+        liftPixels={showControls ? controlsGeometry.lift : 0} rightInset={showCommentRail ? RAIL_W : 0} fontScale={subtitleScale} />
 
       {buffering && !loading && !loadError && (
         <div className="player-buffering" role="status" aria-live="polite">
@@ -2686,7 +2731,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
           <div style={{
             position: 'absolute',
             left: `calc(60px + ${bubblePct} * (100% - 120px) / 100)`,
-            bottom: 104, transform: 'translateX(-50%)',
+            bottom: controlsGeometry.progressBottom, transform: 'translateX(-50%)',
             textAlign: 'center', pointerEvents: 'none', zIndex: 80,
           }}>
             {thumb && (
@@ -2772,19 +2817,22 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       )}
 
       {/* Controls bar */}
-      <div className={`player-controls ${showControls ? '' : 'hidden'}`} style={showCommentRail ? { right: RAIL_W } : undefined}>
+      <div ref={controlsElRef} className={`player-controls player-controls-vod ${showRelated ? 'recommendations-open' : ''} ${showControls ? '' : 'hidden'}`} style={showCommentRail ? { right: RAIL_W } : undefined}>
+        <div className="player-control-deck">
         <div className="player-title">{titleMT(cleanTitle(videoTitle))}</div>
         {(metaOwner || metaPubdate > 0 || argueMsg || aigcMsg) && (
-          <div style={{ fontSize: 18, color: '#999', marginBottom: 4 }}>
-            {metaOwner}
-            {metaPubdate > 0 && `${metaOwner ? ' · ' : ''}${new Date(metaPubdate * 1000).toLocaleDateString('zh-CN')}`}
+          <div className="player-author-meta">
+            {metaOwner && <span className="player-author-identity"><span className="player-author-name">{metaOwner}</span>
+              {authorFollowers != null && <span className="player-author-followers">{t('{n}粉丝', { n: formatCount(authorFollowers) })}</span>}
+            </span>}
+            {metaPubdate > 0 && <span className="player-publish-meta">{new Date(metaPubdate * 1000).toLocaleDateString('zh-CN')}</span>}
             {/* Declarations as plain meta (owner: 常规展示,不要显眼) — same
                 gray, dot-separated like the rest of the line. */}
-            {argueMsg && <span>{(metaOwner || metaPubdate > 0) ? ' · ' : ''}{titleMT(argueMsg)}</span>}
-            {aigcMsg && <span> · {titleMT(aigcMsg)}</span>}
+            {argueMsg && <span className="player-disclaimer">{titleMT(argueMsg)}</span>}
+            {aigcMsg && <span className="player-disclaimer">{titleMT(aigcMsg)}</span>}
           </div>
         )}
-        <div className="player-progress-bar" style={{ cursor: 'pointer' }}
+        <div ref={progressElRef} className="player-progress-bar" style={{ cursor: 'pointer' }}
           onClick={(e) => {
             // Pointer click-to-seek: generous target courtesy of the row itself.
             if (!(duration > 0)) return;
@@ -2843,7 +2891,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
                 ref={el => { btnRefs.current[btn] = el; }}
                 aria-label={btn === 'like' ? t('点赞') : btn === 'coin' ? t('投币') : btn === 'fav' ? t('收藏') : undefined}
                 className={`player-btn player-control ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''} ${lit ? 'lit' : ''} ${isStatBtn && triplePop ? 'triple-pop' : ''}`}
-                onMouseEnter={() => { setFocusArea('controls'); setFocusIdx(i); hideControlsLater(); }}
+                onMouseMove={() => { setFocusArea('controls'); setFocusIdx(i); hideControlsLater(); }}
                 {...handlers}>
                 {btn === 'coin' ? <CoinIcon /> : <Icon size={26} name={btn === 'play' ? (ended ? 'refresh' : playing ? 'pause' : 'play') : btn === 'fav' ? 'star' : btn} />}
                 <span className="player-control-label">{label}</span>
@@ -2866,10 +2914,21 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
             })()}
           </span>
         </div>
+        </div>
+
+        {!showRelated && previewVideos.length > 0 && <button className="player-recommendation-preview" type="button"
+          tabIndex={-1} onClick={openRelatedPanel} aria-label={t('向下浏览视频')}>
+          <span className="player-recommendation-hint"><span aria-hidden="true">↓</span>{t('向下浏览视频')}</span>
+          <span className="player-recommendation-strip" aria-hidden="true">{previewVideos.slice(0, 4).map((rv, i) => (
+            <span className="player-recommendation-thumb" key={rv.cid || rv.bvid || i}>
+              {rv.pic && <img src={proxyImg(rv.pic)} alt="" />}
+            </span>
+          ))}</span>
+        </button>}
 
         {/* Tabbed panel below controls: 相关推荐 / UP主投稿 */}
         {showRelated && (
-          <div style={{ marginTop: 16, paddingBottom: 10 }}>
+          <div className="player-related-panel">
             <div className="panel-tab-row">
               {(isMultiP
                 ? [['parts', partsLabel], ['related', t('相关推荐')], ['up', upName ? t('UP主投稿 · {name}', { name: upName }) : t('UP主投稿')]]
@@ -2881,7 +2940,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
                   background: panelTab === key ? '#3b3d46' : 'rgba(255,255,255,0.08)',
                   outline: focusArea === 'tabs' && panelTab === key ? '3px solid #fff' : 'none',
                 }}
-                  onMouseEnter={() => { setFocusArea('tabs'); if (controlsTimer.current) clearTimeout(controlsTimer.current); }}
+                  onMouseMove={() => { setFocusArea('tabs'); if (controlsTimer.current) clearTimeout(controlsTimer.current); }}
                   onClick={() => {
                     setPanelTab(key);
                     setFocusIdx(0);
@@ -2890,7 +2949,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
               ))}
             </div>
 
-            {(() => {
+            <div className="player-related-scroll">{(() => {
               const list = panelTab === 'parts' ? partsList : panelTab === 'up' ? upVideos : relatedVideos;
               if (list.length === 0) {
                 return <div style={{ color: '#888', fontSize: 18, padding: '20px 4px' }}>
@@ -2904,7 +2963,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
                     const nowPlaying = panelTab === 'parts' && rv.cid === cidRef.current;
                     return (
                       <div key={rv.cid || rv.bvid || i} className="related-card" onClick={() => onPlayNext?.(panelTab === 'parts' ? playPart(rv) : rv)}
-                        onMouseEnter={() => {
+                        onMouseMove={() => {
                           setFocusArea('related'); setFocusIdx(i);
                           if (controlsTimer.current) clearTimeout(controlsTimer.current);
                         }}
@@ -2934,7 +2993,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
                   })}
                 </div>
               );
-            })()}
+            })()}</div>
           </div>
         )}
       </div>

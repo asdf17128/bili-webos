@@ -233,3 +233,33 @@ WBI 密钥缓存回归：`node --test app/src/api/wbi.test.js` 已进入 `npm te
 `tools/test-node8/test-native.sh` 是手动替代运行器：显式传入 `BILI_NODE012_BINARY` 和 `BILI_NODE8_BINARY`，分别指向已用 nodejs.org 官方 `SHASUMS256.txt` 校验的 Darwin x64 0.12.2 / 8.17.0 发行文件。运行器不下载或安装任何东西；先核对精确版本和空闲的本地代理端口，再将生产服务、已有依赖和未修改的 `run8.js` 复制到临时目录。机器必须已有 x86 执行能力，不能自动安装 Rosetta。
 
 `native-preload.js` 仅将 `/media` 文件操作重定向到临时目录，并禁止 SSDP 对外广播；使用原 Luna stub。服务、compat、网络传输和 WS 代码仍在真实旧 Node 内执行，匿名 B 站 API/排行榜请求仍走真实 TLS。退出清理临时数据。结果必须明确标为 Darwin 运行时覆盖，不能写成 Linux Docker、webOS 真机或播放解码通过。2026-10-22 两个真实版本均通过原运行时断言，见 [证据](ux-evidence/2026-10-22-private-diagnostics/native-runtime/results.json)。
+
+
+## 推荐长按不感兴趣（2026-10-23）
+
+当前实现和官方接口证据见 [DISLIKE.md](DISLIKE.md)。`hiddenRecommendations.test.js`、`hiddenRecommendationAuthors.test.js` 与 `recommendationFeedback.test.js` 已进入 `npm test` 及 `verify.sh`；`node tools/test-recommendation-feedback.mjs` 验证实际客户端的 reason 1/4、WBI/CSRF、在途去重、会话和期限边界，默认门禁包含它。`node tools/test-recommendation-account-scope.mjs` 打包实际 Home/storage/偏好模块，仅模拟调度和 API 边界，验证普通 Cookie 回写不循环重载、身份变化只重载一次。测试不使用真实账号或真实上游请求。
+
+启动隔离 Vite 后运行 `FEEDBACK_BASE_URL=http://127.0.0.1:<端口> FEEDBACK_TEST_OUTPUT=/tmp/bili-feedback node tools/test-recommendation-menu.mjs`。默认 62 项真实 React + 受信遥控/指针输入，涵盖当前视频和 UP 两项、跨账号过滤、同 reason 撤销、分页和焦点；仅放行该回环 Vite，其余 HTTP/WebSocket 全部拦截，service worker 禁用。可用 `FEEDBACK_FILTER` 定向；`--baseline` 默认只测旧源入口缺失。交互已注册 `verify.sh --ux`。注意 Vite 热更新会干扰整页状态，最终证据必须在冻结生产代码后完整运行。
+
+官方 dislike/cancel 是真实账号写操作，不能因为有 cancel 就假定可无损试写。本轮授权仅用 mock 测试，未执行真实反馈。真机 UI gate 仍需确认设备空闲；不能用浏览器或 ES2016 解析替代。前端新接口沿现有服务传输，不修改 Node 服务；旧运行时记录与最终发布候选覆盖须分别说明。
+
+## 账号修复（2026-10-23）
+
+行为、issue 方法证据和限制见 [ACCOUNT-REPAIR.md](ACCOUNT-REPAIR.md)。自动默认门禁增加 `test-account-repair-client.mjs`、`test-account-repair-service.mjs`、`test-account-repair-service-es5.js`、`test-account-repair-transport.mjs`；服务单测由 `npm test` 的现有 glob 加载。所有这些新测试都采用内存 mock，不发外部请求。
+
+启动隔离 Vite 后运行 `ACCOUNT_REPAIR_BASE_URL=http://127.0.0.1:<端口> ACCOUNT_REPAIR_TEST_OUTPUT=/tmp/bili-account-repair node tools/test-account-repair-ui.mjs`。`ACCOUNT_REPAIR_FILTER` 可定向，`--baseline` 用旧源验证入口缺失。测试使用真实 React/webOSTV SDK、mock PalmServiceBridge 或 bridge、受信键盘/鼠标；仅放行指定本机 Vite，HTTP/WebSocket 均拦截，service worker 禁用。已注册 `verify.sh --ux`。冻结生产文件后再执行完整套件，避免 HMR 干扰。
+
+新持久化模块也可单独在已有官方校验的旧运行时运行：`<Node0.12.2路径> tools/test-account-repair-service-es5.js` 和 `<Node8.17.0路径> tools/test-account-repair-service-es5.js`。这是实际旧引擎中的 13 项内存 fixture，覆盖 Node 0.12 只支持路径参数的 writeFileSync 差异（生产使用 writeSync(fd)）；不启动完整服务、不访问真实账号、不写真实 Cookie。它不能替代旧运行时完整集成、TLS 证书链、真实 b_nut 返回及 TV/Luna 验收。
+
+`dev-service.mjs` 与 `native-preload.js` 将新临时文件的 open/unlink/rename 两端映射到各自隔离目录。正常真实代理 runner 仍可能访问上游；不要为了跑上述 mock 而启动它们。当前电视空闲未知，维持真机待办，不尝试绕过查询权限或以 mock 豁免发布门禁。
+## 点播控制栏与公开粉丝数（2026-10-23，本地候选）
+
+随后按用户反馈对照真实 YouTube 电视端参考，撤掉高浓度渐变平台，换成连续柔和压暗并增强紧贴字形阴影；仅 CSS 变化。来源日期、平台和未验证行为见 [PLAYER-CONTROLS-REFERENCES.md](PLAYER-CONTROLS-REFERENCES.md)。本地像素验证新增合成海面/窗景同帧开关控件对照，保留修改前失败结果；纯色背景不能单独证明视频细节穿透，仍需实看纹理和亮暗画面文字。
+
+`player/playerControls.css` 仅作用于 `.player-page-vod`。控制栏使用透明渐变和独立焦点背景；收起的推荐区复用已有条目显示部分封面，Down 进入原推荐页签/卡片，Back 依次回控制栏和视频。展开推荐、弹窗、拖动及长按期间不自动隐藏。字幕/进度提示位置按当前控件实际尺寸计算，评论侧栏打开时字幕与视频使用剩余宽度；不得用固定 1080 高度推算真实 720p 位置。
+
+`useAuthorFollowers` 仅在作者已解析且控制栏显示时读取现有 API 通道的公开 `/x/relation/stat?vmid=<mid>`。内存缓存按规范化作者 ID 去重，成功保留 5 分钟、失败 30 秒、最多 64 条；12 秒逻辑期限与请求代次防止迟到结果覆盖重试。组件按作者与视频代次丢弃旧值，未知/失败不显示，真实 0 才显示 0。缓存不落盘、不增加追踪；接口真实匿名读取已验证 code=0 与 follower 数字字段，测试交互全部使用 mock。
+
+`authorFollowers.test.js` 已进入 npm/default verify。`tools/test-author-followers.mjs` 用实际 React 检查切作者/视频、首次渲染旧值隔离与缓存；`tools/test-player-controls.mjs` 用受信输入和隔离网络检查亮暗背景、1080p/720p、大字号、推荐导航、自动隐藏、暂停/seek/长按、粉丝数和评论字幕边界，均登记于 `verify.sh --ux`。可用 `CONTROLS_URL` / `CONTROLS_OUTPUT` / `CONTROLS_FILTER` 指定独立 Vite 与结果位置。
+
+本轮[证据](ux-evidence/2026-10-23-player-controls/README.md)保留修改前失败、真实字幕遮挡正对照、最终源码哈希与实际截图。浏览器模拟媒体不代表 webOS、旧 Chromium、真实视频解码或真实账号写入验收。用户已冻结本周功能范围，后续只做回归和发布准备。

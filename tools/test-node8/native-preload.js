@@ -18,13 +18,16 @@ function translate(value) {
   if (typeof value === 'string' && (value === '/media' || value.indexOf('/media/') === 0)) return root + value;
   return value;
 }
-['existsSync', 'readFileSync', 'writeFileSync', 'mkdirSync', 'unlinkSync', 'statSync'].forEach(function (key) {
+['existsSync', 'readFileSync', 'writeFileSync', 'openSync', 'mkdirSync', 'unlinkSync', 'statSync'].forEach(function (key) {
   isolatedFs[key] = function () {
     var args = Array.prototype.slice.call(arguments);
     args[0] = translate(args[0]);
     return fs[key].apply(fs, args);
   };
 });
+isolatedFs.renameSync = function (from, to) {
+  return fs.renameSync(translate(from), translate(to));
+};
 function NoLanAnnouncement() {}
 NoLanAnnouncement.prototype.start = function (callback) { if (callback) callback(); };
 Module._load = function (request, parent, isMain) {

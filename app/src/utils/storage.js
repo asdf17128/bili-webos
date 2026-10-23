@@ -32,11 +32,27 @@ export const storage = {
 
   setAuth(auth) {
     this.set('auth', auth);
+    this.notifyAuthChange();
   },
 
   clearAuth() {
     this.invalidateAuthRequests();
     this.remove('auth');
+    this.notifyAuthChange();
+  },
+
+  // Account-scoped recommendation preferences must update in this document;
+  // the browser's storage event is only delivered to other documents.
+  _authSubs: new Set(),
+  onAuthChange(fn) {
+    this._authSubs.add(fn);
+    return () => this._authSubs.delete(fn);
+  },
+  notifyAuthChange() {
+    for (const fn of Array.from(this._authSubs)) {
+      if (!this._authSubs.has(fn)) continue;
+      try { fn(); } catch (error) { /* Isolate listeners from authentication. */ }
+    }
   },
 
   getProxyUrl() {

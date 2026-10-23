@@ -7,7 +7,8 @@ const output=process.env.DIAG_TEST_OUTPUT||'/tmp/bili-diagnostic-cdn';
 await mkdir(output,{recursive:true});
 const browser=await chromium.launch(),results=[];
 for(const mode of ['backup-host','backup-signature','manual-native','all-fail']) {
- const context=await browser.newContext({viewport:{width:1920,height:1080}});
+ const context=await browser.newContext({viewport:{width:1920,height:1080},serviceWorkers:'block'});
+ await context.routeWebSocket('**/*',socket=>socket.close());
  const primary='upos-sz-mirrorcosov.bilivideo.com';
  const backup=mode==='backup-signature'?primary:'upos-sz-mirrorhwo1.bilivideo.com';
  const calls=[];

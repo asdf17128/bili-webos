@@ -6,6 +6,8 @@ import { getWbiKeys, signWbi } from './wbi';
 import { logErr } from '../utils/errlog';
 import { mapLibraryPage } from '../utils/library';
 import { selectLivePlayback } from '../player/liveStream';
+import { isRecommendationFeedbackReason, recommendationFeedbackContext } from '../utils/recommendationFeedback';
+import { createAccountRepair } from './accountRepair';
 
 const API_HOST = 'api.bilibili.com';
 const PASSPORT_HOST = 'passport.bilibili.com';
@@ -128,7 +130,10 @@ function lunaFetch(url, options) {
       return;
     }
 
-    try { checkSession(generation); } catch (e) { reject(e); return; }
+    try {
+      checkSession(generation);
+      if (options.sessionGuard) options.sessionGuard();
+    } catch (e) { reject(e); return; }
     var params = { url: url, method: options.method || 'GET' };
     if (options.body) params.body = options.body;
     if (options.contentType) params.contentType = options.contentType;
@@ -151,12 +156,16 @@ function lunaFetch(url, options) {
       reject(new Error(message));
     }
     try {
+      if (options.sessionGuard) options.sessionGuard('dispatch');
       request = window.webOS.service.request(SERVICE_URI, {
         method: 'fetch',
         parameters: params,
         onSuccess: function(res) {
           if (settled) return;
-          try { checkSession(generation); } catch (e) { fail(e); return; }
+          try {
+            checkSession(generation);
+            if (options.sessionGuard) options.sessionGuard();
+          } catch (e) { fail(e); return; }
           settled = true; clearTimeout(timer);
           if (res.newCookies) {
             var auth = storage.getAuth() || {};
@@ -174,10 +183,12 @@ function lunaFetch(url, options) {
 function proxyFetchRaw(url, options) {
   const generation = storage.getAuthGeneration();
   checkSession(generation);
+  if (options.sessionGuard) options.sessionGuard();
   var base = storage.getProxyUrl();
   var parsed = new URL(url);
   var proxyUrl = base + '/proxy/' + parsed.host + parsed.pathname + parsed.search;
 
+  if (options.sessionGuard) options.sessionGuard('dispatch');
   return fetch(proxyUrl, {
     method: options.method || 'GET',
     headers: {
@@ -186,6 +197,7 @@ function proxyFetchRaw(url, options) {
     body: options.body,
   }).then(function(res) {
     checkSession(generation);
+    if (options.sessionGuard) options.sessionGuard();
     var setCookie = res.headers.get('X-Set-Cookie');
     if (setCookie) {
       try {
@@ -204,6 +216,7 @@ async function smartFetch(host, path, options) {
   checkSession(generation);
   var url = 'https://' + host + path;
   var opts = options || {};
+  if (opts.sessionGuard) opts.sessionGuard();
 
   if (hasLunaService()) {
     var res = await lunaFetch(url, opts);
@@ -222,12 +235,15 @@ async function smartFetch(host, path, options) {
   // DEV with the bridge up: same path the TV takes (service.fetch)
   const bridge = await devLunaAvailable();
   checkSession(generation);
+  if (opts.sessionGuard) opts.sessionGuard();
   if (bridge) {
+    if (opts.sessionGuard) opts.sessionGuard('dispatch');
     var br = await devLunaCall('fetch', {
       url: url, method: opts.method || 'GET', body: opts.body,
       contentType: opts.contentType, range: opts.range,
     });
     checkSession(generation);
+    if (opts.sessionGuard) opts.sessionGuard();
     if (br && br.newCookies) {
       var a2 = storage.getAuth() || {};
       storage.setAuth(Object.assign({}, a2, br.newCookies));
@@ -289,30 +305,48 @@ function lunaRequest(method, parameters, subscribe, handlers) {
       if (settled) return;
       settled = true; clearTimeout(timer);
       if (handlers.onFailure) handlers.onFailure(err);
-      reject(new Error(err.errorText || err.error || err.message || (method + ' failed')));
+      const failure = new Error(err.errorText || err.error || err.message || (method + ' failed'));
+      if (handlers.acceptFailureResponse && err.code === 'UNSUPPORTED') failure.code = 'UNSUPPORTED';
+      reject(failure);
     }
     function success(res) {
       if (settled) return;
-      if (res && res.returnValue === false) { fail(res); return; }
+      try { if (handlers.sessionGuard) handlers.sessionGuard(); }
+      catch (error) { fail(error); return; }
+      if (res && res.returnValue === false && !handlers.acceptFailureResponse) { fail(res); return; }
       settled = true; clearTimeout(timer);
       if (handlers.onSuccess) handlers.onSuccess(res);
       resolve(res);
+    }
+    function failureResponse(error) {
+      // webOSTV.js routes a structured returnValue:false service response to
+      // onFailure. Preserve its fixed business code for the repair controller;
+      // transport failures still reject and retain an unknown write outcome.
+      if (handlers.acceptFailureResponse && error?.returnValue === false && typeof error.errorCode === 'string') {
+        success(error); return;
+      }
+      fail(error);
     }
     if (!hasLunaService()) {
       devLunaAvailable().then(function (up) {
         if (settled) return;
         if (!up) {
           if (handlers.allowMissing) { success(null); return; }
-          fail(new Error('Luna not available')); return;
+          const unavailable = new Error('Luna not available');
+          if (handlers.acceptFailureResponse) unavailable.code = 'UNSUPPORTED';
+          fail(unavailable); return;
         }
+        try { if (handlers.sessionGuard) handlers.sessionGuard(); }
+        catch (error) { fail(error); return; }
         devLunaCall(method, parameters || {}).then(success, fail);
       }, fail);
       return;
     }
     try {
+      if (handlers.sessionGuard) handlers.sessionGuard();
       request = window.webOS.service.request(SERVICE_URI, {
         method: method, subscribe: !!subscribe, parameters: parameters || {},
-        onSuccess: success, onFailure: fail,
+        onSuccess: success, onFailure: failureResponse,
       });
     } catch (e) { fail(e); }
   });
@@ -371,8 +405,9 @@ export async function castGetStatus() {
 }
 
 // Persist extra cookies into the TV service (e.g. buvid3 for risk control).
-function setServiceCookies(cookies) {
-  return lunaRequest('setCookies', { cookies: cookies || {} }, false, { allowMissing: true });
+function setServiceCookies(cookies, sessionGuard) {
+  return lunaRequest('setCookies', { cookies: cookies || {}, onlyIfDeviceMissing: true }, false,
+    { allowMissing: true, sessionGuard, acceptFailureResponse: true });
 }
 
 // Ensure a buvid3/buvid4 fingerprint cookie exists — many endpoints (live
@@ -382,31 +417,90 @@ let _buvid3 = '';
 export function getBuvid3() { return _buvid3; }
 export async function ensureBuvid() {
   const generation = storage.getAuthGeneration();
+  const account = storage.getAuth() || {};
+  const session = account.SESSDATA, user = account.DedeUserID;
   if (buvidEnsured) return;
+  const sessionGuard = () => {
+    checkSession(generation);
+    const current = storage.getAuth() || {};
+    if (current.SESSDATA !== session || current.DedeUserID !== user) throw new Error('Account session changed');
+  };
   try {
-    const r = await apiFetch('/x/frontend/finger/spi');
+    // Reuse the service's current identity. A live-chat bootstrap must not
+    // silently rotate or overwrite the result of an explicit account repair.
+    if (hasLunaService() || await devLunaAvailable()) {
+      sessionGuard();
+      const existing = await lunaRequest('getCookies', {}, false, { sessionGuard });
+      sessionGuard();
+      if (typeof existing?.cookies?.buvid3 === 'string' && existing.cookies.buvid3) {
+        _buvid3 = existing.cookies.buvid3; buvidEnsured = true; return;
+      }
+    }
+    const r = await apiFetch('/x/frontend/finger/spi', {}, { sessionGuard });
     const b3 = r?.data?.b_3;
     const b4 = r?.data?.b_4;
     if (b3) {
-      checkSession(generation);
-      _buvid3 = b3;
-      await setServiceCookies({ buvid3: b3, buvid4: b4 || '' });
+      sessionGuard();
+      const saved = await setServiceCookies({ buvid3: b3, buvid4: b4 || '' }, sessionGuard);
+      sessionGuard();
+      if (saved?.returnValue === false) {
+        // Startup or another caller may have filled the identity after our
+        // initial read. Reuse that winner once, without another SPI or write.
+        if (saved.errorCode !== 'IDENTITY_EXISTS') return;
+        const current = await lunaRequest('getCookies', {}, false, { sessionGuard });
+        sessionGuard();
+        if (typeof current?.cookies?.buvid3 === 'string' && current.cookies.buvid3) {
+          _buvid3 = current.cookies.buvid3; buvidEnsured = true;
+        }
+        return;
+      }
       // Dev browser: the service isn't there to hold the fingerprint, so hand
       // it to the Mac proxy's cookie jar instead. Without it the live chat
       // token request answers -352 (risk control) and danmaku/interaction
       // could not be tested off-device at all.
       if (!hasLunaService()) {
         try {
+          sessionGuard();
           await fetch(storage.getProxyUrl() + '/cookies', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ buvid3: b3, buvid4: b4 || '' }),
           });
         } catch (e) { /* best effort */ }
       }
+      sessionGuard();
+      _buvid3 = b3;
       buvidEnsured = true;
     }
   } catch (e) { /* best effort */ }
 }
+
+// Account repair is explicitly user-driven. Service responses are reduced to
+// a fixed, non-identifying result schema by the controller before reaching UI.
+function invalidateLocalDeviceCache() {
+  storage.invalidateAuthRequests();
+  buvidEnsured = false; _buvid3 = '';
+  const auth = storage.getAuth();
+  if (auth) {
+    const next = { ...auth };
+    delete next.buvid3; delete next.buvid4; delete next.b_nut;
+    storage.setAuth(next);
+  }
+}
+export const accountRepair = createAccountRepair({
+  getAuth: () => storage.getAuth(),
+  getGeneration: () => storage.getAuthGeneration(),
+  nav: options => apiFetch('/x/web-interface/nav', {}, options),
+  getServiceStatus: options => lunaRequest('getAccountRepairStatus', {}, false, {
+    ...options, acceptFailureResponse: true,
+  }),
+  repairDeviceIdentity: (payload, options) => lunaRequest('repairDeviceIdentity', payload, false, {
+    ...options, acceptFailureResponse: true,
+  }),
+  // A lost response might follow a committed service update. Re-read its
+  // identity next time without claiming success or reverting its stored values.
+  onDeviceRepaired: invalidateLocalDeviceCache,
+  onDeviceUnknown: invalidateLocalDeviceCache,
+});
 
 // Rename the cast receiver as shown in the phone's 投屏 list (applies live).
 export async function castSetConfig(payload) {
@@ -840,6 +934,129 @@ async function biliWrite(path, params) {
   return smartFetch(API_HOST, path, {
     method: 'POST', body: body, contentType: 'application/x-www-form-urlencoded',
   });
+}
+
+function feedbackError(code, message, unknown = false) {
+  const error = new Error(message);
+  error.code = code;
+  if (unknown) {
+    error.name = 'RecommendationFeedbackUnknownError';
+    error.resultUnknown = true;
+  }
+  return error;
+}
+
+// Only running operations are retained; settle/timeout drops the session
+// snapshot. This also covers callers recreated after a menu closes/reopens.
+const pendingRecommendationFeedback = new Set();
+const MAX_PENDING_RECOMMENDATION_FEEDBACK = 32;
+
+// Official home-page web feedback uses a WBI-signed query and a separate CSRF
+// form body. A business error is returned unchanged; writes are never retried.
+// Cancel must receive the original reason saved by its caller (1 video, 4 UP).
+export async function sendRecommendationFeedback(video, cancel = false, reason = 1) {
+  if (!isRecommendationFeedbackReason(reason)) {
+    throw feedbackError('FEEDBACK_REASON_INVALID', 'Invalid recommendation feedback reason');
+  }
+  const context = recommendationFeedbackContext(video);
+  if (!context) throw feedbackError('FEEDBACK_CONTEXT_INVALID', 'Invalid recommendation feedback context');
+  const generation = storage.getAuthGeneration();
+  const auth = storage.getAuth() || {};
+  const hasToken = token => typeof token === 'string' && token.trim().length > 0;
+  if (!hasToken(auth.SESSDATA) || !hasToken(auth.bili_jct)) {
+    throw feedbackError('FEEDBACK_AUTH_REQUIRED', 'Recommendation feedback requires login');
+  }
+  const key = JSON.stringify([context.goto, context.id, context.mid, context.track_id, reason, cancel === true]);
+  for (const operation of pendingRecommendationFeedback) {
+    if (operation.key === key && operation.generation === generation &&
+        operation.session === auth.SESSDATA && operation.user === auth.DedeUserID) return operation.promise;
+  }
+  if (pendingRecommendationFeedback.size >= MAX_PENDING_RECOMMENDATION_FEEDBACK) {
+    throw feedbackError('FEEDBACK_BUSY', 'Too many pending recommendation feedback operations');
+  }
+  const operation = { key, generation, session: auth.SESSDATA, user: auth.DedeUserID, promise: null };
+  // Start in a microtask so every concurrent caller sees the populated entry.
+  operation.promise = Promise.resolve().then(() => performRecommendationFeedback(context, cancel, reason, operation));
+  pendingRecommendationFeedback.add(operation);
+  try { return await operation.promise; }
+  finally { pendingRecommendationFeedback.delete(operation); }
+}
+
+async function performRecommendationFeedback(context, cancel, reason, operation) {
+  const { generation, session, user } = operation;
+  const hasToken = token => typeof token === 'string' && token.trim().length > 0;
+  let csrf;
+  const checkFeedbackSession = () => {
+    const current = storage.getAuth() || {};
+    if (loggingOut || generation !== storage.getAuthGeneration() || current.SESSDATA !== session ||
+        current.DedeUserID !== user || (csrf !== undefined && current.bili_jct !== csrf)) {
+      throw feedbackError('RECOMMENDATION_FEEDBACK_SESSION_CHANGED', 'Account session changed');
+    }
+  };
+  checkFeedbackSession();
+  // Key acquisition precedes the write deadline: a failed nav has not sent any
+  // feedback, so its errors must not be classified as an unknown write result.
+  let keys, preparing = true;
+  const preparationError = () => {
+    const error = feedbackError('FEEDBACK_PREPARATION_FAILED', 'Recommendation feedback preparation failed; not sent');
+    error.resultUnknown = false;
+    return error;
+  };
+  const preparationGuard = () => {
+    checkFeedbackSession();
+    if (!preparing) throw preparationError();
+  };
+  try {
+    keys = await withDeadline(getWbiKeys(async (path, params) => {
+      const response = await apiFetch(path, params, { sessionGuard: preparationGuard, deadlineMs: 10000 });
+      // Proxy headers may arrive before a stalled JSON body. Do not cache keys
+      // obtained after the preparation deadline or a change of account.
+      preparationGuard();
+      return response;
+    }), 10000);
+  } catch (error) {
+    checkFeedbackSession();
+    throw preparationError();
+  } finally { preparing = false; }
+  checkFeedbackSession();
+  // A read-only nav may refresh CSRF for the same session. Once the form is
+  // built, pin that token through dispatch and response acceptance as well.
+  csrf = (storage.getAuth() || {}).bili_jct;
+  if (!hasToken(csrf)) throw feedbackError('FEEDBACK_AUTH_REQUIRED', 'Recommendation feedback requires login');
+  const signedQuery = signWbi({}, keys.imgKey, keys.subKey);
+  const form = { app_id: 100, platform: 5, from_spmid: '', spmid: '333.1007.0.0',
+    feedback_page: 1, ...context, reason_id: reason, csrf };
+  const path = '/x/web-interface/feedback/dislike' + (cancel === true ? '/cancel' : '');
+  let active = true, dispatched = false;
+  const sessionGuard = phase => {
+    if (!active) throw feedbackError('RECOMMENDATION_FEEDBACK_UNKNOWN', 'Recommendation feedback result unknown', true);
+    checkFeedbackSession();
+    if (phase === 'dispatch') dispatched = true;
+  };
+  try {
+    const result = await withDeadline(smartFetch(API_HOST, path + '?' + signedQuery, {
+      method: 'POST', body: new URLSearchParams(form).toString(),
+      contentType: 'application/x-www-form-urlencoded', sessionGuard,
+    }), 20000);
+    checkFeedbackSession();
+    if (!result || typeof result.code !== 'number' || !Number.isFinite(result.code)) {
+      throw feedbackError('RECOMMENDATION_FEEDBACK_UNKNOWN', 'Recommendation feedback response unavailable; result unknown', true);
+    }
+    return result;
+  } catch (error) {
+    checkFeedbackSession();
+    if (error && error.resultUnknown) throw error;
+    // A lost/reset connection can follow a committed server write just like a
+    // timeout. Only a valid business response confirms its reported outcome.
+    if (dispatched || /timeout|timed out|ETIMEDOUT/i.test(String(error && error.message))) {
+      throw feedbackError('RECOMMENDATION_FEEDBACK_UNKNOWN', 'Recommendation feedback response unavailable; result unknown', true);
+    }
+    throw error;
+  } finally {
+    // Prevent delayed bridge discovery or late responses from dispatching or
+    // accepting this operation after the outer deadline has already settled.
+    active = false;
+  }
 }
 
 // 一键三连(点赞 + 投币×2 + 收藏,一个接口全干)。返回 data:{like,coin,fav,multiply,prompt}.

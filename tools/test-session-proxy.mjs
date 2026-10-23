@@ -18,7 +18,8 @@ const eventually = async (fn, message) => {
 async function run(name, options, fn) {
   if (process.env.SESSION_FILTER && !new RegExp(process.env.SESSION_FILTER).test(name)) return;
   const f = await serviceFixture(options);
-  const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
+  const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, serviceWorkers: 'block' });
+  await context.routeWebSocket('**/*', socket => socket.close());
   await context.addInitScript(({ auth, transport }) => {
     if (!sessionStorage.getItem('fixture-seeded')) {
       if (auth) localStorage.setItem('bili_auth', JSON.stringify(auth));
@@ -59,7 +60,7 @@ async function run(name, options, fn) {
       const result = await f.call(u.pathname.split('/').pop(), JSON.parse(route.request().postData() || '{}'));
       await route.fulfill({ contentType: 'application/json', body: JSON.stringify(result) }).catch(() => {}); return;
     }
-    if (u.origin === new URL(url).origin || u.port === String(f.port) || u.port === '7654') return route.continue();
+    if (u.origin === new URL(url).origin || (u.hostname === '127.0.0.1' && (u.port === String(f.port) || u.port === '7654'))) return route.continue();
     return route.abort();
   });
   try {

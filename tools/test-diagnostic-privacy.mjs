@@ -15,7 +15,8 @@ const results = [];
 const secret = 'PRIVATE_USER_93 SESSDATA=cookie-secret token=signed-secret 192.168.7.18 2001:db8::12 BV1privateTitle';
 const modes = (process.env.DIAG_FILTER || 'risk351,risk352,voucher,empty,offline,healthy,english,spanish').split(',');
 for (const mode of modes) {
-  const context = await browser.newContext({viewport:{width:1920,height:1080}});
+  const context = await browser.newContext({viewport:{width:1920,height:1080},serviceWorkers:'block'});
+  await context.routeWebSocket('**/*',socket=>socket.close());
   const page = await context.newPage(); page.setDefaultTimeout(8000);
   const requests = [];
   await context.addInitScript(mode=>{

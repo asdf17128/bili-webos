@@ -20,7 +20,8 @@ const items = (prefix, count = 30) => Array.from({ length: count }, (_, i) => ({
 }));
 
 async function fixture(options = {}) {
-  const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
+  const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, serviceWorkers: 'block' });
+  await context.routeWebSocket('**/*', socket => socket.close());
   await context.addInitScript(options => {
     // Keep Chromium's real geometry/scroll callbacks; remove only the API
     // absent from Chromium 51–57 (webOS 4.x uses 53).

@@ -1,17 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, useLayoutEffect } from 'react';
 import { getPopular, getRecommend, getRanking, getFollowFeed, getLiveList } from '../api/client';
 import VideoGrid from '../components/VideoGrid';
 import PageState, { GridSkeleton, FocusButton } from '../components/PageState';
-import { onFocusChange, isHoverDriven, focusSidebar, resetContentMemory, focusFirstContent } from '../hooks/useFocus';
+import { onFocusChange, isHoverDriven, focusSidebar, resetContentMemory, focusFirstContent, getCurrentFocusId, setFocus } from '../hooks/useFocus';
 import { storage } from '../utils/storage';
 import { loadFollowedMids } from '../utils/follow';
 import { t } from '../i18n';
 import { markAfterPaint } from '../utils/perf';
 import { perfFlag, canPrefetch, trackPrefetch } from '../utils/perfFlags';
 import ContinueWatching, { useContinueWatching } from '../components/ContinueWatching';
+import { recommendationKey, getHiddenRecommendationKeys, subscribeHiddenRecommendations, lastHiddenRecommendation, restoreRecommendation } from '../utils/hiddenRecommendations';
+import { recommendationAuthorKey, recommendationAccountScope, getHiddenRecommendationAuthorKeys, subscribeHiddenRecommendationAuthors, lastHiddenRecommendationAuthor, restoreRecommendationAuthor } from '../utils/hiddenRecommendationAuthors';
 
 const FETCH_SIZE = 20;
 const feedCache = new Map(); // At most four recent sections; metadata only, never image objects.
+
+function filterRecommendations(videos, videoKeys, authorKeys) {
+  return videos.filter(video => !videoKeys.has(recommendationKey(video)) && !authorKeys.has(recommendationAuthorKey(video)));
+}
 
 function checked(res) {
   if (res?.code && res.code !== 0) throw new Error(res.message || String(res.code));
@@ -66,7 +72,17 @@ async function fetchByMode(mode, pn, offset, rid) {
 }
 
 export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend', rid, title }) {
-  const cacheKey = `${mode}:${rid || ''}:${storage.getAuth()?.DedeUserID || (storage.getAuth()?.SESSDATA ? 'member' : 'guest')}`;
+  const [, setAuthRevision] = useState(0);
+  const auth = storage.getAuth();
+  const identity = useRef({ session: auth?.SESSDATA, uid: auth?.DedeUserID, revision: 0 });
+  if (identity.current.session !== auth?.SESSDATA || identity.current.uid !== auth?.DedeUserID) {
+    identity.current = { session: auth?.SESSDATA, uid: auth?.DedeUserID, revision: identity.current.revision + 1 };
+  }
+  const accountScope = recommendationAccountScope(auth);
+  // Missing UID still isolates logins, but ordinary response-cookie updates
+  // must not invalidate the feed and cause an unbounded request loop. Keep the
+  // session only in memory; the key contains no cookie or token values.
+  const cacheKey = `${mode}:${rid || ''}:${accountScope || `unsupported:${identity.current.revision}`}`;
   const firstLoad = useRef(true);
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -75,11 +91,87 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend', 
   const [retry, setRetry] = useState(0);
   const [focusRow, setFocusRow] = useState(0);
   const [followedMids, setFollowedMids] = useState(null);
+  const [hiddenKeys, setHiddenKeys] = useState(getHiddenRecommendationKeys);
+  const [authorRevision, setAuthorRevision] = useState(0);
+  // Resolve the new account's rules in its first render, before effects run.
+  const hiddenAuthorKeys = useMemo(() => getHiddenRecommendationAuthorKeys(accountScope), [accountScope, authorRevision]);
+  const [restoreMessage, setRestoreMessage] = useState('');
   const rowRef = useRef(0);
   const snapshot = useRef(null);
   const loadMoreRef = useRef(null);
   const retryFocusRef = useRef(false);
   const cols = Math.min(4, Math.max(2, storage.getSettings().gridCols || 3));
+  // Keep raw pages and their seen IDs intact. Filtering only the rendered view
+  // preserves dedupe, pagination and the original position when a hide is undone.
+  const visibleVideos = useMemo(() => mode === 'recommend'
+    ? filterRecommendations(videos, hiddenKeys, hiddenAuthorKeys) : videos, [mode, videos, hiddenKeys, hiddenAuthorKeys]);
+  const displayRef = useRef(null), pendingHideFocus = useRef(null);
+  displayRef.current = { videos, visibleVideos, cols, accountScope };
+  useEffect(() => {
+    const changed = () => {
+      if (displayRef.current.accountScope !== recommendationAccountScope(storage.getAuth())) {
+        pendingHideFocus.current = null;
+        setRestoreMessage('');
+      }
+      setAuthRevision(value => value + 1);
+    };
+    const storageChanged = event => { if (event.key === 'bili_auth' || event.key == null) changed(); };
+    const unsubscribe = storage.onAuthChange?.(changed);
+    window.addEventListener('storage', storageChanged);
+    return () => { unsubscribe?.(); window.removeEventListener('storage', storageChanged); };
+  }, []);
+  useEffect(() => {
+    if (mode !== 'recommend') return;
+    const changed = () => {
+      const nextKeys = getHiddenRecommendationKeys();
+      const nextAuthorKeys = getHiddenRecommendationAuthorKeys(recommendationAccountScope(storage.getAuth()));
+      const { videos: raw, visibleVideos: previous, cols: columns } = displayRef.current;
+      const match = getCurrentFocusId()?.match(/^content-(\d+)-(\d+)$/);
+      if (match) {
+        const index = Number(match[1]) * columns + Number(match[2]);
+        const next = filterRecommendations(raw, nextKeys, nextAuthorKeys);
+        const retainedIndex = next.indexOf(previous[index]);
+        pendingHideFocus.current = Math.max(0, retainedIndex >= 0 ? retainedIndex : Math.min(index, next.length - 1));
+      }
+      setHiddenKeys(nextKeys);
+      setAuthorRevision(value => value + 1);
+    };
+    changed();
+    const unsubscribeVideos = subscribeHiddenRecommendations(changed);
+    const unsubscribeAuthors = subscribeHiddenRecommendationAuthors(changed);
+    return () => { unsubscribeVideos(); unsubscribeAuthors(); };
+  }, [mode]);
+  useLayoutEffect(() => {
+    if (pendingHideFocus.current == null || loading || error) return;
+    const index = Math.min(pendingHideFocus.current, Math.max(0, visibleVideos.length - 1));
+    pendingHideFocus.current = null;
+    // A delayed page must respect a user who returned to the sidebar while
+    // waiting. A removed content cell can temporarily have no registered focus.
+    const current = getCurrentFocusId();
+    if (current && !current.startsWith('content-')) return;
+    setFocus(`content-${Math.floor(index / cols)}-${index % cols}`);
+  }, [visibleVideos, loading, error, cols]);
+  const openRecommendationMenu = useCallback(video => {
+    window.dispatchEvent(new CustomEvent('card-menu', { detail: { video, source: 'recommendation' } }));
+  }, []);
+  const restoreLast = () => {
+    const key = lastHiddenRecommendation();
+    if (!key) return;
+    const result = restoreRecommendation(key);
+    setRestoreMessage(result.persistent ? t('已取消本机隐藏') : t('已恢复本次显示，但未能保存'));
+  };
+  const restoreLastAuthor = () => {
+    const scope = recommendationAccountScope(storage.getAuth());
+    if (!scope || scope !== accountScope) return;
+    const key = lastHiddenRecommendationAuthor(scope);
+    if (!key) return;
+    const result = restoreRecommendationAuthor(key, scope);
+    setRestoreMessage(result.persistent ? t('已取消本机 UP 隐藏') : t('已恢复本次 UP 显示，但未能保存'));
+  };
+  const loadMoreFromEmpty = () => {
+    pendingHideFocus.current = 0;
+    loadMoreRef.current?.();
+  };
   const resumeItems = useContinueWatching(mode === 'recommend');
   const reload = () => {
     focusSidebar(); resetContentMemory();
@@ -97,7 +189,7 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend', 
   useEffect(() => {
     let alive = true, timer = null, flight = null, ready = null, busy = false, failedPage = false;
     let page = 1, offset = '', hasMore = true, list = [], seen = new Set();
-    const cached = firstLoad.current ? feedCache.get(cacheKey) : null;
+    const cached = firstLoad.current && accountScope ? feedCache.get(cacheKey) : null;
     firstLoad.current = false;
     const validCache = cached && cached.refreshKey === refreshKey && Date.now() - cached.at < 5 * 60 * 1000 && cached.cols === cols;
     setError(false); setMoreState('');
@@ -174,14 +266,15 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend', 
       rowRef.current = Number(match[1]);
       if (!perfFlag('scrollDirect')) setFocusRow(rowRef.current);
       // A failed page waits for an explicit retry; moving sideways is not a retry loop.
-      if (!failedPage && rowRef.current >= Math.ceil(list.length / cols) - 2) loadMore();
+      const shownCount = mode === 'recommend' ? displayRef.current.visibleVideos.length : list.length;
+      if (!failedPage && rowRef.current >= Math.ceil(shownCount / cols) - 2) loadMore();
       else schedule();
     });
     return () => {
       alive = false; clearTimeout(timer); unsubscribe();
       const snap = snapshot.current;
       // Avoid retaining very long feeds on a 2 GB TV. Mounted pages own their data.
-      if (snap?.videos.length && snap.videos.length <= 200) {
+      if (accountScope && snap?.videos.length && snap.videos.length <= 200) {
         feedCache.delete(cacheKey);
         feedCache.set(cacheKey, { ...snap, row: rowRef.current });
         if (feedCache.size > 4) feedCache.delete(feedCache.keys().next().value);
@@ -207,11 +300,20 @@ export default function HomePage({ onPlayVideo, refreshKey, mode = 'recommend', 
     </header>
     <div className="browse-body" aria-busy={loading}>
       {loading ? <GridSkeleton cols={cols} /> : error ?
-        <PageState title={t('内容加载失败')} description={t('请检查网络连接后重试')} action={t('重试')} onAction={reload} /> : !videos.length ?
-        <PageState title={t('这里暂时没有内容')} description={t('稍后刷新，或到其他栏目看看')} action={t('刷新')} onAction={reload} /> :
-        <VideoGrid videos={videos} group="content" startRow={0} cols={cols} onSelect={onPlayVideo} focusRow={focusRow} followedMids={followedMids}
+        <PageState title={t('内容加载失败')} description={t('请检查网络连接后重试')} action={t('重试')} onAction={reload} /> : !visibleVideos.length ?
+        <div className="recommendation-empty">
+          <PageState title={mode === 'recommend' && videos.length ? t('当前推荐已在本机隐藏') : t('这里暂时没有内容')}
+            description={mode === 'recommend' && (hiddenKeys.size || hiddenAuthorKeys.size) ? t('仅影响本机推荐页；恢复显示不会撤销已提交的反馈。') : t('稍后刷新，或到其他栏目看看')}
+            action={mode === 'recommend' && videos.length && moreState !== 'end' ? t('加载更多推荐') : t('刷新')}
+            onAction={mode === 'recommend' && videos.length && moreState !== 'end' ? loadMoreFromEmpty : reload} />
+          {mode === 'recommend' && hiddenKeys.size > 0 && <FocusButton id="content-1-0" row={1} onSelect={restoreLast}>{t('恢复上次本机隐藏')}</FocusButton>}
+          {mode === 'recommend' && hiddenAuthorKeys.size > 0 && <FocusButton id={`content-${hiddenKeys.size ? 2 : 1}-0`} row={hiddenKeys.size ? 2 : 1} onSelect={restoreLastAuthor}>{t('恢复上次本机隐藏的 UP')}</FocusButton>}
+          {restoreMessage && <p role="status">{restoreMessage}</p>}
+        </div> :
+        <VideoGrid videos={visibleVideos} group="content" startRow={0} cols={cols} onSelect={onPlayVideo}
+          onLongPress={mode === 'recommend' ? openRecommendationMenu : undefined} focusRow={focusRow} followedMids={followedMids}
           header={resumeItems.length ? <ContinueWatching items={resumeItems} onSelect={onPlayVideo} /> : null}
-          footer={moreState === 'error' ? <FocusButton row={Math.ceil(videos.length / cols)} id={`content-${Math.ceil(videos.length / cols)}-0`} onSelect={() => loadMoreRef.current?.()}>{t('加载失败，按确认重试')}</FocusButton> : null} />}
+          footer={moreState === 'error' ? <FocusButton row={Math.ceil(visibleVideos.length / cols)} id={`content-${Math.ceil(visibleVideos.length / cols)}-0`} onSelect={() => loadMoreRef.current?.()}>{t('加载失败，按确认重试')}</FocusButton> : null} />}
     </div>
     <footer className="browse-footer">
       <span><kbd>OK</kbd>{t('开始播放')}<span className="hint-separator">·</span>{t('长按打开菜单')}</span>

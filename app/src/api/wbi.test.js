@@ -164,3 +164,57 @@ test('wall clock rollback expires cached keys instead of extending them', async 
   assert.deepEqual(await getWbiKeys(fetch), NEXT_KEYS);
   assert.equal(calls, 2);
 });
+
+test('manual clear expires cached keys immediately without waiting for the TTL', async t => {
+  clock(t);
+  const { getWbiKeys, clearWbiKeys } = await fresh();
+  let calls = 0;
+  const fetch = async () => ++calls === 1 ? nav() : nav(NEXT_KEYS);
+  assert.deepEqual(await getWbiKeys(fetch), KEYS);
+  clearWbiKeys();
+  assert.deepEqual(await getWbiKeys(fetch), NEXT_KEYS);
+  assert.equal(calls, 2);
+});
+
+test('a pre-clear response cannot replace freshly fetched keys or be used to sign', async t => {
+  clock(t);
+  const { getWbiKeys, clearWbiKeys } = await fresh();
+  const old = deferred();
+  const pending = getWbiKeys(() => old.promise);
+  const rejected = assert.rejects(pending, { code: 'WBI_KEYS_STALE', message: 'WBI key request expired' });
+  clearWbiKeys();
+  assert.deepEqual(await getWbiKeys(async () => nav(NEXT_KEYS)), NEXT_KEYS);
+  old.resolve(nav());
+  await rejected;
+  assert.deepEqual(await getWbiKeys(() => assert.fail('fresh keys must remain cached')), NEXT_KEYS);
+});
+
+test('a pre-clear response cannot refill an empty cache before the next request', async t => {
+  clock(t);
+  const { getWbiKeys, clearWbiKeys } = await fresh();
+  const old = deferred();
+  const pending = getWbiKeys(() => old.promise);
+  const rejected = assert.rejects(pending, { code: 'WBI_KEYS_STALE' });
+  clearWbiKeys();
+  old.resolve(nav());
+  await rejected;
+  let calls = 0;
+  assert.deepEqual(await getWbiKeys(async () => { calls++; return nav(NEXT_KEYS); }), NEXT_KEYS);
+  assert.equal(calls, 1);
+});
+
+test('repeated clears invalidate every earlier request while a later request recovers', async t => {
+  clock(t);
+  const { getWbiKeys, clearWbiKeys } = await fresh();
+  const first = deferred(), second = deferred();
+  const a = getWbiKeys(() => first.promise);
+  const rejectedA = assert.rejects(a, { code: 'WBI_KEYS_STALE' });
+  clearWbiKeys();
+  const b = getWbiKeys(() => second.promise);
+  const rejectedB = assert.rejects(b, { code: 'WBI_KEYS_STALE' });
+  clearWbiKeys();
+  second.resolve(nav(NEXT_KEYS));
+  first.resolve(nav());
+  await Promise.all([rejectedA, rejectedB]);
+  assert.deepEqual(await getWbiKeys(async () => nav()), KEYS);
+});

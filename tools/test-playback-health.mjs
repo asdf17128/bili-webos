@@ -4,6 +4,8 @@ import { chromium } from 'playwright';
 import { createStallMonitor } from '../app/src/player/playbackHealth.js';
 import { diagnosticHosts } from '../app/src/player/cdnProbe.js';
 import { CDN_ROUTES } from '../app/src/player/cdn.js';
+const baseURL = process.env.HEALTH_BASE_URL || 'http://127.0.0.1:5173';
+const viteOrigin = new URL(baseURL).origin;
 
 for (const route of ['ali', 'cos', 'cosov', 'aliov', 'ks3', 'hwo1']) {
   const hosts = diagnosticHosts('https://upos-sz-mirrorcosov.bilivideo.com/upgcxcode/a.m4s', route);
@@ -44,8 +46,14 @@ const server = createServer((req, res) => {
 await new Promise(r => server.listen(0, '127.0.0.1', r));
 const browser = await chromium.launch();
 try {
-  const page = await browser.newPage();
-  await page.goto('http://127.0.0.1:5173');
+  const page = await browser.newPage({ serviceWorkers: 'block' });
+  const probeOrigin = `http://127.0.0.1:${server.address().port}`;
+  await page.routeWebSocket('**/*', socket => socket.close());
+  await page.route('**/*', route => {
+    const origin = new URL(route.request().url()).origin;
+    return origin === viteOrigin || origin === probeOrigin ? route.continue() : route.abort();
+  });
+  await page.goto(baseURL);
   const result = await page.evaluate(async port => {
     const { probeRange } = await import('/src/player/cdnProbe.js');
     const base = `http://127.0.0.1:${port}`;

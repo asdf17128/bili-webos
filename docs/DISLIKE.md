@@ -1,48 +1,42 @@
-# 长按「不感兴趣」— 调研沉淀(2026-09-20,未实现)
+# 推荐卡片长按「不感兴趣：当前视频 / UP」（2026-10-23，本地候选）
 
-对齐手机客户端:卡片长按 → 不感兴趣 → 卡片消失、推荐流少推同类。owner 定的下一项体验功能。
+首页推荐卡片长按提供「不感兴趣：当前视频」和「不感兴趣：UP」，分别进入独立确认页，默认选中“返回”。当前视频项是针对该内容提交负反馈，平台可能调整类似推荐，不承诺只影响这一条；UP 项针对作者推荐，不等同于拉黑账号。登录、CSRF 和推荐上下文完整才提交官方反馈，否则明确显示本机隐藏及作用范围。
 
-## 接口(web 端,已从三个成熟项目源码交叉确认:Bilibili-Gate / BewlyCat / BiliKit-Web)
+当前视频的本机隐藏沿用此设备所有账号共享的指定视频列表。UP 的本机隐藏按稳定账号 UID 隔离，未登录状态单独保存；有登录凭据却缺少合法 UID 时禁用 UP 操作。作者必须来自该推荐条目原始 `owner.mid`，不能以昵称、标题、BV、view 查询或其他推断代替。缺少作者/账号标识只显示不可操作说明，不退化成视频隐藏。
 
-```
-POST https://api.bilibili.com/x/web-interface/feedback/dislike
+本轮所有请求测试使用隔离的合成数据，未向真实账号发送负反馈。以下官方源码证据支持接口实现，不代表线上反馈、撤销窗口或后续推荐效果已经实测。
+
+## 官方接口证据与请求约束
+
+2026-10-23 匿名读取 [哔哩哔哩首页](https://www.bilibili.com/) 当次引用的 [官方网页脚本](https://s1.hdslb.com/bfs/static/shanks/laputa-home/assets/index-84fb5632.js)，SHA256 为 `271ecaca131b61e909601b56c5a652ec8014ad0409bfefb863b832a2c14c0465`。脚本中使用以下接口：
+
+```text
+POST https://api.bilibili.com/x/web-interface/feedback/dislike?wts=...&w_rid=...
+POST https://api.bilibili.com/x/web-interface/feedback/dislike/cancel?wts=...&w_rid=...
 Content-Type: application/x-www-form-urlencoded
-app_id=100&platform=5&from_spmid=&spmid=333.1007.0.0&feedback_page=1
-&goto=av&id=<aid>&mid=<owner.mid>&track_id=<item.track_id>&reason_id=<n>&csrf=<bili_jct>
 ```
 
-撤销:同参数 `POST /x/web-interface/feedback/dislike/cancel`。
+表单固定字段为 `app_id=100`、`platform=5`、`from_spmid=`、`spmid=333.1007.0.0`、`feedback_page=1`，`reason_id` 只允许数字 **1（内容不感兴趣）/4（不想看此 UP 主）**。官方第二项的 UI `value=2` 不是请求编号；非法 2/3、字符串或其他值在请求前拒绝。另带推荐卡片原始 `goto=av`、`id`、`owner.mid`、`track_id` 与当前会话的 `csrf`。`id` 优先使用推荐条目的 `id`，缺失时才取 `aid`；已提供但非法的 ID 不回退。推荐上下文通过白名单校验，禁止用 view 查询拼造缺失的 track_id。禁用反馈的卡片不走官方接口。
 
-- 走 **web cookie**(SESSDATA + bili_jct),不需要 app access_key —— 我们的 `biliWrite()` 直接能用
-  (它已经自动带 csrf 表单字段,见 client.js `addToView`)。
-- 手机端走的是 `app.bilibili.com/x/feed/dislike`(GET,要 appkey 签名 + access_key),**不走这条**。
-- `reason_id` 已确认的:`1` 内容不感兴趣 · `4` 不想看此 UP 主 · `12` 此类内容过多 · `13` 推荐过。
-  web 推荐流的 item **不带** three_point/dislike_reasons(那是 app 接口才有),所以只能用固定清单。
-- 推荐流 item 自带 `dislike_switch` / `dislike_switch_pc`(实测都是 1)、`track_id`、`id`(=aid)、`goto`、
-  `owner.mid` —— 发请求需要的字段**卡片数据里都有**,不用再查 view。
-- 响应码、频控、撤销窗口、是否真的从后续 rcmd 里过滤:**没人文档化,要实测**。
+WBI 签名输入是空查询参数，生成 `wts/w_rid` 放在 URL；表单不参加签名。普通 `biliWrite()` 不满足此约束，因此独立实现 `sendRecommendationFeedback(video, cancel=false, reason=1)`。网页的曝光/点击分析请求不随功能接入。普通反馈不传 `type`；广告 `cm_reason_id`、手机版历史样例的分区或其他 type 不混入这两项。
 
-## 设计要点
+接口绑定操作发起时的认证代际和会话，在 nav、实际派发及响应合并 cookie 前复核。取签名密钥最多 10 秒，未派发即失败的操作明确显示“未发送”；POST 最多 20 秒。已派发后断网、超时或格式错误显示“结果未知”，不自动重试，也不声称服务端已撤销写入。迟到响应不能污染新会话或在期限后派发。有效非零业务码保留卡片，并允许用户明确重试。
 
-1. **菜单**:现有 CardMenu(长按 OK)在「加入稍后再看」下面加「不感兴趣」;OK 后二级选一个原因
-   (不感兴趣 / 不想看此 UP 主 / 此类内容过多),对齐手机端的两步。原因少给 3 个就够,电视上不适合长列表。
-2. **哪些列表可用**:只有推荐流(首页)的卡片有 `track_id`,才有意义;分区/搜索/收藏/稍后再看的卡片
-   没有 track_id → 菜单不显示这一项(或只做本地隐藏)。
-3. **未登录**:接口要 csrf,未登录只能本地隐藏 —— 存 storage 一个 `hiddenAids`(封顶几百条),
-   推荐流渲染时过滤。登录用户也可以同时本地隐藏,保证"立刻消失"不依赖服务端。
-4. **反馈**:卡片原位淡出 + 一条 toast「已减少此类推荐 · 按 OK 撤销」(5 秒内可撤销 → cancel 接口)。
-   撤销比确认对话框友好,也符合手机端。
-5. **网格焦点**:卡片消失后焦点落到同位置的下一张;是最后一张就落前一张。要写用例。
+相同会话、推荐上下文、reason 和动作的在途调用合并，最多保存 32 项内存请求记录；完成/失败/超时后删除，不缓存成功结果。reason 1/4、提交/撤销与不同账号不能互相合并。绑定 DedeUserID；nav 允许同会话刷新 CSRF，但构造 POST 后固定 CSRF 至响应接受。
 
-## 测试纪律(写操作!)
+## 隐藏、恢复和焦点
 
-- 遵守写操作安全线(memory: feedback_test_safety):**只对夹具视频**做 dislike,**同一用例内立刻 cancel**,
-  每步断言目标 aid;仿真里 mock 接口验 UI/焦点,真机只跑一次带撤销的真实链路。
-- 不感兴趣会真的改 owner 账号的推荐,别在真实推荐卡上试。
+- 官方 `code=0` 后才写本机隐藏偏好：当前视频隐藏指定视频，UP 隐藏该账号范围下原始作者 ID 相同的所有推荐。失败/未知保留卡片，也允许用户另选与本项对应的本机隐藏。关闭处理中菜单不取消已发出的请求，界面有说明；同一会话随后确认成功仍应用正确范围。
+- 成功菜单提供「尝试撤销反馈」，保存最初提交的上下文与 **reason**，用同一 reason 调用 cancel，只有 `code=0` 才恢复对应本机范围。撤销失败/未知不改变本机隐藏，不能保证恢复推荐算法状态。菜单关闭后不保留远端撤销凭据。
+- 「恢复本机显示」及下次长按的「恢复上次本机隐藏」只改本机偏好，绝不暗中发送 cancel。界面说明本机恢复不会撤销已提交反馈。
+- 偏好键 `bili_hiddenRecommendations` 最多保存 500 个视频键（BV/av），不保存账号、作者、标题、推荐追踪值或 URL。重复隐藏幂等；读取失败时保留内存行为且不覆盖未知磁盘数据；写失败提示本次有效但未能保存。
+- UP 偏好键 `bili_hiddenRecommendationAuthors` 仅保存 `user:<UID>` 或 `guest` 范围及 `up:<mid>`，每范围最多 500 个作者、最多 8 个范围，超限淘汰最早条目。UID/作者 ID 留在本机，不存 cookie/token、名字、标题或推荐追踪上下文，不进入诊断报告或遥测。读取失败保留未知存储；保存失败明确本次有效。恢复只删除该范围的目标作者，其他账号及独立视频隐藏保持不变。
+- 普通菜单与全隐藏空态均可恢复本账号“上次本机隐藏的 UP”；这是本机恢复，不调用远端 cancel。当前账号变化立即切换 UP 过滤范围，旧菜单或旧响应不能修改新账号偏好。缺少 UID 时只因实际会话/UID 变化重载推荐，不因普通响应 Cookie 更新无限请求；会话值只在内存比较，缓存键不含 Cookie。
+- 只过滤推荐页渲染，不改原始页缓存、已见 ID 或分页游标；翻页、刷新、重新进入仍过滤已隐藏视频，恢复时保留原顺序。搜索、热门、收藏等列表不增加负反馈入口。
+- 移除后焦点落同位置下一张，末张落前一张。全部隐藏时显示可遥控的加载更多/刷新和恢复入口。恢复后的卡片与重试按钮复用网格 ID 时，在注册阶段按当前焦点校准高亮，避免双焦点。捕获遥控按键时主动结束指针焦点所有权，避免静止指针在菜单消失后抢走焦点；加载中已退回侧栏则不强行聚焦新卡片。
 
-## 待实测清单(开工第一步)
+## 验证与待办
 
-- [ ] dislike 成功响应体;错误码(未登录 -101、参数缺失、频控)
-- [ ] cancel 是否有时间窗口
-- [ ] dislike 后下一次 rcmd 是否还出现该 aid / 该 UP
-- [ ] 分区列表(`newlist`/`dynamic/region` 已 -404/空)之外还有哪些列表带 track_id
+`hiddenRecommendations.test.js` 和 `hiddenRecommendationAuthors.test.js` 验证容量、持久化失败、字段白名单及账号隔离；`recommendationFeedback.test.js` 验证上下文和 reason 白名单；`test-recommendation-feedback.mjs` 在实际客户端模块的 Luna/bridge/proxy 边界验证签名、CSRF、期限、去重及会话隔离；`test-recommendation-account-scope.mjs` 验证实际 Home 的身份/普通 Cookie 更新边界；`test-recommendation-menu.mjs` 用真实 React 和受信遥控/指针输入验证交互。浏览器工具只允许连接选定回环 Vite，其他 HTTP/WS 全部拦截，禁用 service worker。两项版本的结果与正对照见 [本轮证据](ux-evidence/2026-10-23-two-feedback-reasons/README.md)，早期单项证据仍保留。
+
+尚未验收：真实 webOS 长按、焦点、字号布局；线上反馈响应及取消窗口。用户未授权随意用真实账号测试负反馈，不能因存在 cancel 接口就假定可以无损试写。电视空闲未知时不操作；真机发布门禁未豁免。本轮未发布，版本号仍为 2.4.0，也不声称解决 #50/#51/#52 的播放根因。

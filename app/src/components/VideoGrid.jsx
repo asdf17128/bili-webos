@@ -7,7 +7,7 @@ import { t } from '../i18n';
 
 // Use transform:translateY for scrolling instead of overflow:scroll
 // This pushes scroll to GPU compositor, avoiding layout recalculation
-export default React.memo(function VideoGrid({ videos = [], group = 'content', startRow = 0, cols = 2, onSelect, focusRow = 0, followedMids = null, footer = null, upTarget = null, header = null }) {
+export default React.memo(function VideoGrid({ videos = [], group = 'content', startRow = 0, cols = 2, onSelect, onLongPress, focusRow = 0, followedMids = null, footer = null, upTarget = null, header = null }) {
 
   // Scroll offset for the focused row. The row pitch used to be a FORMULA
   // (620/cols + 110), which is off by a few px against the real layout — the
@@ -151,6 +151,7 @@ export default React.memo(function VideoGrid({ videos = [], group = 'content', s
               col={col}
               group={group}
               onSelect={onSelect}
+              onLongPress={onLongPress}
               onNavigate={upTarget && row === startRow ? direction => direction === 'up' ? upTarget : null : undefined}
               followed={!!(followedMids && video.owner?.mid && followedMids.has(Number(video.owner.mid)))}
             />

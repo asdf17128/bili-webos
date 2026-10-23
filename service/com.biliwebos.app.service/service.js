@@ -81,6 +81,14 @@ function saveCookies() {
   catch (e) { logSvcErr('cookies-save', 'Cookie persistence failed'); return false; }
 }
 
+var accountRepair = require('./accountRepair').createAccountRepair({
+  fs: fs, https: https, cookieFile: COOKIE_FILE, agent: keepAliveAgent,
+  getCookies: function () { return storedCookies; },
+  setCookies: function (candidate) { storedCookies = candidate; },
+  getGeneration: function () { return cookieGeneration; },
+  advanceGeneration: function () { cookieGeneration++; }
+});
+
 var CAST_CONFIG_FILE = path.join('/media/internal', 'bili_cast_config.json');
 var castConfig = {};
 try {
@@ -108,13 +116,18 @@ function serializeCookies(cookies) {
 // from finger/spi and persist alongside the login cookies. Verified via an
 // overseas (HK) exit: /x/web-interface/popular flips -352 → 0 with these set.
 function ensureBuvid(attempt) {
+  if (accountRepair.status().busy) return;
   if (storedCookies['buvid3']) return;
+  var generation = cookieGeneration;
   function fail(err) {
+    if (generation !== cookieGeneration || accountRepair.status().busy) return;
     console.error('[service] buvid fetch failed:', err.message);
     logSvcErr('buvid', err.message);
     // Keep the existing finite startup retry budget. The network may come up
     // after the service; malformed/truncated bodies also need this recovery.
-    if ((attempt || 0) < 5) setTimeout(function () { ensureBuvid((attempt || 0) + 1); }, 15000);
+    if ((attempt || 0) < 5) setTimeout(function () {
+      if (generation === cookieGeneration) ensureBuvid((attempt || 0) + 1);
+    }, 15000);
   }
   upstreamRequest(https.request.bind(https), {
     hostname: 'api.bilibili.com', port: 443, path: '/x/frontend/finger/spi', method: 'GET',
@@ -125,8 +138,13 @@ function ensureBuvid(attempt) {
     rejectUnauthorized: false,
     agent: keepAliveAgent
   }, null, function (err, res) {
+    if (generation !== cookieGeneration || accountRepair.status().busy) {
+      if (res) res.destroy();
+      return;
+    }
     if (err) { fail(err); return; }
     decompressResponse(res, function (err, body) {
+      if (generation !== cookieGeneration || accountRepair.status().busy) return;
       if (err) { fail(err); return; }
       if (res.statusCode !== 200) { fail(new Error('Fingerprint HTTP ' + res.statusCode)); return; }
       var j;
@@ -180,6 +198,10 @@ function isBiliHost(host) {
 // Content-Encoding — compressed bytes there corrupt the Range/Content-Length
 // and trigger Shaka's "Payload length does not match range requested bytes".
 function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity, callback) {
+  if (accountRepair.status().busy) {
+    callback(new Error('Device identity repair in progress'));
+    return { cancel: function () {} };
+  }
   var generation = cookieGeneration;
   var hostname = parsedUrl.hostname;
   var port = parsedUrl.port ? parseInt(parsedUrl.port) : 443;
@@ -392,7 +414,24 @@ service.register('getCookies', function (message) {
   message.respond({ returnValue: true, cookies: storedCookies });
 });
 
+service.register('getAccountRepairStatus', function (message) {
+  message.respond(accountRepair.status());
+});
+
+service.register('repairDeviceIdentity', function (message) {
+  accountRepair.repair(message.payload, function (result) { message.respond(result); });
+});
+
 service.register('setCookies', function (message) {
+  if (accountRepair.status().busy) {
+    message.respond({ returnValue: false, error: 'Device identity repair in progress' }); return;
+  }
+  // A delayed bootstrap must not overwrite an identity installed by repair.
+  // Keep this check before the generation bump and every state mutation.
+  if (message.payload.onlyIfDeviceMissing === true && storedCookies.buvid3) {
+    message.respond({ returnValue: false, errorCode: 'IDENTITY_EXISTS', error: 'Device identity already exists' }); return;
+  }
+  cookieGeneration++;
   var c = message.payload.cookies || {};
   Object.keys(c).forEach(function (k) { storedCookies[k] = c[k]; });
   saveCookies();

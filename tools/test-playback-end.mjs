@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 
 const output = process.env.END_OUTPUT || '/tmp/bili-playback-end';
+const baseUrl = process.env.END_BASE_URL || 'http://127.0.0.1:5173';
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch();
 const results = [];
@@ -22,7 +23,8 @@ export default {Player,polyfill:{installAll(){}}};`;
 
 async function run(name, settings, kind, fn) {
  if (process.env.END_FILTER && !new RegExp(process.env.END_FILTER).test(name)) return;
- const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
+ const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, serviceWorkers: 'block' });
+ await context.routeWebSocket('**/*', socket => socket.close());
  await context.addInitScript(({settings}) => {
    delete window.webOS;
    if (!localStorage.getItem('bili_settings')) localStorage.setItem('bili_settings', JSON.stringify({language:'zh',...settings}));
@@ -44,7 +46,7 @@ async function run(name, settings, kind, fn) {
  await page.route('**/*',async route=>{
    const u=new URL(route.request().url());
    if(u.pathname.includes('shaka-player'))return route.fulfill({contentType:'application/javascript',body:stub});
-   if(u.port==='5173')return route.continue();
+   if(u.origin===new URL(baseUrl).origin)return route.continue();
    if(u.port==='9528')return route.abort();
    let data={};
    if(u.pathname.endsWith('/nav'))data={wbi_img:{img_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png',sub_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png'}};
@@ -70,7 +72,7 @@ async function run(name, settings, kind, fn) {
    return route.fulfill({json:{code:0,data}});
  });
  try {
-   await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>!!window.__openVideo);
+   await page.goto(baseUrl);await page.waitForFunction(()=>!!window.__openVideo);
    await page.clock.install();
    const item={...first,resumeMode:'none'};
    if(['playlist','watchlater','load-error'].includes(kind))Object.assign(item,{playlist:[first,second],playlistIndex:0});

@@ -23,7 +23,8 @@ const results = [];
 try {
   for (const transport of ['proxy', 'bridge', 'luna']) {
     for (const mode of ['missing', 'html', 'network', 'risk', ...(transport === 'luna' ? ['session'] : [])]) {
-      const context = await browser.newContext();
+      const context = await browser.newContext({ serviceWorkers: 'block' });
+      await context.routeWebSocket('**/*', socket => socket.close());
       const page = await context.newPage();
       const state = { nav: 0, playurl: 0, signatures: [], unexpected: [] };
       let releaseOldNav, markNavStarted;

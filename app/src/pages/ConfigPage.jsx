@@ -261,6 +261,10 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
     id: `content-${user ? 11 : 12}-0`, row: user ? 11 : 12, col: 0, group: 'content',
     onSelect: () => { if (user && !loggingOut) onLogout(); },
   });
+  const { props: repairProps } = useFocusable({
+    id: 'content-13-0', row: 13, col: 0, group: 'content',
+    onSelect: () => window.dispatchEvent(new CustomEvent('account-repair')),
+  });
 
   const dmScaleLabel = (DM_SCALES.find(s => s.v === danmakuScale) || DM_SCALES[0]).label;
   const cdnLabel = (CDN_OPTS.find(o => o.v === cdnRoute) || CDN_OPTS[0]).label;
@@ -372,6 +376,11 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
       <div className="settings-row" {...nerdProps} role="switch" aria-checked={nerdInfo}>
         <span>{t('Nerd 信息')}</span>
         <span className="settings-row-value">{nerdInfo ? t('开') : t('关')}</span>
+      </div>
+
+      <div className="settings-row" {...repairProps}>
+        <span>{t('账号修复')}</span>
+        <span className="settings-row-value">{t('检查登录、刷新缓存与设备标识')}</span>
       </div>
 
       <div style={{ marginTop: 28, color: '#888', fontSize: 'calc(18px * var(--ui-scale))', lineHeight: 2 }}>

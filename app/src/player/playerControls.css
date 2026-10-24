@@ -27,9 +27,12 @@
     rgba(0, 0, 0, .24) 40%,
     rgba(0, 0, 0, .40) 70%,
     rgba(0, 0, 0, .58) 100%);
-  color: #f5f6f8;
-  /* Tight glyph shadows retain bright-footage legibility without a text box. */
-  text-shadow: 0 1px 2px #000, 0 0 4px rgba(0, 0, 0, .9);
+  color: #fff;
+  /* A crisp one-pixel dark edge separates white glyphs from bright footage.
+     Small directional shadows preserve the fill, unlike an inset text stroke;
+     no backdrop blur or extra opaque panel is needed. */
+  text-shadow: -1px 0 0 rgba(0, 0, 0, .9), 1px 0 0 rgba(0, 0, 0, .9),
+    0 -1px 0 rgba(0, 0, 0, .9), 0 1px 0 #000, 0 2px 3px #000;
 }
 
 /* Keep the same card geometry above/below the screen edge. Transform-only
@@ -51,6 +54,7 @@
 .player-controls-vod .player-title {
   margin-bottom: 8px;
   font-size: calc(30px * var(--ui-scale));
+  font-weight: 700;
   line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
@@ -63,8 +67,9 @@
   align-items: baseline;
   min-width: 0;
   margin-bottom: 2px;
-  color: #f0f1f4;
+  color: #fff;
   font-size: calc(18px * var(--ui-scale));
+  font-weight: 600;
   line-height: 1.45;
 }
 
@@ -83,7 +88,7 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  color: #f5f6f8;
+  color: #fff;
 }
 
 .player-controls-vod .player-author-followers {
@@ -123,18 +128,19 @@
   margin: 4px 12px 0 0;
   padding: 10px 12px;
   background: transparent;
-  color: #f5f6f8;
+  color: #fff;
   text-shadow: inherit;
 }
 
 .player-controls-vod .player-control-label {
   margin-top: 7px;
   font-size: calc(18px * var(--ui-scale));
+  font-weight: 600;
   line-height: 1.25;
 }
 
 .player-controls-vod .player-control > svg {
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .85));
+  filter: drop-shadow(0 1px 1px #000) drop-shadow(0 0 2px rgba(0, 0, 0, .9));
 }
 
 .player-controls-vod .player-control.focused > svg {
@@ -157,8 +163,9 @@
   min-width: 0;
   max-width: 100%;
   margin-top: 8px;
-  color: #f0f1f4;
+  color: #fff;
   font-size: calc(18px * var(--ui-scale));
+  font-weight: 600;
   line-height: 1.4;
 }
 
@@ -170,7 +177,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: #f5f6f8;
+  color: #fff;
   text-align: left;
   text-shadow: inherit;
   font: inherit;
@@ -182,8 +189,9 @@
   align-items: center;
   min-height: 38px;
   margin-bottom: 8px;
-  color: #f5f6f8;
+  color: #fff;
   font-size: calc(18px * var(--ui-scale));
+  font-weight: 600;
   line-height: 1.4;
 }
 
@@ -221,6 +229,7 @@
 
 .player-controls-vod .panel-tab-row > * {
   font-size: calc(18px * var(--ui-scale)) !important;
+  font-weight: 600;
   line-height: 1.35;
 }
 

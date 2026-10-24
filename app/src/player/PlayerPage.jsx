@@ -3025,7 +3025,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
               ).map(([key, label]) => (
                 <div key={key} style={{
                   padding: '6px 18px', fontSize: 18, borderRadius: 6, cursor: 'pointer',
-                  color: panelTab === key ? '#fff' : '#aaa',
+                  color: panelTab === key ? '#fff' : '#e5e7eb',
                   background: panelTab === key ? '#3b3d46' : 'rgba(255,255,255,0.08)',
                   outline: focusArea === 'tabs' && panelTab === key ? '3px solid #fff' : 'none',
                 }}

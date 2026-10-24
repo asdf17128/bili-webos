@@ -204,7 +204,7 @@ async function state(page) {
 async function openControls(page) { await page.keyboard.press('ArrowUp'); await page.waitForFunction(() => !document.querySelector('.player-controls').classList.contains('hidden')); await page.waitForTimeout(350); }
 async function focusedCard(page, index) {
   await page.waitForFunction(index => {
-    const focused = [...document.querySelectorAll('.related-card')].map((el, i) => getComputedStyle(el).outlineWidth === '4px' ? i : -1).filter(i => i >= 0);
+    const focused = [...document.querySelectorAll('.related-card')].map((el, i) => el.classList.contains('focused') ? i : -1).filter(i => i >= 0);
     return focused.length === 1 && focused[0] === index;
   }, index);
 }
@@ -274,6 +274,34 @@ for (const options of [
 });
 
 if (!baseline) {
+  await run('recommendation cards share listing appearance and extend the panel upward', {}, async f => {
+    await openControls(f.page);
+    const before = await state(f.page);
+    await f.page.keyboard.press('ArrowDown'); await f.page.waitForTimeout(450);
+    const measured = await f.page.evaluate(() => {
+      const card = document.querySelector('.related-card');
+      if (!card.querySelector('.video-card-info')) return { shared: false };
+      const holder = document.createElement('div');
+      holder.className = 'video-grid cols-4';
+      holder.style.cssText = 'position:fixed;left:-5000px;width:' + card.offsetWidth + 'px;grid-template-columns:1fr';
+      const reference = card.cloneNode(true); reference.className = 'video-card';
+      holder.appendChild(reference); document.body.appendChild(holder);
+      const properties = (el, names) => { const s=getComputedStyle(el);return names.map(n=>s[n]); };
+      const appearance = el => [properties(el,['backgroundColor','borderRadius']), ...['.video-card-thumb','.video-card-info','.video-card-title','.video-card-meta'].map(selector=>properties(el.querySelector(selector),['fontSize','lineHeight','height','padding','color']))];
+      const actual=appearance(card), expected=appearance(reference);
+      const cover=card.querySelector('.video-card-thumb').getBoundingClientRect();
+      const result={shared:true,actual,expected,cover:{width:cover.width,height:cover.height},height:card.offsetHeight};
+      holder.remove(); return result;
+    });
+    assert.ok(measured.shared, 'uses the shared listing card structure, not horizontal mini cards');
+    assert.deepEqual(measured.actual, measured.expected, 'cover, text tracks, padding, background and radius match the listing');
+    assert.ok(Math.abs(measured.cover.width/measured.cover.height-16/9)<.01, 'full-width 16:9 cover');
+    assert.ok(measured.cover.width>400 && measured.height>330, '1080p cards retain normal four-column dimensions');
+    const after=await state(f.page);
+    assert.ok(after.controls.y < before.controls.y - 500, 'two rows are revealed by raising the panel, not shrinking cards');
+    await shot(f, 'full-size-two-row-cards');
+  });
+
   await run('reopening a scrolled shelf restores a visible remote focus', {}, async f => {
     await openControls(f.page);await f.page.keyboard.press('ArrowDown');await f.page.waitForTimeout(450);
     await f.page.keyboard.press('ArrowDown');await f.page.keyboard.press('ArrowDown');await f.page.keyboard.press('ArrowDown');await f.page.waitForTimeout(450);
@@ -290,7 +318,7 @@ if (!baseline) {
     for(let i=0;i<6;i++){await f.page.mouse.wheel(0,20);await f.page.waitForTimeout(30);}
     await f.page.waitForTimeout(500);
     const scroll=await list.evaluate(el=>el.scrollTop);
-    const stride=await f.page.locator('.related-card').first().evaluate(el=>el.getBoundingClientRect().height+14);
+    const stride=await f.page.locator('.related-card').first().evaluate(el=>el.offsetHeight+(parseFloat(getComputedStyle(el.parentElement).rowGap)||24));
     assert.ok(scroll>50 && scroll<=stride+2,'small stream advances one row');
     await f.page.mouse.wheel(0,-120);await f.page.waitForTimeout(450);
     assert.equal(await list.evaluate(el=>el.scrollTop),0,'reverse returns to the top');
@@ -389,7 +417,7 @@ if (!baseline) {
     await f.page.waitForTimeout(50);
     assert.equal(await f.page.locator('.player-controls-vod').evaluate(el => el.getAnimations().length), 0, 'reduced motion skips shelf animation');
     const expanded = await state(f.page);
-    assert.ok(expanded.controls.y >= 0 && expanded.controls.bottom <= 720, 'large text shelf fits 720p');
+    assert.ok(expanded.tabs.y >= 0 && expanded.controls.bottom <= 720, 'full-sized cards and tabs fit 720p; the deck can move above the viewport');
     const list = f.page.locator('.player-related-scroll');
     const box = await list.boundingBox();
     await f.page.mouse.move(box.x + 50, box.y + 50);
@@ -421,13 +449,16 @@ if (!baseline) {
     await f.page.keyboard.press('ArrowDown'); await f.page.keyboard.press('ArrowDown');
     await f.page.waitForTimeout(350);
     const expanded = await state(f.page);
-    assert.ok(expanded.subtitle.y >= 0 && expanded.subtitle.bottom <= expanded.title.y, 'expanded recommendations keep settled subtitles above title');
+    assert.equal(expanded.subtitle, null, 'full-size recommendation browsing hides subtitles instead of cropping them at the screen edge');
     await shot(f, 'after-expanded-recommendations-' + scale);
     await f.page.keyboard.press('Escape');
     await f.page.locator('.player-recommendation-preview').waitFor();
     const collapsed = await state(f.page);
     assert.equal(collapsed.visibleControls, true, 'first Back returns from recommendations to controls');
     assert.equal(collapsed.expanded, false);
+    await f.page.waitForTimeout(450);
+    const restoredSubtitle = await state(f.page);
+    assert.ok(restoredSubtitle.subtitle.y >= 0 && restoredSubtitle.subtitle.bottom <= restoredSubtitle.title.y, 'subtitles return visibly above the deck after collapsing');
     assert.equal(collapsed.focused, '暂停');
     await f.page.keyboard.press('Escape');
     assert.equal((await state(f.page)).visibleControls, false, 'second Back returns to video');

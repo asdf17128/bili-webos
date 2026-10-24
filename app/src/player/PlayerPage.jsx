@@ -2535,6 +2535,24 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   controlsPinnedRef.current = ended || showRelated || showQuality || showSubPanel || showSpeedPanel
     || showCommentRail || focusArea === 'scrub';
   if (focusArea === 'controls' && CONTROLS[focusIdx]) lastControlRef.current = CONTROLS[focusIdx];
+  // Size the viewport from full-sized shared cards, never compress the cards
+  // to fit the old deck. Layout measurements run only on content/size changes;
+  // the expand animation itself remains transform-only.
+  useLayoutEffect(() => {
+    const el = controlsElRef.current;
+    const grid = el?.querySelector('.related-grid');
+    const card = grid?.querySelector('.related-card');
+    if (!card) return;
+    const measure = () => {
+      const gap = parseFloat(getComputedStyle(grid).rowGap) || 24;
+      el.style.setProperty('--shelf-height', `${card.offsetHeight * 2 + gap + 20}px`);
+    };
+    measure();
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null;
+    observer?.observe(card);
+    window.addEventListener('resize', measure);
+    return () => { observer?.disconnect(); window.removeEventListener('resize', measure); };
+  }, [previewVideos.length, panelTab, showCommentRail, showControls]);
   // CSS determines the shelf height (including wrapped controls). Measure only
   // layout-changing states, not each playback tick, and keep captions/previews
   // above the real shelf at 720p as well as the TV's 1080p layout.
@@ -2588,7 +2606,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         if (now - previous.at < 140) return;
         const card = list.querySelector('.related-card');
         if (!card) return;
-        const stride = card.getBoundingClientRect().height + 14;
+        const stride = card.offsetHeight + (parseFloat(getComputedStyle(card.parentElement).rowGap) || 24);
         const maximum = Math.max(0, list.scrollHeight - list.clientHeight);
         const base = continuing ? previous.target : list.scrollTop;
         const target = Math.max(0, Math.min(maximum, base + direction * stride));
@@ -2729,7 +2747,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       <DanmakuLayer danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale} paused={!playing}
         mtRef={dmMtActive ? dmMtRef : null} />
 
-      <SubtitleLayer videoRef={videoRef} cues={subCues} enabled={subLan != null}
+      <SubtitleLayer videoRef={videoRef} cues={subCues} enabled={subLan != null && !showRelated}
         lead={(isAiLan(subLan) || subLan === 'x-mt') ? AI_LEAD : 0}
         liftPixels={showControls ? controlsGeometry.lift : 0} rightInset={showCommentRail ? RAIL_W : 0} fontScale={subtitleScale} />
 
@@ -3029,36 +3047,35 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
                 </div>;
               }
               return (
-                <div className="related-grid cols-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+                <div className="related-grid video-grid cols-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 24 }}>
                   {list.map((rv, i) => {
                     const thumb = thumbUrl(rv.pic, 4);
                     const nowPlaying = panelTab === 'parts' && rv.cid === cidRef.current;
+                    const focused = focusArea === 'related' && focusIdx === i;
                     return (
-                      <div key={rv.cid || rv.bvid || i} className="related-card" onClick={() => { if (showRelated) onPlayNext?.(panelTab === 'parts' ? playPart(rv) : rv); }}
+                      <div key={rv.cid || rv.bvid || i} className={`related-card video-card${focused ? ' focused' : ''}`} role="button" aria-label={cleanTitle(rv.title)}
+                        onClick={() => { if (showRelated) onPlayNext?.(panelTab === 'parts' ? playPart(rv) : rv); }}
                         onMouseMove={() => {
                           setFocusArea('related'); setFocusIdx(i);
                           if (controlsTimer.current) clearTimeout(controlsTimer.current);
-                        }}
-                        style={{
-                          cursor: 'pointer',
-                          outline: focusArea === 'related' && focusIdx === i ? '4px solid var(--tv-focus)'
-                            : (nowPlaying ? '3px solid var(--tv-focus)' : 'none'),
-                          borderRadius: 6, overflow: 'hidden',
                         }}>
-                        <div style={{ width: '100%', height: 0, paddingTop: '56.25%', background: '#1a1a2e', borderRadius: 6, overflow: 'hidden', position: 'relative' }}>
-                          {thumb && <img src={thumb} alt="" decoding="async" loading={i < 4 ? 'eager' : 'lazy'} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
-                          {nowPlaying && <div style={{ position: 'absolute', top: 6, left: 6, background: 'var(--tv-accent)', color: '#191a1e', fontSize: 16, padding: '2px 9px', borderRadius: 4 }}>{t('▶ 播放中')}</div>}
-                          {rv.duration != null && <div style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: 16, padding: '1px 7px', borderRadius: 3 }}>
+                        <div className="video-card-thumb">
+                          {thumb && <img className="image-ready" src={thumb} alt="" decoding="async" loading={i < 8 ? 'eager' : 'lazy'} />}
+                          {!thumb && <span className="video-card-missing">{t('封面暂不可用')}</span>}
+                          {nowPlaying && <div className="video-card-live">{t('▶ 播放中')}</div>}
+                          {rv.duration != null && <span className="video-card-duration">
                             {typeof rv.duration === 'number' ? formatDuration(rv.duration) : rv.duration}
-                          </div>}
+                          </span>}
                         </div>
-                        <div style={{ padding: '6px 4px 0', fontSize: 18, color: nowPlaying ? 'var(--tv-accent)' : '#ccc', lineHeight: 1.3,
-                          overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
-                          {titleMT(cleanTitle(rv.title))}
-                        </div>
-                        <div style={{ padding: '2px 4px 6px', fontSize: 16, color: '#999',
-                          overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                          {[cleanTitle(rv.owner?.name), formatTime(rv.pubdate)].filter(Boolean).join(' · ')}
+                        <div className="video-card-info">
+                          <div className="video-card-title">{titleMT(cleanTitle(rv.title))}</div>
+                          <div className="video-card-meta">
+                            <div className="video-card-author"><span>{cleanTitle(rv.owner?.name)}</span></div>
+                            <div className="video-card-stats">
+                              {rv.stat?.view != null && <span>{formatCount(rv.stat.view)}{t('播放')}</span>}
+                              {rv.pubdate && <span>{formatTime(rv.pubdate)}</span>}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     );

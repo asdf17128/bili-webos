@@ -6,6 +6,7 @@ import { getPlaybackReport } from '../player/playbackHealth';
 import { startupReportLines } from '../player/startupTrace';
 import { getAutoCdnStatus } from '../player/cdnAuto';
 import { getErrors } from '../utils/errlog';
+import { hasPlayurlStream, playurlSummary, playurlErrorCode } from '../utils/playurlStatus';
 import { apiErrorHint } from '../utils/apiHint';
 import { storage } from '../utils/storage';
 import { BUILD_VERSION } from '../version';
@@ -114,8 +115,8 @@ export default function DiagPanel() {
       try {
         if (!probeCid) throw new Error(t('前置 view/pagelist 都失败,拿不到 cid'));
         const p = await wbiFetch('/x/player/playurl', { bvid: PROBE_BVID, cid: probeCid, qn: 16, fnval: 16 });
-        if (p && p.code === 0) push('取流 playurl', 'ok', 'code=0');
-        else push('取流 playurl', 'fail', apiErrorHint(p && p.code, { loggedIn: !!storage.getAuth()?.SESSDATA }) || ('playurl code=' + (p && p.code)));
+        if (hasPlayurlStream(p)) push('取流 playurl', 'ok', playurlSummary(p));
+        else push('取流 playurl', 'fail', playurlSummary(p) + ' ' + (apiErrorHint(playurlErrorCode(p), { loggedIn: !!storage.getAuth()?.SESSDATA }) || t('未返回可播放的视频流')));
         probeRepresentation = p?.code === 0 ? p.data?.dash?.video?.[0] : null;
       } catch (e) { push('取流 playurl', 'fail', e.message); }
 
@@ -132,7 +133,7 @@ export default function DiagPanel() {
             if (v2) representation = v2;
           } catch (e) { /* 热门视频取流失败就退回 av2 */ }
         }
-        if (!representation) throw new Error(t('前置 view/pagelist 都失败,拿不到 cid'));
+        if (!representation) throw new Error(probeCid ? 'playurl_no_media; CDN not tested' : 'missing_cid; CDN not tested');
         const urls = diagnosticUrls(representation, route);
         const base = mediaProxyBase();
         const one = async (url) => {

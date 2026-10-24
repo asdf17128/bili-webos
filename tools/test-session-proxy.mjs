@@ -77,6 +77,20 @@ const openSettings = async page => {
   await page.getByText('退出登录', { exact: true }).waitFor();
 };
 
+await run('manual identity reset is remote reachable, preserves login and reports cooldown', {upstreamReply(req,res){
+  if(!req.url.includes('/finger/spi'))return false;
+  res.setHeader('Content-Type','application/json');res.end(JSON.stringify({code:0,data:{b_3:'reset-ui-three',b_4:'reset-ui-four'}}));return true;
+}}, async ({f,page})=>{
+  await openSettings(page);
+  await page.locator('[data-focus-id="content-10-0"]').hover();
+  await page.keyboard.press('ArrowDown');await page.keyboard.press('ArrowDown');await page.keyboard.press('ArrowDown');
+  assert.match(await page.locator('.settings-row.focused').innerText(),/重置设备标识/);
+  await page.keyboard.press('Enter');await page.getByText('已重置，请重试播放',{exact:true}).waitFor();
+  assert.equal((await f.call('getCookies')).cookies.SESSDATA,fakeAuth.SESSDATA);
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('bili_auth')).buvid3),'reset-ui-three');
+  await page.keyboard.press('Enter');await page.getByText('操作过于频繁，请 5 分钟后重试',{exact:true}).waitFor();
+});
+
 await run('logout clears service, persisted disk, UI and reload', {}, async ({ f, page }) => {
   await openSettings(page);
   await page.getByText('退出登录', { exact: true }).click();

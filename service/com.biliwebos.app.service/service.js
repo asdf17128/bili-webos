@@ -101,49 +101,93 @@ function serializeCookies(cookies) {
   return Object.keys(cookies).map(function (k) { return k + '=' + cookies[k]; }).join('; ');
 }
 
-// Bootstrap the buvid3/buvid4 browser-fingerprint cookies for ANONYMOUS use.
-// B站's risk control rejects fingerprint-less API calls with -352 (and serves
-// an HTML block page on some feed endpoints) — mainly hitting overseas IPs,
-// where it made the whole app look like "nothing loads" (#10). Fetch them once
-// from finger/spi and persist alongside the login cookies. Verified via an
-// overseas (HK) exit: /x/web-interface/popular flips -352 → 0 with these set.
-function ensureBuvid(attempt) {
-  if (storedCookies['buvid3']) return;
-  function fail(err) {
-    console.error('[service] buvid fetch failed:', err.message);
-    logSvcErr('buvid', err.message);
-    // Keep the existing finite startup retry budget. The network may come up
-    // after the service; malformed/truncated bodies also need this recovery.
-    if ((attempt || 0) < 5) setTimeout(function () { ensureBuvid((attempt || 0) + 1); }, 15000);
+// Identity refresh is shared across startup, manual repair and playurl recovery.
+// Keep the old identity until a complete replacement is available. Account
+// cookies are never copied from the anonymous SPI response.
+var identityEpoch = 0;
+var identityFlight = null;
+var IDENTITY_COOLDOWN = 5 * 60 * 1000;
+var IDENTITY_STATE = path.join('/media/internal', 'bili_identity_state.json');
+var identityAttempt = 0;
+try { identityAttempt = Number(JSON.parse(fs.readFileSync(IDENTITY_STATE, 'utf-8')).attempt) || 0; } catch (e) {}
+function isIdentityCookie(key) { return key === 'buvid3' || key === 'buvid4' || key === 'b_nut'; }
+function acquireIdentity(callback) {
+  if (identityFlight) { identityFlight.push(callback); return; }
+  var listeners = identityFlight = [callback];
+  var generation = cookieGeneration;
+  var epoch = identityEpoch;
+  function finish(err) {
+    if (identityFlight === listeners) identityFlight = null;
+    listeners.forEach(function (cb) {
+      try { cb(err); } catch (e) { logSvcErr('identity-callback', 'Request no longer available'); }
+    });
   }
   upstreamRequest(https.request.bind(https), {
     hostname: 'api.bilibili.com', port: 443, path: '/x/frontend/finger/spi', method: 'GET',
     headers: {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       'Referer': 'https://www.bilibili.com/'
-    },
-    rejectUnauthorized: false,
-    agent: keepAliveAgent
+    }, rejectUnauthorized: false, agent: keepAliveAgent
   }, null, function (err, res) {
-    if (err) { fail(err); return; }
+    if (err) { finish(err); return; }
     decompressResponse(res, function (err, body) {
-      if (err) { fail(err); return; }
-      if (res.statusCode !== 200) { fail(new Error('Fingerprint HTTP ' + res.statusCode)); return; }
+      if (err) { finish(err); return; }
+      if (generation !== cookieGeneration || epoch !== identityEpoch) { finish(new Error('Account session changed')); return; }
+      if (res.statusCode !== 200) { finish(new Error('Fingerprint HTTP ' + res.statusCode)); return; }
       var j;
-      try { j = JSON.parse(body.toString('utf-8')); }
-      catch (e) { fail(new Error('Invalid fingerprint response')); return; }
+      try { j = JSON.parse(body.toString('utf-8')); } catch (e) { finish(new Error('Invalid fingerprint response')); return; }
       if (!j || j.code !== 0 || !j.data || typeof j.data.b_3 !== 'string' || !j.data.b_3) {
-        fail(new Error('Fingerprint response has no usable buvid')); return;
+        finish(new Error('Fingerprint response has no usable buvid')); return;
       }
-      storedCookies['buvid3'] = j.data.b_3;
-      if (j.data.b_4) storedCookies['buvid4'] = j.data.b_4;
-      if (!storedCookies['b_nut']) storedCookies['b_nut'] = String(Math.floor(Date.now() / 1000));
-      saveCookies();
-      console.log('[service] buvid bootstrapped');
+      var next = { buvid3: j.data.b_3 };
+      if (typeof j.data.b_4 === 'string' && j.data.b_4) next.buvid4 = j.data.b_4;
+      (res.headers['set-cookie'] || []).forEach(function (sc) {
+        var pair = sc.split(';')[0], eq = pair.indexOf('=');
+        if (pair.slice(0, eq).trim() === 'b_nut') next.b_nut = pair.slice(eq + 1).trim();
+      });
+      var previous = storedCookies;
+      storedCookies = {};
+      Object.keys(previous).forEach(function (key) { if (!isIdentityCookie(key)) storedCookies[key] = previous[key]; });
+      Object.keys(next).forEach(function (key) { storedCookies[key] = next[key]; });
+      if (!saveCookies()) { storedCookies = previous; finish(new Error('Could not persist device identity')); return; }
+      identityEpoch++;
+      finish(null);
     });
-  }, 10000);
+  }, 8000);
+}
+function refreshIdentity(callback) {
+  if (identityFlight) { acquireIdentity(callback); return; }
+  var now = Date.now();
+  if (identityAttempt && now - identityAttempt < IDENTITY_COOLDOWN) {
+    callback(new Error('Device identity cooldown; retry after 5 minutes')); return;
+  }
+  // Persist failed attempts too: restarting the service must not evade cooldown.
+  try { fs.writeFileSync(IDENTITY_STATE, JSON.stringify({ attempt: now })); }
+  catch (e) { callback(new Error('Could not persist identity cooldown')); return; }
+  identityAttempt = now;
+  acquireIdentity(callback);
+}
+function ensureBuvid(attempt) {
+  if (storedCookies.buvid3) return;
+  acquireIdentity(function (err) {
+    if (!err) return;
+    console.error('[service] buvid fetch failed:', err.message);
+    logSvcErr('buvid', err.message);
+    if ((attempt || 0) < 5) setTimeout(function () { ensureBuvid((attempt || 0) + 1); }, 15000);
+  });
 }
 ensureBuvid(0);
+
+function isPlaybackRisk(parsed, method, response) {
+  if (parsed.hostname !== 'api.bilibili.com' || (method && method !== 'GET')) return false;
+  if (!/^\/(x\/player\/(wbi\/)?playurl|pgc\/player\/web\/playurl)$/.test(parsed.pathname)) return false;
+  var j;
+  try { j = JSON.parse(response.toString('utf-8')); } catch (e) { return false; }
+  if (!j) return false;
+  var data = j.data || j.result || {};
+  var hasStream = (data.dash && data.dash.video && data.dash.video.length) || (data.durl && data.durl.length);
+  return j.code === -351 || j.code === -352 || (j.code === 0 && !!data.v_voucher && !hasStream);
+}
 
 function isAllowedHost(host) {
   var allowed = [
@@ -181,6 +225,7 @@ function isBiliHost(host) {
 // and trigger Shaka's "Payload length does not match range requested bytes".
 function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity, callback) {
   var generation = cookieGeneration;
+  var requestIdentity = identityEpoch;
   var hostname = parsedUrl.hostname;
   var port = parsedUrl.port ? parseInt(parsedUrl.port) : 443;
   var isCDN = hostname.indexOf('bilivideo') >= 0 || hostname.indexOf('akamaized') >= 0;
@@ -225,7 +270,8 @@ function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity,
         var parts = sc.split(';')[0];
         var eqIdx = parts.indexOf('=');
         if (eqIdx > 0) {
-          storedCookies[parts.substring(0, eqIdx).trim()] = parts.substring(eqIdx + 1).trim();
+          var key = parts.substring(0, eqIdx).trim();
+          if (!isIdentityCookie(key) || requestIdentity === identityEpoch) storedCookies[key] = parts.substring(eqIdx + 1).trim();
         }
       });
       saveCookies();
@@ -358,34 +404,65 @@ service.register('fetch', function (message) {
     message.respond({ returnValue: false, error: 'Host not allowed' }); return;
   }
 
-  requestFollow(parsed, message.payload.method, message.payload.body,
-    message.payload.contentType, message.payload.range, 0, function (err, res) {
-      if (err) { message.respond({ returnValue: false, error: err.message }); return; }
+  function request(retried) {
+    var requestIdentity = identityEpoch;
+    requestFollow(parsed, message.payload.method, message.payload.body,
+      message.payload.contentType, message.payload.range, 0, function (err, res) {
+        if (err) { message.respond({ returnValue: false, error: err.message }); return; }
 
-      decompressResponse(res, function (bodyError, data) {
-        if (generation !== cookieGeneration) {
-          message.respond({ returnValue: false, error: 'Account session changed' }); return;
-        }
-        if (bodyError) {
-          logSvcErr('body:' + parsed.hostname, bodyError.message);
-          message.respond({ returnValue: false, error: bodyError.message });
-          return;
-        }
-        var ct = res.headers['content-type'] || '';
-        if (ct.indexOf('json') >= 0 || ct.indexOf('text') >= 0 || ct.indexOf('xml') >= 0) {
-          message.respond({
-            returnValue: true, status: res.statusCode, contentType: ct,
-            body: data.toString('utf-8'),
-            newCookies: storedCookies
-          });
-        } else {
-          message.respond({
-            returnValue: true, status: res.statusCode, contentType: ct,
-            bodyBase64: data.toString('base64'), bodyLength: data.length
-          });
-        }
+        decompressResponse(res, function (bodyError, data) {
+          if (generation !== cookieGeneration) {
+            message.respond({ returnValue: false, error: 'Account session changed' }); return;
+          }
+          if (bodyError) {
+            logSvcErr('body:' + parsed.hostname, bodyError.message);
+            message.respond({ returnValue: false, error: bodyError.message });
+            return;
+          }
+          if (!retried && res.statusCode === 200 && isPlaybackRisk(parsed, message.payload.method, data)) {
+            function recovered(err) {
+              if (generation !== cookieGeneration) { message.respond({ returnValue: false, error: 'Account session changed' }); return; }
+              if (!err) { request(true); return; }
+              logSvcErr('identity-recovery', err.message);
+              respond();
+            }
+            if (requestIdentity !== identityEpoch) recovered(null);
+            else refreshIdentity(recovered);
+            return;
+          }
+          respond();
+          function respond() {
+            var ct = res.headers['content-type'] || '';
+            if (ct.indexOf('json') >= 0 || ct.indexOf('text') >= 0 || ct.indexOf('xml') >= 0) {
+              message.respond({
+                returnValue: true, status: res.statusCode, contentType: ct,
+                body: data.toString('utf-8'),
+                newCookies: storedCookies
+              });
+            } else {
+              message.respond({
+                returnValue: true, status: res.statusCode, contentType: ct,
+                bodyBase64: data.toString('base64'), bodyLength: data.length
+              });
+            }
+          }
+        });
       });
-    });
+  }
+  request(false);
+});
+
+service.register('ensureDeviceIdentity', function (message) {
+  if (storedCookies.buvid3) { message.respond({ returnValue: true, cookies: storedCookies }); return; }
+  acquireIdentity(function (err) {
+    message.respond(err ? { returnValue: false, error: err.message } : { returnValue: true, cookies: storedCookies });
+  });
+});
+
+service.register('resetDeviceIdentity', function (message) {
+  refreshIdentity(function (err) {
+    message.respond(err ? { returnValue: false, error: err.message } : { returnValue: true, cookies: storedCookies });
+  });
 });
 
 service.register('getCookies', function (message) {
@@ -394,6 +471,8 @@ service.register('getCookies', function (message) {
 
 service.register('setCookies', function (message) {
   var c = message.payload.cookies || {};
+  if (c.SESSDATA && c.SESSDATA !== storedCookies.SESSDATA) cookieGeneration++;
+  if (Object.keys(c).some(function (key) { return isIdentityCookie(key) && c[key] !== storedCookies[key]; })) identityEpoch++;
   Object.keys(c).forEach(function (k) { storedCookies[k] = c[k]; });
   saveCookies();
   message.respond({ returnValue: true });
@@ -451,7 +530,7 @@ service.register('danmakuSubscribe', function (message) {
     var dedeUid = parseInt(storedCookies['DedeUserID'] || '0', 10) || 0;
     danmakuStop = danmakuRelay.connectDanmaku({
       host: p.host, port: p.port, roomid: p.roomid, token: p.token,
-      buvid: p.buvid, uid: dedeUid, cookie: serializeCookies(storedCookies),
+      buvid: storedCookies.buvid3 || p.buvid, uid: dedeUid, cookie: serializeCookies(storedCookies),
     }, broadcastDanmaku);
   }
   message.respond({ returnValue: true, subscribed: true });

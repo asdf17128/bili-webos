@@ -10,6 +10,14 @@ This log collects the release history previously included in the README. For ear
 
 <a id="unreleased"></a>
 
+## v2.4.1 — playback verification recovery / 播放风控恢复
+
+- 针对 #50、#51、#52：UGC、WBI、PGC 取流遇到 `-351` / `-352`，或只有 `v_voucher` 而没有视频流时，尝试刷新匿名设备标识后重试一次。并发共享一次刷新，5 分钟冷却写入磁盘，失败不清空原标识或登录。
+- 设置新增「重置设备标识」，保留账号登录。电视上的标识统一由服务管理，直播使用服务当前标识。
+- 修复诊断导出只剩 “B”、取流失败误报缺少 cid，以及 `code=0` 但只有 voucher 被误判成功。报告只记录 voucher 有无，不导出其内容。
+- Adds bounded device-identity recovery and a manual reset that preserves login. Diagnostics retain API codes and voucher presence, distinguish missing media from missing video metadata, and never export voucher contents.
+- 限制：这是设备标识相关故障的恢复措施，不保证解除账号、地区或运营商限制；报告者原设备仍需复验。
+
 ## v2.4.0 — premium playback and stability / 会员播放与稳定性
 
 ### 播放信息

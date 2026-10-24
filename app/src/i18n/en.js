@@ -2,6 +2,14 @@
 // ADDING A LANGUAGE: copy this file to <code>.js, translate values, register
 // it in index.js DICTS. That's all.
 export default {
+  "重置设备标识": "Reset device identity",
+  "正在重置…": "Resetting…",
+  "已重置，请重试播放": "Reset complete. Retry playback.",
+  "操作过于频繁，请 5 分钟后重试": "Please wait 5 minutes before retrying.",
+  "重置失败，请稍后重试": "Reset failed. Please try later.",
+  "保留登录，用于播放风控排查": "Keep login; repair playback verification",
+  "未返回可播放的视频流": "No playable video stream returned",
+
   "Nerd 信息": "Nerd info",
   "分辨率": "Resolution",
   "视频编码": "Video codec",

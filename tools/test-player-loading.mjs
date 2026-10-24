@@ -72,6 +72,7 @@ async function run(name, mode, fn, scale) {
   if(u.pathname.endsWith('/nav'))data={...(mode.startsWith('member-')?{isLogin:true,uname:'Member fixture',mid:1,vipStatus:1,vipType:2}:{}),wbi_img:{img_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png',sub_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png'}};
   if(u.pathname.endsWith('/view')){calls.info++;calls.events.push({type:'view',at:Date.now()});if(mode==='slow-info')await new Promise(r=>setTimeout(r,1200));data={aid:1,cid:2,bvid:'BVtest',pages:mode==='startup-part'?[{cid:2},{cid:3}]:[{cid:2}],title:mode.startsWith('layout')?'日本有钱人的小别墅能有多离谱！超迷你设计成这样就问你敢住吗':'加载回归',owner:{mid:1,name:mode.startsWith('layout')?'11区小豪的故事':'测试'},pubdate:1790323200,stat:{}};}
   if(u.pathname.endsWith('/playurl')){
+    if(mode==='risk-voucher') { calls.playurl++; return route.fulfill({json:{code:0,data:{v_voucher:'private'}}}); }
     calls.playurl++;(calls.requestedQualities||(calls.requestedQualities=[])).push(Number(u.searchParams.get('qn')));calls.events.push({type:'playurl',cid:u.searchParams.get('cid'),at:Date.now()});if(mode.startsWith('startup'))await new Promise(r=>setTimeout(r,500));
     const qn=mode==='quality-restore'||mode.startsWith('native-speed')?Number(u.searchParams.get('qn')||80):mode==='resolution-8k'?127:mode==='codec-fallback'?120:mode.startsWith('dolby')?126:80;
     data={quality:qn,accept_quality:[qn,16],dash:{duration:100,video:[{id:qn,bandwidth:1000,baseUrl:'https://media.bilivideo.com/video',codecs:qn===126?'hvc1.2.4.L156.90':'avc1.640028',width:1920,height:1080,frameRate:mode==='dolby-120'?'120000/1001':mode==='dolby-unknown'?'':'60000/1001',SegmentBase:{Initialization:'0-51',indexRange:'52-70'}}],audio:[]}};
@@ -693,6 +694,11 @@ await run('member full quality ladder scrolls with remote at large UI size','mem
  assert.match(bounds.text,/360P/);assert.ok(bounds.top>=bounds.parentTop&&bounds.bottom<=bounds.parentBottom+1&&bounds.parentTop>=0,JSON.stringify(bounds));
  await page.screenshot({path:output+'/member-quality-menu.png'});
 },{ui:1.25});
+await run('voucher-only playurl shows risk error without decoder or retry loop','risk-voucher',async(page,calls)=>{
+ await open(page);await page.waitForSelector('.player-error');
+ assert.match(await page.locator('.player-error').innerText(),/风控/);
+ assert.equal(calls.playurl,1);assert.equal(await page.evaluate(()=>window.__probe.loads),0);
+});
 await run('Nerd info defaults hidden and keeps everyday quality controls','premium',async page=>{
  await open(page);await page.waitForFunction(()=>window.__probe.loads===1&&!document.querySelector('.loading'));
  await page.keyboard.press('ArrowUp');

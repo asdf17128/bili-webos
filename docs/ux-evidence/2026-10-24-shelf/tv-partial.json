@@ -1,0 +1,61 @@
+[
+  {
+    "name": "account repair reachable by remote",
+    "pass": true
+  },
+  {
+    "name": "real service account check completes",
+    "pass": true
+  },
+  {
+    "name": "repair confirmation defaults to Cancel and states five-minute cooldown",
+    "pass": true
+  },
+  {
+    "name": "recommendation card focused",
+    "pass": true
+  },
+  {
+    "name": "recommendation exposes video and creator feedback",
+    "pass": true
+  },
+  {
+    "name": "video feedback waits for fresh confirmation",
+    "pass": true
+  },
+  {
+    "name": "creator feedback also defaults to Return",
+    "pass": true
+  },
+  {
+    "name": "public follower count visible on TV",
+    "pass": true
+  },
+  {
+    "name": "controls fit screen and retain transparent base",
+    "pass": true,
+    "detail": {
+      "width": 1920,
+      "bottom": 1080,
+      "height": 1080,
+      "background": "rgba(0, 0, 0, 0)",
+      "progress": 6
+    }
+  },
+  {
+    "name": "remote expands half-screen shelf with intermediate animation frames",
+    "pass": false,
+    "detail": {
+      "expanded": true,
+      "height": 632.28125,
+      "viewport": 1080,
+      "travel": 254.6875,
+      "intermediate": 1
+    }
+  },
+  {
+    "name": "suite completion",
+    "pass": false,
+    "error": "remote expands half-screen shelf with intermediate animation frames"
+  }
+]

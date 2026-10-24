@@ -274,6 +274,66 @@ for (const options of [
 });
 
 if (!baseline) {
+  for (const input of ['wheel', 'remote']) await run('smooth shelf expansion ' + input, {}, async f => {
+    await openControls(f.page);
+    const before = await state(f.page);
+    await f.page.evaluate(() => {
+      window.__shelfFrames = [];
+      const start = performance.now();
+      const sample = () => {
+        const el = document.querySelector('.player-controls-vod');
+        window.__shelfFrames.push({ t: performance.now() - start, top: el.getBoundingClientRect().top });
+        if (performance.now() - start < 700) requestAnimationFrame(sample);
+      };
+      requestAnimationFrame(sample);
+    });
+    if (input === 'wheel') {
+      await f.page.mouse.move(before.title.x + 80, before.title.y + 10);
+      await f.page.mouse.wheel(0, 120);
+    } else await f.page.keyboard.press('ArrowDown');
+    await f.page.waitForTimeout(750);
+    const after = await state(f.page);
+    assert.equal(after.expanded, true, 'Down expands recommendations');
+    assert.ok(after.controls.y < before.controls.y - 100, 'shelf moves upward');
+    assert.ok(after.controls.height >= 1080 * .45, 'expanded shelf occupies roughly half the screen');
+    const frames = await f.page.evaluate(() => window.__shelfFrames);
+    assert.ok(frames.filter(x => x.top < before.controls.y - 5 && x.top > after.controls.y + 5).length >= 3, 'multiple intermediate frames, not a height jump');
+    assert.equal(after.media.paused, before.media.paused, 'expansion preserves playback');
+    await shot(f, 'smooth-expanded-' + input);
+    await f.page.keyboard.press('Escape');
+    await f.page.waitForTimeout(350);
+    assert.equal((await state(f.page)).expanded, false, 'Back collapses shelf');
+  });
+  await run('shelf rapid reversal and reduced motion', { width: 1280, height: 720, scale: 1.25 }, async f => {
+    await openControls(f.page);
+    await f.page.keyboard.press('ArrowDown');
+    await f.page.waitForTimeout(60);
+    const mid = await state(f.page);
+    await f.page.keyboard.press('Escape');
+    const reversing = await state(f.page);
+    assert.ok(Math.abs(mid.controls.y - reversing.controls.y) < 70, 'reversal starts from the current visual position');
+    await f.page.waitForTimeout(350);
+    assert.equal((await state(f.page)).expanded, false);
+    await f.page.emulateMedia({ reducedMotion: 'reduce' });
+    await f.page.keyboard.press('ArrowDown');
+    await f.page.waitForTimeout(50);
+    assert.equal(await f.page.locator('.player-controls-vod').evaluate(el => el.getAnimations().length), 0, 'reduced motion skips shelf animation');
+    const expanded = await state(f.page);
+    assert.ok(expanded.controls.y >= 0 && expanded.controls.bottom <= 720, 'large text shelf fits 720p');
+    const list = f.page.locator('.player-related-scroll');
+    const box = await list.boundingBox();
+    await f.page.mouse.move(box.x + 50, box.y + 50);
+    await f.page.mouse.wheel(0, 240);
+    await f.page.waitForTimeout(300);
+    assert.ok(await list.evaluate(el => el.scrollTop > 0), 'expanded list still scrolls');
+    await f.page.mouse.wheel(0, -240);
+    await f.page.waitForTimeout(300);
+    assert.equal((await state(f.page)).expanded, true, 'scrolling up through content does not collapse early');
+    await f.page.mouse.wheel(0, -120);
+    await f.page.waitForTimeout(300);
+    assert.equal((await state(f.page)).expanded, false, 'wheel up at the beginning collapses');
+  });
+
   for (const scale of [1, 1.4]) await run('remote Down Up Back navigation scale=' + scale, { background: 'dark', scale }, async f => {
     await f.page.waitForTimeout(700); await openControls(f.page);
     await f.page.keyboard.press('ArrowDown');

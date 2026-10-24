@@ -216,6 +216,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   const [focusIdx, setFocusIdx] = useState(0);
   const controlsTimer = useRef(null);
   const controlsElRef = useRef(null), progressElRef = useRef(null);
+  const shelfMotionRef = useRef(null), shelfStartTopRef = useRef(null);
   const controlsPinnedRef = useRef(false), lastControlRef = useRef('play');
   const [controlsGeometry, setControlsGeometry] = useState({ lift: 190, progressBottom: 104 });
   const timeUpdateRef = useRef(null);
@@ -1578,18 +1579,26 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     hideControlsLater();
   }, [hideControlsLater]);
 
+  const captureShelfPosition = useCallback(() => {
+    const el = controlsElRef.current;
+    shelfStartTopRef.current = el ? el.getBoundingClientRect().top : null;
+    if (shelfMotionRef.current) shelfMotionRef.current.cancel();
+    shelfMotionRef.current = null;
+  }, []);
   const openRelatedPanel = useCallback(() => {
+    captureShelfPosition();
     setShowRelated(true);
     setFocusArea('tabs');
     if (controlsTimer.current) clearTimeout(controlsTimer.current);
-  }, []);
+  }, [captureShelfPosition]);
   const closeRelatedPanel = useCallback(() => {
+    captureShelfPosition();
     setShowRelated(false);
     setFocusArea('controls');
     setFocusIdx(Math.max(0, controlsRef.current.indexOf(lastControlRef.current)));
     if (controlsElRef.current) controlsElRef.current.scrollTop = 0;
     hideControlsLater();
-  }, [hideControlsLater]);
+  }, [hideControlsLater, captureShelfPosition]);
 
   // ===== 点赞 / 投币 / 收藏 / 长按三连 =====
   // 点赞: toggleable (like=1 赞, like=2 取消) — B站 app behavior.
@@ -2535,6 +2544,42 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     return () => window.removeEventListener('resize', measure);
   }, [showControls, showRelated, videoTitle, metaOwner, metaPubdate, argueMsg, aigcMsg, authorFollowers,
     loggedIn, subTracks.length, follow.available, follow.label, showCommentRail, previewVideos.length, currentQuality, currentSpeed, subLan]);
+
+  // FLIP the bottom-anchored shelf: animate only its transform, not every
+  // card's layout. Geometry above is measured at the final resting position.
+  useLayoutEffect(() => {
+    const el = controlsElRef.current, start = shelfStartTopRef.current;
+    shelfStartTopRef.current = null;
+    if (!el || start == null || !showControls || !el.animate
+      || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const delta = start - el.getBoundingClientRect().top;
+    if (Math.abs(delta) < 1) return;
+    const motion = el.animate([
+      { transform: `translateY(${delta}px)` }, { transform: 'translateY(0)' },
+    ], { duration: 280, easing: 'cubic-bezier(.22, .7, .25, 1)' });
+    shelfMotionRef.current = motion;
+    motion.onfinish = () => { if (shelfMotionRef.current === motion) shelfMotionRef.current = null; };
+  }, [showRelated, showControls]);
+  useEffect(() => () => { if (shelfMotionRef.current) shelfMotionRef.current.cancel(); }, []);
+
+  // The feed's global wheel handler deliberately yields to the player. Own
+  // the shelf gesture here, leaving the expanded list's native scrolling intact.
+  useEffect(() => {
+    const el = controlsElRef.current;
+    if (!el) return;
+    const wheel = event => {
+      if (!showControls || showQuality || showSubPanel || showSpeedPanel || !event.deltaY) return;
+      if (shelfMotionRef.current) { event.preventDefault(); return; }
+      const list = el.querySelector('.player-related-scroll');
+      if (!showRelated && event.deltaY > 0) {
+        event.preventDefault(); openRelatedPanel();
+      } else if (showRelated && event.deltaY < 0 && (!list || list.scrollTop <= 0)) {
+        event.preventDefault(); closeRelatedPanel();
+      }
+    };
+    el.addEventListener('wheel', wheel, { passive: false });
+    return () => el.removeEventListener('wheel', wheel);
+  }, [showControls, showRelated, showQuality, showSubPanel, showSpeedPanel, openRelatedPanel, closeRelatedPanel]);
 
   // Magic Remote: waving the pointer must summon the controls bar (the D-pad
   // path was the only way in). Throttled; ignored while a panel/end screen has

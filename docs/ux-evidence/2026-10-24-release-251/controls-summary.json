@@ -1,0 +1,166 @@
+{
+  "sources": {
+    "app/src/player/PlayerPage.jsx": "d6c7d0af53aff01181437d958a0fb35f3ff4921d65ea5b8ef7f91d5d8d41ac50",
+    "app/src/player/SubtitleLayer.jsx": "130b03b27e3bad26493978ccc298afe98f5c8b508e955ec427fc68ddf63119f5",
+    "app/src/player/playerControls.css": "6bf70d1e5e4696e502407c3d030178233c62cd4a89af43f8c228c37414913f63",
+    "app/src/styles.css": "b49c576f332b2be376a8428530a115270314e843c7075e57c00ec5df5976ef93",
+    "app/src/tv-design.css": "e627de8ab6c756b9eb9e3f267e74f1b5bfa635c8148559d223ddfea671753cc1",
+    "app/src/hooks/useAuthorFollowers.js": "3fc6805b08055604da1259cab330c34ac4344cd05e652f4c80b702eedd6e482b",
+    "app/src/utils/authorFollowers.js": "aed07affbf7392fc6e3fbbc99fdee2af39982b241be98295db7b8ea376c203f3"
+  },
+  "sourcesStable": true,
+  "results": [
+    {
+      "name": "scene transparency coast",
+      "pass": true
+    },
+    {
+      "name": "scene transparency window",
+      "pass": true
+    },
+    {
+      "name": "visual 1920x1080 dark scale=1",
+      "pass": true
+    },
+    {
+      "name": "visual 1920x1080 light scale=1",
+      "pass": true
+    },
+    {
+      "name": "visual 1280x720 dark scale=1",
+      "pass": true
+    },
+    {
+      "name": "visual 1280x720 light scale=1",
+      "pass": true
+    },
+    {
+      "name": "visual 1920x1080 light scale=1.4",
+      "pass": true
+    },
+    {
+      "name": "visual 1280x720 light scale=1.25",
+      "pass": true
+    },
+    {
+      "name": "recommendation cards share listing appearance and extend the panel upward",
+      "pass": true
+    },
+    {
+      "name": "reopening a scrolled shelf restores a visible remote focus",
+      "pass": true
+    },
+    {
+      "name": "small wheel deltas accumulate without skipping multiple rows",
+      "pass": true
+    },
+    {
+      "name": "recommendation row scrolling animates remote",
+      "pass": true
+    },
+    {
+      "name": "recommendation row scrolling animates wheel",
+      "pass": true
+    },
+    {
+      "name": "expanded shelf shows two full rows without per-frame layout resizing 1080",
+      "pass": true
+    },
+    {
+      "name": "expanded shelf shows two full rows without per-frame layout resizing 720",
+      "pass": true
+    },
+    {
+      "name": "shelf animation under six-fold CPU slowdown",
+      "pass": true
+    },
+    {
+      "name": "recommendation cards remain continuous while opening and closing",
+      "pass": true
+    },
+    {
+      "name": "smooth shelf expansion wheel",
+      "pass": true
+    },
+    {
+      "name": "smooth shelf expansion remote",
+      "pass": true
+    },
+    {
+      "name": "shelf rapid reversal and reduced motion",
+      "pass": true
+    },
+    {
+      "name": "remote Down Up Back navigation scale=1",
+      "pass": true
+    },
+    {
+      "name": "remote Down Up Back navigation scale=1.4",
+      "pass": true
+    },
+    {
+      "name": "auto hide pause play and expanded shelf persistence",
+      "pass": true
+    },
+    {
+      "name": "deferred seek cancel commit and pointer progress",
+      "pass": true
+    },
+    {
+      "name": "subtitle popup and long press stay reachable",
+      "pass": true
+    },
+    {
+      "name": "quality popup returns to its control and keeps media state",
+      "pass": true
+    },
+    {
+      "name": "pointer preview expands existing recommendation shelf",
+      "pass": true
+    },
+    {
+      "name": "recommendation empty has no invented preview and remains navigable",
+      "pass": true
+    },
+    {
+      "name": "recommendation loading has no invented preview and remains navigable",
+      "pass": true
+    },
+    {
+      "name": "recommendation failure has no invented preview and remains navigable",
+      "pass": true
+    },
+    {
+      "name": "follower count stays with the control deck throughout hide and reopen",
+      "pass": true
+    },
+    {
+      "name": "author followers 0",
+      "pass": true
+    },
+    {
+      "name": "author followers 125678",
+      "pass": true
+    },
+    {
+      "name": "author followers unknown",
+      "pass": true
+    },
+    {
+      "name": "author followers failure",
+      "pass": true
+    },
+    {
+      "name": "long author small viewport light",
+      "pass": true
+    },
+    {
+      "name": "long author small viewport dark",
+      "pass": true
+    },
+    {
+      "name": "720 large text comment rail preserves control navigation",
+      "pass": true
+    }
+  ]
+}

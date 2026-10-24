@@ -1,0 +1,2645 @@
+[
+  {
+    "event": {
+      "type": "keydown",
+      "key": "ArrowDown",
+      "trusted": true,
+      "at": 12945.30000000447
+    },
+    "frames": [
+      {
+        "ms": 0.5,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 40,
+        "top": 688.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": [
+          {
+            "time": 0,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 81.39999999850988,
+        "top": 688.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": [
+          {
+            "time": 0,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 113.79999999701977,
+        "top": 668.640869140625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 93.765380859375,
+        "animations": [
+          {
+            "time": 16.711999995459692,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 257.69999999552965,
+        "top": 218.4394073486328,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 150.0119999954599,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 312.5,
+        "top": 120.76802825927734,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.87496948242188,
+        "animations": [
+          {
+            "time": 200.01199999545884,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 367.19999999552965,
+        "top": 50.96775817871094,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 266.61199999545994,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 610.1999999955297,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 762.2999999970198,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 815.6999999955297,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 849.0999999940395,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 912.0999999940395,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      }
+    ],
+    "expanded": true,
+    "top": 22.40625,
+    "height": 1057.59375,
+    "viewport": 1080,
+    "headingTop": 278,
+    "rows": [
+      {
+        "top": 340,
+        "bottom": 692.875
+      },
+      {
+        "top": 340,
+        "bottom": 692.875
+      },
+      {
+        "top": 340,
+        "bottom": 692.875
+      },
+      {
+        "top": 340,
+        "bottom": 692.875
+      },
+      {
+        "top": 716.875,
+        "bottom": 1069.75
+      },
+      {
+        "top": 716.875,
+        "bottom": 1069.75
+      },
+      {
+        "top": 716.875,
+        "bottom": 1069.75
+      },
+      {
+        "top": 716.875,
+        "bottom": 1069.75
+      }
+    ],
+    "media": {
+      "width": 3840,
+      "time": 8.28,
+      "paused": false
+    },
+    "input": "keydown",
+    "targetExpanded": true,
+    "intermediate": 4,
+    "continuous": true,
+    "pass": true
+  },
+  {
+    "event": {
+      "type": "keydown",
+      "key": "GoBack",
+      "trusted": true,
+      "at": 14671.60000000149
+    },
+    "frames": [
+      {
+        "ms": 1.7000000029802322,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 67.60000000149012,
+        "top": 22.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 0,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 123.10000000149012,
+        "top": 22.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 0,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 194.39999999850988,
+        "top": 197.0057830810547,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 66.74999999826525,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 340.79999999701977,
+        "top": 562.8632202148438,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 199.54302978515625,
+        "animations": [
+          {
+            "time": 183.34999999826528,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 383,
+        "top": 631.7510986328125,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 130.6551513671875,
+        "animations": [
+          {
+            "time": 233.34999999826601,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 417.6000000014901,
+        "top": 669.8324584960938,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 92.57379150390625,
+        "animations": [
+          {
+            "time": 283.34999999826493,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 610.6000000014901,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 675.2999999970198,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 797.1000000014901,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 814,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 855.3999999985099,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 893.2000000029802,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 953.8999999985099,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      }
+    ],
+    "expanded": false,
+    "top": 688.40625,
+    "height": 1057.59375,
+    "viewport": 1080,
+    "headingTop": 944,
+    "rows": [
+      {
+        "top": 1006,
+        "bottom": 1358.875
+      },
+      {
+        "top": 1006,
+        "bottom": 1358.875
+      },
+      {
+        "top": 1006,
+        "bottom": 1358.875
+      },
+      {
+        "top": 1006,
+        "bottom": 1358.875
+      },
+      {
+        "top": 1382.875,
+        "bottom": 1735.75
+      },
+      {
+        "top": 1382.875,
+        "bottom": 1735.75
+      },
+      {
+        "top": 1382.875,
+        "bottom": 1735.75
+      },
+      {
+        "top": 1382.875,
+        "bottom": 1735.75
+      }
+    ],
+    "media": {
+      "width": 3840,
+      "time": 10.24,
+      "paused": false
+    },
+    "input": "keydown",
+    "targetExpanded": false,
+    "intermediate": 4,
+    "continuous": true,
+    "pass": true
+  },
+  {
+    "event": {
+      "type": "keydown",
+      "key": "ArrowDown",
+      "trusted": true,
+      "at": 16327.60000000149
+    },
+    "frames": [
+      {
+        "ms": 0.10000000149011612,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 37.29999999701977,
+        "top": 688.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": [
+          {
+            "time": 0,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 61.899999998509884,
+        "top": 688.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": [
+          {
+            "time": 0,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 88.89999999850988,
+        "top": 668.8587646484375,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 93.5474853515625,
+        "animations": [
+          {
+            "time": 16.579999995453676,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 206.29999999701977,
+        "top": 218.5189666748047,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 149.97999999545186,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 245.20000000298023,
+        "top": 147.89596557617188,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.87503051757812,
+        "animations": [
+          {
+            "time": 183.37999999545218,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 285.8999999985099,
+        "top": 97.9931640625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 216.67999999545273,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 374,
+        "top": 33.42023849487305,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 299.979999995454,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 559.1000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 598.6000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 639.1000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 670.2999999970198,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 704.3999999985099,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 728.5,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 762.7000000029802,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 865.1000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 951,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      }
+    ],
+    "expanded": true,
+    "top": 22.40625,
+    "height": 1057.59375,
+    "viewport": 1080,
+    "headingTop": 278,
+    "rows": [
+      {
+        "top": 340,
+        "bottom": 692.875
+      },
+      {
+        "top": 340,
+        "bottom": 692.875
+      },
+      {
+        "top": 340,
+        "bottom": 692.875
+      },
+      {
+        "top": 340,
+        "bottom": 692.875
+      },
+      {
+        "top": 716.875,
+        "bottom": 1069.75
+      },
+      {
+        "top": 716.875,
+        "bottom": 1069.75
+      },
+      {
+        "top": 716.875,
+        "bottom": 1069.75
+      },
+      {
+        "top": 716.875,
+        "bottom": 1069.75
+      }
+    ],
+    "media": {
+      "width": 3840,
+      "time": 11.62,
+      "paused": false
+    },
+    "input": "keydown",
+    "targetExpanded": true,
+    "intermediate": 5,
+    "continuous": true,
+    "pass": true
+  },
+  {
+    "event": {
+      "type": "keydown",
+      "key": "GoBack",
+      "trusted": true,
+      "at": 17966
+    },
+    "frames": [
+      {
+        "ms": 0.30000000447034836,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 65.10000000149012,
+        "top": 22.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 0,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 143.80000000447035,
+        "top": 22.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 0,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 228.89999999850988,
+        "top": 196.5812225341797,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 66.64799999955662,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 365.30000000447035,
+        "top": 590.0982055664062,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 172.30804443359375,
+        "animations": [
+          {
+            "time": 200.0479999995548,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 402.8999999985099,
+        "top": 659.8689575195312,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 102.53729248046875,
+        "animations": [
+          {
+            "time": 266.6479999995559,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 493.20000000298023,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 502.6000000014901,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 520.8000000044703,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 538.8999999985099,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 630.3999999985099,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 635.2000000029802,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 646.3999999985099,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 660.7000000029802,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 684.7000000029802,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 695.3000000044703,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 718.1000000014901,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 736.8000000044703,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 743.7000000029802,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 761.8999999985099,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 780.2000000029802,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 796.8999999985099,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 818.8999999985099,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 848.5,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 866.1000000014901,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 883.7000000029802,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 897.2000000029802,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 919.8000000044703,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      }
+    ],
+    "expanded": false,
+    "top": 688.40625,
+    "height": 1057.59375,
+    "viewport": 1080,
+    "headingTop": 944,
+    "rows": [
+      {
+        "top": 1006,
+        "bottom": 1358.875
+      },
+      {
+        "top": 1006,
+        "bottom": 1358.875
+      },
+      {
+        "top": 1006,
+        "bottom": 1358.875
+      },
+      {
+        "top": 1006,
+        "bottom": 1358.875
+      },
+      {
+        "top": 1382.875,
+        "bottom": 1735.75
+      },
+      {
+        "top": 1382.875,
+        "bottom": 1735.75
+      },
+      {
+        "top": 1382.875,
+        "bottom": 1735.75
+      },
+      {
+        "top": 1382.875,
+        "bottom": 1735.75
+      }
+    ],
+    "media": {
+      "width": 3840,
+      "time": 13.8,
+      "paused": false
+    },
+    "input": "keydown",
+    "targetExpanded": false,
+    "intermediate": 3,
+    "continuous": true,
+    "pass": true
+  },
+  {
+    "event": {
+      "type": "keydown",
+      "key": "ArrowDown",
+      "trusted": true,
+      "at": 19894.20000000298
+    },
+    "frames": [
+      {
+        "ms": 0.19999999552965164,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 37.19999999552965,
+        "top": 688.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": [
+          {
+            "time": 0,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 64.5,
+        "top": 688.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": [
+          {
+            "time": 0,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 93.19999999552965,
+        "top": 668.67724609375,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 93.72900390625,
+        "animations": [
+          {
+            "time": 16.68999999789378,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 188.60000000149012,
+        "top": 315.9568786621094,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 116.6899999978952,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 206.5,
+        "top": 263.28533935546875,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 133.38999999789536,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 233.5,
+        "top": 180.22378540039062,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.87496948242188,
+        "animations": [
+          {
+            "time": 166.6899999978959,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 268.8999999985099,
+        "top": 120.80086517333984,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.87496948242188,
+        "animations": [
+          {
+            "time": 199.98999999789646,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 283.29999999701977,
+        "top": 97.98070526123047,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 216.68999999789662,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 381.8999999985099,
+        "top": 27.95989227294922,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 316.68999999789446,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 399,
+        "top": 24.439250946044922,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.87503051757812,
+        "animations": [
+          {
+            "time": 333.3899999978946,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 415.6000000014901,
+        "top": 22.685619354248047,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 349.98999999789504,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 433.6000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 449.29999999701977,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 466.1000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 482.29999999701977,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 498.6000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 515.2999999970198,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 532,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 549.3999999985099,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 567,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 594.5,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 606.2999999970198,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 616.1000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 650,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 666.1999999955297,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 686.5,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 706.1000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 726.1000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 732.2999999970198,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 749.6999999955297,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 771.2999999970198,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 791.6999999955297,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 811.6999999955297,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 832.2999999970198,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 853.1000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 871,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 891.7999999970198,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 910.6000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      }
+    ],
+    "expanded": true,
+    "top": 22.40625,
+    "height": 1057.59375,
+    "viewport": 1080,
+    "headingTop": 278,
+    "rows": [
+      {
+        "top": 340,
+        "bottom": 692.875
+      },
+      {
+        "top": 340,
+        "bottom": 692.875
+      },
+      {
+        "top": 340,
+        "bottom": 692.875
+      },
+      {
+        "top": 340,
+        "bottom": 692.875
+      },
+      {
+        "top": 716.875,
+        "bottom": 1069.75
+      },
+      {
+        "top": 716.875,
+        "bottom": 1069.75
+      },
+      {
+        "top": 716.875,
+        "bottom": 1069.75
+      },
+      {
+        "top": 716.875,
+        "bottom": 1069.75
+      }
+    ],
+    "media": {
+      "width": 3840,
+      "time": 15.28,
+      "paused": false
+    },
+    "input": "keydown",
+    "targetExpanded": true,
+    "intermediate": 7,
+    "continuous": true,
+    "pass": true
+  },
+  {
+    "event": {
+      "type": "keydown",
+      "key": "GoBack",
+      "trusted": true,
+      "at": 21514.39999999851
+    },
+    "frames": [
+      {
+        "ms": 0.20000000298023224,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 83,
+        "top": 22.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 0,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 146.20000000298023,
+        "top": 22.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 0,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 288.6000000014901,
+        "top": 492.15423583984375,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 241.87506103515625,
+        "animations": [
+          {
+            "time": 149.92399999789185,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 301.6000000014901,
+        "top": 530.6602783203125,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 231.7459716796875,
+        "animations": [
+          {
+            "time": 166.72399999789178,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 342.80000000447035,
+        "top": 590.0623779296875,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 172.3438720703125,
+        "animations": [
+          {
+            "time": 200.02399999789233,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 353.90000000596046,
+        "top": 612.7495727539062,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 149.65667724609375,
+        "animations": [
+          {
+            "time": 216.62399999789272,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 420.40000000596046,
+        "top": 669.81884765625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 92.58740234375,
+        "animations": [
+          {
+            "time": 283.32399999789357,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 432.90000000596046,
+        "top": 677.3704833984375,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 85.0357666015625,
+        "animations": [
+          {
+            "time": 299.9239999978904,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 445.40000000596046,
+        "top": 682.8349609375,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 79.5712890625,
+        "animations": [
+          {
+            "time": 316.62399999789056,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 472,
+        "top": 686.3629150390625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 76.0433349609375,
+        "animations": [
+          {
+            "time": 333.3239999978907,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 484.6000000014901,
+        "top": 688.1287841796875,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74.2774658203125,
+        "animations": [
+          {
+            "time": 350.0239999978909,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 502.5,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 515,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 530.4000000059605,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 585.2000000029802,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 595.2000000029802,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 614.2000000029802,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 629.4000000059605,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 645.7000000029802,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 661.9000000059605,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 679.7000000029802,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 695.5,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 711.8000000044703,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 728.8000000044703,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 746.4000000059605,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 762.4000000059605,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 787.5,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 806.5,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 828.8000000044703,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 845.1000000014901,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 861.7000000029802,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 878.4000000059605,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 895.2000000029802,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 926.2000000029802,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      }
+    ],
+    "expanded": false,
+    "top": 688.40625,
+    "height": 1057.59375,
+    "viewport": 1080,
+    "headingTop": 944,
+    "rows": [
+      {
+        "top": 1006,
+        "bottom": 1358.875
+      },
+      {
+        "top": 1006,
+        "bottom": 1358.875
+      },
+      {
+        "top": 1006,
+        "bottom": 1358.875
+      },
+      {
+        "top": 1006,
+        "bottom": 1358.875
+      },
+      {
+        "top": 1382.875,
+        "bottom": 1735.75
+      },
+      {
+        "top": 1382.875,
+        "bottom": 1735.75
+      },
+      {
+        "top": 1382.875,
+        "bottom": 1735.75
+      },
+      {
+        "top": 1382.875,
+        "bottom": 1735.75
+      }
+    ],
+    "media": {
+      "width": 3840,
+      "time": 16.96,
+      "paused": false
+    },
+    "input": "keydown",
+    "targetExpanded": false,
+    "intermediate": 7,
+    "continuous": true,
+    "pass": true
+  },
+  {
+    "event": {
+      "type": "wheel",
+      "trusted": true,
+      "at": 23113.10000000149
+    },
+    "frames": [
+      {
+        "ms": 0.20000000298023224,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 4.200000002980232,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 45.20000000298023,
+        "top": 688.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": [
+          {
+            "time": 0,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 69.29999999701977,
+        "top": 688.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": [
+          {
+            "time": 0,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 90.20000000298023,
+        "top": 668.7400512695312,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 93.66619873046875,
+        "animations": [
+          {
+            "time": 16.65199999731115,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 177.5,
+        "top": 376.74755859375,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 99.95199999731241,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 196.29999999701977,
+        "top": 263.396240234375,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 133.35199999731273,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 222.29999999701977,
+        "top": 218.33998107910156,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 150.0519999973129,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 235.20000000298023,
+        "top": 180.30380249023438,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.87503051757812,
+        "animations": [
+          {
+            "time": 166.65199999731328,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 248.20000000298023,
+        "top": 147.94570922851562,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.87496948242188,
+        "animations": [
+          {
+            "time": 183.35199999731344,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 263.20000000298023,
+        "top": 120.85761260986328,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 199.95199999731383,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 280.70000000298023,
+        "top": 98.0280532836914,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.87503051757812,
+        "animations": [
+          {
+            "time": 216.651999997314,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 409.6000000014901,
+        "top": 24.46090316772461,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.87496948242188,
+        "animations": [
+          {
+            "time": 333.2519999973123,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 424.1000000014901,
+        "top": 22.687761306762695,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.87496948242188,
+        "animations": [
+          {
+            "time": 349.95199999731244,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 436.3999999985099,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 464.20000000298023,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 479.70000000298023,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 499.79999999701977,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 513.1000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 529.3999999985099,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 547.8999999985099,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 565.6000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 579.8999999985099,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 595.8999999985099,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 613,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 631.6000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 651.1000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 671.5,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 695.8999999985099,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 729.2000000029802,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 747.1000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 767,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 791.7999999970198,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 807.1000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 832.7000000029802,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 846.2999999970198,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 864.7000000029802,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 887.7999999970198,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 899.6000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 913.6000000014901,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      }
+    ],
+    "expanded": true,
+    "top": 22.40625,
+    "height": 1057.59375,
+    "viewport": 1080,
+    "headingTop": 278,
+    "rows": [
+      {
+        "top": 340,
+        "bottom": 692.875
+      },
+      {
+        "top": 340,
+        "bottom": 692.875
+      },
+      {
+        "top": 340,
+        "bottom": 692.875
+      },
+      {
+        "top": 340,
+        "bottom": 692.875
+      },
+      {
+        "top": 716.875,
+        "bottom": 1069.75
+      },
+      {
+        "top": 716.875,
+        "bottom": 1069.75
+      },
+      {
+        "top": 716.875,
+        "bottom": 1069.75
+      },
+      {
+        "top": 716.875,
+        "bottom": 1069.75
+      }
+    ],
+    "media": {
+      "width": 3840,
+      "time": 18.16,
+      "paused": false
+    },
+    "input": "wheel",
+    "targetExpanded": true,
+    "intermediate": 8,
+    "continuous": true,
+    "pass": true
+  },
+  {
+    "event": {
+      "type": "wheel",
+      "trusted": true,
+      "at": 27165.80000000447
+    },
+    "frames": [
+      {
+        "ms": 0.19999999552965164,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 3,
+        "top": 22.40625,
+        "expanded": true,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": []
+      },
+      {
+        "ms": 42.79999999701977,
+        "top": 22.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 0,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 77.69999999552965,
+        "top": 22.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 0,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 112.09999999403954,
+        "top": 42.06585693359375,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 16.647999995143437,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 196.89999999850988,
+        "top": 394.71307373046875,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 116.64799999514486,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 211.59999999403954,
+        "top": 447.4045715332031,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 241.875,
+        "animations": [
+          {
+            "time": 133.34799999514502,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 228,
+        "top": 492.46258544921875,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 241.87506103515625,
+        "animations": [
+          {
+            "time": 150.04799999514518,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 244.39999999850988,
+        "top": 530.500244140625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 231.906005859375,
+        "animations": [
+          {
+            "time": 166.64799999514202,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 261,
+        "top": 562.8596801757812,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 199.54656982421875,
+        "animations": [
+          {
+            "time": 183.34799999514217,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 278.19999999552965,
+        "top": 589.9489135742188,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 172.45733642578125,
+        "animations": [
+          {
+            "time": 199.94799999514257,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 346.5,
+        "top": 659.8689575195312,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 102.53729248046875,
+        "animations": [
+          {
+            "time": 266.64799999514344,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 372.09999999403954,
+        "top": 669.8314208984375,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 92.5748291015625,
+        "animations": [
+          {
+            "time": 283.3479999951436,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 380.69999999552965,
+        "top": 677.418701171875,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 84.987548828125,
+        "animations": [
+          {
+            "time": 300.04799999514375,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 395.09999999403954,
+        "top": 682.8413696289062,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 79.56488037109375,
+        "animations": [
+          {
+            "time": 316.6479999951441,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 410,
+        "top": 686.36669921875,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 76.03955078125,
+        "animations": [
+          {
+            "time": 333.3479999951443,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 426.8999999985099,
+        "top": 688.12451171875,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74.28173828125,
+        "animations": [
+          {
+            "time": 349.9479999951447,
+            "state": "running"
+          }
+        ]
+      },
+      {
+        "ms": 444.3999999985099,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 463.8999999985099,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 516.0999999940395,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 526.5999999940395,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 543.5,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 559.8999999985099,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 577.1999999955297,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 594.6999999955297,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 615.3999999985099,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 627,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 654.5,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 660.2999999970198,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 697.5999999940395,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 712.0999999940395,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 726.6999999955297,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 745.1999999955297,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 761.7999999970198,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 797,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 819.7999999970198,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 836.1999999955297,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 855.8999999985099,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 874.5,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 895.5999999940395,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      },
+      {
+        "ms": 915,
+        "top": 688.40625,
+        "expanded": false,
+        "sameImage": true,
+        "visibleImageHeight": 74,
+        "animations": []
+      }
+    ],
+    "expanded": false,
+    "top": 688.40625,
+    "height": 1057.59375,
+    "viewport": 1080,
+    "headingTop": 944,
+    "rows": [
+      {
+        "top": 1006,
+        "bottom": 1358.875
+      },
+      {
+        "top": 1006,
+        "bottom": 1358.875
+      },
+      {
+        "top": 1006,
+        "bottom": 1358.875
+      },
+      {
+        "top": 1006,
+        "bottom": 1358.875
+      },
+      {
+        "top": 1382.875,
+        "bottom": 1735.75
+      },
+      {
+        "top": 1382.875,
+        "bottom": 1735.75
+      },
+      {
+        "top": 1382.875,
+        "bottom": 1735.75
+      },
+      {
+        "top": 1382.875,
+        "bottom": 1735.75
+      }
+    ],
+    "media": {
+      "width": 3840,
+      "time": 22.22,
+      "paused": false
+    },
+    "input": "wheel",
+    "targetExpanded": false,
+    "intermediate": 11,
+    "continuous": true,
+    "pass": true
+  }
+]

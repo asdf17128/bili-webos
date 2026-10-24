@@ -1,0 +1,61 @@
+{
+  "name": "follower count remains mounted throughout TV fade",
+  "pass": true,
+  "frames": [
+    {
+      "opacity": 1,
+      "same": true,
+      "unchanged": true
+    },
+    {
+      "opacity": 1,
+      "same": true,
+      "unchanged": true
+    },
+    {
+      "opacity": 1,
+      "same": true,
+      "unchanged": true
+    },
+    {
+      "opacity": 0.197524,
+      "same": true,
+      "unchanged": true
+    },
+    {
+      "opacity": 0.107421,
+      "same": true,
+      "unchanged": true
+    },
+    {
+      "opacity": 0.0165105,
+      "same": true,
+      "unchanged": true
+    },
+    {
+      "opacity": 0.00708862,
+      "same": true,
+      "unchanged": true
+    },
+    {
+      "opacity": 0,
+      "same": true,
+      "unchanged": true
+    },
+    {
+      "opacity": 0,
+      "same": true,
+      "unchanged": true
+    },
+    {
+      "opacity": 0,
+      "same": true,
+      "unchanged": true
+    },
+    {
+      "opacity": 0,
+      "same": true,
+      "unchanged": true
+    }
+  ]
+}

@@ -10,7 +10,15 @@ This log collects the release history previously included in the README. For ear
 
 <a id="unreleased"></a>
 
-## v2.5.0 — 2026-10-24
+## v2.5.1 — 2026-10-24
+
+- 包含下方 2.5.0 的推荐反馈、账号修复、诊断及控制栏功能；2.5.0 因控制栏设计反馈撤回，使用新版本号确保已安装用户能够收到更新。
+- 推荐区恢复列表页的正常 16:9 封面、两行标题与元信息；控制栏向上延伸容纳完整两排，不再压成横向小卡片。保留同一网格的连续展开与逐排平滑滚动。
+- 修复粉丝数在控制栏淡出之前消失、重新打开时闪空的问题；切换视频／UP 的数据隔离仍保留。
+- 加强控制栏白色文字字重、细黑边和短阴影，图标轮廓更清晰，保持原透明背景；展开浏览推荐时隐藏字幕，收起后恢复，避免顶部裁切。
+- Full-size listing cards now fill an upward-expanding two-row shelf. Follower counts fade with the deck, and stronger text edges improve readability over bright video. Version 2.5.0 was withdrawn; 2.5.1 supersedes it.
+
+## v2.5.0 — 2026-10-24（已撤回 / withdrawn）
 
 - 推荐卡片长按支持「不感兴趣：当前视频／UP」、本机隐藏和恢复。具备有效账号与推荐上下文时才可提交官方反馈；结果未知不自动重发，UP 隐藏按账号隔离。
 - 点播控制栏采用透明渐变布局，增加 UP 粉丝数，支持大字号、小屏幕、评论栏与分层返回。推荐区同时显示两排紧凑卡片；预览与展开保留同一网格，整块位移减少重排，方向键与滚轮逐排平滑浏览，尊重减少动态效果偏好。

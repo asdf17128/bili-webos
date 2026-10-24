@@ -2,11 +2,13 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
+const base=process.env.DIAG_BASE_URL||'http://127.0.0.1:5173';
 const output=process.env.DIAG_TEST_OUTPUT||'/tmp/bili-diagnostic-cdn';
 await mkdir(output,{recursive:true});
 const browser=await chromium.launch(),results=[];
 for(const mode of ['backup-host','backup-signature','manual-native','all-fail']) {
- const context=await browser.newContext({viewport:{width:1920,height:1080}});
+ const context=await browser.newContext({viewport:{width:1920,height:1080},serviceWorkers:'block'});
+ await context.routeWebSocket('**/*',socket=>socket.close());
  const primary='upos-sz-mirrorcosov.bilivideo.com';
  const backup=mode==='backup-signature'?primary:'upos-sz-mirrorhwo1.bilivideo.com';
  const calls=[];
@@ -18,7 +20,7 @@ for(const mode of ['backup-host','backup-signature','manual-native','all-fail'])
  const page=await context.newPage();page.setDefaultTimeout(7000);
  await page.route('**/*',async route=>{
   const u=new URL(route.request().url());
-  if(u.port==='5173')return route.continue();
+  if(u.origin===base)return route.continue();
   if(u.port==='9528')return route.abort();
   if(u.pathname.includes('/upgcxcode/')) {
    const signed=u.pathname===`/proxy/${backup}/upgcxcode/backup.m4s`&&u.search==='?upsig=backup%2Bsignature&x=2&x=1';
@@ -33,9 +35,11 @@ for(const mode of ['backup-host','backup-signature','manual-native','all-fail'])
   return route.fulfill({json:{code:0,data}});
  });
  try {
-  await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>!!window.__openVideo);
+  await page.goto(base);await page.waitForFunction(()=>!!window.__openVideo);
   await page.locator('[data-focus-id="sidebar-13-0"]').click();
   await page.locator('[data-focus-id="content-9-0"]').click();
+  await page.locator('.diagnostic-preview').waitFor();
+  await page.locator('.diagnostic-export').click();
   await page.waitForFunction(()=>!!document.querySelector('.diagnostic-report svg'));
   const text=await page.locator('.diagnostic-panel').innerText();
   if(mode==='all-fail') {

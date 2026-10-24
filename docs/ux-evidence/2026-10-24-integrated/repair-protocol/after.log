@@ -1,0 +1,58 @@
+PASS confirmation required before any mutation
+PASS single anonymous TLS request commits only device keys
+PASS open failure preserves original memory and disk
+PASS write failure preserves original memory and disk
+PASS fsync failure preserves original memory and disk
+PASS close failure preserves original memory and disk
+PASS rename failure preserves original memory and disk
+PASS short fd writes finish the entire UTF-8 candidate
+PASS zero fd write fails without replacing original file
+PASS generation change prevents late identity commit
+PASS body stall obeys total deadline and rejects late body
+PASS peer reset has no automatic retry
+PASS SPI base64 b4 without Set-Cookie replaces stale identity fields
+PASS concurrent attempt and ten-minute cooldown are bounded
+PASS account repair ES5 mock checks: 14 on v25.4.0
+(node:82469) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+✔ ES5 mock acceptance cases (4.173542ms)
+✔ status returns only safe presence and rate-limit fields (0.176125ms)
+✔ confirmation must be boolean true: null (0.06025ms)
+✔ confirmation must be boolean true: {} (0.038458ms)
+✔ confirmation must be boolean true: {"confirm":false} (0.042167ms)
+✔ confirmation must be boolean true: {"confirm":1} (0.043958ms)
+✔ confirmation must be boolean true: {"confirm":"true"} (0.0405ms)
+✔ HTTP error preserves current identity and never retries (0.070083ms)
+✔ redirect preserves current identity and never retries (0.054708ms)
+✔ invalid JSON preserves current identity and never retries (0.112666ms)
+✔ null JSON preserves current identity and never retries (0.061875ms)
+✔ business error preserves current identity and never retries (0.0455ms)
+✔ missing b4 preserves current identity and never retries (0.048625ms)
+✔ short b3 preserves current identity and never retries (0.043542ms)
+✔ invalid b4 characters preserves current identity and never retries (0.031208ms)
+✔ duplicate b_nut preserves current identity and never retries (0.041875ms)
+✔ invalid b_nut preserves current identity and never retries (0.066541ms)
+✔ untrusted domain preserves current identity and never retries (0.043667ms)
+✔ wrong path preserves current identity and never retries (0.032167ms)
+✔ deleted b_nut preserves current identity and never retries (0.065041ms)
+✔ negative lifetime preserves current identity and never retries (0.056083ms)
+✔ expired b_nut preserves current identity and never retries (0.057459ms)
+✔ compressed response preserves current identity and never retries (0.023375ms)
+✔ both fingerprint values must change (0.059958ms)
+✔ response account Set-Cookie is ignored and current unrelated fields survive (0.063416ms)
+✔ changed SESSDATA prevents replacement even without a generation bump (0.039541ms)
+✔ changed DedeUserID prevents replacement even without a generation bump (0.024833ms)
+✔ request timeout before headers destroys request and rejects late headers (0.0385ms)
+✔ each accepted operation fences old requests at start and terminal result (0.071958ms)
+✔ truncated response fails once without retry or persistence (0.064458ms)
+✔ oversized body fails before JSON parsing and cannot commit late data (0.061333ms)
+✔ backwards clock cannot bypass cooldown (0.043458ms)
+✔ pre-existing temporary file is not deleted after exclusive open fails (0.049417ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 75.771542

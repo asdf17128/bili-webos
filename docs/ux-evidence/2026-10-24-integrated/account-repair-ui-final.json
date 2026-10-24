@@ -1,0 +1,560 @@
+{
+  "baseUrl": "http://127.0.0.1:5173",
+  "baseline": false,
+  "controlledReintroduction": null,
+  "boundary": "Production React/client/controller; simulated Luna or bridge responses. Every non-Vite HTTP/WebSocket request intercepted; no real account, television, or service state used.",
+  "results": [
+    {
+      "name": "feature presence: settings remote navigation reaches account repair",
+      "pass": true,
+      "durationMs": 512,
+      "audit": {
+        "navCalls": 7,
+        "statusCalls": 0,
+        "repairCalls": 0,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 20,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 15,
+          "keyup": 15,
+          "clicks": 1,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "opening is inert and Back restores a usable settings focus",
+      "pass": true,
+      "durationMs": 281,
+      "audit": {
+        "navCalls": 7,
+        "statusCalls": 0,
+        "repairCalls": 0,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 20,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 2,
+          "keyup": 2,
+          "clicks": 2,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "mouse opening accepts the first deliberate Enter check",
+      "pass": true,
+      "durationMs": 314,
+      "audit": {
+        "navCalls": 8,
+        "statusCalls": 1,
+        "repairCalls": 0,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 22,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 1,
+          "keyup": 1,
+          "clicks": 2,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "manual check and cache refresh preserve identity and account",
+      "pass": true,
+      "durationMs": 552,
+      "audit": {
+        "navCalls": 9,
+        "statusCalls": 2,
+        "repairCalls": 0,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 24,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 3,
+          "keyup": 3,
+          "clicks": 1,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "device rebuild requires a completed supported identity check",
+      "pass": true,
+      "durationMs": 369,
+      "audit": {
+        "navCalls": 7,
+        "statusCalls": 0,
+        "repairCalls": 0,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 20,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 2,
+          "keyup": 2,
+          "clicks": 1,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "confirmation defaults to cancel and cancel performs zero writes",
+      "pass": true,
+      "durationMs": 474,
+      "audit": {
+        "navCalls": 8,
+        "statusCalls": 1,
+        "repairCalls": 0,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 22,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 5,
+          "keyup": 5,
+          "clicks": 1,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "held Enter cannot pass through device confirmation",
+      "pass": true,
+      "durationMs": 492,
+      "audit": {
+        "navCalls": 8,
+        "statusCalls": 1,
+        "repairCalls": 0,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 22,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 8,
+          "keyup": 4,
+          "clicks": 1,
+          "repeats": 4,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "luna success uses exact confirmation payload and preserves browser state",
+      "pass": true,
+      "durationMs": 558,
+      "audit": {
+        "navCalls": 8,
+        "statusCalls": 1,
+        "repairCalls": 1,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 23,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 6,
+          "keyup": 6,
+          "clicks": 1,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "bridge success uses exact confirmation payload and preserves browser state",
+      "pass": true,
+      "durationMs": 655,
+      "audit": {
+        "navCalls": 8,
+        "statusCalls": 1,
+        "repairCalls": 1,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 22,
+        "interceptedWebSockets": 1,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 5,
+          "keyup": 5,
+          "clicks": 1,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "failure REQUEST_FAILED stays safe without automatic retry",
+      "pass": true,
+      "durationMs": 596,
+      "audit": {
+        "navCalls": 8,
+        "statusCalls": 1,
+        "repairCalls": 1,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 23,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 4,
+          "keyup": 4,
+          "clicks": 1,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "failure PERSISTENCE_FAILED stays safe without automatic retry",
+      "pass": true,
+      "durationMs": 550,
+      "audit": {
+        "navCalls": 8,
+        "statusCalls": 1,
+        "repairCalls": 1,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 23,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 4,
+          "keyup": 4,
+          "clicks": 1,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "failure SESSION_CHANGED stays safe without automatic retry",
+      "pass": true,
+      "durationMs": 553,
+      "audit": {
+        "navCalls": 8,
+        "statusCalls": 1,
+        "repairCalls": 1,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 23,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 4,
+          "keyup": 4,
+          "clicks": 1,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "lost repair transport reports unknown and drops only stale local identity",
+      "pass": true,
+      "durationMs": 532,
+      "audit": {
+        "navCalls": 8,
+        "statusCalls": 1,
+        "repairCalls": 1,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 23,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 4,
+          "keyup": 4,
+          "clicks": 1,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "old service has no device confirmation or repair write",
+      "pass": true,
+      "durationMs": 440,
+      "audit": {
+        "navCalls": 8,
+        "statusCalls": 1,
+        "repairCalls": 0,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 22,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 3,
+          "keyup": 3,
+          "clicks": 1,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "missing identity can be repaired only after explicit confirmation",
+      "pass": true,
+      "durationMs": 428,
+      "audit": {
+        "navCalls": 8,
+        "statusCalls": 1,
+        "repairCalls": 0,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 22,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 4,
+          "keyup": 4,
+          "clicks": 1,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "busy service and cooldown block duplicate rebuild requests",
+      "pass": true,
+      "durationMs": 415,
+      "audit": {
+        "navCalls": 8,
+        "statusCalls": 1,
+        "repairCalls": 0,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 22,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 6,
+          "keyup": 6,
+          "clicks": 1,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "pending repair blocks repeated keys and timeout cannot claim success",
+      "pass": true,
+      "durationMs": 502,
+      "audit": {
+        "navCalls": 8,
+        "statusCalls": 1,
+        "repairCalls": 1,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 23,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 9,
+          "keyup": 4,
+          "clicks": 1,
+          "repeats": 5,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "session generation change rejects a late successful repair reply",
+      "pass": true,
+      "durationMs": 522,
+      "audit": {
+        "navCalls": 8,
+        "statusCalls": 1,
+        "repairCalls": 1,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 23,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 4,
+          "keyup": 4,
+          "clicks": 1,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "nav network failure is visible without claiming account invalid",
+      "pass": true,
+      "durationMs": 385,
+      "audit": {
+        "navCalls": 7,
+        "statusCalls": 1,
+        "repairCalls": 0,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 22,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 2,
+          "keyup": 2,
+          "clicks": 1,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "QR re-login first explains the choice and cancel does not log out",
+      "pass": true,
+      "durationMs": 396,
+      "audit": {
+        "navCalls": 7,
+        "statusCalls": 0,
+        "repairCalls": 0,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 20,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 3,
+          "keyup": 3,
+          "clicks": 1,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "confirmed QR guidance opens existing login then cancellation preserves the account",
+      "pass": true,
+      "durationMs": 412,
+      "audit": {
+        "navCalls": 7,
+        "statusCalls": 0,
+        "repairCalls": 0,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 21,
+        "interceptedWebSockets": 0,
+        "translations": 0,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 4,
+          "keyup": 4,
+          "clicks": 1,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "large text en main and confirmation fit screen",
+      "pass": true,
+      "durationMs": 668,
+      "audit": {
+        "navCalls": 8,
+        "statusCalls": 1,
+        "repairCalls": 0,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 23,
+        "interceptedWebSockets": 0,
+        "translations": 1,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 4,
+          "keyup": 4,
+          "clicks": 2,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    },
+    {
+      "name": "large text es main and confirmation fit screen",
+      "pass": true,
+      "durationMs": 700,
+      "audit": {
+        "navCalls": 8,
+        "statusCalls": 1,
+        "repairCalls": 0,
+        "forbiddenWrites": 0,
+        "interceptedHttp": 23,
+        "interceptedWebSockets": 0,
+        "translations": 1,
+        "documents": 1,
+        "controlledReplacements": 0,
+        "input": {
+          "keydown": 4,
+          "keyup": 4,
+          "clicks": 2,
+          "repeats": 0,
+          "untrusted": 0
+        },
+        "hotUpdates": []
+      }
+    }
+  ]
+}

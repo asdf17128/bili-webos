@@ -1,0 +1,297 @@
+/* VOD controls only. Keep the live player's geometry and remote layers intact.
+   A continuous scrim leaves footage visible, without a dark control-panel edge.
+   Normal flow keeps the progress track from shrinking when buttons wrap. */
+.player-page.player-page-vod {
+  width: 100vw;
+  height: 100vh;
+}
+
+.player-page-vod > .player-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.player-controls.player-controls-vod {
+  --preview-height: 84px;
+  --related-row-height: calc(112px * var(--ui-scale));
+  --shelf-height: calc(var(--related-row-height) * 2 + 24px);
+  transform: translateY(0);
+  transition: opacity .3s, transform 360ms cubic-bezier(.25, .1, .25, 1);
+  z-index: 42;
+  max-height: 100%;
+  overflow: visible;
+  padding: 48px 64px 0;
+  background: linear-gradient(to bottom,
+    rgba(0, 0, 0, 0) 0,
+    rgba(0, 0, 0, .10) 18%,
+    rgba(0, 0, 0, .24) 40%,
+    rgba(0, 0, 0, .40) 70%,
+    rgba(0, 0, 0, .58) 100%);
+  color: #f5f6f8;
+  /* Tight glyph shadows retain bright-footage legibility without a text box. */
+  text-shadow: 0 1px 2px #000, 0 0 4px rgba(0, 0, 0, .9);
+}
+
+/* Keep the same card geometry above/below the screen edge. Transform-only
+   movement avoids laying out all cards on every animation frame. */
+.player-controls-vod.has-recommendations:not(.recommendations-open) {
+  transform: translateY(calc(var(--shelf-height) - var(--preview-height)));
+}
+.player-controls-vod:not(.hidden) { will-change: transform; }
+
+.player-controls-vod .player-control-deck {
+  display: block;
+  padding-bottom: 10px;
+}
+
+.player-controls-vod .player-control-deck:last-child {
+  padding-bottom: 28px;
+}
+
+.player-controls-vod .player-title {
+  margin-bottom: 8px;
+  font-size: calc(30px * var(--ui-scale));
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-controls-vod .player-author-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  min-width: 0;
+  margin-bottom: 2px;
+  color: #f0f1f4;
+  font-size: calc(18px * var(--ui-scale));
+  line-height: 1.45;
+}
+
+.player-controls-vod .player-author-identity {
+  display: inline-flex;
+  align-items: baseline;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 70%;
+  margin-right: 16px;
+}
+
+.player-controls-vod .player-author-name {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #f5f6f8;
+}
+
+.player-controls-vod .player-author-followers {
+  flex: none;
+  margin-left: 12px;
+  white-space: nowrap;
+}
+
+.player-controls-vod .player-publish-meta,
+.player-controls-vod .player-disclaimer {
+  min-width: 0;
+  margin-right: 16px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.player-controls-vod .player-control-deck > .player-progress-bar {
+  display: block;
+  height: 6px;
+  margin-top: 16px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, .38);
+}
+
+.player-controls-vod .player-btns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.player-controls-vod .player-control {
+  flex: 0 1 auto;
+  min-width: 76px;
+  min-height: 80px;
+  max-width: 200px;
+  margin: 4px 12px 0 0;
+  padding: 10px 12px;
+  background: transparent;
+  color: #f5f6f8;
+  text-shadow: inherit;
+}
+
+.player-controls-vod .player-control-label {
+  margin-top: 7px;
+  font-size: calc(18px * var(--ui-scale));
+  line-height: 1.25;
+}
+
+.player-controls-vod .player-control > svg {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .85));
+}
+
+.player-controls-vod .player-control.focused > svg {
+  filter: none;
+}
+
+.player-controls-vod .player-control.lit {
+  color: #ffb1ca;
+}
+
+.player-controls-vod .player-control.focused,
+.player-controls-vod .player-control.focused.lit {
+  background: #f7f7f9;
+  color: #191a1e;
+  text-shadow: none;
+  transform: scale(1.04);
+}
+
+.player-controls-vod .player-time {
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 8px;
+  color: #f0f1f4;
+  font-size: calc(18px * var(--ui-scale));
+  line-height: 1.4;
+}
+
+/* A real, cropped first row invites Down without creating a second grid. */
+.player-controls-vod .player-recommendation-preview {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #f5f6f8;
+  text-align: left;
+  text-shadow: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.player-controls-vod .player-recommendation-hint {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  margin-bottom: 8px;
+  color: #f5f6f8;
+  font-size: calc(18px * var(--ui-scale));
+  line-height: 1.4;
+}
+
+.player-controls-vod .player-recommendation-hint > svg {
+  flex: none;
+  margin-right: 10px;
+}
+
+.player-controls-vod .player-recommendation-preview:focus {
+  outline: none;
+}
+
+.player-controls-vod .player-recommendation-preview:focus .player-recommendation-hint,
+.player-controls-vod .player-recommendation-preview.focused .player-recommendation-hint {
+  text-decoration: underline;
+}
+
+.player-controls-vod .player-related-panel {
+  margin-top: 8px;
+}
+
+.player-controls-vod .player-related-heading {
+  height: calc(44px * var(--ui-scale));
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+.player-controls-vod .panel-tab-row,
+.player-controls-vod .player-recommendation-hint {
+  margin-bottom: 0;
+}
+.player-controls-vod .player-recommendation-preview .related-grid {
+  pointer-events: none;
+}
+
+.player-controls-vod .panel-tab-row > * {
+  font-size: calc(18px * var(--ui-scale)) !important;
+  line-height: 1.35;
+}
+
+.player-controls-vod .player-related-scroll {
+  height: var(--shelf-height);
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  overflow-y: auto;
+  margin: 0 -5px;
+  padding: 5px;
+}
+
+.player-controls-vod:not(.recommendations-open) .player-related-scroll {
+  overflow-y: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  .player-controls.player-controls-vod { transition: opacity .3s; }
+  .player-controls-vod .player-related-scroll { scroll-behavior: auto; }
+}
+
+.player-controls-vod .player-related-scroll .related-card > div:nth-child(2),
+.player-controls-vod .player-related-scroll .related-card > div:last-child {
+  font-size: calc(18px * var(--ui-scale)) !important;
+}
+
+.player-controls-vod .player-related-scroll .related-card > div:last-child {
+  color: #f0f1f4 !important;
+}
+
+/* Two compact rows retain readable titles beside each cover. Four columns
+   preserve the existing remote grid navigation and focus order. */
+.player-controls-vod .related-grid { grid-auto-rows: var(--related-row-height); }
+.player-controls-vod .related-card {
+  display: grid;
+  grid-template-columns: 40% minmax(0, 1fr);
+  grid-template-rows: 1fr auto;
+  align-items: center;
+}
+.player-controls-vod .related-card > div:first-child {
+  grid-row: 1 / 3;
+  align-self: center;
+}
+.player-controls-vod .related-card > div:nth-child(2) {
+  -webkit-line-clamp: 2 !important;
+  padding: 6px 8px 0 !important;
+}
+.player-controls-vod .related-card > div:last-child {
+  padding: 2px 8px 6px !important;
+}
+
+/* Compact the chrome, not the readable type, on 720p panels. */
+@media (max-height: 800px), (max-width: 1366px) {
+  .player-controls.player-controls-vod {
+    --preview-height: 64px;
+    --related-row-height: calc(96px * var(--ui-scale));
+    padding: 32px 36px 0;
+  }
+
+  .player-controls-vod .player-control-deck { padding-bottom: 6px; }
+  .player-controls-vod .player-title { margin-bottom: 4px; font-size: calc(26px * var(--ui-scale)); }
+  .player-controls-vod .player-author-identity { max-width: 100%; margin-right: 12px; }
+  .player-controls-vod .player-author-followers { margin-left: 8px; }
+  .player-controls-vod .player-publish-meta,
+  .player-controls-vod .player-disclaimer { margin-right: 12px; }
+  .player-controls-vod .player-control-deck > .player-progress-bar { margin-top: 10px; margin-bottom: 8px; }
+  .player-controls-vod .player-control { min-width: 64px; min-height: 68px; max-width: 156px; margin: 4px 6px 0 0; padding: 6px 9px; }
+  .player-controls-vod .player-control-label { margin-top: 5px; }
+  .player-controls-vod .player-time { margin-top: 6px; }
+  .player-controls-vod .player-recommendation-hint { min-height: 32px; margin-bottom: 0; }
+  .player-controls-vod .player-related-panel { margin-top: 4px; }
+  .player-controls-vod .panel-tab-row { margin-bottom: 4px; }
+
+}

@@ -4,7 +4,9 @@ import assert from 'node:assert/strict';
 import { writeFile } from 'node:fs/promises';
 const browser = await chromium.launch();
 try {
-  const page = await browser.newPage();
+  const page = await browser.newPage({ serviceWorkers: 'block' });
+  await page.routeWebSocket('**/*', socket => socket.close());
+  await page.route('**/*', route => route.abort());
   await page.setContent('<video></video>');
   await page.addScriptTag({ path: 'app/node_modules/shaka-player/dist/shaka-player.compiled.js' });
   const rows = await page.evaluate(async () => {

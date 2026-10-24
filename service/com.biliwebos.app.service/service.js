@@ -16,6 +16,7 @@ var childProcess = require('child_process');
 var biliReferer = require('./biliReferer');
 var upstreamRequest = require('./upstreamRequest');
 var decompressResponse = require('./httpBody');
+var playbackDiagnostics = require('./playbackDiagnostics')();
 // The WHATWG URL GLOBAL only exists on Node 10+. webOS 5 runs Node 8, where
 // every `new URL(...)` threw ReferenceError — caught by the surrounding
 // try/catch and turned into "Invalid URL"/400 for EVERY api/proxy call. That
@@ -81,6 +82,14 @@ function saveCookies() {
   catch (e) { logSvcErr('cookies-save', 'Cookie persistence failed'); return false; }
 }
 
+var accountRepair = require('./accountRepair').createAccountRepair({
+  fs: fs, https: https, cookieFile: COOKIE_FILE, agent: keepAliveAgent, cooldownMs: 5 * 60 * 1000,
+  getCookies: function () { return storedCookies; },
+  setCookies: function (candidate) { storedCookies = candidate; identityEpoch++; },
+  getGeneration: function () { return cookieGeneration; },
+  advanceGeneration: function () { cookieGeneration++; }
+});
+
 var CAST_CONFIG_FILE = path.join('/media/internal', 'bili_cast_config.json');
 var castConfig = {};
 try {
@@ -112,6 +121,7 @@ var identityAttempt = 0;
 try { identityAttempt = Number(JSON.parse(fs.readFileSync(IDENTITY_STATE, 'utf-8')).attempt) || 0; } catch (e) {}
 function isIdentityCookie(key) { return key === 'buvid3' || key === 'buvid4' || key === 'b_nut'; }
 function acquireIdentity(callback) {
+  if (accountRepair.status().busy) { callback(new Error('Device identity repair in progress')); return; }
   if (identityFlight) { identityFlight.push(callback); return; }
   var listeners = identityFlight = [callback];
   var generation = cookieGeneration;
@@ -155,25 +165,33 @@ function acquireIdentity(callback) {
     });
   }, 8000);
 }
-function refreshIdentity(callback) {
-  if (identityFlight) { acquireIdentity(callback); return; }
+function identityCooldownSeconds() {
+  return Math.max(0, Math.min(300, Math.ceil((identityAttempt + IDENTITY_COOLDOWN - Date.now()) / 1000)));
+}
+function claimIdentityAttempt() {
+  if (identityCooldownSeconds() || accountRepair.status().retryAfterSeconds) return new Error('Device identity cooldown; retry after 5 minutes');
   var now = Date.now();
-  if (identityAttempt && now - identityAttempt < IDENTITY_COOLDOWN) {
-    callback(new Error('Device identity cooldown; retry after 5 minutes')); return;
-  }
-  // Persist failed attempts too: restarting the service must not evade cooldown.
   try { fs.writeFileSync(IDENTITY_STATE, JSON.stringify({ attempt: now })); }
-  catch (e) { callback(new Error('Could not persist identity cooldown')); return; }
+  catch (e) { return new Error('Could not persist identity cooldown'); }
   identityAttempt = now;
+  return null;
+}
+function refreshIdentity(callback) {
+  if (accountRepair.status().busy) { callback(new Error('Device identity repair in progress')); return; }
+  if (identityFlight) { acquireIdentity(callback); return; }
+  var error = claimIdentityAttempt();
+  if (error) { callback(error); return; }
   acquireIdentity(callback);
 }
 function ensureBuvid(attempt) {
+  if (accountRepair.status().busy) return;
   if (storedCookies.buvid3) return;
+  var generation = cookieGeneration;
   acquireIdentity(function (err) {
-    if (!err) return;
+    if (!err || generation !== cookieGeneration) return;
     console.error('[service] buvid fetch failed:', err.message);
     logSvcErr('buvid', err.message);
-    if ((attempt || 0) < 5) setTimeout(function () { ensureBuvid((attempt || 0) + 1); }, 15000);
+    if ((attempt || 0) < 5) setTimeout(function () { if (generation === cookieGeneration) ensureBuvid((attempt || 0) + 1); }, 15000);
   });
 }
 ensureBuvid(0);
@@ -224,6 +242,10 @@ function isBiliHost(host) {
 // Content-Encoding — compressed bytes there corrupt the Range/Content-Length
 // and trigger Shaka's "Payload length does not match range requested bytes".
 function makeRequest(parsedUrl, method, body, contentType, range, forceIdentity, callback) {
+  if (accountRepair.status().busy) {
+    callback(new Error('Device identity repair in progress'));
+    return { cancel: function () {} };
+  }
   var generation = cookieGeneration;
   var requestIdentity = identityEpoch;
   var hostname = parsedUrl.hostname;
@@ -404,14 +426,18 @@ service.register('fetch', function (message) {
     message.respond({ returnValue: false, error: 'Host not allowed' }); return;
   }
 
+  var diagnostic = playbackDiagnostics.begin(parsed, message.payload.diagnostic === true);
   function request(retried) {
+    var started = Date.now();
     var requestIdentity = identityEpoch;
     requestFollow(parsed, message.payload.method, message.payload.body,
       message.payload.contentType, message.payload.range, 0, function (err, res) {
-        if (err) { message.respond({ returnValue: false, error: err.message }); return; }
+        if (err) { playbackDiagnostics.response(diagnostic, null, null, err, started); message.respond({ returnValue: false, error: err.message }); return; }
 
         decompressResponse(res, function (bodyError, data) {
+          playbackDiagnostics.response(diagnostic, res.statusCode, data, bodyError, started);
           if (generation !== cookieGeneration) {
+            playbackDiagnostics.recovery(diagnostic, 'session_changed');
             message.respond({ returnValue: false, error: 'Account session changed' }); return;
           }
           if (bodyError) {
@@ -420,8 +446,10 @@ service.register('fetch', function (message) {
             return;
           }
           if (!retried && res.statusCode === 200 && isPlaybackRisk(parsed, message.payload.method, data)) {
+            playbackDiagnostics.recovery(diagnostic, 'pending');
             function recovered(err) {
-              if (generation !== cookieGeneration) { message.respond({ returnValue: false, error: 'Account session changed' }); return; }
+              playbackDiagnostics.recovery(diagnostic, 'retried', err);
+              if (generation !== cookieGeneration) { playbackDiagnostics.recovery(diagnostic, 'session_changed'); message.respond({ returnValue: false, error: 'Account session changed' }); return; }
               if (!err) { request(true); return; }
               logSvcErr('identity-recovery', err.message);
               respond();
@@ -469,7 +497,32 @@ service.register('getCookies', function (message) {
   message.respond({ returnValue: true, cookies: storedCookies });
 });
 
+service.register('getAccountRepairStatus', function (message) {
+  var status = accountRepair.status();
+  status.busy = status.busy || !!identityFlight;
+  status.retryAfterSeconds = Math.max(status.retryAfterSeconds, identityCooldownSeconds());
+  message.respond(status);
+});
+
+service.register('repairDeviceIdentity', function (message) {
+  var status = accountRepair.status();
+  if (message.payload && message.payload.confirm === true && !status.busy && !status.retryAfterSeconds) {
+    if (identityFlight) { message.respond({ returnValue: false, errorCode: 'BUSY', error: 'Device identity recovery in progress' }); return; }
+    var error = claimIdentityAttempt();
+    if (error) { message.respond({ returnValue: false, errorCode: identityCooldownSeconds() ? 'COOLDOWN' : 'PERSISTENCE_FAILED', error: error.message, retryAfterSeconds: identityCooldownSeconds() }); return; }
+  }
+  accountRepair.repair(message.payload, function (result) { message.respond(result); });
+});
+
 service.register('setCookies', function (message) {
+  if (accountRepair.status().busy) {
+    message.respond({ returnValue: false, error: 'Device identity repair in progress' }); return;
+  }
+  // A delayed bootstrap must not overwrite an identity installed by repair.
+  // Keep this check before the generation bump and every state mutation.
+  if (message.payload.onlyIfDeviceMissing === true && storedCookies.buvid3) {
+    message.respond({ returnValue: false, errorCode: 'IDENTITY_EXISTS', error: 'Device identity already exists' }); return;
+  }
   var c = message.payload.cookies || {};
   if (c.SESSDATA && c.SESSDATA !== storedCookies.SESSDATA) cookieGeneration++;
   if (Object.keys(c).some(function (key) { return isIdentityCookie(key) && c[key] !== storedCookies[key]; })) identityEpoch++;
@@ -588,6 +641,8 @@ service.register('getDiagnostics', function (message) {
     castSubscribers: castSubscribers.length,
     localProxyPort: LOCAL_PROXY_PORT,
     recentErrors: recentErrors,
+    playback: playbackDiagnostics.snapshot(),
+    identity: { pending: !!identityFlight, cooldownSec: Math.max(0, Math.min(300, Math.ceil((identityAttempt + IDENTITY_COOLDOWN - Date.now()) / 1000))) },
   });
 });
 

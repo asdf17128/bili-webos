@@ -1,6 +1,7 @@
 // Bounded, in-memory startup evidence. URLs/errors are reduced to safe fields
 // immediately; never retain signed paths, titles, headers or error text.
 // Stages can overlap; their durations must not be added to infer total startup.
+import { describePlayResponse, diagnosticError } from '../utils/diagnosticReport.js';
 const STAGES = ['engine', 'attach', 'view', 'resume', 'url', 'probe', 'load'];
 const POINTS = ['request', 'response', 'video', 'audio', 'metadata', 'data', 'playing', 'vappend', 'aappend'];
 const clock = () => typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
@@ -60,10 +61,20 @@ export function createStartupTrace(publish, { now = clock, start = now() } = {})
       s.count++; s.pending++; emit();
       try {
         const value = await fn();
-        if (value && typeof value.code === 'number' && value.code !== 0 && !dead) s.errors++;
+        if (!dead) {
+          // Observe only: never change the response, retry or playback path.
+          if (key === 'url') {
+            const safe = describePlayResponse(value);
+            s.code = safe.code; s.hasStream = safe.hasStream; s.voucher = safe.voucher; s.reason = safe.reason;
+            if (safe.status === 'fail') s.errors++;
+          } else if (value && typeof value.code === 'number') {
+            s.code = value.code;
+            if (value.code !== 0) s.errors++;
+          }
+        }
         return value;
       } catch (error) {
-        if (!dead) s.errors++;
+        if (!dead) { s.errors++; const safe = diagnosticError(error); s.code = safe.code; s.reason = safe.reason; }
         throw error;
       } finally {
         if (!dead) { s.end = elapsed(); s.ms += s.end - began; s.pending--; emit(); }

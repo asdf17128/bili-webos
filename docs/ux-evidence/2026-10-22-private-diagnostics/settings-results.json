@@ -1,0 +1,58 @@
+[
+  {
+    "name": "design: settings remain readable with large text (zh)",
+    "pass": true
+  },
+  {
+    "name": "design: settings remain readable with large text (en)",
+    "pass": true
+  },
+  {
+    "name": "design: settings remain readable with large text (es)",
+    "pass": true
+  },
+  {
+    "name": "settings font rows follow visual order in both directions",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 2 columns, scale 1, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 2 columns, scale 1.12, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 2 columns, scale 1.25, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 3 columns, scale 1, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 3 columns, scale 1.12, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 3 columns, scale 1.25, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 4 columns, scale 1, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 4 columns, scale 1.12, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "settings matrix: 4 columns, scale 1.25, applies and persists",
+    "pass": true
+  },
+  {
+    "name": "diagnostic network failures finish visibly and remain scannable",
+    "pass": true
+  }
+]

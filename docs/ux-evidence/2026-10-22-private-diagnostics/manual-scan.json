@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-22",
+  "case": "C-DIAG-SCAN-01",
+  "source": "User feedback relayed by parent task",
+  "feedback": [
+    { "check": "GitHub destination", "quote": "是的，是github。" },
+    {
+      "question": "页面里有没有自动带上“[diag] v2.4.0”标题和诊断正文？有的话，预填内容也验证到了，不用提交。",
+      "quote": "有的。"
+    }
+  ],
+  "fixture": "Synthetic typical risk351 report rendered by candidate browser UI",
+  "humanChecks": {
+    "reachedGitHub": "confirmed",
+    "exactRepositoryPath": "not separately checked by user; covered by automated decode",
+    "prefilledTitle": "confirmed",
+    "prefilledBody": "confirmed present; no claim of character-by-character manual comparison"
+  },
+  "typicalQrHumanEndToEnd": "passed",
+  "automatedChecksPreviouslyPassed": [
+    "QR decodes to https://github.com/asdf17128/bili-webos/issues/new",
+    "Title equals [diag] v2.4.0",
+    "Body equals the local synthetic report preview",
+    "No account, secret, device identifier or viewing content in the exported report"
+  ],
+  "tvAcceptance": "not performed",
+  "maximumPayloadHumanScan": "not performed",
+  "issueSubmission": "not requested or confirmed",
+  "releaseApprovalGateSatisfied": false
+}

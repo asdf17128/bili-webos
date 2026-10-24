@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-10-22T09:49:16.592647+00:00",
+  "main": {
+    "date": "2026-10-14T15:35:42Z",
+    "sha": "2af1277682a997298e01c1bb5ce39bfd548d9d3c"
+  },
+  "release": {
+    "assets": [
+      {
+        "name": "com.biliwebos.app.manifest.json",
+        "size": 480
+      },
+      {
+        "name": "com.biliwebos.app_2.4.0_all.ipk",
+        "size": 680034
+      },
+      {
+        "name": "version.json",
+        "size": 20
+      }
+    ],
+    "published": "2026-10-14T15:36:16Z",
+    "tag": "v2.4.0",
+    "url": "https://github.com/asdf17128/bili-webos/releases/tag/v2.4.0"
+  },
+  "next_tag": [],
+  "open_prs": []
+}

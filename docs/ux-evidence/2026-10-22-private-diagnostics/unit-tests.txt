@@ -1,0 +1,22 @@
+✔ concurrent stage durations are measured from dispatch and preserve repeated failures (1.259791ms)
+✔ media milestones distinguish response, metadata, data and playing; stop network counting after readiness (1.098375ms)
+✔ failed keeps partial evidence and ignores late events (0.121708ms)
+✔ cancelled keeps partial evidence and ignores late events (0.356334ms)
+✔ a previous video cannot publish startup evidence into a later report (0.207333ms)
+✔ retry classification uses Shaka error layouts and bounds retained failure groups (0.29ms)
+✔ first hosts, append completion and buffer snapshots remain stable across later responses (0.22225ms)
+✔ regression #50/#51/#52: -351/-352 remain machine-readable, not a lone B (1.560125ms)
+✔ code zero requires a usable stream; vouchers are booleans, not exported values (0.223458ms)
+✔ allowlist removes all free-form fields, including known-looking keys in raw errors (0.907375ms)
+✔ malformed types, non-finite values, overlong fields and unexpected versions stay bounded (0.401ms)
+✔ exception categorization exports only safe codes and categories (0.073083ms)
+✔ compile-time candidate version is retained without accepting free-form runtime strings (0.091917ms)
+✔ startup trace observes API failures without changing playback return values or retrying (2.3855ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 83.306458

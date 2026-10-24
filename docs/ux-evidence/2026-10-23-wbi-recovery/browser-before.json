@@ -1,0 +1,157 @@
+{
+  "sourceOverride": true,
+  "results": [
+    {
+      "transport": "proxy",
+      "mode": "missing",
+      "pass": false,
+      "error": "invalid nav must reject the request before signing",
+      "nav": 1,
+      "playurl": 1,
+      "signatures": [
+        false
+      ],
+      "unexpected": []
+    },
+    {
+      "transport": "proxy",
+      "mode": "html",
+      "pass": false,
+      "error": "invalid nav must reject the request before signing",
+      "nav": 1,
+      "playurl": 1,
+      "signatures": [
+        false
+      ],
+      "unexpected": []
+    },
+    {
+      "transport": "proxy",
+      "mode": "network",
+      "pass": true,
+      "nav": 2,
+      "playurl": 2,
+      "signatures": [
+        true,
+        true
+      ],
+      "unexpected": []
+    },
+    {
+      "transport": "proxy",
+      "mode": "risk",
+      "pass": true,
+      "nav": 1,
+      "playurl": 1,
+      "signatures": [
+        true
+      ],
+      "unexpected": []
+    },
+    {
+      "transport": "bridge",
+      "mode": "missing",
+      "pass": false,
+      "error": "invalid nav must reject the request before signing",
+      "nav": 1,
+      "playurl": 1,
+      "signatures": [
+        false
+      ],
+      "unexpected": []
+    },
+    {
+      "transport": "bridge",
+      "mode": "html",
+      "pass": false,
+      "error": "invalid nav must reject the request before signing",
+      "nav": 1,
+      "playurl": 1,
+      "signatures": [
+        false
+      ],
+      "unexpected": []
+    },
+    {
+      "transport": "bridge",
+      "mode": "network",
+      "pass": true,
+      "nav": 2,
+      "playurl": 2,
+      "signatures": [
+        true,
+        true
+      ],
+      "unexpected": []
+    },
+    {
+      "transport": "bridge",
+      "mode": "risk",
+      "pass": true,
+      "nav": 1,
+      "playurl": 1,
+      "signatures": [
+        true
+      ],
+      "unexpected": []
+    },
+    {
+      "transport": "luna",
+      "mode": "missing",
+      "pass": false,
+      "error": "invalid nav must reject the request before signing",
+      "nav": 1,
+      "playurl": 1,
+      "signatures": [
+        false
+      ],
+      "unexpected": []
+    },
+    {
+      "transport": "luna",
+      "mode": "html",
+      "pass": false,
+      "error": "invalid nav must reject the request before signing",
+      "nav": 1,
+      "playurl": 1,
+      "signatures": [
+        false
+      ],
+      "unexpected": []
+    },
+    {
+      "transport": "luna",
+      "mode": "network",
+      "pass": true,
+      "nav": 2,
+      "playurl": 2,
+      "signatures": [
+        true,
+        true
+      ],
+      "unexpected": []
+    },
+    {
+      "transport": "luna",
+      "mode": "risk",
+      "pass": true,
+      "nav": 1,
+      "playurl": 1,
+      "signatures": [
+        true
+      ],
+      "unexpected": []
+    },
+    {
+      "transport": "luna",
+      "mode": "session",
+      "pass": true,
+      "nav": 2,
+      "playurl": 1,
+      "signatures": [
+        true
+      ],
+      "unexpected": []
+    }
+  ]
+}

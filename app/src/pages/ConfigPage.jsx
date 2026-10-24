@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { storage } from '../utils/storage';
 import { getPlaybackMode } from '../player/playbackMode';
 import { useFocusable, setCustomKeyHandler, setFocus } from '../hooks/useFocus';
-import { getLatestVersion, resetDeviceIdentity } from '../api/client';
+import { getLatestVersion } from '../api/client';
 import { APP_VERSION, BUILD_VERSION, compareVersions } from '../version';
 import DiagPanel from '../components/DiagPanel';
 import { t, getLocale, setLanguage, availableLanguages } from '../i18n';
@@ -32,20 +32,6 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
       const next = !nerdInfo;
       setNerdInfo(next);
       storage.setSettings({ ...storage.getSettings(), nerdInfo: next });
-    },
-  });
-
-  const resettingIdentity = useRef(false);
-  const [identityStatus, setIdentityStatus] = useState('');
-  const { props: identityProps } = useFocusable({
-    id: `content-${user ? 13 : 12}-0`, row: user ? 13 : 12, col: 0, group: 'content',
-    onSelect: async () => {
-      if (resettingIdentity.current) return;
-      resettingIdentity.current = true;
-      setIdentityStatus(t('正在重置…'));
-      try { await resetDeviceIdentity(); setIdentityStatus(t('已重置，请重试播放')); }
-      catch (e) { setIdentityStatus(/cooldown/.test(e.message) ? t('操作过于频繁，请 5 分钟后重试') : t('重置失败，请稍后重试')); }
-      finally { resettingIdentity.current = false; }
     },
   });
 
@@ -275,6 +261,10 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
     id: user ? 'content-11-0' : 'settings-logout-hidden', row: 11, col: 0, group: 'content',
     onSelect: () => { if (user && !loggingOut) onLogout(); },
   });
+  const { props: repairProps } = useFocusable({
+    id: 'content-13-0', row: 13, col: 0, group: 'content',
+    onSelect: () => window.dispatchEvent(new CustomEvent('account-repair')),
+  });
 
   const dmScaleLabel = (DM_SCALES.find(s => s.v === danmakuScale) || DM_SCALES[0]).label;
   const cdnLabel = (CDN_OPTS.find(o => o.v === cdnRoute) || CDN_OPTS[0]).label;
@@ -388,9 +378,9 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
         <span className="settings-row-value">{nerdInfo ? t('开') : t('关')}</span>
       </div>
 
-      <div className="settings-row" {...identityProps} aria-busy={resettingIdentity.current}>
-        <span>{t('重置设备标识')}</span>
-        <span className="settings-row-value" role="status">{identityStatus || t('保留登录，用于播放风控排查')}</span>
+      <div className="settings-row" {...repairProps}>
+        <span>{t('账号修复')}</span>
+        <span className="settings-row-value">{t('检查登录、刷新缓存与设备标识')}</span>
       </div>
 
       <div style={{ marginTop: 28, color: '#888', fontSize: 'calc(18px * var(--ui-scale))', lineHeight: 2 }}>

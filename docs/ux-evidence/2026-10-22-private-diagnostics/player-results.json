@@ -1,0 +1,10 @@
+[
+  {
+    "name": "startup report separates slow media readiness and stays visible when diagnostics APIs fail",
+    "pass": true
+  },
+  {
+    "name": "diagnostics without a previous video explains how to obtain startup evidence",
+    "pass": true
+  }
+]

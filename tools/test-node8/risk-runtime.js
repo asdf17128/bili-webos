@@ -33,6 +33,9 @@ track(upstream).listen(0,'127.0.0.1',function(){
       if(!r.returnValue||JSON.parse(r.body).code!==0||spi!==1||plays!==2)throw Error('recovery');
       var cookies=JSON.parse(disk['/media/internal/bili_cookies.json']);
       if(cookies.SESSDATA!=='fixture-session'||cookies.b_nut!=='server-value'||cookies.buvid3!=='repaired')throw Error('cookies');
+      svc.methods.getDiagnostics({respond:function(d){
+        if (!d.playback || d.playback.lastFailure.attempts[0].code !== -351 || d.playback.lastFailure.outcome !== 'ok') throw Error('diagnostic recovery evidence');
+      }});
       svc.methods.resetDeviceIdentity({respond:function(r){finish(r.returnValue?'cooldown bypassed':null);}});
     }catch(e){finish(e.message);}
   }});

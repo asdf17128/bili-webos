@@ -1,0 +1,14 @@
+PASS real handlers expose safe status and explicit confirmation gate
+PASS late normal headers cannot write old cookies after successful repair
+PASS already received normal response body is rejected across repair boundary
+PASS startup headers and manual repair are mutually exclusive
+PASS startup body and manual repair are mutually exclusive
+PASS manual repair and automatic recovery share persisted cooldown
+PASS clearCookies interrupts repair without restoring account from its snapshot
+PASS setCookies and normal fetch are blocked during repair, then resume
+PASS setCookies invalidates pre-existing normal requests
+PASS local proxy close during repair is safe without a request handle
+PASS a bootstrap retry queued before repair cannot restart after repair failure
+PASS a delayed conditional bootstrap cannot overwrite a completed manual repair
+PASS conditional bootstrap fills a missing device once and ordinary writes remain available
+PASS production account repair wiring: 13 pure mock cases; no sockets or real state

@@ -80,6 +80,14 @@ let pointerEnabled = true;
 let hoverDriven = false;
 export function isHoverDriven() { return hoverDriven; }
 
+// Capturing overlays stop the normal bubbling key handler. They must still
+// hand ownership to the remote before moving/removing cards or closing, so a
+// stationary pointer revealed underneath cannot steal the restored focus.
+export function claimRemoteFocus() {
+  pointerEnabled = false;
+  lastFocusFromPointer = false;
+}
+
 // Track last sidebar focus position
 let lastSidebarFocus = 'sidebar-0-0';
 
@@ -142,6 +150,14 @@ function applyFocus(newId) {
 
 export function registerFocusable(id, data) {
   focusRegistry.set(id, data);
+  // A replaced control may render using the previous control's focus ID,
+  // before its layout cleanup clears that ID. Reconcile the newly committed
+  // element so a reused grid/footer ID cannot leave a second painted ring.
+  const element = document.querySelector(`[data-focus-id="${id}"]`);
+  if (element) {
+    if (currentFocusId === id) element.classList.add('focused');
+    else element.classList.remove('focused');
+  }
   // Wait until all cells in this React commit have registered, then resolve the
   // user's pending entry. A slow network must not need a second OK press.
   if (pendingContentFocus && data.group === 'content') {

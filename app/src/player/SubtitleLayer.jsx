@@ -9,7 +9,7 @@ import { pickCueIndex } from './subtitles';
 // 2 = controls + panel open. Moves via transform (GPU) per the perf rules.
 const LIFT_Y = ['0', '-190px', '-46vh'];
 
-export default function SubtitleLayer({ videoRef, cues, enabled, lead = 0, lift = 0, fontScale = 1 }) {
+export default function SubtitleLayer({ videoRef, cues, enabled, lead = 0, lift = 0, liftPixels, rightInset = 0, fontScale = 1 }) {
   const boxRef = useRef(null);
   const idxRef = useRef(-2); // -2 forces the first paint (pickCueIndex returns -1/-0+)
 
@@ -41,7 +41,7 @@ export default function SubtitleLayer({ videoRef, cues, enabled, lead = 0, lift 
   if (!enabled || !cues || cues.length === 0) return null;
 
   return (
-    <div className="subtitle-layer" style={{ transform: `translateY(${LIFT_Y[lift] || '0'})` }}>
+    <div className="subtitle-layer" style={{ right: rightInset, transform: `translateY(${Number.isFinite(liftPixels) ? -liftPixels + 'px' : LIFT_Y[lift] || '0'})` }}>
       <span ref={boxRef} className="subtitle-text"
         style={{ visibility: 'hidden', fontSize: Math.round(34 * fontScale) }} />
     </div>

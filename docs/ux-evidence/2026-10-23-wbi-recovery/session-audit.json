@@ -1,0 +1,45 @@
+{
+  "method": "Actual client/storage/WBI modules loaded with VM SourceTextModule; actual api.logout; only Luna and localStorage boundaries replaced in memory; no network/account/device operations",
+  "observedBeforeRemovingPending": {
+    "variant": "pending-candidate",
+    "clears": 1,
+    "oldResult": {
+      "error": "Account session changed"
+    },
+    "firstNew": {
+      "error": "Account session changed"
+    },
+    "nextCode": 0,
+    "navCalls": 2,
+    "playCalls": 1
+  },
+  "finalComparison": [
+    {
+      "variant": "old",
+      "clears": 1,
+      "oldResult": {
+        "error": "Account session changed"
+      },
+      "firstNew": {
+        "code": 0
+      },
+      "nextCode": 0,
+      "navCalls": 2,
+      "playCalls": 2
+    },
+    {
+      "variant": "final",
+      "clears": 1,
+      "oldResult": {
+        "error": "Account session changed"
+      },
+      "firstNew": {
+        "code": 0
+      },
+      "nextCode": 0,
+      "navCalls": 2,
+      "playCalls": 2
+    }
+  ],
+  "pass": true
+}

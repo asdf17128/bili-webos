@@ -1,0 +1,73 @@
+{
+  "dateUTC": "2026-10-23",
+  "baseCommit": "d5576e3",
+  "remoteMainChecked": "2af1277682a997298e01c1bb5ce39bfd548d9d3c",
+  "scope": "Reject incomplete WBI key responses; cache only complete keys; recover on the next independent request. No identity reset, automatic risk retry or telemetry.",
+  "finalChecks": {
+    "wbiUnit": {
+      "passed": 18,
+      "failed": 0
+    },
+    "wbiUnitOldSource": {
+      "passed": 5,
+      "failed": 13
+    },
+    "browserClient": {
+      "passed": 13,
+      "failed": 0
+    },
+    "browserClientOldSource": {
+      "passed": 7,
+      "failed": 6
+    },
+    "npmTest": {
+      "passed": 133,
+      "failed": 0,
+      "skipped": 1,
+      "skipReason": "Existing external 35-fragment Dolby corpus unavailable"
+    },
+    "diagnosticPrivacyQR": {
+      "passed": 9,
+      "failed": 0
+    },
+    "playerTargeted": {
+      "passed": 5,
+      "failed": 0
+    },
+    "productionBuild": true,
+    "productionES2016Parsing": {
+      "bundles": 7,
+      "passed": true
+    },
+    "verifyShellSyntax": true,
+    "gitDiffCheck": true
+  },
+  "intermediateChecks": {
+    "playerFull": {
+      "passed": 76,
+      "failed": 0,
+      "note": "Ran before removal of the unneeded pending optimization; final targeted player checks are recorded separately."
+    }
+  },
+  "harnessCorrections": [
+    "Initial browser proxy fixture inherited the project default proxy; requests were intercepted and aborted. Set the fixture proxy explicitly to loopback and reran all cases.",
+    "Initial sandbox npm test could not listen on loopback (EPERM); rerun with approved local execution completed."
+  ],
+  "rejectedImplementation": "Removed request coalescing after independent review reproduced cross-generation rejection; final real-client logout fixture preserves prior behavior.",
+  "limits": [
+    "Fixture transports and modern Chromium do not prove live API or old webOS behavior.",
+    "No causal link to issues #50/#51/#52 established.",
+    "TV idle unknown; no device query, installation, launch, account or playback operation in this iteration.",
+    "Real TV UI/QR/full smoke remains pending, not waived.",
+    "Legacy Darwin Node runtime checks from the previous iteration are retained; service source unchanged and not rerun here.",
+    "No new full verify pipeline run in this iteration."
+  ],
+  "published": false,
+  "pushed": false,
+  "version": "2.4.0 (unchanged)",
+  "sha256": {
+    "app/src/api/wbi.js": "7712dbf321532dd4e1fbc8181a94662eb032f7acbb41069b6a23922cf900fd80",
+    "app/src/api/wbi.test.js": "0e1ca9235e88828d546e5dda358ac39a9973ca863c7e08fe1529dadbaf80fd7e",
+    "tools/test-wbi-recovery.mjs": "4bae5352fbc2ea9339fd56ef65b419a3cadbe5555e721ac06cd7643851c25f15"
+  }
+}

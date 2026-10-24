@@ -11,6 +11,7 @@ import { perfFlag, canPrefetch } from './utils/perfFlags';
 import SidebarItem from './components/SidebarItem';
 import Icon from './components/Icon';
 import CardMenu from './components/CardMenu';
+import AccountRepairPanel from './components/AccountRepairPanel';
 import PageState from './components/PageState';
 import PlayerBoundary, { PlayerPlaceholder } from './components/PlayerBoundary';
 
@@ -437,8 +438,15 @@ export default function App() {
   // 页面容器的 overflow 裁掉,DESIGN.md §4)。播放器打开时也照常工作 ——
   // 菜单用捕获阶段监听键盘,不跟播放器抢 customKeyHandler。
   const [menuVideo, setMenuVideo] = useState(null);
+  const [showAccountRepair, setShowAccountRepair] = useState(false);
   useEffect(() => {
-    const open = (e) => setMenuVideo(e.detail || null);
+    const open = () => setShowAccountRepair(true);
+    window.addEventListener('account-repair', open);
+    return () => window.removeEventListener('account-repair', open);
+  }, []);
+  useEffect(() => {
+    const open = (e) => setMenuVideo(e.detail?.source === 'recommendation' && e.detail?.video
+      ? e.detail : e.detail ? { video: e.detail } : null);
     window.addEventListener('card-menu', open);
     return () => window.removeEventListener('card-menu', open);
   }, []);
@@ -520,7 +528,11 @@ export default function App() {
         </PlayerBoundary>
       )}
 
-      {menuVideo && <CardMenu video={menuVideo} onClose={() => setMenuVideo(null)} />}
+      {menuVideo && <CardMenu key={menuVideo.video.bvid || menuVideo.video.id || menuVideo.video.aid || 'menu'}
+        video={menuVideo.video} recommendation={menuVideo.source === 'recommendation'} onClose={() => setMenuVideo(null)} />}
+
+      {showAccountRepair && <AccountRepairPanel onClose={() => setShowAccountRepair(false)}
+        onRequestLogin={() => { setShowAccountRepair(false); setShowLogin(true); }} />}
 
       {showLogin && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: 1920, height: 1080, zIndex: 200, background: '#0d0d1a' }}>

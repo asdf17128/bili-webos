@@ -1,0 +1,5 @@
+(node:22281) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:22281) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+Create com.biliwebos.app_2.4.0_all.ipk to /Users/yuanzhan/Documents/Codex/2026-10-22/task/bili-diagnostics/app/dist
+Success

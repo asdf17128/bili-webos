@@ -1,0 +1,58 @@
+[
+  {
+    "mode": "risk351",
+    "pass": true,
+    "reportBytes": 463,
+    "qrDecoded": true
+  },
+  {
+    "mode": "risk352",
+    "pass": true,
+    "reportBytes": 462,
+    "qrDecoded": true
+  },
+  {
+    "mode": "voucher",
+    "pass": true,
+    "reportBytes": 473,
+    "qrDecoded": true
+  },
+  {
+    "mode": "empty",
+    "pass": true,
+    "reportBytes": 460,
+    "qrDecoded": true
+  },
+  {
+    "mode": "offline",
+    "pass": true,
+    "reportBytes": 430,
+    "qrDecoded": true
+  },
+  {
+    "mode": "healthy",
+    "pass": true,
+    "reportBytes": 443,
+    "qrDecoded": true
+  },
+  {
+    "mode": "english",
+    "pass": true,
+    "reportBytes": 443,
+    "qrDecoded": true
+  },
+  {
+    "mode": "spanish",
+    "pass": true,
+    "reportBytes": 443,
+    "qrDecoded": true
+  },
+  {
+    "mode": "maximum-report",
+    "pass": true,
+    "reportBytes": 1794,
+    "urlBytes": 2190,
+    "qrPixels": 495,
+    "qrDecoded": true
+  }
+]

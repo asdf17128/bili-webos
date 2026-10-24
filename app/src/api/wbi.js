@@ -140,23 +140,51 @@ function md5(string) {
 
 let cachedWbiKeys = null;
 let wbiKeysFetchedAt = 0;
+let wbiKeysGeneration = 0;
 const WBI_KEYS_TTL = 600000; // 10 min
 
+// Invalidate pending reads as well as the cached value. A nav response that
+// started before a manual refresh must not restore the previous signing keys.
+export function clearWbiKeys() {
+  wbiKeysGeneration++;
+  cachedWbiKeys = null;
+  wbiKeysFetchedAt = 0;
+}
+
+function keyFromImageUrl(url) {
+  if (typeof url !== 'string') return null;
+  const filename = url.split(/[?#]/)[0].split('/').pop();
+  // The mixin permutation reads both complete 32-character keys. Do not
+  // accept empty or truncated material from an error/malformed nav body.
+  const match = /^([a-z0-9]{32})\.[a-z0-9]+$/i.exec(filename);
+  return match ? match[1] : null;
+}
+
 export async function getWbiKeys(apiFetch) {
-  const now = Date.now();
-  if (cachedWbiKeys && (now - wbiKeysFetchedAt < WBI_KEYS_TTL)) {
+  const age = Date.now() - wbiKeysFetchedAt;
+  if (cachedWbiKeys && age >= 0 && age < WBI_KEYS_TTL) {
     return cachedWbiKeys;
   }
 
+  const generation = wbiKeysGeneration;
   const data = await apiFetch('/x/web-interface/nav');
-  const imgUrl = data?.data?.wbi_img?.img_url || '';
-  const subUrl = data?.data?.wbi_img?.sub_url || '';
-
-  const imgKey = imgUrl.split('/').pop().split('.')[0];
-  const subKey = subUrl.split('/').pop().split('.')[0];
-
+  if (generation !== wbiKeysGeneration) {
+    const error = new Error('WBI key request expired');
+    error.code = 'WBI_KEYS_STALE';
+    throw error;
+  }
+  const images = data?.data?.wbi_img;
+  const imgKey = keyFromImageUrl(images?.img_url);
+  const subKey = keyFromImageUrl(images?.sub_url);
+  // Anonymous nav can return code=-101 with usable keys. Validate the
+  // signing material itself, without requiring a logged-in success code.
+  if (!imgKey || !subKey) {
+    const error = new Error('Invalid WBI key response');
+    error.code = 'WBI_KEYS_INVALID';
+    throw error;
+  }
   cachedWbiKeys = { imgKey, subKey };
-  wbiKeysFetchedAt = now;
+  wbiKeysFetchedAt = Date.now();
   return cachedWbiKeys;
 }
 

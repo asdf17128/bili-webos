@@ -28,13 +28,13 @@ async function observe(input, expand) {
   })()`);
   if (input === 'keydown') await tv.key(expand ? 'ArrowDown' : 'GoBack');
   else {
-    const point = await tv.evaluate("(() => {const r=document.querySelector('.player-title').getBoundingClientRect();return {x:r.x+60,y:r.y+10};})()");
+    const point = await tv.evaluate("(() => {const r=document.querySelector('.player-related-heading').getBoundingClientRect();return {x:r.x+60,y:Math.max(10,Math.min(innerHeight-10,r.y+10))};})()");
     await tv.call('Input.dispatchMouseEvent', { type: 'mouseWheel', x: point.x, y: point.y, deltaX: 0, deltaY: expand ? 120 : -120 });
   }
   await sleep(1000);
   const result=await tv.evaluate(`(() => {
     const p=window.__shelfProbe,el=document.querySelector('.player-controls-vod'),v=document.querySelector('video');
-    const r={event:p.event,frames:p.frames,expanded:el.classList.contains('recommendations-open'),top:el.getBoundingClientRect().top,height:el.getBoundingClientRect().height,viewport:innerHeight,media:{width:v.videoWidth,time:v.currentTime,paused:v.paused}};
+    const r={event:p.event,frames:p.frames,expanded:el.classList.contains('recommendations-open'),top:el.getBoundingClientRect().top,height:el.getBoundingClientRect().height,viewport:innerHeight,headingTop:el.querySelector('.player-related-heading').getBoundingClientRect().top,rows:[...el.querySelectorAll('.related-card')].slice(0,8).map(c=>({top:c.getBoundingClientRect().top,bottom:c.getBoundingClientRect().bottom})),media:{width:v.videoWidth,time:v.currentTime,paused:v.paused}};
     p.cleanup();return r;
   })()`);
   result.input=input; result.targetExpanded=expand;
@@ -49,13 +49,29 @@ async function observe(input, expand) {
   assert.equal(result.expanded,expand,'shelf state');
   assert.ok(result.continuous,'same card images are revealed or hidden monotonically');
 
-  assert.ok(result.top>=0 && result.height<=result.viewport,'shelf fits screen');
+  if(expand) {
+    assert.equal(result.rows.length,8,'two populated rows');
+    assert.ok(result.headingTop>=0 && result.rows.every(r=>r.top>=0&&r.bottom<=result.viewport),'full-size cards and tabs fit screen');
+  }
 }
 try {
   await tv.back();
   await tv.evaluate("window.__openVideo({bvid:'BV1sapi6qE72',resumeMode:'none'})");
   await tv.wait("document.querySelector('video')?.currentTime>3 && document.querySelector('video').videoWidth>0",60000);
   if(await tv.evaluate("document.querySelector('.player-controls')?.classList.contains('hidden')")) await tv.key('ArrowUp');
+  await tv.wait("!!document.querySelector('.player-author-followers')",15000);
+  await tv.evaluate(`(() => {
+    const node=document.querySelector('.player-author-followers'),text=node.textContent;
+    const p={frames:[],raf:0};
+    p.begin=e=>{if(e.key!=='GoBack')return;window.removeEventListener('keydown',p.begin,true);const start=performance.now();const sample=()=>{const count=document.querySelector('.player-author-followers');p.frames.push({opacity:Number(getComputedStyle(document.querySelector('.player-controls')).opacity),same:count===node,unchanged:count?.textContent===text});if(performance.now()-start<500)p.raf=requestAnimationFrame(sample);};sample();};
+    p.cleanup=()=>{cancelAnimationFrame(p.raf);window.removeEventListener('keydown',p.begin,true);delete window.__followerFadeTv;};window.__followerFadeTv=p;window.addEventListener('keydown',p.begin,true);
+  })()`);
+  await tv.key('GoBack');await sleep(600);
+  const followerFrames=await tv.evaluate('window.__followerFadeTv.frames');
+  const followerResult={name:'follower count remains mounted throughout TV fade',pass:followerFrames.length>0&&followerFrames.every(f=>f.same&&f.unchanged),frames:followerFrames};
+  writeFileSync(`${output}/follower-fade.json`,JSON.stringify(followerResult,null,2));
+  assert.ok(followerResult.pass,followerResult.name);
+  await tv.evaluate('window.__followerFadeTv.cleanup()');await tv.key('ArrowUp');await sleep(450);
   for(let i=0;i<3;i++) {await observe('keydown',true);await observe('keydown',false);}
   await observe('wheel',true);
   const shot=await tv.call('Page.captureScreenshot',{format:'png'});
@@ -67,5 +83,5 @@ try {
   writeFileSync(`${output}/failure.json`,JSON.stringify({message:error.message,exceptions:tv.errors},null,2));
   console.error(error.message);process.exitCode=1;
 } finally {
-  try {await tv.evaluate('window.__shelfProbe?.cleanup()');await tv.back();} finally {tv.close();}
+  try {await tv.evaluate('window.__shelfProbe?.cleanup();window.__followerFadeTv?.cleanup()');await tv.back();} finally {tv.close();}
 }

@@ -242,9 +242,9 @@
   padding: 10px;
 }
 
-.player-controls-vod:not(.recommendations-open) .player-related-scroll {
-  overflow-y: hidden;
-}
+/* Keep the same scroll/clipping layer during transform-only expansion.
+   Switching auto/hidden here rebuilds it while the panel is moving on TV.
+   Collapsed pointer input is already owned by the preview/whole-panel handler. */
 @media (prefers-reduced-motion: reduce) {
   .player-controls.player-controls-vod { transition: opacity .3s; }
   .player-controls-vod .player-related-scroll { scroll-behavior: auto; }

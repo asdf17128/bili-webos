@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "checks": 9,
+  "reports": [
+    "zero displayed; disabled hook did not request",
+    "resolved zero count survives hide/reopen without a blank render or refetch",
+    "author change hides old count on its first render",
+    "late previous-author response cannot replace current result",
+    "same author in a new video gets a clean first render and reuses the cache",
+    "closing during a request blocks UI delivery while preserving shared count cache",
+    "unknown, rejected, network-failed and invalid author counts stay hidden",
+    "unmount ignores late completion",
+    "positive control caught stale first render after in-memory guard removal"
+  ],
+  "externalRequests": 0,
+  "realAccounts": false,
+  "tvAccess": false
+}

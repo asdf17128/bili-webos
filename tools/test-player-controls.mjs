@@ -558,6 +558,30 @@ if (!baseline) {
     assert.equal(await f.page.locator('video').count(), 1, 'Back from controls stays in player');
   });
 
+  await run('follower count stays with the control deck throughout hide and reopen', {}, async f => {
+    await openControls(f.page);
+    await f.page.locator('.player-author-followers').waitFor();
+    await f.page.evaluate(() => {
+      window.__followerNode=document.querySelector('.player-author-followers');
+      window.__followerFrames=[];
+      const start=performance.now();
+      const sample=()=>{
+        const deck=document.querySelector('.player-controls'), count=document.querySelector('.player-author-followers');
+        window.__followerFrames.push({opacity:Number(getComputedStyle(deck).opacity),same:count===window.__followerNode,text:count?.textContent});
+        if(performance.now()-start<450) requestAnimationFrame(sample);
+      }; requestAnimationFrame(sample);
+    });
+    await f.page.keyboard.press('Escape'); await f.page.waitForTimeout(500);
+    const frames=await f.page.evaluate(()=>window.__followerFrames);
+    assert.ok(frames.some(x=>x.opacity>0&&x.opacity<1), 'observe the real fade-out interval');
+    assert.ok(frames.every(x=>x.same&&x.text==='12.6万粉丝'), 'count stays mounted unchanged even while controls fade');
+    await openControls(f.page);
+    assert.ok(await f.page.evaluate(()=>document.querySelector('.player-author-followers')===window.__followerNode), 'reopening does not replace or blink the count');
+    assert.equal(f.calls.followers,1,'hide/reopen does not refetch');
+    await f.page.keyboard.press('ArrowDown'); await f.page.waitForTimeout(450);
+    assert.ok(await f.page.evaluate(()=>document.querySelector('.player-author-followers')===window.__followerNode), 'expansion keeps the same count node');
+  });
+
   for (const followers of [0, 125678, 'unknown', 'failure']) await run('author followers ' + followers, { background: 'light', followers }, async f => {
     await openControls(f.page);
     if (typeof followers === 'number') {

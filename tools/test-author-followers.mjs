@@ -41,7 +41,7 @@ async function bundle(mutant = false) {
         'export const apiFetch = (path, params) => window.__requestFollowers(path, params);' }));
       if (mutant) api.onLoad({ filter: /useAuthorFollowers\.js$/ }, async args => {
         const source = await readFile(args.path, 'utf8');
-        const gate = 'return enabled && state.mid === author && state.videoKey === videoKey ? state.count : null;';
+        const gate = 'return state.mid === author && state.videoKey === videoKey ? state.count : null;';
         assert.ok(source.includes(gate), 'positive-control mutation must target the real render guard');
         return { contents: source.replace(gate, 'return state.count;') };
       });
@@ -82,6 +82,15 @@ try {
     await f.settle(1, 0);
     await f.wait(0);
     reports.push('zero displayed; disabled hook did not request');
+    const beforeHide = await f.page.evaluate(() => window.__renders.length);
+    await f.render({ mid: 1, enabled: false, videoKey: 'video-a' });
+    await f.wait(0);
+    await f.render({ mid: 1, videoKey: 'video-a' });
+    await f.wait(0);
+    assert.equal(await f.page.evaluate(start => window.__renders.slice(start).some(r => r.count !== 0), beforeHide), false);
+    assert.equal(await f.page.evaluate(() => window.__calls.length), 1);
+    reports.push('resolved zero count survives hide/reopen without a blank render or refetch');
+
 
     await f.render({ mid: 2, videoKey: 'video-b' });
     await f.wait('unknown');

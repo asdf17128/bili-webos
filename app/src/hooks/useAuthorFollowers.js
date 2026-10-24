@@ -11,8 +11,11 @@ export function useAuthorFollowers(mid, enabled = true, videoKey = null) {
   const [state, setState] = useState({ mid: null, videoKey: null, count: null });
   useEffect(() => {
     let active = true;
-    setState({ mid: author, videoKey, count: null });
+    // Visibility gates fetching, not already-resolved presentation. The deck
+    // remains painted during its fade-out, so keep this video's count mounted.
     if (!enabled || !author) return;
+    setState(previous => previous.mid === author && previous.videoKey === videoKey
+      ? previous : { mid: author, videoKey, count: null });
     followers.load(author).then(count => {
       if (active) setState({ mid: author, videoKey, count });
     });
@@ -21,5 +24,5 @@ export function useAuthorFollowers(mid, enabled = true, videoKey = null) {
 
   // Effects run after render; never expose the previous author's count during
   // the intervening render when the video or author has already changed.
-  return enabled && state.mid === author && state.videoKey === videoKey ? state.count : null;
+  return state.mid === author && state.videoKey === videoKey ? state.count : null;
 }

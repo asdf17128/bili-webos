@@ -90,15 +90,20 @@ try {
   if (await tv.evaluate("document.querySelector('.player-controls')?.classList.contains('hidden')")) await tv.key('ArrowUp');
   await tv.wait("!!document.querySelector('.player-author-followers')", 15000);
   check('public follower count visible on TV', await tv.evaluate("document.querySelector('.player-author-followers').textContent.includes('粉丝')"));
-  const geometry = await tv.evaluate(`(() => {const p=document.querySelector('.player-controls'), r=p.getBoundingClientRect();return {width:r.width,bottom:r.bottom,height:innerHeight,background:getComputedStyle(p).backgroundColor,progress:document.querySelector('.player-progress-bar')?.getBoundingClientRect().height};})()`);
-  check('controls fit screen and retain transparent base', geometry.progress >= 4 && geometry.width > 1000 && geometry.bottom <= geometry.height + 2 && geometry.background === 'rgba(0, 0, 0, 0)', geometry);
+  const geometry = await tv.evaluate(`(() => {const p=document.querySelector('.player-controls'), r=p.getBoundingClientRect();return {width:r.width,bottom:Math.min(r.bottom,innerHeight),buttonsBottom:p.querySelector('.player-btns').getBoundingClientRect().bottom,height:innerHeight,background:getComputedStyle(p).backgroundColor,progress:document.querySelector('.player-progress-bar')?.getBoundingClientRect().height};})()`);
+  check('controls fit screen and retain transparent base', geometry.progress >= 4 && geometry.width > 1000 && geometry.bottom <= geometry.height + 2 && geometry.buttonsBottom <= geometry.height + 2 && geometry.background === 'rgba(0, 0, 0, 0)', geometry);
   await screenshot('controls-followers');
   await tv.evaluate(`(() => {
     const el=document.querySelector('.player-controls-vod');
     window.__shelfTvFrames=[];
-    const start=performance.now();
-    const sample=()=>{window.__shelfTvFrames.push(el.getBoundingClientRect().top);if(performance.now()-start<900)requestAnimationFrame(sample);};
-    requestAnimationFrame(sample);
+    const begin=event=>{
+      if(event.key!=='ArrowDown') return;
+      window.removeEventListener('keydown',begin,true);
+      const start=performance.now();
+      const sample=()=>{window.__shelfTvFrames.push(el.getBoundingClientRect().top);if(performance.now()-start<900)requestAnimationFrame(sample);};
+      sample();
+    };
+    window.addEventListener('keydown',begin,true);
   })()`);
   await tv.key('ArrowDown');
   await sleep(1000);

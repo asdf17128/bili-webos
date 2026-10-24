@@ -13,6 +13,11 @@
 }
 
 .player-controls.player-controls-vod {
+  --preview-height: 84px;
+  --related-row-height: calc(112px * var(--ui-scale));
+  --shelf-height: calc(var(--related-row-height) * 2 + 24px);
+  transform: translateY(0);
+  transition: opacity .3s, transform 360ms cubic-bezier(.25, .1, .25, 1);
   z-index: 42;
   max-height: 100%;
   overflow: visible;
@@ -27,6 +32,13 @@
   /* Tight glyph shadows retain bright-footage legibility without a text box. */
   text-shadow: 0 1px 2px #000, 0 0 4px rgba(0, 0, 0, .9);
 }
+
+/* Keep the same card geometry above/below the screen edge. Transform-only
+   movement avoids laying out all cards on every animation frame. */
+.player-controls-vod.has-recommendations:not(.recommendations-open) {
+  transform: translateY(calc(var(--shelf-height) - var(--preview-height)));
+}
+.player-controls-vod:not(.hidden) { will-change: transform; }
 
 .player-controls-vod .player-control-deck {
   display: block;
@@ -190,49 +202,22 @@
   text-decoration: underline;
 }
 
-.player-controls-vod .player-recommendation-strip {
-  display: flex;
-  height: 84px;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.player-controls-vod .player-recommendation-thumb {
-  position: relative;
-  flex: none;
-  width: calc((100% - 42px) / 4);
-  height: 0;
-  margin-right: 14px;
-  padding-top: calc((100% - 42px) * .140625);
-  border-radius: 8px 8px 0 0;
-  overflow: hidden;
-  background: rgba(255, 255, 255, .05);
-}
-
-.player-controls-vod .player-recommendation-thumb:last-child {
-  margin-right: 0;
-}
-
-.player-controls-vod .player-recommendation-thumb img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Only recommendation content scrolls; controls and tabs remain reachable. */
-.player-controls-vod.recommendations-open {
-  padding-bottom: 24px;
-}
-
 .player-controls-vod .player-related-panel {
   margin-top: 8px;
 }
 
-.player-controls-vod .panel-tab-row {
+.player-controls-vod .player-related-heading {
+  height: calc(44px * var(--ui-scale));
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+.player-controls-vod .panel-tab-row,
+.player-controls-vod .player-recommendation-hint {
+  margin-bottom: 0;
+}
+.player-controls-vod .player-recommendation-preview .related-grid {
+  pointer-events: none;
 }
 
 .player-controls-vod .panel-tab-row > * {
@@ -241,11 +226,20 @@
 }
 
 .player-controls-vod .player-related-scroll {
-  max-height: 28vh;
+  height: var(--shelf-height);
+  scroll-behavior: smooth;
   overflow-x: hidden;
   overflow-y: auto;
   margin: 0 -5px;
   padding: 5px;
+}
+
+.player-controls-vod:not(.recommendations-open) .player-related-scroll {
+  overflow-y: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  .player-controls.player-controls-vod { transition: opacity .3s; }
+  .player-controls-vod .player-related-scroll { scroll-behavior: auto; }
 }
 
 .player-controls-vod .player-related-scroll .related-card > div:nth-child(2),
@@ -257,9 +251,32 @@
   color: #f0f1f4 !important;
 }
 
+/* Two compact rows retain readable titles beside each cover. Four columns
+   preserve the existing remote grid navigation and focus order. */
+.player-controls-vod .related-grid { grid-auto-rows: var(--related-row-height); }
+.player-controls-vod .related-card {
+  display: grid;
+  grid-template-columns: 40% minmax(0, 1fr);
+  grid-template-rows: 1fr auto;
+  align-items: center;
+}
+.player-controls-vod .related-card > div:first-child {
+  grid-row: 1 / 3;
+  align-self: center;
+}
+.player-controls-vod .related-card > div:nth-child(2) {
+  -webkit-line-clamp: 2 !important;
+  padding: 6px 8px 0 !important;
+}
+.player-controls-vod .related-card > div:last-child {
+  padding: 2px 8px 6px !important;
+}
+
 /* Compact the chrome, not the readable type, on 720p panels. */
 @media (max-height: 800px), (max-width: 1366px) {
   .player-controls.player-controls-vod {
+    --preview-height: 64px;
+    --related-row-height: calc(96px * var(--ui-scale));
     padding: 32px 36px 0;
   }
 
@@ -273,10 +290,8 @@
   .player-controls-vod .player-control { min-width: 64px; min-height: 68px; max-width: 156px; margin: 4px 6px 0 0; padding: 6px 9px; }
   .player-controls-vod .player-control-label { margin-top: 5px; }
   .player-controls-vod .player-time { margin-top: 6px; }
-  .player-controls-vod .player-recommendation-hint { min-height: 32px; margin-bottom: 6px; }
-  .player-controls-vod .player-recommendation-strip { height: 64px; }
-  .player-controls-vod.recommendations-open { padding-bottom: 16px; }
+  .player-controls-vod .player-recommendation-hint { min-height: 32px; margin-bottom: 0; }
   .player-controls-vod .player-related-panel { margin-top: 4px; }
   .player-controls-vod .panel-tab-row { margin-bottom: 4px; }
-  .player-controls-vod .player-related-scroll { max-height: 28vh; }
+
 }

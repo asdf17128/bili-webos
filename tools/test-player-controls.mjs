@@ -52,7 +52,7 @@ const items = Array.from({ length: 12 }, (_, i) => ({ aid: 300 + i, bvid: 'BVCon
 // control deck. It contains no fetched image, real person, or real media.
 function sceneSvg(name) {
   if (name === 'window') return `<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080"><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#c9e8f2"/><stop offset="1" stop-color="#f6dfad"/></linearGradient><pattern id="panes" width="240" height="1080" patternUnits="userSpaceOnUse"><rect width="232" height="1080" fill="none"/><rect width="22" height="1080" fill="#264853"/><rect x="22" width="8" height="1080" fill="#f6efce"/></pattern></defs><rect width="1920" height="1080" fill="url(#sky)"/><circle cx="420" cy="220" r="100" fill="#fff7d8"/><path d="M0 620L230 420L410 610L680 350L920 650L1230 440L1500 610L1770 390L1920 550V1080H0" fill="#5b9293"/><path d="M0 800Q320 640 670 810T1250 740T1920 840V1080H0" fill="#8cbbb0"/><path d="M0 960Q400 780 840 960T1920 920V1080H0" fill="#d8c795"/><rect width="1920" height="1080" fill="url(#panes)"/><rect y="360" width="1920" height="22" fill="#264853"/><rect y="670" width="1920" height="22" fill="#264853"/></svg>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080"><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#a6cbd7"/><stop offset="1" stop-color="#ebdfba"/></linearGradient><linearGradient id="sea" x2="0" y2="1"><stop stop-color="#588f9e"/><stop offset="1" stop-color="#b2d4c9"/></linearGradient><pattern id="water" width="210" height="76" patternUnits="userSpaceOnUse"><path d="M0 16H90M130 48H205" stroke="#e5e9c8" stroke-width="12" opacity=".8"/><path d="M20 46H100M120 14H185" stroke="#315d70" stroke-width="7" opacity=".75"/></pattern></defs><rect width="1920" height="1080" fill="url(#sky)"/><circle cx="1480" cy="185" r="95" fill="#f8ecc0"/><path d="M0 530L270 280L500 530L750 350L1080 600H0" fill="#365b69"/><path d="M0 580L390 450L650 640L980 470L1330 650H0" fill="#6c9796"/><rect y="580" width="1920" height="500" fill="url(#sea)"/><rect y="580" width="1920" height="500" fill="url(#water)"/><path d="M0 860Q380 650 630 850T1090 1040L1140 1080H0" fill="#d5ba88"/><path d="M0 837Q380 627 630 827T1090 1017" fill="none" stroke="#f1e4bf" stroke-width="14"/></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080"><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#a6cbd7"/><stop offset="1" stop-color="#ebdfba"/></linearGradient><linearGradient id="sea" x2="0" y2="1"><stop stop-color="#588f9e"/><stop offset="1" stop-color="#b2d4c9"/></linearGradient><pattern id="water" width="210" height="76" patternUnits="userSpaceOnUse"><path d="M0 16H90M130 48H205" stroke="#e5e9c8" stroke-width="12" opacity=".8"/><path d="M20 46H100M120 14H185M50 65H155" stroke="#315d70" stroke-width="7" opacity=".75"/></pattern></defs><rect width="1920" height="1080" fill="url(#sky)"/><circle cx="1480" cy="185" r="95" fill="#f8ecc0"/><path d="M0 530L270 280L500 530L750 350L1080 600H0" fill="#365b69"/><path d="M0 580L390 450L650 640L980 470L1330 650H0" fill="#6c9796"/><rect y="580" width="1920" height="500" fill="url(#sea)"/><rect y="580" width="1920" height="500" fill="url(#water)"/><path d="M0 860Q380 650 630 850T1090 1040L1140 1080H0" fill="#d5ba88"/><path d="M0 837Q380 627 630 827T1090 1017" fill="none" stroke="#f1e4bf" stroke-width="14"/></svg>`;
 }
 
 // Measure spatial texture in the actual pixels, not the CSS background string.
@@ -196,7 +196,7 @@ async function fixture(options = {}) {
 
 async function state(page) {
   return page.evaluate(() => {
-    const box = selector => { const el = document.querySelector(selector); if (!el) return null; const r = el.getBoundingClientRect(), s = getComputedStyle(el); return { x: r.x, y: r.y, width: r.width, height: r.height, bottom: r.bottom, right: r.right, opacity: s.opacity, background: s.background, color: s.color }; };
+    const box = selector => { const el = document.querySelector(selector); if (!el) return null; const r = el.getBoundingClientRect(), s = getComputedStyle(el); return { x: r.x, y: r.y, width: r.width, height: r.height, bottom: r.bottom, visibleBottom: Math.min(r.bottom, innerHeight), right: r.right, opacity: s.opacity, background: s.background, color: s.color }; };
     const controls = document.querySelector('.player-controls');
     return { controls: box('.player-controls'), video: box('video'), progress: box('.player-progress-bar'), buttons: box('.player-btns'), title: box('.player-title'), subtitle: box('.subtitle-text'), tabs: box('.panel-tab-row'), card: box('.related-card'), preview: box('.player-recommendation-preview'), focused: document.querySelector('.player-btn.focused')?.textContent, relatedCards: document.querySelectorAll('.related-card').length, visibleControls: !!controls && !controls.classList.contains('hidden'), expanded: controls?.classList.contains('recommendations-open'), controlsScroll: controls?.scrollTop, media: { paused: document.querySelector('video')?.paused, time: document.querySelector('video')?.currentTime }, input: window.__controlsInput, probe: window.__controlsProbe };
   });
@@ -249,15 +249,15 @@ for (const options of [
   await f.page.waitForTimeout(700); await openControls(f.page);
   await shot(f, `${baseline ? 'before' : 'after'}-${options.width}x${options.height}-${options.background}-${options.scale || 1}`);
   const s = await state(f.page);
-  assert.ok(s.controls.x >= 0 && s.controls.y >= 0 && s.controls.bottom <= options.height && s.controls.right <= options.width, 'controls fit the actual viewport');
+  assert.ok(s.controls.x >= 0 && s.controls.y >= 0 && s.controls.visibleBottom <= options.height && s.buttons.bottom <= options.height && s.controls.right <= options.width, 'controls fit the actual viewport');
   assert.ok(s.progress.height >= 6, 'progress remains at least 6px');
   assert.ok(s.buttons.y >= s.progress.bottom + 8, 'controls do not overlap the timeline');
   assert.ok(s.preview && s.preview.height > 20 && s.preview.y < options.height && s.preview.bottom > s.preview.y, 'controls opening exposes a real recommendation preview without Down');
   assert.ok(s.subtitle && s.subtitle.y >= 0 && s.subtitle.bottom <= s.title.y, 'subtitle stays in viewport and does not overlap the control title');
   assert.equal(s.focused, '暂停', 'preview does not steal initial control focus');
-  assert.equal(s.relatedCards, 0, 'preview does not duplicate the full recommendation grid');
+  assert.equal(await f.page.locator('.related-grid').count(), 1, 'preview and expansion share one recommendation grid');
   const preview = await f.page.locator('.player-recommendation-preview').evaluate(el => {
-    const images = [...el.querySelectorAll('img')];
+    const images = [...el.querySelectorAll('img')].slice(0, 4);
     const visibleImage = image => {
       const r = image.getBoundingClientRect(); let top = Math.max(0, r.top), bottom = Math.min(innerHeight, r.bottom);
       for (let p = image.parentElement; p; p = p.parentElement) {
@@ -274,6 +274,76 @@ for (const options of [
 });
 
 if (!baseline) {
+  await run('reopening a scrolled shelf restores a visible remote focus', {}, async f => {
+    await openControls(f.page);await f.page.keyboard.press('ArrowDown');await f.page.waitForTimeout(450);
+    await f.page.keyboard.press('ArrowDown');await f.page.keyboard.press('ArrowDown');await f.page.keyboard.press('ArrowDown');await f.page.waitForTimeout(450);
+    await f.page.keyboard.press('Escape');await f.page.waitForTimeout(450);
+    await f.page.keyboard.press('ArrowDown');await f.page.waitForTimeout(450);await f.page.keyboard.press('ArrowDown');await f.page.waitForTimeout(450);
+    const position=await f.page.evaluate(()=>{const a=document.querySelector('.related-card'),b=document.querySelector('.player-related-scroll'),r=a.getBoundingClientRect(),s=b.getBoundingClientRect();return {top:r.top,bottom:r.bottom,viewportTop:s.top,viewportBottom:s.bottom,pageScroll:document.querySelector('.player-page').scrollTop};});
+    assert.ok(position.top>=position.viewportTop-1&&position.bottom<=position.viewportBottom+1,'focused first card is actually visible');
+    assert.equal(position.pageScroll,0,'grid navigation never scrolls the video page');
+  });
+  await run('small wheel deltas accumulate without skipping multiple rows', {}, async f => {
+    await openControls(f.page);await f.page.keyboard.press('ArrowDown');await f.page.waitForTimeout(450);
+    const list=f.page.locator('.player-related-scroll'),r=await list.boundingBox();
+    await f.page.mouse.move(r.x+30,r.y+30);
+    for(let i=0;i<6;i++){await f.page.mouse.wheel(0,20);await f.page.waitForTimeout(30);}
+    await f.page.waitForTimeout(500);
+    const scroll=await list.evaluate(el=>el.scrollTop);
+    const stride=await f.page.locator('.related-card').first().evaluate(el=>el.getBoundingClientRect().height+14);
+    assert.ok(scroll>50 && scroll<=stride+2,'small stream advances one row');
+    await f.page.mouse.wheel(0,-120);await f.page.waitForTimeout(450);
+    assert.equal(await list.evaluate(el=>el.scrollTop),0,'reverse returns to the top');
+    assert.equal((await state(f.page)).expanded,true,'reverse scroll does not prematurely collapse');
+  });
+  for (const input of ['remote', 'wheel']) await run('recommendation row scrolling animates ' + input, {}, async f => {
+    await openControls(f.page); await f.page.keyboard.press('ArrowDown'); await f.page.waitForTimeout(450);
+    await f.page.keyboard.press('ArrowDown'); await f.page.keyboard.press('ArrowDown');
+    await f.page.evaluate(() => {
+      window.__rowPositions=[]; const start=performance.now();
+      const sample=()=>{window.__rowPositions.push(document.querySelector('.player-related-scroll').scrollTop);if(performance.now()-start<700)requestAnimationFrame(sample);};requestAnimationFrame(sample);
+    });
+    if (input==='remote') await f.page.keyboard.press('ArrowDown');
+    else { const r=await f.page.locator('.player-related-scroll').boundingBox();await f.page.mouse.move(r.x+40,r.y+40);await f.page.mouse.wheel(0,120); }
+    await f.page.waitForTimeout(750);
+    const positions=await f.page.evaluate(()=>window.__rowPositions), end=positions.at(-1);
+    assert.ok(end>50,'third row scrolled into view');
+    assert.ok(new Set(positions.filter(x=>x>1&&x<end-1).map(Math.round)).size>=3,'row movement has multiple intermediate positions');
+    assert.equal((await state(f.page)).probe.loads,1);
+  });
+  for (const options of [{}, {width:1280,height:720,scale:1.4}]) await run('expanded shelf shows two full rows without per-frame layout resizing ' + (options.height || 1080), options, async f => {
+    await openControls(f.page);
+    const layoutHeight = await f.page.locator('.player-controls-vod').evaluate(el => el.offsetHeight);
+    await f.page.keyboard.press('ArrowDown'); await f.page.waitForTimeout(450);
+    const rows = await f.page.locator('.related-card').evaluateAll(cards => cards.slice(0,8).map(el => {const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom};}));
+    assert.equal(rows.length,8);
+    assert.ok(rows.every(r=>r.top>=0&&r.bottom<=(options.height || 1080)), 'two complete rows remain in the viewport');
+    assert.equal(await f.page.locator('.player-controls-vod').evaluate(el => el.offsetHeight),layoutHeight,'animation keeps layout height constant');
+  });
+  await run('shelf animation under six-fold CPU slowdown', {}, async f => {
+    await openControls(f.page);
+    const cdp = await f.page.context().newCDPSession(f.page);
+    await cdp.send('Emulation.setCPUThrottlingRate', {rate:6});
+    const height = await f.page.locator('.player-controls-vod').evaluate(el => el.offsetHeight);
+    await f.page.keyboard.press('ArrowDown'); await f.page.waitForTimeout(650);
+    assert.equal(await f.page.locator('.player-controls-vod').evaluate(el => el.offsetHeight), height, 'slow CPU still uses stable layout');
+    assert.ok(await f.page.locator('.player-controls-vod').evaluate(el => el.classList.contains('recommendations-open')));
+    await f.page.keyboard.press('Escape'); await f.page.waitForTimeout(650);
+    assert.equal((await state(f.page)).expanded,false);
+    assert.equal((await state(f.page)).probe.loads,1,'animation never reloads media');
+    await cdp.send('Emulation.setCPUThrottlingRate', {rate:1}); await cdp.detach();
+  });
+
+  await run('recommendation cards remain continuous while opening and closing', {}, async f => {
+    await openControls(f.page);
+    await f.page.evaluate(() => { window.__firstShelfImage = document.querySelector('.player-recommendation-preview img'); });
+    await f.page.keyboard.press('ArrowDown');
+    await f.page.waitForTimeout(450);
+    assert.ok(await f.page.evaluate(() => window.__firstShelfImage === document.querySelector('.player-related-scroll img')), 'expansion preserves the original image node instead of replacing cropped previews');
+    await f.page.keyboard.press('Escape');
+    await f.page.waitForTimeout(450);
+    assert.ok(await f.page.evaluate(() => window.__firstShelfImage === document.querySelector('.player-recommendation-preview img')), 'collapse preserves the same image node');
+  });
   for (const input of ['wheel', 'remote']) await run('smooth shelf expansion ' + input, {}, async f => {
     await openControls(f.page);
     const before = await state(f.page);
@@ -492,7 +562,7 @@ if (!baseline) {
     await f.page.waitForTimeout(350);
     const s = await state(f.page);
     const railFrame = await f.page.locator('.comment-rail-body').evaluate(el => { const r = el.parentElement.getBoundingClientRect(); return { left: r.left, top: r.top, bottom: r.bottom }; });
-    assert.ok(s.controls.x >= 0 && s.controls.y >= 0 && s.controls.right <= railFrame.left && s.controls.bottom <= 720, 'controls stay inside narrowed video area');
+    assert.ok(s.controls.x >= 0 && s.controls.y >= 0 && s.controls.right <= railFrame.left && s.controls.visibleBottom <= 720 && s.buttons.bottom <= 720, 'controls stay inside narrowed video area');
     assert.ok(s.video.x >= 0 && s.video.y >= 0 && s.video.right <= railFrame.left && s.video.bottom <= 720, 'video fits the left area without crossing the comment rail');
     assert.ok(Math.abs(s.video.width / s.video.height - 16 / 9) < .001, 'comment rail keeps the video at 16:9');
     assert.ok(railFrame.top >= 0 && railFrame.bottom <= 720, 'comment rail fits actual 720p viewport');

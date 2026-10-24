@@ -3,6 +3,7 @@ import { requestedQuality } from '../utils/qualityPreference';
 import Icon from '../components/Icon';
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import './playerControls.css';
+import { thumbUrl } from '../utils/thumb';
 import { getLibraryPage, getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies, getReplyReplies, tripleVideo, likeVideo, coinVideo, favVideo, getFavFoldersFor, getVideoRelation, getHtml5PlayUrl, mediaProxyBase, addToView, delToView } from '../api/client';
 import { nextPlaylistItem } from '../utils/library';
 import { playPart, playAdvance } from './playIntent';
@@ -216,7 +217,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   const [focusIdx, setFocusIdx] = useState(0);
   const controlsTimer = useRef(null);
   const controlsElRef = useRef(null), progressElRef = useRef(null);
-  const shelfMotionRef = useRef(null), shelfStartTopRef = useRef(null);
+  const shelfGestureUntilRef = useRef(0);
+  const shelfWheelRef = useRef({ at: 0, target: 0, direction: 0, delta: 0 });
   const controlsPinnedRef = useRef(false), lastControlRef = useRef('play');
   const [controlsGeometry, setControlsGeometry] = useState({ lift: 190, progressBottom: 104 });
   const timeUpdateRef = useRef(null);
@@ -1579,26 +1581,20 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     hideControlsLater();
   }, [hideControlsLater]);
 
-  const captureShelfPosition = useCallback(() => {
-    const el = controlsElRef.current;
-    shelfStartTopRef.current = el ? el.getBoundingClientRect().top : null;
-    if (shelfMotionRef.current) shelfMotionRef.current.cancel();
-    shelfMotionRef.current = null;
-  }, []);
   const openRelatedPanel = useCallback(() => {
-    captureShelfPosition();
+    shelfGestureUntilRef.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : Date.now() + 400;
     setShowRelated(true);
     setFocusArea('tabs');
     if (controlsTimer.current) clearTimeout(controlsTimer.current);
-  }, [captureShelfPosition]);
+  }, []);
   const closeRelatedPanel = useCallback(() => {
-    captureShelfPosition();
+    shelfGestureUntilRef.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : Date.now() + 400;
     setShowRelated(false);
     setFocusArea('controls');
     setFocusIdx(Math.max(0, controlsRef.current.indexOf(lastControlRef.current)));
     if (controlsElRef.current) controlsElRef.current.scrollTop = 0;
     hideControlsLater();
-  }, [hideControlsLater, captureShelfPosition]);
+  }, [hideControlsLater]);
 
   // ===== 点赞 / 投币 / 收藏 / 长按三连 =====
   // 点赞: toggleable (like=1 赞, like=2 取消) — B站 app behavior.
@@ -2396,10 +2392,22 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       // Scroll the focused related card into view
       function scrollRelatedIntoView(idx) {
         setTimeout(() => {
-          const cards = document.querySelectorAll(panelTab === 'comments' ? '.comment-card' : '.related-card');
-          if (cards[idx]) {
-            cards[idx].scrollIntoView({ block: 'nearest' });
+          if (panelTab === 'comments') {
+            document.querySelectorAll('.comment-card')[idx]?.scrollIntoView({ block: 'nearest' });
+            return;
           }
+          // Scroll only the grid. scrollIntoView can also move the clipped
+          // player ancestor while the whole shelf is translated off-screen.
+          const list = document.querySelector('.player-controls.recommendations-open .player-related-scroll');
+          const card = list?.querySelectorAll('.related-card')[idx];
+          if (!card) return;
+          const box = card.getBoundingClientRect(), viewport = list.getBoundingClientRect();
+          const top = box.top - viewport.top + list.scrollTop - 5;
+          const bottom = top + box.height + 10;
+          const target = top < list.scrollTop ? top
+            : bottom > list.scrollTop + list.clientHeight ? bottom - list.clientHeight : list.scrollTop;
+          if (typeof list.scrollTo === 'function') list.scrollTo({ top: Math.max(0, target) });
+          else list.scrollTop = Math.max(0, target);
         }, 30);
       }
 
@@ -2439,7 +2447,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         } else if (e.key === 'ArrowDown' || e.key === 'Enter') {
           const list = panelTab === 'parts' ? partsList : panelTab === 'up' ? upVideos : relatedVideos;
           // Empty/late data stays on the visible tab, never a phantom card.
-          if (list.length) { setFocusArea('related'); setFocusIdx(0); }
+          if (list.length) { setFocusArea('related'); setFocusIdx(0); scrollRelatedIntoView(0); }
         }
         return true;
       }
@@ -2535,8 +2543,15 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       const el = controlsElRef.current, progressEl = progressElRef.current;
       if (!showControls || !el || !progressEl) return;
       const page = el.closest('.player-page').getBoundingClientRect(), box = el.getBoundingClientRect();
-      const next = { lift: Math.max(0, page.bottom - box.top - 56 + 12),
-        progressBottom: Math.max(104, page.bottom - progressEl.getBoundingClientRect().top + 18) };
+      const shelf = el.querySelector('.player-related-scroll');
+      const css = shelf && getComputedStyle(shelf);
+      // The grid keeps a constant two-row layout. Only the whole shelf moves;
+      // anchors target its resting position, with no React work per frame.
+      const targetTranslate = shelf && !showRelated
+        ? shelf.getBoundingClientRect().height - parseFloat(css.getPropertyValue('--preview-height')) : 0;
+      const remaining = box.top - (page.top + el.offsetTop + targetTranslate);
+      const next = { lift: Math.max(0, page.bottom - box.top + remaining - 56 + 12),
+        progressBottom: Math.max(104, page.bottom - progressEl.getBoundingClientRect().top + remaining + 18) };
       setControlsGeometry(previous => previous.lift === next.lift && previous.progressBottom === next.progressBottom ? previous : next);
     };
     measure();
@@ -2545,22 +2560,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   }, [showControls, showRelated, videoTitle, metaOwner, metaPubdate, argueMsg, aigcMsg, authorFollowers,
     loggedIn, subTracks.length, follow.available, follow.label, showCommentRail, previewVideos.length, currentQuality, currentSpeed, subLan]);
 
-  // FLIP the bottom-anchored shelf: animate only its transform, not every
-  // card's layout. Geometry above is measured at the final resting position.
-  useLayoutEffect(() => {
-    const el = controlsElRef.current, start = shelfStartTopRef.current;
-    shelfStartTopRef.current = null;
-    if (!el || start == null || !showControls || !el.animate
-      || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const delta = start - el.getBoundingClientRect().top;
-    if (Math.abs(delta) < 1) return;
-    const motion = el.animate([
-      { transform: `translateY(${delta}px)` }, { transform: 'translateY(0)' },
-    ], { duration: 280, easing: 'cubic-bezier(.22, .7, .25, 1)' });
-    shelfMotionRef.current = motion;
-    motion.onfinish = () => { if (shelfMotionRef.current === motion) shelfMotionRef.current = null; };
-  }, [showRelated, showControls]);
-  useEffect(() => () => { if (shelfMotionRef.current) shelfMotionRef.current.cancel(); }, []);
+  useEffect(() => { shelfWheelRef.current = { at: 0, target: 0, direction: 0, delta: 0 }; }, [showRelated, panelTab]);
 
   // The feed's global wheel handler deliberately yields to the player. Own
   // the shelf gesture here, leaving the expanded list's native scrolling intact.
@@ -2569,17 +2569,44 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     if (!el) return;
     const wheel = event => {
       if (!showControls || showQuality || showSubPanel || showSpeedPanel || !event.deltaY) return;
-      if (shelfMotionRef.current) { event.preventDefault(); return; }
+      if (Date.now() < shelfGestureUntilRef.current) { event.preventDefault(); return; }
       const list = el.querySelector('.player-related-scroll');
       if (!showRelated && event.deltaY > 0) {
         event.preventDefault(); openRelatedPanel();
       } else if (showRelated && event.deltaY < 0 && (!list || list.scrollTop <= 0)) {
         event.preventDefault(); closeRelatedPanel();
+      } else if (showRelated && list) {
+        event.preventDefault();
+        const now = Date.now(), direction = event.deltaY > 0 ? 1 : -1;
+        const previous = shelfWheelRef.current;
+        const continuing = now - previous.at < 500 && previous.direction === direction;
+        if (now - (previous.inputAt || 0) > 600 || previous.direction !== direction) previous.delta = 0;
+        previous.inputAt = now;
+        previous.direction = direction;
+        previous.delta += event.deltaY;
+        if (Math.abs(event.deltaY) < 100 && Math.abs(previous.delta) < 120) return;
+        if (now - previous.at < 140) return;
+        const card = list.querySelector('.related-card');
+        if (!card) return;
+        const stride = card.getBoundingClientRect().height + 14;
+        const maximum = Math.max(0, list.scrollHeight - list.clientHeight);
+        const base = continuing ? previous.target : list.scrollTop;
+        const target = Math.max(0, Math.min(maximum, base + direction * stride));
+        shelfWheelRef.current = { at: now, inputAt: now, target, direction, delta: 0 };
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (typeof list.scrollTo === 'function') list.scrollTo({ top: target, behavior: reduced ? 'auto' : 'smooth' });
+        else list.scrollTop = target;
+        setFocusArea('related');
+        setFocusIdx(Math.min(list.querySelectorAll('.related-card').length - 1, Math.floor(target / stride) * 4));
+        if (direction > 0 && target >= maximum - 2) {
+          if (panelTab === 'up') loadUpVideos(false);
+          else if (panelTab === 'related') loadMoreRelated();
+        }
       }
     };
     el.addEventListener('wheel', wheel, { passive: false });
     return () => el.removeEventListener('wheel', wheel);
-  }, [showControls, showRelated, showQuality, showSubPanel, showSpeedPanel, openRelatedPanel, closeRelatedPanel]);
+  }, [showControls, showRelated, showQuality, showSubPanel, showSpeedPanel, openRelatedPanel, closeRelatedPanel, panelTab, loadUpVideos, loadMoreRelated]);
 
   // Magic Remote: waving the pointer must summon the controls bar (the D-pad
   // path was the only way in). Throttled; ignored while a panel/end screen has
@@ -2865,7 +2892,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       )}
 
       {/* Controls bar */}
-      <div ref={controlsElRef} className={`player-controls player-controls-vod ${showRelated ? 'recommendations-open' : ''} ${showControls ? '' : 'hidden'}`} style={showCommentRail ? { right: RAIL_W } : undefined}>
+      <div ref={controlsElRef} className={`player-controls player-controls-vod ${showRelated || previewVideos.length > 0 ? 'has-recommendations' : ''} ${showRelated ? 'recommendations-open' : ''} ${showControls ? '' : 'hidden'}`} style={showCommentRail ? { right: RAIL_W } : undefined}>
         <div className="player-control-deck">
         <div className="player-title">{titleMT(cleanTitle(videoTitle))}</div>
         {(metaOwner || metaPubdate > 0 || argueMsg || aigcMsg) && (
@@ -2964,20 +2991,16 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         </div>
         </div>
 
-        {!showRelated && previewVideos.length > 0 && <button className="player-recommendation-preview" type="button"
-          tabIndex={-1} onClick={openRelatedPanel} aria-label={t('向下浏览视频')}>
-          <span className="player-recommendation-hint"><span aria-hidden="true">↓</span>{t('向下浏览视频')}</span>
-          <span className="player-recommendation-strip" aria-hidden="true">{previewVideos.slice(0, 4).map((rv, i) => (
-            <span className="player-recommendation-thumb" key={rv.cid || rv.bvid || i}>
-              {rv.pic && <img src={proxyImg(rv.pic)} alt="" />}
-            </span>
-          ))}</span>
-        </button>}
-
-        {/* Tabbed panel below controls: 相关推荐 / UP主投稿 */}
-        {showRelated && (
-          <div className="player-related-panel">
-            <div className="panel-tab-row">
+        {/* Keep one grid mounted: a cropped preview grows into the shelf,
+            so cards are never replaced halfway through the transition. */}
+        {(showRelated || previewVideos.length > 0) && (
+          <div className={`player-related-panel ${!showRelated ? 'player-recommendation-preview' : ''}`}
+            role={!showRelated ? 'button' : undefined} tabIndex={-1}
+            onClick={!showRelated ? openRelatedPanel : undefined}
+            aria-label={!showRelated ? t('向下浏览视频') : undefined}>
+            <div className="player-related-heading">
+            {!showRelated && <span className="player-recommendation-hint"><span aria-hidden="true">↓</span>{t('向下浏览视频')}</span>}
+            {showRelated && <div className="panel-tab-row">
               {(isMultiP
                 ? [['parts', partsLabel], ['related', t('相关推荐')], ['up', upName ? t('UP主投稿 · {name}', { name: upName }) : t('UP主投稿')]]
                 : [['related', t('相关推荐')], ['up', upName ? t('UP主投稿 · {name}', { name: upName }) : t('UP主投稿')]]
@@ -2995,6 +3018,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
                     if (key === 'up' && upVideos.length === 0) loadUpVideos(true);
                   }}>{label}</div>
               ))}
+            </div>}
             </div>
 
             <div className="player-related-scroll">{(() => {
@@ -3007,10 +3031,10 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
               return (
                 <div className="related-grid cols-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
                   {list.map((rv, i) => {
-                    const thumb = proxyImg(rv.pic);
+                    const thumb = thumbUrl(rv.pic, 4);
                     const nowPlaying = panelTab === 'parts' && rv.cid === cidRef.current;
                     return (
-                      <div key={rv.cid || rv.bvid || i} className="related-card" onClick={() => onPlayNext?.(panelTab === 'parts' ? playPart(rv) : rv)}
+                      <div key={rv.cid || rv.bvid || i} className="related-card" onClick={() => { if (showRelated) onPlayNext?.(panelTab === 'parts' ? playPart(rv) : rv); }}
                         onMouseMove={() => {
                           setFocusArea('related'); setFocusIdx(i);
                           if (controlsTimer.current) clearTimeout(controlsTimer.current);
@@ -3022,7 +3046,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
                           borderRadius: 6, overflow: 'hidden',
                         }}>
                         <div style={{ width: '100%', height: 0, paddingTop: '56.25%', background: '#1a1a2e', borderRadius: 6, overflow: 'hidden', position: 'relative' }}>
-                          {thumb && <img src={thumb} alt="" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
+                          {thumb && <img src={thumb} alt="" decoding="async" loading={i < 4 ? 'eager' : 'lazy'} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
                           {nowPlaying && <div style={{ position: 'absolute', top: 6, left: 6, background: 'var(--tv-accent)', color: '#191a1e', fontSize: 16, padding: '2px 9px', borderRadius: 4 }}>{t('▶ 播放中')}</div>}
                           {rv.duration != null && <div style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: 16, padding: '1px 7px', borderRadius: 3 }}>
                             {typeof rv.duration === 'number' ? formatDuration(rv.duration) : rv.duration}

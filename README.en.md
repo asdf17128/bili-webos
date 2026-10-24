@@ -97,3 +97,5 @@ See the [premium playback guide](docs/DOLBY_VISION.md) for quality and device li
 ## Playback verification failures
 
 Version 2.4.1 attempts one device-identity recovery for recognized playback verification failures. If playback still fails, use **Settings → Reset device identity**, then retry. This preserves your login and has a five-minute cooldown. Run network diagnostics if the issue persists. Resetting an identity does not guarantee removal of account or regional restrictions.
+
+New diagnostic reports include the latest playback-URL failure in the current service session: HTTP/API codes, elapsed time, requested quality, public video identifiers, and recovery results. Open diagnostics before restarting and scan the QR code to submit. Nothing is uploaded automatically; cookies, voucher values, and full signed URLs are excluded.

@@ -16,6 +16,7 @@ var childProcess = require('child_process');
 var biliReferer = require('./biliReferer');
 var upstreamRequest = require('./upstreamRequest');
 var decompressResponse = require('./httpBody');
+var playbackDiagnostics = require('./playbackDiagnostics')();
 // The WHATWG URL GLOBAL only exists on Node 10+. webOS 5 runs Node 8, where
 // every `new URL(...)` threw ReferenceError — caught by the surrounding
 // try/catch and turned into "Invalid URL"/400 for EVERY api/proxy call. That
@@ -404,14 +405,18 @@ service.register('fetch', function (message) {
     message.respond({ returnValue: false, error: 'Host not allowed' }); return;
   }
 
+  var diagnostic = playbackDiagnostics.begin(parsed, message.payload.diagnostic === true);
   function request(retried) {
+    var started = Date.now();
     var requestIdentity = identityEpoch;
     requestFollow(parsed, message.payload.method, message.payload.body,
       message.payload.contentType, message.payload.range, 0, function (err, res) {
-        if (err) { message.respond({ returnValue: false, error: err.message }); return; }
+        if (err) { playbackDiagnostics.response(diagnostic, null, null, err, started); message.respond({ returnValue: false, error: err.message }); return; }
 
         decompressResponse(res, function (bodyError, data) {
+          playbackDiagnostics.response(diagnostic, res.statusCode, data, bodyError, started);
           if (generation !== cookieGeneration) {
+            playbackDiagnostics.recovery(diagnostic, 'session_changed');
             message.respond({ returnValue: false, error: 'Account session changed' }); return;
           }
           if (bodyError) {
@@ -420,8 +425,10 @@ service.register('fetch', function (message) {
             return;
           }
           if (!retried && res.statusCode === 200 && isPlaybackRisk(parsed, message.payload.method, data)) {
+            playbackDiagnostics.recovery(diagnostic, 'pending');
             function recovered(err) {
-              if (generation !== cookieGeneration) { message.respond({ returnValue: false, error: 'Account session changed' }); return; }
+              playbackDiagnostics.recovery(diagnostic, 'retried', err);
+              if (generation !== cookieGeneration) { playbackDiagnostics.recovery(diagnostic, 'session_changed'); message.respond({ returnValue: false, error: 'Account session changed' }); return; }
               if (!err) { request(true); return; }
               logSvcErr('identity-recovery', err.message);
               respond();
@@ -588,6 +595,8 @@ service.register('getDiagnostics', function (message) {
     castSubscribers: castSubscribers.length,
     localProxyPort: LOCAL_PROXY_PORT,
     recentErrors: recentErrors,
+    playback: playbackDiagnostics.snapshot(),
+    identity: { pending: !!identityFlight, cooldownSec: Math.max(0, Math.min(300, Math.ceil((identityAttempt + IDENTITY_COOLDOWN - Date.now()) / 1000))) },
   });
 });
 

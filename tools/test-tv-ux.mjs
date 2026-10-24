@@ -773,6 +773,14 @@ for (const cols of [2, 3, 4]) for (const [sizeIndex, scale] of [1, 1.12, 1.25].e
 
 for (const response of [{code:-351}, {code:0,data:{v_voucher:'PRIVATE_VOUCHER_DO_NOT_EXPORT'}}]) {
   await test('diagnostic preserves risk code and voucher flag '+response.code, async ({page}) => {
+    await page.route('**/src/api/client.js', async route => {
+      const res = await route.fetch();
+      const source = await res.text();
+      const evidence = {loggedIn:true, nodeVersion:'v0.12.2', uptimeSec:1200, playback:{lastFailure:{kind:'wbi',at:Date.now(),bvid:'BV1xx411c7mD',cid:1234567890,qn:127,fnval:4048,recovery:'retried',outcome:'failed',attempts:[{http:200,code:-352,voucher:true,stream:false,ms:8000},{http:200,code:-352,voucher:true,stream:false,ms:9000}]}},identity:{pending:false,cooldownSec:299}};
+      assert.ok(source.includes('export async function getServiceDiagnostics() {'));
+      return route.fulfill({response:res,body:source.replace('export async function getServiceDiagnostics() {', 'export async function getServiceDiagnostics() { return '+JSON.stringify(evidence)+';')});
+    });
+    await page.reload();
     await ready(page);
     await page.route('**/x/web-interface/view?**', route => route.fulfill({json:{code:0,data:{cid:42}}}));
     await page.route('**/playurl?**', route => route.fulfill({json:response}));
@@ -787,6 +795,8 @@ for (const response of [{code:-351}, {code:0,data:{v_voucher:'PRIVATE_VOUCHER_DO
     const report=new URL(qr.data).searchParams.get('body');
     assert.match(report,new RegExp('\\[fail\\] playurl code='+response.code));
     assert.match(report,/CDN not tested/);assert(!report.includes('PRIVATE_VOUCHER'));
+    assert.match(report,/attempt1: http=200 code=-352/);
+    assert.match(report,/recovery=retried final=failed/);
   });
 }
 

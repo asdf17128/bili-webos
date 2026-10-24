@@ -793,3 +793,10 @@ C9 社区独立验证：[#34 回报](https://github.com/asdf17128/bili-webos/iss
 - `tools/test-session-proxy.mjs`：遥控到达重置入口、保留 SESSDATA、同步前端标识及冷却提示。
 - `tools/test-player-loading.mjs`：仅 voucher 的响应显示风控提示，不初始化解码器或反复取流。
 - `tools/test-risk-recovery-tv.mjs`：真实 SPI 手动重置、账号保持、冷却与 4K 起播；不将可播放的本地电视当作复现报告者风控。
+
+### 2026-10-24：故障报告保留恢复前后的证据
+
+- `playbackDiagnostics.test.js`：风控 -352 后成功重试保留两次 HTTP/API 结果，自检失败不覆盖实际播放故障；最近请求上限 8 条，快照互不影响；HTTP 503/non-JSON、超时、冷却分类且不存响应正文、Cookie 或 voucher 值。
+- `diagnosticReport.test.js`：报告含公开视频标识、请求画质、耗时、身份恢复结果及登录布尔状态；URL 和认证字段在截断前脱敏；兼容未提供新字段的旧服务。
+- `test-node8/risk-runtime.js`：实际服务风控恢复后，断言诊断同时保留原始 -351 与最终成功结果；在官方 macOS Node 0.12.2/8.17.0 二进制执行，隔离上游夹具，不代替旧电视 TLS 实测。
+- 记录只保存在当前服务进程内；重启服务会清空。报告经用户扫码提交，不自动上传。

@@ -5,6 +5,7 @@ import { diagnosticUrls, probeRange } from '../player/cdnProbe';
 import { getPlaybackReport } from '../player/playbackHealth';
 import { startupReportLines } from '../player/startupTrace';
 import { getAutoCdnStatus } from '../player/cdnAuto';
+import { diagnosticContextLines, redactDiagnosticText } from '../utils/diagnosticReport';
 import { getErrors } from '../utils/errlog';
 import { hasPlayurlStream, playurlSummary, playurlErrorCode } from '../utils/playurlStatus';
 import { apiErrorHint } from '../utils/apiHint';
@@ -114,7 +115,7 @@ export default function DiagPanel() {
       push('取流 playurl', 'run', '');
       try {
         if (!probeCid) throw new Error(t('前置 view/pagelist 都失败,拿不到 cid'));
-        const p = await wbiFetch('/x/player/playurl', { bvid: PROBE_BVID, cid: probeCid, qn: 16, fnval: 16 });
+        const p = await wbiFetch('/x/player/playurl', { bvid: PROBE_BVID, cid: probeCid, qn: 16, fnval: 16 }, { diagnostic: true });
         if (hasPlayurlStream(p)) push('取流 playurl', 'ok', playurlSummary(p));
         else push('取流 playurl', 'fail', playurlSummary(p) + ' ' + (apiErrorHint(playurlErrorCode(p), { loggedIn: !!storage.getAuth()?.SESSDATA }) || t('未返回可播放的视频流')));
         probeRepresentation = p?.code === 0 ? p.data?.dash?.video?.[0] : null;
@@ -128,7 +129,7 @@ export default function DiagPanel() {
         let representation = probeRepresentation;
         if (rcmdPick) {
           try {
-            const p2 = await wbiFetch('/x/player/playurl', { bvid: rcmdPick.bvid, cid: rcmdPick.cid, qn: 64, fnval: 16 });
+            const p2 = await wbiFetch('/x/player/playurl', { bvid: rcmdPick.bvid, cid: rcmdPick.cid, qn: 64, fnval: 16 }, { diagnostic: true });
             const v2 = p2 && p2.code === 0 && p2.data && p2.data.dash && p2.data.dash.video && p2.data.dash.video[0];
             if (v2) representation = v2;
           } catch (e) { /* 热门视频取流失败就退回 av2 */ }
@@ -202,7 +203,7 @@ export default function DiagPanel() {
       // percent-encoded CJK char is 9 chars, which balloons the URL and makes
       // the QR too dense to scan off a TV screen. Error strings from Node /
       // Luna / HTTP are ASCII anyway; anything else gets stripped.
-      const ascii = s => String(s).replace(/[^\x20-\x7e]/g, '').trim();
+      const ascii = redactDiagnosticText;
       const KEY = { '后台服务': 'svc', 'API 连通': 'api', '推荐流(风控)': 'rcmd', '视频信息 view': 'view', '取流 playurl': 'playurl', '视频 CDN': 'cdn', 'CDN 测速': 'cdnspeed', '图片代理': 'imgproxy' };
       const lines = [];
       lines.push('app v' + BUILD_VERSION);
@@ -216,7 +217,8 @@ export default function DiagPanel() {
       const ua = navigator.userAgent.match(/Chrom\w+\/[\d.]+/);
       lines.push('ua ' + (ua ? ua[0] : ascii(navigator.userAgent).slice(0, 40)) + (window.webOS ? ' TV' : ' browser'));
       if (svc) lines.push('svc node=' + svc.nodeVersion + ' buvid=' + (svc.buvid ? 'Y' : 'N') + ' dm=' + (svc.danmakuModule ? 'Y' : 'N') + ' up=' + svc.uptimeSec + 's');
-      results.forEach(r => lines.push('[' + r.status + '] ' + (KEY[r.name] || ascii(r.name)) + (r.detail ? ' ' + ascii(r.detail).slice(0, 60) : '')));
+      lines.push(...diagnosticContextLines(svc));
+      results.forEach(r => lines.push('[' + r.status + '] ' + (KEY[r.name] || ascii(r.name)) + (r.detail && (r.name !== 'API 连通' || r.status !== 'ok') ? ' ' + ascii(r.detail).slice(0, 60) : '')));
       const svcErrs = (svc && svc.recentErrors) || [];
       // Keep distinct recent failures. Repeating the same aborted socket five
       // times made the QR dense without adding evidence.

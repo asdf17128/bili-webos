@@ -129,7 +129,7 @@ function lunaFetch(url, options) {
     }
 
     try { checkSession(generation); } catch (e) { reject(e); return; }
-    var params = { url: url, method: options.method || 'GET' };
+    var params = { url: url, method: options.method || 'GET', diagnostic: options.diagnostic === true };
     if (options.body) params.body = options.body;
     if (options.contentType) params.contentType = options.contentType;
     if (options.range) params.range = options.range;
@@ -226,7 +226,7 @@ async function smartFetch(host, path, options) {
   if (bridge) {
     var br = await devLunaCall('fetch', {
       url: url, method: opts.method || 'GET', body: opts.body,
-      contentType: opts.contentType, range: opts.range,
+      contentType: opts.contentType, range: opts.range, diagnostic: opts.diagnostic === true,
     }, opts.deadlineMs);
     checkSession(generation);
     if (br && br.newCookies) {
@@ -266,7 +266,7 @@ export async function wbiFetch(path, params, options) {
   var keys = await getWbiKeys(apiFetch);
   checkSession(generation);
   var signedQuery = signWbi(params || {}, keys.imgKey, keys.subKey);
-  return smartFetch((options && options.host) || API_HOST, path + '?' + signedQuery);
+  return smartFetch((options && options.host) || API_HOST, path + '?' + signedQuery, options);
 }
 
 // Raw fetch for special cases (returns Response or Luna result)

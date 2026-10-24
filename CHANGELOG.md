@@ -12,21 +12,31 @@ This log collects the release history previously included in the README. For ear
 
 ## v2.5.1 — 2026-10-24
 
-- 包含下方 2.5.0 的推荐反馈、账号修复、诊断及控制栏功能；2.5.0 因控制栏设计反馈撤回，使用新版本号确保已安装用户能够收到更新。
-- 推荐区恢复列表页的正常 16:9 封面、两行标题与元信息；控制栏向上延伸容纳完整两排，不再压成横向小卡片。保留同一网格的连续展开与逐排平滑滚动。
-- 修复粉丝数在控制栏淡出之前消失、重新打开时闪空的问题；切换视频／UP 的数据隔离仍保留。
-- 加强控制栏白色文字字重、细黑边和短阴影，图标轮廓更清晰，保持原透明背景；展开浏览推荐时隐藏字幕，收起后恢复，避免顶部裁切。
-- Full-size listing cards now fill an upward-expanding two-row shelf. Follower counts fade with the deck, and stronger text edges improve readability over bright video. Version 2.5.0 was withdrawn; 2.5.1 supersedes it.
+### 新功能与改进
 
-## v2.5.0 — 2026-10-24（已撤回 / withdrawn）
+- **透明播放控制栏**：渐变背景保留更多视频画面，加重文字、细黑边和图标阴影提升明亮画面下的可读性，兼顾大字号与评论侧栏。
+- **两排视频推荐**：向下操作可展开两排完整视频卡片，显示 16:9 封面、标题、UP 主和播放信息；支持遥控器与滚轮逐排浏览，展开、收起和滚动加入过渡动画。
+- **UP 主粉丝数**：播放控制栏显示 UP 主的公开粉丝数量，与控制栏同步淡出，重新打开时保持显示稳定。
+- **不感兴趣**：长按推荐卡片，可分别选择「当前视频」或「UP 主」。支持本机隐藏与恢复；满足账号和推荐条件时可提交官方反馈，并提供明确确认。
+- **账号修复**：设置中新增统一入口，可检查登录状态、刷新临时签名缓存、重建设备标识或重新扫码登录。重建设备标识保留登录状态，重复修复有五分钟冷却提示。
+- **更清楚的诊断反馈**：提交前可预览报告，再主动生成反馈二维码；补充播放失败阶段、错误码和恢复结果，方便排查问题，同时过滤账号凭据和签名地址等敏感信息。
 
-- 推荐卡片长按支持「不感兴趣：当前视频／UP」、本机隐藏和恢复。具备有效账号与推荐上下文时才可提交官方反馈；结果未知不自动重发，UP 隐藏按账号隔离。
-- 点播控制栏采用透明渐变布局，增加 UP 粉丝数，支持大字号、小屏幕、评论栏与分层返回。推荐区同时显示两排紧凑卡片；预览与展开保留同一网格，整块位移减少重排，方向键与滚轮逐排平滑浏览，尊重减少动态效果偏好。
-- 设置统一为「账号修复」：检查账号、清理临时签名缓存、确认后重建设备标识或重新扫码登录。与自动风控恢复共享持久化冷却及并发保护。
-- 无效 WBI 签名密钥不再污染缓存；旧响应不能覆盖已刷新缓存。
-- 账号修复兼容实际设备标识格式及缺省可选 Cookie，避免合法接口响应被误判失败。
-- 诊断先显示白名单预览，再主动生成二维码；保留播放失败与恢复结果，排除账号标识、观看内容、原始日志和签名地址。
-- 验证：最终本地全链路通过，控制栏 36/36、联网模拟 54 通过／0 失败／3 项匿名账号跳过。按要求跳过长测，最终两排控制栏仅本地验证，未再次操作电视。
+### 修复
+
+- 修复粉丝数提前消失、重新打开控制栏时闪空的问题。
+- 修复推荐区重新展开后的焦点可见性，改善展开与收起时的动画连续性。
+- 浏览推荐时暂时隐藏字幕，收起后恢复，避免字幕被挤出屏幕。
+- 修复播放签名缓存和设备标识兼容问题，完善播放风控后的恢复流程。
+
+### English
+
+- **Transparent playback controls** with stronger text and icon outlines for better readability over bright video, including large-text and comment-sidebar layouts.
+- **Two rows of full-size recommendations** with 16:9 covers, titles and creator information. Browse by remote or wheel with animated expansion, collapse and row scrolling.
+- **Creator follower counts** in the player, fading together with the controls without blinking when reopened.
+- **“Not interested” for videos or creators** from the recommendation card's long-press menu, with local hiding/restoration and confirmed official feedback when available.
+- **Account repair in Settings** for checking login, refreshing temporary signing data, rebuilding device identity while keeping login, or signing in again. Repeated repairs show a five-minute cooldown.
+- **Previewable diagnostic reports** with playback failure stages, error codes and recovery results, while filtering credentials and signed URLs.
+- Fixes for recommendation focus, subtitle visibility while browsing, signing-cache handling and device-identity compatibility.
 
 ## v2.4.1 — playback verification recovery / 播放风控恢复
 

@@ -1,0 +1,14 @@
+[
+  {
+    "name": "diagnostic preserves risk code and voucher flag -351",
+    "pass": true
+  },
+  {
+    "name": "diagnostic preserves risk code and voucher flag 0",
+    "pass": true
+  },
+  {
+    "name": "diagnostic network failures finish visibly and remain scannable",
+    "pass": true
+  }
+]

@@ -29,7 +29,7 @@ async function fixture() {
       } };
       if (name === 'fs') return { existsSync: p => p.endsWith('bili_cookies.json'), readFileSync: () => '{"buvid3":"anonymous-fixture"}', writeFileSync() {} };
       if (name === './cast/ssdpServer') return { CastLanServer: class { start() {} } };
-      if (name === './danmaku') return { connectDanmaku(_opts, broadcast) { relay.opened++; relay.broadcast = broadcast; return () => { relay.stopped++; }; } };
+      if (name === './danmaku') return { connectDanmaku(_opts, broadcast) { relay.opened++; relay.options = _opts; relay.broadcast = broadcast; return () => { relay.stopped++; }; } };
       return require(name);
     },
     Buffer, console: { log() {}, error() {} }, process: { version: process.version, uptime: process.uptime, on() {} }, setTimeout, clearTimeout,
@@ -73,6 +73,13 @@ await check('cast cancellation matches token without removing another subscriber
   assert.equal(a.replies.length, 1); assert.equal(b.replies.length, 2); assert.equal(f.context.castSubscribers.length, 1);
   f.cancel('castSubscribe', { uniqueToken: 'cast-b' }); assert.equal(f.context.castSubscribers.length, 0);
   return { activeSubscriberKept: true, duplicateCancelSafe: true };
+});
+await check('live relay uses the current service identity after repair', async f => {
+  f.context.storedCookies.buvid3 = 'repaired-fixture';
+  const sub = f.subscribe('danmakuSubscribe', 'identity');
+  assert.equal(f.relay.options.buvid, 'repaired-fixture');
+  f.cancel('danmakuSubscribe', {uniqueToken:sub.message.uniqueToken});
+  return {currentIdentityUsed:true};
 });
 await check('50 live subscribe/cancel cycles close idle relay immediately', async f => {
   for (let i = 0; i < rounds; i++) { const sub = f.subscribe('danmakuSubscribe', 'live-' + i); f.cancel('danmakuSubscribe', { uniqueToken: sub.message.uniqueToken }); }

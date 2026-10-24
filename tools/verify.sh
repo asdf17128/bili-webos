@@ -100,6 +100,7 @@ node tools/test-tv-stability-transport.mjs || { echo "FAIL: TV stability transpo
 node tools/test-soak-monitor.mjs || { echo "FAIL: soak monitor gap and frame accounting"; exit 1; }
 npm test || { echo "FAIL: service unit tests"; exit 1; }
 node tools/test-service-stability.mjs || { echo "FAIL: service request lifecycle stress"; exit 1; }
+node tools/test-playurl-risk.mjs || { echo 'FAIL: playurl risk recovery'; exit 1; }
 node tools/test-buvid-stability.mjs || { echo "FAIL: fingerprint startup deadlines"; exit 1; }
 node tools/test-service-subscriptions.mjs || { echo "FAIL: service subscription cancellation"; exit 1; }
 node tools/test-dev-bridge-subscriptions.mjs || { echo "FAIL: dev bridge subscription cancellation"; exit 1; }
@@ -121,7 +122,7 @@ fi
 echo "OK: version $V_APP consistent (appinfo == src/version.js)"
 
 echo "=== [3/6] Service on REAL Node 0.12.2 + Node 8 (docker) ==="
-if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+if command -v docker >/dev/null 2>&1 && node -e "try { require('child_process').execFileSync('docker', ['info'], {timeout:10000,killSignal:'SIGKILL',stdio:'ignore'}); } catch(e) { process.exit(1); }"; then
   bash tools/test-node8/test.sh | grep -vE "buvid boot|Cast server|proxy on port"
 else
   echo "SKIP: docker unavailable (Node 0.12/8 regression NOT verified!)"

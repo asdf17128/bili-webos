@@ -1,0 +1,66 @@
+[
+  {
+    "name": "recovers /x/player/playurl code=-351",
+    "pass": true
+  },
+  {
+    "name": "recovers /x/player/wbi/playurl code=0",
+    "pass": true
+  },
+  {
+    "name": "recovers /pgc/player/web/playurl code=-352",
+    "pass": true
+  },
+  {
+    "name": "concurrent failures share one refresh",
+    "pass": true
+  },
+  {
+    "name": "persistent risk retries once and cooldown blocks more refreshes",
+    "pass": true
+  },
+  {
+    "name": "invalid fingerprint keeps original identity and login",
+    "pass": true
+  },
+  {
+    "name": "unrelated endpoints and non-risk errors do not rotate",
+    "pass": true
+  },
+  {
+    "name": "manual reset preserves account, persists and rate limits",
+    "pass": true
+  },
+  {
+    "name": "logout during refresh prevents late mutation or retry",
+    "pass": true
+  },
+  {
+    "name": "valid stream with voucher does not trigger refresh",
+    "pass": true
+  },
+  {
+    "name": "late Set-Cookie cannot restore replaced identity",
+    "pass": true
+  },
+  {
+    "name": "persistence failure keeps original identity",
+    "pass": true
+  },
+  {
+    "name": "startup reuses repaired identity instead of fetching again",
+    "pass": true
+  },
+  {
+    "name": "cooldown survives service restart",
+    "pass": true
+  },
+  {
+    "name": "cooldown write failure performs no fingerprint request",
+    "pass": true
+  },
+  {
+    "name": "POST and other hosts never auto-rotate",
+    "pass": true
+  }
+]

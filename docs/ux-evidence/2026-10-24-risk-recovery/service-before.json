@@ -1,0 +1,46 @@
+[
+  {
+    "name": "recovers /x/player/playurl code=-351",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n-351 !== 0\n"
+  },
+  {
+    "name": "recovers /x/player/wbi/playurl code=0",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n0 !== 1\n"
+  },
+  {
+    "name": "recovers /pgc/player/web/playurl code=-352",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n-352 !== 0\n"
+  },
+  {
+    "name": "concurrent failures share one refresh",
+    "pass": false,
+    "error": "The expression evaluated to a falsy value:\n\n  assert(r.every(x=>x.code===0))\n"
+  },
+  {
+    "name": "persistent risk retries once and cooldown blocks more refreshes",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n1 !== 2\n"
+  },
+  {
+    "name": "invalid fingerprint keeps original identity and login",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n0 !== 1\n"
+  },
+  {
+    "name": "unrelated endpoints and non-risk errors do not rotate",
+    "pass": true
+  },
+  {
+    "name": "manual reset preserves account, persists and rate limits",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\nfalse !== true\n"
+  },
+  {
+    "name": "logout during refresh prevents late mutation or retry",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n0 !== 1\n"
+  }
+]

@@ -1,5 +1,13 @@
 // Spanish dictionary. Keys are the Chinese source strings (see index.js).
 export default {
+  "重置设备标识": "Restablecer identidad del dispositivo",
+  "正在重置…": "Restableciendo…",
+  "已重置，请重试播放": "Restablecido. Vuelve a reproducir.",
+  "操作过于频繁，请 5 分钟后重试": "Espera 5 minutos antes de reintentar.",
+  "重置失败，请稍后重试": "Error al restablecer. Inténtalo más tarde.",
+  "保留登录，用于播放风控排查": "Conserva la sesión; repara la verificación",
+  "未返回可播放的视频流": "No se recibió un flujo de vídeo reproducible",
+
   "Nerd 信息": "Información técnica",
   "分辨率": "Resolución",
   "视频编码": "Códec de vídeo",

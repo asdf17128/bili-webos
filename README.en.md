@@ -93,3 +93,7 @@ See the [premium playback guide](docs/DOLBY_VISION.md) for quality and device li
 ## License
 
 [MIT licensed](LICENSE). Keep the copyright and license notices when distributing modified source or packages. Third-party dependencies and bundled assets retain their own licenses; this license does not grant rights to Bilibili/LG trademarks or imply their endorsement. An independent community project, not affiliated with Bilibili or LG.
+
+## Playback verification failures
+
+Version 2.4.1 attempts one device-identity recovery for recognized playback verification failures. If playback still fails, use **Settings → Reset device identity**, then retry. This preserves your login and has a five-minute cooldown. Run network diagnostics if the issue persists. Resetting an identity does not guarantee removal of account or regional restrictions.

@@ -17,6 +17,7 @@ import { formatDuration, formatTime, formatCount, QUALITY_MAP, cleanTitle, pickA
 import { storage } from '../utils/storage';
 import { setCustomKeyHandler } from '../hooks/useFocus';
 import { tripleNextRel, tripleNextStat, mergeServerRel } from './tripleState';
+import { playurlErrorCode } from '../utils/playurlStatus';
 import { apiErrorHint } from '../utils/apiHint';
 import { mark, markAfterPaint } from '../utils/perf';
 import { holdPrefetch } from '../utils/perfFlags';
@@ -929,6 +930,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
               // Request the full ladder so HDR/4K reps are present; pick the
               // top rep by default, or the forced fallback quality.
               const res = await activeResult(trace.measure('url', () => getBangumiPlayUrl({ epid, cid }, fallbackQn || requestedQuality(settings.quality))));
+              const hint = apiErrorHint(playurlErrorCode(res), { loggedIn: !!storage.getAuth()?.SESSDATA });
+              if (hint) { trace.fail(); setLoading(false); setErrorMsg(hint); setLoadError(true); return; }
               meta = res?.result || res?.data;
               dash = meta?.dash;
               if (!dash) throw new Error('No DASH stream (bangumi — region/VIP locked?)');
@@ -951,8 +954,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
               // 取流被拒时,把**能照着做的话**摆到用户面前(issue #20/#23:
               // 两位用户都只看到一句"视频加载失败",不知道是风控、更不知道
               // 登录通常就能解决)。
-              if (res && res.code !== 0) {
-                const hint = apiErrorHint(res.code, { loggedIn: !!storage.getAuth()?.SESSDATA });
+              if (res && playurlErrorCode(res) !== 0) {
+                const hint = apiErrorHint(playurlErrorCode(res), { loggedIn: !!storage.getAuth()?.SESSDATA });
                 if (hint) {
                   trace.fail();
                   setLoading(false);

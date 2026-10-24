@@ -783,3 +783,13 @@ C9 社区独立验证：[#34 回报](https://github.com/asdf17128/bili-webos/iss
 
 - `tools/test-player-loading.mjs`：默认隐藏且保留清晰度操作；设置页鼠标与遥控切换，重载后保留；显示实际音视频编码、3840×2160/60fps、完成媒体响应的累计字节及主机名（不泄露签名查询参数）；关闭后不挂载面板。旧 PlayerPage 对照无法显示面板，测试失败。
 - `tools/test-live-loading.mjs`：直播默认隐藏，共用开关；不可读的原生音轨/下载计数显示 —。受控浏览器验证不等于真机物理画面验收。
+
+
+## 2026-10-24 — #50 / #51 / #52：取流风控恢复
+
+- `tools/test-playurl-risk.mjs`：真实 service.js + 隔离 HTTP/磁盘；修前 UGC/PGC 风控不能恢复、WBI voucher 误作成功，8 并发无恢复、重置方法不存在；修后涵盖单次重试、共享刷新、5 分钟冷却和重启持久化、刷新/写盘失败、退出登录及迟到 Set-Cookie、健康流/无关接口不刷新。
+- `tools/test-node8/risk-runtime.js`：ES5 隔离夹具，在官方 SHA256 校验过的 Node 0.12.2 / 8.17.0 二进制运行生产服务，验证真实旧运行时恢复与持久化。macOS 二进制测试不等同于 webOS TLS 或 Linux 容器验证。
+- `tools/test-tv-ux.mjs`：`-351` 和 `code=0 + v_voucher` 均显示取流失败；二维码像素可解码，保留原始 code / voucher 标志，未泄露 voucher 值；CDN 无媒体时明确未测试。
+- `tools/test-session-proxy.mjs`：遥控到达重置入口、保留 SESSDATA、同步前端标识及冷却提示。
+- `tools/test-player-loading.mjs`：仅 voucher 的响应显示风控提示，不初始化解码器或反复取流。
+- `tools/test-risk-recovery-tv.mjs`：真实 SPI 手动重置、账号保持、冷却与 4K 起播；不将可播放的本地电视当作复现报告者风控。

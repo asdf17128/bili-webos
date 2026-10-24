@@ -771,6 +771,25 @@ for (const cols of [2, 3, 4]) for (const [sizeIndex, scale] of [1, 1.12, 1.25].e
   }, { auth: true, resume: true });
 }
 
+for (const response of [{code:-351}, {code:0,data:{v_voucher:'PRIVATE_VOUCHER_DO_NOT_EXPORT'}}]) {
+  await test('diagnostic preserves risk code and voucher flag '+response.code, async ({page}) => {
+    await ready(page);
+    await page.route('**/x/web-interface/view?**', route => route.fulfill({json:{code:0,data:{cid:42}}}));
+    await page.route('**/playurl?**', route => route.fulfill({json:response}));
+    await page.locator('.sidebar-item').filter({hasText:'设置'}).click();
+    await page.getByText('网络诊断',{exact:true}).click();
+    const panel=page.locator('.diagnostic-panel');await panel.locator('svg').waitFor();
+    const detail=await panel.innerText();
+    assert.match(detail,/playurl_no_media; CDN not tested/);
+    assert.match(detail,new RegExp('code='+response.code+' voucher='+(response.code===0?1:0)+' stream=0'));
+    const png=PNG.sync.read(await panel.screenshot({path:`${output}/risk-${response.code}.png`}));
+    const qr=jsQR(new Uint8ClampedArray(png.data),png.width,png.height);assert(qr,'QR decodes');
+    const report=new URL(qr.data).searchParams.get('body');
+    assert.match(report,new RegExp('\\[fail\\] playurl code='+response.code));
+    assert.match(report,/CDN not tested/);assert(!report.includes('PRIVATE_VOUCHER'));
+  });
+}
+
 await test('diagnostic network failures finish visibly and remain scannable', async ({ page }) => {
   await ready(page);
   await page.locator('.sidebar-item').filter({ hasText: '设置' }).click();

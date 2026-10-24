@@ -1,0 +1,41 @@
+[
+  {
+    "name": "remote reaches reset row",
+    "pass": true
+  },
+  {
+    "name": "real reset completes",
+    "pass": true,
+    "detail": "重置设备标识\n已重置，请重试播放"
+  },
+  {
+    "name": "reset preserves account and syncs frontend identity",
+    "pass": true,
+    "detail": {
+      "sessionPreserved": true,
+      "identityPresent": true,
+      "identityChanged": true,
+      "clientMatches": true
+    }
+  },
+  {
+    "name": "manual repeat is rate limited",
+    "pass": true
+  },
+  {
+    "name": "premium 4K plays after real identity reset",
+    "pass": true,
+    "detail": {
+      "time": 3.203187,
+      "width": 3840,
+      "height": 2160,
+      "video": "dvh1.08.07",
+      "audio": "mp4a.40.2",
+      "error": null
+    }
+  },
+  {
+    "name": "playback continues after reset",
+    "pass": true
+  }
+]

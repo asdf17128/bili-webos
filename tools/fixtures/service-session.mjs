@@ -10,9 +10,9 @@ const require = createRequire(source);
 const cookieFile = '/media/internal/bili_cookies.json';
 export const fakeAuth = { SESSDATA: 'fixture-session', DedeUserID: '123', bili_jct: 'fixture-csrf', buvid3: 'fixture-buvid' };
 
-export async function serviceFixture({ occupied = false, loggedIn = true } = {}) {
+export async function serviceFixture({ occupied = false, loggedIn = true, upstreamReply, serviceSource, initialDisk } = {}) {
   const state = { failSave: false, hold: '', held: [], requests: [], clears: 0 };
-  const disk = new Map([[cookieFile, JSON.stringify(loggedIn ? fakeAuth : { buvid3: 'fixture-buvid' })]]);
+  const disk = initialDisk || new Map([[cookieFile, JSON.stringify(loggedIn ? fakeAuth : { buvid3: 'fixture-buvid' })]]);
   const servers = [];
   const timers = new Set();
   const listen = server => new Promise((resolve, reject) => {
@@ -27,6 +27,7 @@ export async function serviceFixture({ occupied = false, loggedIn = true } = {})
   const upstream = http.createServer((req, res) => {
     state.requests.push({ path: req.url, cookie: req.headers.cookie || '', range: req.headers.range || '' });
     const reply = () => {
+      if (upstreamReply && upstreamReply(req, res, state)) return;
       let body = { code: 0, data: {} };
       const member = /SESSDATA=/.test(req.headers.cookie || '');
       if (req.url.includes('/nav')) body.data = { isLogin: member, mid: member ? 123 : 0, uname: 'Fixture account', wbi_img: { img_url: 'https://example.com/abcdefghijklmnopqrstuvwxyz123456.png', sub_url: 'https://example.com/abcdefghijklmnopqrstuvwxyz123456.png' } };
@@ -60,13 +61,13 @@ export async function serviceFixture({ occupied = false, loggedIn = true } = {})
     if (name === 'http') return { ...http, createServer: (...args) => { const s = http.createServer(...args); servers.push(s); return s; } };
     if (name === 'fs') return {
       existsSync: p => disk.has(p), readFileSync: p => disk.get(p),
-      writeFileSync: (p, value) => { if (p === cookieFile && state.failSave) throw new Error('fixture disk failure'); disk.set(p, value); },
+      writeFileSync: (p, value) => { if ((p === cookieFile && state.failSave) || (p.endsWith('bili_identity_state.json') && state.failIdentitySave)) throw new Error('fixture disk failure'); disk.set(p, value); },
     };
     if (name === './cast/ssdpServer') return { CastLanServer: class { start() {} } };
     if (name === './danmaku') return {};
     return require(name);
   };
-  vm.runInNewContext(readFileSync(source, 'utf8'), {
+  vm.runInNewContext(readFileSync(serviceSource || source, 'utf8'), {
     require: fixtureRequire, Buffer, console: { log() {}, error() {} },
     process: { version: process.version, uptime: () => process.uptime(), on() {} },
     setTimeout: (fn, ms) => { const t = setTimeout(fn, ms); timers.add(t); return t; }, clearTimeout,

@@ -95,11 +95,11 @@ async function devLunaAvailable() {
   return devLunaUp;
 }
 
-async function devLunaCall(method, params) {
+async function devLunaCall(method, params, deadlineMs) {
   return fetchJsonWithDeadline(DEV_LUNA + '/luna/' + method, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params || {}),
-  }, 20000);
+  }, deadlineMs || 20000);
 }
 
 function devLunaSubscribe(method, params, onFrame) {
@@ -204,6 +204,7 @@ async function smartFetch(host, path, options) {
   checkSession(generation);
   var url = 'https://' + host + path;
   var opts = options || {};
+  if (/^\/(x\/player\/(wbi\/)?playurl|pgc\/player\/web\/playurl)\?/.test(path)) opts = { ...opts, deadlineMs: opts.deadlineMs || 35000 };
 
   if (hasLunaService()) {
     var res = await lunaFetch(url, opts);
@@ -226,7 +227,7 @@ async function smartFetch(host, path, options) {
     var br = await devLunaCall('fetch', {
       url: url, method: opts.method || 'GET', body: opts.body,
       contentType: opts.contentType, range: opts.range,
-    });
+    }, opts.deadlineMs);
     checkSession(generation);
     if (br && br.newCookies) {
       var a2 = storage.getAuth() || {};
@@ -384,6 +385,13 @@ export async function ensureBuvid() {
   const generation = storage.getAuthGeneration();
   if (buvidEnsured) return;
   try {
+    if (hasLunaService() || await devLunaAvailable()) {
+      const r = await lunaRequest('ensureDeviceIdentity', {}, false, {});
+      checkSession(generation);
+      _buvid3 = r.cookies?.buvid3 || '';
+      buvidEnsured = !!_buvid3;
+      return;
+    }
     const r = await apiFetch('/x/frontend/finger/spi');
     const b3 = r?.data?.b_3;
     const b4 = r?.data?.b_4;
@@ -406,6 +414,21 @@ export async function ensureBuvid() {
       buvidEnsured = true;
     }
   } catch (e) { /* best effort */ }
+}
+
+export async function resetDeviceIdentity() {
+  const generation = storage.getAuthGeneration();
+  checkSession(generation);
+  const r = await lunaRequest('resetDeviceIdentity', {}, false, {});
+  checkSession(generation);
+  const auth = { ...storage.getAuth() };
+  for (const key of ['buvid3', 'buvid4', 'b_nut']) {
+    delete auth[key];
+    if (r.cookies?.[key]) auth[key] = r.cookies[key];
+  }
+  storage.setAuth(auth);
+  _buvid3 = r.cookies?.buvid3 || '';
+  buvidEnsured = !!_buvid3;
 }
 
 // Rename the cast receiver as shown in the phone's 投屏 list (applies live).

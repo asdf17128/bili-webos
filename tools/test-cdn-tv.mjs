@@ -111,9 +111,11 @@ try {
     await evaluate(`localStorage.setItem('bili_settings',JSON.stringify({...JSON.parse(localStorage.getItem('bili_settings')||'{}'),cdnRoute:'ali'}));document.querySelector('[data-focus-id="sidebar-13-0"]').click()`);
     await wait('!!document.querySelector(".config-page")');
     await evaluate(`document.querySelector('[data-focus-id="content-9-0"]').click()`);
+    await wait('!!document.querySelector(".diagnostic-preview")', 100000);
+    await evaluate(`document.querySelector('.diagnostic-export').click()`);
     await wait('!!document.querySelector(".diagnostic-report svg")', 100000);
     const reportText = await evaluate('document.querySelector(".diagnostic-panel").innerText');
-    check('diagnostics measure the selected Ali route', /视频 CDN.*ali /.test(reportText), reportText.match(/视频 CDN[^\n]*/)?.[0]);
+    check('diagnostics show anonymized node results', /视频 CDN.*节点/.test(reportText), reportText.match(/视频 CDN[^\n]*/)?.[0]);
     check('diagnostics report single and concurrent throughput', /CDN 测速.*1x.*4x/.test(reportText));
     await evaluate(`document.querySelector('.diagnostic-report').scrollIntoView({block:'center'})`);
     await sleep(700);
@@ -122,14 +124,14 @@ try {
     assert.ok(qr, 'QR must decode from real TV pixels');
     const url = new URL(qr.data);
     const body = url.searchParams.get('body');
-    check('TV QR retains selected route and last playback evidence', body.includes('route=ali') && /last: host=.+stalls=/.test(body));
-    check('TV QR reports actual media readiness time', /startup=[1-9][0-9]*ms/.test(body));
-    check('TV QR includes measured startup stages and media milestones', /startup ready.*engine=/.test(body) && /since-open:.*response=[0-9]+ms.*data=[0-9]+ms/.test(body) && /media: req=[1-9]/.test(body));
-    check('startup report separates CDN failures from Blob MIME probes', /net-retry=[1-9].*media\/http\/1001/.test(body) && !/manifest\/blob/.test(body), body.match(/net-retry=.*/)?.[0]);
-    check('first request host and completed audio/video appends are captured', /first-host: request=upos-sz-mirrorbad.bilivideo.com/.test(body) && /vappend=[0-9]+ms/.test(body) && /aappend=[0-9]+ms/.test(body) && /buffer:.*data=[0-9]+ms\/r[234]/.test(body));
-    check('test build is identified in QR', body.includes('app v' + BUILD_VERSION));
+    check('TV QR retains selected route and safe startup evidence', body.includes('route=ali') && /startup ready/.test(body));
+    check('TV QR reports actual media readiness time', /startup ready ms=[1-9][0-9]*/.test(body));
+    check('TV QR includes stage timings and stream availability', /stage engine .*ms=/.test(body) && /stage url .*hasStream=yes/.test(body));
+    check('startup report preserves retry count without endpoint details', /startup ready .*retries=[1-9]/.test(body) && !/net-retry=|manifest\/blob/.test(body));
+    check('export excludes endpoint and viewing details', !/first-host:|host=|upos-|format:|buvid=/.test(body));
+    check('test build is identified in QR', body.includes('app=' + BUILD_VERSION));
     check('startup timing is visible without scanning', /最近一次起播.*[0-9]+\.[0-9]+s/.test(reportText) && /首个媒体响应/.test(reportText));
-    writeFileSync(output+'/startup-report.txt',body.split('\n').filter(line=>/^(app |startup |since-open:|media:|dispatch:|first-host:|buffer:|net-retry=|format:|ua )/.test(line)).join('\n'));
+    writeFileSync(output+'/startup-report.txt',body.split('\n').filter(line=>/^(diag=|env |route=|startup |stage |error )/.test(line)).join('\n'));
     check('TV QR body is ASCII and contains no signed media URL', /^[\x00-\x7f]*$/.test(body) && !/upsig|SESSDATA|hdnts/i.test(body));
   } finally {
     await evaluate(originalSettings == null ? 'localStorage.removeItem("bili_settings")' : `localStorage.setItem('bili_settings',${JSON.stringify(originalSettings)})`);

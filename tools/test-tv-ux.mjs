@@ -20,7 +20,8 @@ const items = (prefix, count = 30) => Array.from({ length: count }, (_, i) => ({
 }));
 
 async function fixture(options = {}) {
-  const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
+  const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, serviceWorkers: 'block' });
+  await context.routeWebSocket('**/*', socket => socket.close());
   await context.addInitScript(options => {
     // Keep Chromium's real geometry/scroll callbacks; remove only the API
     // absent from Chromium 51–57 (webOS 4.x uses 53).
@@ -786,15 +787,16 @@ for (const response of [{code:-351}, {code:0,data:{v_voucher:'PRIVATE_VOUCHER_DO
     await page.route('**/playurl?**', route => route.fulfill({json:response}));
     await page.locator('.sidebar-item').filter({hasText:'设置'}).click();
     await page.getByText('网络诊断',{exact:true}).click();
-    const panel=page.locator('.diagnostic-panel');await panel.locator('svg').waitFor();
+    const panel=page.locator('.diagnostic-panel');await panel.locator('.diagnostic-preview').waitFor();
+    await panel.locator('.diagnostic-export').click();await panel.locator('svg').waitFor();
     const detail=await panel.innerText();
-    assert.match(detail,/playurl_no_media; CDN not tested/);
-    assert.match(detail,new RegExp('code='+response.code+' voucher='+(response.code===0?1:0)+' stream=0'));
-    const png=PNG.sync.read(await panel.screenshot({path:`${output}/risk-${response.code}.png`}));
+    assert.match(detail,/reason=no_stream/);
+    assert.match(detail,new RegExp('code='+response.code+' hasStream=no voucher='+(response.code===0?'yes':'no')));
+    const png=PNG.sync.read(await panel.locator('.diagnostic-report svg').screenshot({path:`${output}/risk-${response.code}.png`}));
     const qr=jsQR(new Uint8ClampedArray(png.data),png.width,png.height);assert(qr,'QR decodes');
     const report=new URL(qr.data).searchParams.get('body');
     assert.match(report,new RegExp('\\[fail\\] playurl code='+response.code));
-    assert.match(report,/CDN not tested/);assert(!report.includes('PRIVATE_VOUCHER'));
+    assert.match(report,/\[skip\] cdn reason=no_stream/);assert(!report.includes('PRIVATE_VOUCHER'));
     assert.match(report,/attempt1: http=200 code=-352/);
     assert.match(report,/recovery=retried final=failed/);
   });
@@ -806,18 +808,23 @@ await test('diagnostic network failures finish visibly and remain scannable', as
   await page.route('http://127.0.0.1:9527/**', route => route.abort());
   await page.getByText('网络诊断', { exact: true }).click();
   const panel = page.locator('.diagnostic-panel');
+  await panel.locator('.diagnostic-preview').waitFor();
+  await panel.locator('.diagnostic-export').click();
   await panel.locator('svg').waitFor();
   const detail = await panel.innerText();
-  assert.equal((detail.match(/❌/g) || []).length, 7, detail);
+  assert.equal((detail.match(/❌/g) || []).length, 5, detail);
+  assert.equal((detail.match(/⏭️/g) || []).length, 2, detail);
   assert.ok(!detail.includes('⏳'), 'all probes must settle');
-  const png = PNG.sync.read(await panel.screenshot({ path: `${output}/diagnostics-offline.png` }));
+  const png = PNG.sync.read(await panel.locator('.diagnostic-report svg').screenshot({ path: `${output}/diagnostics-offline.png` }));
   const qr = jsQR(new Uint8ClampedArray(png.data), png.width, png.height);
   assert.ok(qr, 'failure report QR must decode from rendered pixels');
   const url = new URL(qr.data);
   assert.equal(url.origin, 'https://github.com');
   const body = url.searchParams.get('body');
-  for (const step of ['svc', 'api', 'rcmd', 'view', 'playurl', 'cdn', 'imgproxy']) assert.ok(body.includes('[fail] ' + step), body);
+  for (const step of ['svc', 'api', 'rcmd', 'view', 'imgproxy']) assert.ok(body.includes('[fail] ' + step), body);
   assert.match(body, /route=auto/);
+  assert.match(body, /\[skip\] playurl reason=no_cid/);
+  assert.match(body, /\[skip\] cdn reason=no_stream/);
   assert.ok(!/[^\x00-\x7f]/.test(body), 'report stays ASCII');
 });
 

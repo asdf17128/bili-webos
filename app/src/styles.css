@@ -665,6 +665,22 @@ html, body, #root {
 }
 .cardmenu-item.focused { background: rgba(0, 161, 214, 0.22); border-color: #fff; }
 .cardmenu-msg { font-size: calc(22px * var(--ui-scale)); color: #f0f0f0; padding: 22px 28px 16px; text-align: center; }
+.cardmenu-description, .cardmenu-status { font-size: calc(20px * var(--ui-scale)); line-height: 1.5; padding: 12px 28px; color: #c2c6ce; }
+.cardmenu-status { color: #f0f0f0; }
+.recommendation-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0; }
+.recommendation-empty .page-state { flex: 0; }
+.recommendation-empty > .tv-action { margin: 12px 0; }
+.recommendation-empty > p { font-size: calc(20px * var(--ui-scale)); }
+.account-repair-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 150; background: rgba(0,0,0,.75); display: flex; align-items: center; justify-content: center; }
+.account-repair-dialog { width: 920px; max-width: 88vw; max-height: 88vh; overflow-y: auto; background: #24262d; border: 1px solid #40434b; border-radius: 16px; padding: 26px 32px; }
+.account-repair-dialog h2 { margin: 0 0 14px; font-size: calc(28px * var(--ui-scale)); }
+.account-repair-dialog p { font-size: calc(20px * var(--ui-scale)); line-height: 1.45; margin: 10px 0; }
+.account-repair-note { color: #c2c6ce; }
+.account-repair-result { border-left: 3px solid #ff6b9b; padding-left: 16px; }
+.account-repair-actions { margin-top: 18px; }
+.account-repair-action { display: block; width: 100%; border: 2px solid transparent; border-radius: 10px; padding: 11px 18px; margin: 5px 0; background: transparent; color: #f1f1f3; font: inherit; font-size: calc(22px * var(--ui-scale)); text-align: left; }
+.account-repair-action.focused { background: #f4f4f6; color: #17181b; border-color: #fff; }
+.account-repair-action[aria-disabled="true"] { opacity: .5; }
 /* Cursor/D-pad focus: bright, scaled, glowing — clearly distinct from active. */
 /* 焦点:同样是实心蓝(不换色),靠亮边 + 微放大表达"焦点在这儿" —— 选中和焦点
    用同一个色,只在描边/尺寸上分层,避免同一行里出现两种蓝。 */

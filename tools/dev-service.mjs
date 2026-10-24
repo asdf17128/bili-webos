@@ -45,9 +45,10 @@ if (isolatedState) {
   fs.mkdirSync(isolatedState, { recursive: true });
   const stateFs = Object.create(fs);
   const mapped = p => typeof p === 'string' && p.startsWith('/media/internal/') ? path.join(isolatedState, path.basename(p)) : p;
-  for (const method of ['existsSync', 'readFileSync', 'writeFileSync']) {
+  for (const method of ['existsSync', 'readFileSync', 'writeFileSync', 'openSync', 'unlinkSync']) {
     stateFs[method] = (p, ...args) => fs[method](mapped(p), ...args);
   }
+  stateFs.renameSync = (from, to) => fs.renameSync(mapped(from), mapped(to));
   const originalLoad = Module._load;
   Module._load = function (request, parent, ...args) {
     if (request === 'fs' && parent?.filename === path.join(SERVICE_DIR, 'service.js')) return stateFs;

@@ -1,0 +1,242 @@
+✖ HTML nav failure cannot poison the next real WBI signature for ten minutes (3.566792ms)
+✖ null body is rejected without caching or exposing its contents (0.462042ms)
+✖ business failure without keys is rejected without caching or exposing its contents (0.280417ms)
+✖ missing image object is rejected without caching or exposing its contents (0.259833ms)
+✖ missing second key is rejected without caching or exposing its contents (0.27275ms)
+✖ non-string image URL is rejected without caching or exposing its contents (0.504875ms)
+✖ empty key is rejected without caching or exposing its contents (0.244709ms)
+✖ short key is rejected without caching or exposing its contents (0.291ms)
+✖ overlong key is rejected without caching or exposing its contents (0.25925ms)
+✖ invalid key character is rejected without caching or exposing its contents (0.282958ms)
+✔ anonymous nav keys remain usable and successful keys are cached (0.452541ms)
+✔ complete opaque alphanumeric keys and URL query suffixes are retained (0.207334ms)
+✔ concurrent cache misses keep independent nav requests (0.220042ms)
+✔ one failed concurrent request cannot reject or poison another successful request (0.240666ms)
+✔ synchronous fetch exceptions do not cache invalid keys (0.273625ms)
+✖ cache TTL begins when valid keys arrive and refreshes at its boundary (0.309292ms)
+✖ an invalid refresh neither serves stale keys nor prevents immediate recovery (0.638708ms)
+✖ wall clock rollback expires cached keys instead of extending them (0.415584ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 5
+ℹ fail 13
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 82.263375
+
+✖ failing tests:
+
+test at ../../../../../../../private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:27:1
+✖ HTML nav failure cannot poison the next real WBI signature for ten minutes (3.566792ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   firstRejected: false,
+  +   nextAttemptRefetched: false,
+  +   signatureUsesEmptyMixin: true,
+  +   validReplacementUsed: false
+  -   firstRejected: true,
+  -   nextAttemptRefetched: true,
+  -   signatureUsesEmptyMixin: false,
+  -   validReplacementUsed: true
+    }
+  
+      at TestContext.<anonymous> (file:///private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:38:10)
+      at async Test.run (node:internal/test_runner/test:1102:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { firstRejected: false, nextAttemptRefetched: false, validReplacementUsed: false, signatureUsesEmptyMixin: true },
+    expected: { firstRejected: true, nextAttemptRefetched: true, validReplacementUsed: true, signatureUsesEmptyMixin: false },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../../../private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:58:50
+✖ null body is rejected without caching or exposing its contents (0.462042ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:63:3)
+      at async Test.run (node:internal/test_runner/test:1102:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:777:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at ../../../../../../../private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:58:50
+✖ business failure without keys is rejected without caching or exposing its contents (0.280417ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:63:3)
+      at async Test.run (node:internal/test_runner/test:1102:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:777:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at ../../../../../../../private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:58:50
+✖ missing image object is rejected without caching or exposing its contents (0.259833ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:63:3)
+      at async Test.run (node:internal/test_runner/test:1102:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:777:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at ../../../../../../../private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:58:50
+✖ missing second key is rejected without caching or exposing its contents (0.27275ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:63:3)
+      at async Test.run (node:internal/test_runner/test:1102:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:777:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at ../../../../../../../private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:58:50
+✖ non-string image URL is rejected without caching or exposing its contents (0.504875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'WBI_KEYS_INVALID'
+  
+      at Object.<anonymous> (file:///private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:64:12)
+      at expectedException (node:assert:553:17)
+      at expectsError (node:assert:678:21)
+      at strict.rejects (node:assert:744:3)
+      at async TestContext.<anonymous> (file:///private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:63:3)
+      at async Test.run (node:internal/test_runner/test:1102:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:777:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'WBI_KEYS_INVALID',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../../../private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:58:50
+✖ empty key is rejected without caching or exposing its contents (0.244709ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:63:3)
+      at async Test.run (node:internal/test_runner/test:1102:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:777:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at ../../../../../../../private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:58:50
+✖ short key is rejected without caching or exposing its contents (0.291ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:63:3)
+      at async Test.run (node:internal/test_runner/test:1102:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:777:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at ../../../../../../../private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:58:50
+✖ overlong key is rejected without caching or exposing its contents (0.25925ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:63:3)
+      at async Test.run (node:internal/test_runner/test:1102:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:777:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at ../../../../../../../private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:58:50
+✖ invalid key character is rejected without caching or exposing its contents (0.282958ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:63:3)
+      at async Test.run (node:internal/test_runner/test:1102:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:777:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at ../../../../../../../private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:129:1
+✖ cache TTL begins when valid keys arrive and refreshes at its boundary (0.309292ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   imgKey: 'abcdefghijklmnopqrstuvwxyz123456',
+  +   subKey: '654321zyxwvutsrqponmlkjihgfedcba'
+  -   imgKey: '0123456789abcdef0123456789abcdef',
+  -   subKey: 'fedcba9876543210fedcba9876543210'
+    }
+  
+      at TestContext.<anonymous> (file:///private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:138:10)
+      at async Test.run (node:internal/test_runner/test:1102:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:777:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { imgKey: 'abcdefghijklmnopqrstuvwxyz123456', subKey: '654321zyxwvutsrqponmlkjihgfedcba' },
+    expected: { imgKey: '0123456789abcdef0123456789abcdef', subKey: 'fedcba9876543210fedcba9876543210' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../../../private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:145:1
+✖ an invalid refresh neither serves stale keys nor prevents immediate recovery (0.638708ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:152:3)
+      at async Test.run (node:internal/test_runner/test:1102:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:777:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: { code: 'WBI_KEYS_INVALID' },
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at ../../../../../../../private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:157:1
+✖ wall clock rollback expires cached keys instead of extending them (0.415584ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   imgKey: '0123456789abcdef0123456789abcdef',
+  +   subKey: 'fedcba9876543210fedcba9876543210'
+  -   imgKey: 'abcdefghijklmnopqrstuvwxyz123456',
+  -   subKey: '654321zyxwvutsrqponmlkjihgfedcba'
+    }
+  
+      at TestContext.<anonymous> (file:///private/tmp/bili-wbi-final-baseline.UhMhhc/wbi.test.js:164:10)
+      at async Test.run (node:internal/test_runner/test:1102:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:777:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { imgKey: '0123456789abcdef0123456789abcdef', subKey: 'fedcba9876543210fedcba9876543210' },
+    expected: { imgKey: 'abcdefghijklmnopqrstuvwxyz123456', subKey: '654321zyxwvutsrqponmlkjihgfedcba' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

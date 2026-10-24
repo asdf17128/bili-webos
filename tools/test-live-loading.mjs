@@ -4,12 +4,14 @@ import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 const output=process.env.LIVE_TEST_OUTPUT || '/tmp/bili-live-loading';
+const base=process.env.LIVE_BASE_URL || 'http://127.0.0.1:5173';
 await mkdir(output,{recursive:true});
 const browser=await chromium.launch();
 const results=[];
 async function test(name,fn,mode='normal') {
  if(process.env.LIVE_FILTER&&!new RegExp(process.env.LIVE_FILTER).test(name))return;
- const context=await browser.newContext({viewport:{width:1920,height:1080}});
+ const context=await browser.newContext({viewport:{width:1920,height:1080},serviceWorkers:'block'});
+ await context.routeWebSocket('**/*',socket=>socket.close());
  await context.addInitScript(()=>{
   delete window.webOS;
   localStorage.setItem('bili_settings',JSON.stringify({language:'zh',liveQn:10000,danmaku:false}));
@@ -24,7 +26,7 @@ async function test(name,fn,mode='normal') {
  let infoCalls=0;
  await page.route('**/*',async route=>{
   const u=new URL(route.request().url());
-  if(u.port==='5173')return route.continue();
+  if(u.origin===new URL(base).origin)return route.continue();
   if(u.port==='9528')return route.abort();
   if(u.pathname.endsWith('/getRoomPlayInfo')) {
    infoCalls++;
@@ -37,7 +39,7 @@ async function test(name,fn,mode='normal') {
   return route.fulfill({json:{code:0,data:{}}});
  });
  try {
-  await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>!!window.__openLive);
+  await page.goto(base);await page.waitForFunction(()=>!!window.__openLive);
   await fn(page,()=>infoCalls);
   results.push({name,pass:true});console.log('PASS',name);
  }catch(e){results.push({name,pass:false,error:e.message});console.log('FAIL',name,e.message.split('\n')[0]);await page.screenshot({path:`${output}/failure-${results.length}.png`});}

@@ -78,6 +78,16 @@ node --test app/src/player/liveStream.test.js || { echo "FAIL: live stream selec
 node --test app/src/player/cdnAuto.test.js || { echo "FAIL: automatic CDN routing"; exit 1; }
 node --test service/com.biliwebos.app.service/test/playbackDiagnostics.test.js app/src/player/diagnosticReport.test.js || { echo "FAIL: diagnostic evidence"; exit 1; }
 node --test app/src/player/startupTrace.test.js || { echo "FAIL: startup diagnostics"; exit 1; }
+node --test app/src/utils/diagnosticReport.test.js app/src/player/startupTrace.test.js || { echo "FAIL: startup diagnostics"; exit 1; }
+node --test app/src/api/wbi.test.js || { echo "FAIL: WBI key recovery"; exit 1; }
+node tools/test-account-repair-client.mjs || { echo "FAIL: account repair controller"; exit 1; }
+node tools/test-account-repair-service.mjs || { echo "FAIL: account repair service wiring"; exit 1; }
+node tools/test-account-repair-service-es5.js || { echo "FAIL: account repair persistence fixtures"; exit 1; }
+node tools/test-account-repair-transport.mjs || { echo "FAIL: account repair transport"; exit 1; }
+node --test app/src/utils/hiddenRecommendations.test.js app/src/utils/hiddenRecommendationAuthors.test.js app/src/utils/recommendationFeedback.test.js || { echo "FAIL: recommendation feedback preferences"; exit 1; }
+node tools/test-recommendation-feedback.mjs || { echo "FAIL: recommendation feedback transport"; exit 1; }
+node tools/test-recommendation-account-scope.mjs || { echo "FAIL: recommendation account scope"; exit 1; }
+node --test app/src/utils/authorFollowers.test.js || { echo "FAIL: public author statistics"; exit 1; }
 # C-I18N-01: every t('…') key covered in every dictionary (missing = zh fallback leaks)
 node tools/test-i18n-coverage.mjs || { echo "FAIL: i18n coverage"; exit 1; }
 # C-I18N-04: locale-aware formatters (万/亿 vs K/M, relative time)
@@ -156,15 +166,21 @@ if [ -n "$UX" ]; then
   fi
   node tools/test-tv-ux.mjs
   node tools/test-session-proxy.mjs
+  node tools/test-wbi-recovery.mjs
+  node tools/test-recommendation-menu.mjs
+  node tools/test-account-repair-ui.mjs
   node tools/test-proxy-logout.mjs
   node tools/test-manifest-mime.mjs
   node tools/test-player-loading.mjs
+  node tools/test-player-controls.mjs
+  node tools/test-author-followers.mjs
   node tools/test-danmaku-render.mjs
   node tools/test-playback-end.mjs
   node tools/test-live-loading.mjs
   node tools/test-playback-health.mjs
   node tools/test-cdn-auto.mjs
   node tools/test-diagnostic-cdn.mjs
+  node tools/test-diagnostic-privacy.mjs
   if command -v python3 >/dev/null 2>&1; then
     node tools/test-region-probe.mjs
   else

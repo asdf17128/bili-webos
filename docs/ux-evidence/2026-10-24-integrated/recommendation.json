@@ -1,0 +1,1121 @@
+{
+  "baseUrl": "http://127.0.0.1:5173",
+  "baseline": false,
+  "mockBoundary": "Every HTTP request outside the selected Vite origin is intercepted; every WebSocket is blocked. All account/video data is synthetic.",
+  "results": [
+    {
+      "name": "feature presence: recommendation long press exposes not interested",
+      "pass": true,
+      "durationMs": 1906,
+      "audit": {
+        "feed": 1,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 12,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "short Enter opens playback without a feedback menu or POST",
+      "pass": true,
+      "durationMs": 604,
+      "audit": {
+        "feed": 1,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 15,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "held Enter requires release and a fresh press at both menu steps",
+      "pass": true,
+      "durationMs": 2129,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 0,
+        "feedbackReasons": [
+          "1"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 27,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "official success signs query and CSRF form then repairs same-cell focus",
+      "pass": true,
+      "durationMs": 2152,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 0,
+        "feedbackReasons": [
+          "1"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 27,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "pointer menu selection followed by remote dismissal retains adjacent focus",
+      "pass": true,
+      "durationMs": 1852,
+      "audit": {
+        "feed": 1,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 13,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "local fallback: guest has explicit copy and no official POST",
+      "pass": true,
+      "durationMs": 2764,
+      "audit": {
+        "feed": 1,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 12,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "local fallback: login without CSRF has explicit copy and no official POST",
+      "pass": true,
+      "durationMs": 3082,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 26,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "local fallback: missing track has explicit copy and no official POST",
+      "pass": true,
+      "durationMs": 3064,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 26,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "local fallback: missing goto has explicit copy and no official POST",
+      "pass": true,
+      "durationMs": 3083,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 26,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "local fallback: missing owner has explicit copy and no official POST",
+      "pass": true,
+      "durationMs": 3058,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 26,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "local fallback: disabled switch has explicit copy and no official POST",
+      "pass": true,
+      "durationMs": 3061,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 26,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "local fallback: disabled PC switch has explicit copy and no official POST",
+      "pass": true,
+      "durationMs": 3076,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 26,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "local fallback: invalid primary ID has explicit copy and no official POST",
+      "pass": true,
+      "durationMs": 3072,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 26,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "non-UGC bangumi: recommendation menu has no feedback action",
+      "pass": true,
+      "durationMs": 1716,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 25,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "non-UGC live: recommendation menu has no feedback action",
+      "pass": true,
+      "durationMs": 1719,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 25,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "cancel and Back close confirmation without writes or hiding",
+      "pass": true,
+      "durationMs": 3074,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 26,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "business failure retains card and supports one explicit retry",
+      "pass": true,
+      "durationMs": 1954,
+      "audit": {
+        "feed": 2,
+        "feedback": 2,
+        "cancel": 0,
+        "feedbackReasons": [
+          "1",
+          "1"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 28,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "network uncertainty retains card and never auto-retries",
+      "pass": true,
+      "durationMs": 2563,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 0,
+        "feedbackReasons": [
+          "1"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 26,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "timeout uncertainty is visible and ignores its late response",
+      "pass": true,
+      "durationMs": 1834,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 0,
+        "feedbackReasons": [
+          "1"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 26,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "double click and repeated Enter cannot duplicate pending submission",
+      "pass": true,
+      "durationMs": 1880,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 0,
+        "feedbackReasons": [
+          "1"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 27,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "remote cancel failure keeps hidden and success restores original context",
+      "pass": true,
+      "durationMs": 2040,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 2,
+        "feedbackReasons": [
+          "1"
+        ],
+        "cancelReasons": [
+          "1",
+          "1"
+        ],
+        "interceptedNonViteRequests": 29,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "local restore after official success never sends cancel",
+      "pass": true,
+      "durationMs": 1817,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 0,
+        "feedbackReasons": [
+          "1"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 27,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "closed pending menu applies confirmed same-account success without changing new menu",
+      "pass": true,
+      "durationMs": 3265,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 0,
+        "feedbackReasons": [
+          "1"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 28,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "account generation change rejects late feedback without hiding",
+      "pass": true,
+      "durationMs": 1935,
+      "audit": {
+        "feed": 3,
+        "feedback": 1,
+        "cancel": 0,
+        "feedbackReasons": [
+          "1"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 29,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "hidden card survives cache refresh reload and duplicate pagination",
+      "pass": true,
+      "durationMs": 4322,
+      "audit": {
+        "feed": 4,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 28,
+        "blockedWebSockets": 4,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 2
+      }
+    },
+    {
+      "name": "recommendation hiding does not affect search or favorites menus",
+      "pass": true,
+      "durationMs": 4634,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 0,
+        "feedbackReasons": [
+          "1"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 35,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "last card removal focuses previous and local undo remains available",
+      "pass": true,
+      "durationMs": 3299,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 7,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "all hidden empty state offers restore and usable load more",
+      "pass": true,
+      "durationMs": 3580,
+      "audit": {
+        "feed": 4,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 8,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "late empty-state load more preserves sidebar focus after Back",
+      "pass": true,
+      "durationMs": 2029,
+      "audit": {
+        "feed": 3,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 7,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "large text en: translated menu and confirmation fit screen",
+      "pass": true,
+      "durationMs": 1903,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 23,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 1,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "large text es: translated menu and confirmation fit screen",
+      "pass": true,
+      "durationMs": 1920,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 23,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 1,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "two feedback choices navigate independently and default confirmations to Back",
+      "pass": true,
+      "durationMs": 1720,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 25,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "video stationary pointer cannot displace safe confirmation default",
+      "pass": true,
+      "durationMs": 1802,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 25,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP stationary pointer cannot displace safe confirmation default",
+      "pass": true,
+      "durationMs": 1791,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 25,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP official success sends reason 4 and hides every same-author recommendation",
+      "pass": true,
+      "durationMs": 2159,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 0,
+        "feedbackReasons": [
+          "4"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 28,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP local fallback: guest explains author and account scope",
+      "pass": true,
+      "durationMs": 1777,
+      "audit": {
+        "feed": 1,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 14,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP local fallback: missing CSRF explains author and account scope",
+      "pass": true,
+      "durationMs": 1761,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 27,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP local fallback: missing track explains author and account scope",
+      "pass": true,
+      "durationMs": 1774,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 27,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP local fallback: disabled feedback explains author and account scope",
+      "pass": true,
+      "durationMs": 1747,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 27,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP unavailable: missing raw owner cannot fall back to one-video hiding",
+      "pass": true,
+      "durationMs": 1740,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 26,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP unavailable: invalid raw owner cannot fall back to one-video hiding",
+      "pass": true,
+      "durationMs": 1731,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 25,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP unavailable: logged in without UID cannot fall back to one-video hiding",
+      "pass": true,
+      "durationMs": 1715,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 19,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP held Enter requires release and fresh confirmation without duplicate POST",
+      "pass": true,
+      "durationMs": 1848,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 0,
+        "feedbackReasons": [
+          "4"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 28,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP business rejection keeps all creator cards and retries reason 4 explicitly",
+      "pass": true,
+      "durationMs": 1807,
+      "audit": {
+        "feed": 2,
+        "feedback": 2,
+        "cancel": 0,
+        "feedbackReasons": [
+          "4",
+          "4"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 29,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP network uncertainty retains all cards and explicit local fallback remains scoped",
+      "pass": true,
+      "durationMs": 2363,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 0,
+        "feedbackReasons": [
+          "4"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 26,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP timeout stays unknown after late success and never hides the creator",
+      "pass": true,
+      "durationMs": 1853,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 0,
+        "feedbackReasons": [
+          "4"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 26,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP local restore after official success restores all author cards without cancel",
+      "pass": true,
+      "durationMs": 1830,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 0,
+        "feedbackReasons": [
+          "4"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 28,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP remote cancel retains original reason 4 target and needs confirmed success",
+      "pass": true,
+      "durationMs": 1863,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 2,
+        "feedbackReasons": [
+          "4"
+        ],
+        "cancelReasons": [
+          "4",
+          "4"
+        ],
+        "interceptedNonViteRequests": 30,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP unknown cancel retains local author filter and never resends automatically",
+      "pass": true,
+      "durationMs": 2458,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 1,
+        "feedbackReasons": [
+          "4"
+        ],
+        "cancelReasons": [
+          "4"
+        ],
+        "interceptedNonViteRequests": 29,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "closed pending UP menu hides creator on confirmed success without replacing another menu",
+      "pass": true,
+      "durationMs": 3083,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 0,
+        "feedbackReasons": [
+          "4"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 29,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP pending submit rejects late response after UID only changes",
+      "pass": true,
+      "durationMs": 1944,
+      "audit": {
+        "feed": 3,
+        "feedback": 1,
+        "cancel": 0,
+        "feedbackReasons": [
+          "4"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 28,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP pending submit rejects late response after session only changes",
+      "pass": true,
+      "durationMs": 1930,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 0,
+        "feedbackReasons": [
+          "4"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 27,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP pending submit rejects late response after CSRF only changes",
+      "pass": true,
+      "durationMs": 1934,
+      "audit": {
+        "feed": 2,
+        "feedback": 1,
+        "cancel": 0,
+        "feedbackReasons": [
+          "4"
+        ],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 26,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP pending cancel cannot restore another account or erase original account filter",
+      "pass": true,
+      "durationMs": 2020,
+      "audit": {
+        "feed": 4,
+        "feedback": 1,
+        "cancel": 1,
+        "feedbackReasons": [
+          "4"
+        ],
+        "cancelReasons": [
+          "4"
+        ],
+        "interceptedNonViteRequests": 31,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP filters isolate guest and UID scopes while surviving same-UID credential rotation",
+      "pass": true,
+      "durationMs": 3541,
+      "audit": {
+        "feed": 8,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 50,
+        "blockedWebSockets": 4,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 2
+      }
+    },
+    {
+      "name": "current-video hiding stays device-wide across UID and guest changes",
+      "pass": true,
+      "durationMs": 1729,
+      "audit": {
+        "feed": 1,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 12,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP restore preserves an independently hidden video from the same creator",
+      "pass": true,
+      "durationMs": 2598,
+      "audit": {
+        "feed": 1,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 13,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "UP filter survives refresh cache reload and hides new same-author pagination cards",
+      "pass": true,
+      "durationMs": 6003,
+      "audit": {
+        "feed": 5,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 30,
+        "blockedWebSockets": 4,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 2
+      }
+    },
+    {
+      "name": "all UP cards hidden offers scoped restore with one visible keyboard focus",
+      "pass": true,
+      "durationMs": 3349,
+      "audit": {
+        "feed": 4,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 9,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "large text en: both feedback entries and UP confirmation fit and translate",
+      "pass": true,
+      "durationMs": 2093,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 23,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 1,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "large text es: both feedback entries and UP confirmation fit and translate",
+      "pass": true,
+      "durationMs": 2143,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 23,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 1,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    },
+    {
+      "name": "native cookie echo without account UID does not refetch recommendations indefinitely",
+      "pass": true,
+      "durationMs": 2470,
+      "audit": {
+        "feed": 2,
+        "feedback": 0,
+        "cancel": 0,
+        "feedbackReasons": [],
+        "cancelReasons": [],
+        "interceptedNonViteRequests": 22,
+        "blockedWebSockets": 2,
+        "mockedTitleTranslationRequests": 0,
+        "otherWritePaths": [],
+        "documentNavigations": 1
+      }
+    }
+  ]
+}

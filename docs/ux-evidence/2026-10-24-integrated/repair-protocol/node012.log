@@ -1,0 +1,15 @@
+PASS confirmation required before any mutation
+PASS single anonymous TLS request commits only device keys
+PASS open failure preserves original memory and disk
+PASS write failure preserves original memory and disk
+PASS fsync failure preserves original memory and disk
+PASS close failure preserves original memory and disk
+PASS rename failure preserves original memory and disk
+PASS short fd writes finish the entire UTF-8 candidate
+PASS zero fd write fails without replacing original file
+PASS generation change prevents late identity commit
+PASS body stall obeys total deadline and rejects late body
+PASS peer reset has no automatic retry
+PASS SPI base64 b4 without Set-Cookie replaces stale identity fields
+PASS concurrent attempt and ten-minute cooldown are bounded
+PASS account repair ES5 mock checks: 14 on v0.12.2

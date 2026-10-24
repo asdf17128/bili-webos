@@ -571,12 +571,13 @@ async function main() {
     await page.keyboard.up('Enter');
     await sleep(2500);
     const homeMenu = await page.evaluate(() => [...document.querySelectorAll('.cardmenu-item')].map(x => x.textContent.trim()));
-    // Guests may see the creator-follow entry, which prompts login without
-    // submitting writes. Watch Later still requires a local session.
+    // Guests can hide recommendations locally; creator follow prompts login.
+    // Watch Later still requires a local session. Require both new choices.
     check('首页卡片长按菜单符合登录状态',
-      homeMenu.includes('取消') && (storedAuth
+      homeMenu.includes('取消') && homeMenu.includes('不感兴趣：当前视频') &&
+      homeMenu.includes('不感兴趣：UP') && (storedAuth
         ? homeMenu.some(x => x.includes('稍后再看'))
-        : homeMenu.every(x => x === '取消' || x === '关注 UP 主')), homeMenu.join(' | '));
+        : homeMenu.every(x => ['取消', '关注 UP 主', '不感兴趣：当前视频', '不感兴趣：UP'].includes(x))), homeMenu.join(' | '));
     const noPlay = await page.evaluate(() => !document.querySelector('.player-page'));
     check('长按不会误触发播放', noPlay);
     await key('Escape'); await sleep(900);

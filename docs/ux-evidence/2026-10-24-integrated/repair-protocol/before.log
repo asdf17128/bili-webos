@@ -1,0 +1,39 @@
+PASS confirmation required before any mutation
+PASS single anonymous TLS request commits only device keys
+PASS open failure preserves original memory and disk
+PASS write failure preserves original memory and disk
+PASS fsync failure preserves original memory and disk
+PASS close failure preserves original memory and disk
+PASS rename failure preserves original memory and disk
+PASS short fd writes finish the entire UTF-8 candidate
+PASS zero fd write fails without replacing original file
+PASS generation change prevents late identity commit
+PASS body stall obeys total deadline and rejects late body
+PASS peer reset has no automatic retry
+node:assert:149
+  throw new AssertionError(obj);
+  ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+false !== true
+
+    at /Users/yuanzhan/.codex/worktrees/playback-mode-41/bili_webos/tools/test-account-repair-service-es5.js:63:246
+    at check (/Users/yuanzhan/.codex/worktrees/playback-mode-41/bili_webos/tools/test-account-repair-service-es5.js:54:30)
+    at run (/Users/yuanzhan/.codex/worktrees/playback-mode-41/bili_webos/tools/test-account-repair-service-es5.js:63:3)
+    at Object.<anonymous> (/Users/yuanzhan/.codex/worktrees/playback-mode-41/bili_webos/tools/test-account-repair-service-es5.js:69:30)
+    at Module._compile (node:internal/modules/cjs/loader:1803:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1934:10)
+    at Module.load (node:internal/modules/cjs/loader:1524:32)
+    at Module._load (node:internal/modules/cjs/loader:1326:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v25.4.0

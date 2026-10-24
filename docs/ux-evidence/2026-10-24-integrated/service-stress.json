@@ -1,0 +1,4324 @@
+{
+  "started": "2026-10-24T10:24:39.363Z",
+  "finished": "2026-10-24T10:26:27.225Z",
+  "completed": true,
+  "node": "v25.4.0",
+  "rounds": 500,
+  "deadlineMs": 120,
+  "metrics": {
+    "helperRequestsCreated": 24500,
+    "helperRequestsClosed": 24500,
+    "helperOperations": 23000,
+    "proxyOperations": 4000,
+    "positiveControls": 3
+  },
+  "results": [
+    {
+      "name": "positive controls distinguish raw socket failure and incomplete body",
+      "pass": true,
+      "ms": 106,
+      "rawReset": "ECONNRESET",
+      "truncatedStreamHasNoEnd": true,
+      "socketTimeoutMissesPendingDns": true
+    },
+    {
+      "name": "500 × GET healthy, followed by healthy recovery",
+      "pass": true,
+      "ms": 203,
+      "iterations": 500,
+      "recoveryRequests": 500,
+      "p95Ms": 0,
+      "maxMs": 3
+    },
+    {
+      "name": "500 × GET gzip-good, followed by healthy recovery",
+      "pass": true,
+      "ms": 198,
+      "iterations": 500,
+      "recoveryRequests": 500,
+      "p95Ms": 1,
+      "maxMs": 1
+    },
+    {
+      "name": "500 × GET reset-once, followed by healthy recovery",
+      "pass": true,
+      "ms": 258,
+      "iterations": 500,
+      "recoveryRequests": 500,
+      "p95Ms": 1,
+      "maxMs": 4
+    },
+    {
+      "name": "500 × GET reset-always, followed by healthy recovery",
+      "pass": true,
+      "ms": 246,
+      "iterations": 500,
+      "recoveryRequests": 500,
+      "p95Ms": 1,
+      "maxMs": 4
+    },
+    {
+      "name": "500 × POST reset-always, followed by healthy recovery",
+      "pass": true,
+      "ms": 218,
+      "iterations": 500,
+      "recoveryRequests": 500,
+      "p95Ms": 0,
+      "maxMs": 1
+    },
+    {
+      "name": "500 × GET http503, followed by healthy recovery",
+      "pass": true,
+      "ms": 198,
+      "iterations": 500,
+      "recoveryRequests": 500,
+      "p95Ms": 1,
+      "maxMs": 3
+    },
+    {
+      "name": "500 × GET truncate, followed by healthy recovery",
+      "pass": true,
+      "ms": 1240,
+      "iterations": 500,
+      "recoveryRequests": 500,
+      "p95Ms": 11,
+      "maxMs": 17
+    },
+    {
+      "name": "500 × GET body-stall, followed by healthy recovery",
+      "pass": true,
+      "ms": 12648,
+      "iterations": 500,
+      "recoveryRequests": 500,
+      "p95Ms": 125,
+      "maxMs": 128
+    },
+    {
+      "name": "500 × GET header-stall, followed by healthy recovery",
+      "pass": true,
+      "ms": 12635,
+      "iterations": 500,
+      "recoveryRequests": 500,
+      "p95Ms": 123,
+      "maxMs": 125
+    },
+    {
+      "name": "500 × GET gzip-bad, followed by healthy recovery",
+      "pass": true,
+      "ms": 198,
+      "iterations": 500,
+      "recoveryRequests": 500,
+      "p95Ms": 1,
+      "maxMs": 2
+    },
+    {
+      "name": "500 × pending DNS deadline and cancellation",
+      "pass": true,
+      "ms": 12423,
+      "timeouts": 500,
+      "cancellations": 500,
+      "lateCallbacks": 0
+    },
+    {
+      "name": "500 × cancel active retry then reuse connection pool",
+      "pass": true,
+      "ms": 806,
+      "cancelledRetries": 500,
+      "lateCallbacks": 0
+    },
+    {
+      "name": "500 × saturated pool, 12 expirations + 6 cancellations, then recovery",
+      "pass": true,
+      "ms": 63863,
+      "rounds": 500,
+      "expiredQueuedRequests": 6000,
+      "cancelledQueuedRequests": 3000,
+      "recoveryRequests": 500
+    },
+    {
+      "name": "isolated production service starts without account files or external sockets",
+      "pass": true,
+      "ms": 5,
+      "isolation": "production source, only filesystem/network/webOS side effects replaced",
+      "loggedIn": false
+    },
+    {
+      "name": "500 × production proxy header-stall/headers then recovery",
+      "pass": true,
+      "ms": 895,
+      "iterations": 500,
+      "recoveryRequests": 500,
+      "activeUpstreamsAfter": 0,
+      "queuedAfter": 0
+    },
+    {
+      "name": "500 × production proxy body-stall/body then recovery",
+      "pass": true,
+      "ms": 193,
+      "iterations": 500,
+      "recoveryRequests": 500,
+      "activeUpstreamsAfter": 0,
+      "queuedAfter": 0
+    },
+    {
+      "name": "500 × production proxy truncate/error then recovery",
+      "pass": true,
+      "ms": 1320,
+      "iterations": 500,
+      "recoveryRequests": 500,
+      "activeUpstreamsAfter": 0,
+      "queuedAfter": 0
+    },
+    {
+      "name": "500 × production proxy reset-always/error then recovery",
+      "pass": true,
+      "ms": 194,
+      "iterations": 500,
+      "recoveryRequests": 500,
+      "activeUpstreamsAfter": 0,
+      "queuedAfter": 0
+    },
+    {
+      "name": "all owned upstream requests, server sockets and pool slots are released",
+      "pass": true,
+      "ms": 6,
+      "fixtureSockets": 0,
+      "ownedRequests": 0,
+      "created": 24500,
+      "closed": 24500,
+      "warnings": []
+    }
+  ],
+  "checkpoints": [
+    {
+      "label": "healthy",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "gzip-good",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "reset-once",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "reset-always",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "reset-always",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "http503",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "truncate",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "body-stall",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "header-stall",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "gzip-bad",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "pending-dns",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "cancel-retry",
+      "active": 0,
+      "queued": 0,
+      "idle": 5,
+      "ownedRequests": 0,
+      "fixtureConnections": 5
+    },
+    {
+      "label": "queue-round-0",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-1",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-2",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-3",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-4",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-5",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-6",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-7",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-8",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-9",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-10",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-11",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-12",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-13",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-14",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-15",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-16",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-17",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-18",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-19",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-20",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-21",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-22",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-23",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-24",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-25",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-26",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-27",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-28",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-29",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-30",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-31",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-32",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-33",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-34",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-35",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-36",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-37",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-38",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-39",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-40",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-41",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-42",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-43",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-44",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 6
+    },
+    {
+      "label": "queue-round-45",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-46",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-47",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-48",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-49",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-50",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-51",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-52",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-53",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-54",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-55",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-56",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-57",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-58",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-59",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-60",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-61",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-62",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-63",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-64",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-65",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-66",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-67",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-68",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-69",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-70",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-71",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-72",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-73",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-74",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-75",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-76",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-77",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-78",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-79",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-80",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-81",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-82",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-83",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-84",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-85",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-86",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-87",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-88",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-89",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-90",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-91",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-92",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-93",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-94",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-95",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-96",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-97",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-98",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-99",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-100",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-101",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-102",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-103",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-104",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-105",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-106",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-107",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-108",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-109",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-110",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-111",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-112",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-113",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-114",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-115",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-116",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-117",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-118",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-119",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-120",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-121",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-122",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-123",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-124",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-125",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-126",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-127",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-128",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-129",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-130",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-131",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-132",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-133",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-134",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-135",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-136",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-137",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-138",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-139",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-140",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-141",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-142",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-143",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-144",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-145",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-146",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-147",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-148",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-149",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-150",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-151",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-152",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-153",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-154",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-155",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-156",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-157",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-158",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-159",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-160",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-161",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-162",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-163",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-164",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-165",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-166",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-167",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-168",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-169",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-170",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-171",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-172",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-173",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-174",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-175",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-176",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-177",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-178",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-179",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-180",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-181",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-182",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-183",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-184",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-185",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-186",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-187",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-188",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-189",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-190",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-191",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-192",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-193",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-194",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-195",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-196",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-197",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-198",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-199",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-200",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-201",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-202",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-203",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-204",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-205",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-206",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-207",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-208",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-209",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-210",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-211",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-212",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-213",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-214",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-215",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-216",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-217",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-218",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-219",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-220",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-221",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-222",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-223",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-224",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-225",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-226",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-227",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-228",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-229",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-230",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-231",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-232",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-233",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-234",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-235",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-236",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-237",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-238",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-239",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-240",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-241",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-242",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-243",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-244",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-245",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-246",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-247",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-248",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-249",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-250",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-251",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-252",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-253",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-254",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-255",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-256",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-257",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-258",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-259",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-260",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-261",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-262",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-263",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-264",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-265",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-266",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-267",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-268",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-269",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-270",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-271",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-272",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-273",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-274",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-275",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-276",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-277",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-278",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-279",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-280",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-281",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-282",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-283",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-284",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-285",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-286",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-287",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-288",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-289",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-290",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-291",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-292",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-293",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-294",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-295",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-296",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-297",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-298",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-299",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-300",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-301",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-302",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-303",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-304",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-305",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-306",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-307",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-308",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-309",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-310",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-311",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-312",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-313",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-314",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-315",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-316",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-317",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-318",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-319",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-320",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-321",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-322",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-323",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-324",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-325",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-326",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-327",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-328",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-329",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-330",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-331",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-332",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-333",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-334",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-335",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-336",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-337",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-338",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-339",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-340",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-341",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-342",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-343",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-344",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-345",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-346",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-347",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-348",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-349",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-350",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-351",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-352",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-353",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-354",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-355",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-356",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-357",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-358",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-359",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-360",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-361",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-362",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-363",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-364",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-365",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-366",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-367",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-368",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-369",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-370",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-371",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-372",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-373",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-374",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-375",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-376",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-377",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-378",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-379",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-380",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-381",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-382",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-383",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-384",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-385",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-386",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-387",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-388",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-389",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-390",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-391",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-392",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-393",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-394",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-395",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-396",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-397",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-398",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-399",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-400",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-401",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-402",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-403",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-404",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-405",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-406",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-407",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-408",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-409",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-410",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-411",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-412",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-413",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-414",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-415",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-416",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-417",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-418",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-419",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-420",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-421",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-422",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-423",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-424",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-425",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-426",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-427",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-428",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-429",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-430",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-431",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-432",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-433",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-434",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-435",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-436",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-437",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-438",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-439",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-440",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-441",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-442",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-443",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-444",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-445",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-446",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-447",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-448",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-449",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-450",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-451",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-452",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-453",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-454",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-455",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-456",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-457",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-458",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-459",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-460",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-461",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-462",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-463",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-464",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-465",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-466",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-467",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-468",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-469",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-470",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-471",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-472",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-473",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-474",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-475",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-476",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-477",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-478",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-479",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-480",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-481",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-482",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-483",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-484",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-485",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-486",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-487",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-488",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-489",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-490",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-491",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-492",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-493",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-494",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-495",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-496",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-497",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-498",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "queue-round-499",
+      "active": 0,
+      "queued": 0,
+      "idle": 1,
+      "ownedRequests": 0,
+      "fixtureConnections": 1
+    },
+    {
+      "label": "proxy-header-stall-headers",
+      "active": 0,
+      "queued": 0,
+      "idle": 4,
+      "fixtureConnections": 4
+    },
+    {
+      "label": "proxy-body-stall-body",
+      "active": 0,
+      "queued": 0,
+      "idle": 3,
+      "fixtureConnections": 3
+    },
+    {
+      "label": "proxy-truncate-error",
+      "active": 0,
+      "queued": 0,
+      "idle": 4,
+      "fixtureConnections": 4
+    },
+    {
+      "label": "proxy-reset-always-error",
+      "active": 0,
+      "queued": 0,
+      "idle": 3,
+      "fixtureConnections": 3
+    }
+  ],
+  "limitations": [
+    "loopback HTTP does not test TLS, real DNS infrastructure, webOS Node runtime, overseas routing, device memory/GPU, or 24h longevity",
+    "DNS stall is an injected lookup callback; cancellation and all HTTP failures use real ClientRequest/socket lifecycle",
+    "service proxy runs unmodified service.js with isolated filesystem/webOS and loopback HTTPS transport replacement",
+    "resource assertions cover owned ClientRequests, Agent queues and sockets; no claim about all process memory or activeHandles"
+  ]
+}

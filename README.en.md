@@ -39,6 +39,10 @@ Use BiliTV in **English, Español or 中文**. English and Spanish interfaces al
 
 *Video quality and availability depend on the source, your Bilibili account, your TV and your region.*
 
+## 2.5.0 development preview (unreleased)
+
+This branch adds **transparent playback controls, creator follower counts, and “Not interested” for recommended videos or creators**, plus a guided account repair panel in Settings. Hold OK on a recommendation to choose video or creator feedback. Local restoration and official feedback cancellation are separate actions with explicit confirmation. See the [feature inventory](docs/FEATURES.md) for scope and limits; published packages remain on the release page.
+
 ## A closer look
 
 | Find something worth watching | Settle into your own layout |
@@ -88,7 +92,7 @@ Login information is stored on your TV and used to access your Bilibili account.
 
 See the [premium playback guide](docs/DOLBY_VISION.md) for quality and device limits, or the [home-network testing guide](docs/NETWORK-TESTING.md) for network troubleshooting. See the [changelog](CHANGELOG.md) and [2.4.0 validation report](docs/RELEASE-2.4.0.md) for release scope and verification limits. Some technical documents are in Chinese.
 
-[Premium badges and automatic quality](docs/MEMBER-EXPERIENCE.md) (test branch; Chinese documentation).
+[Premium badges and automatic quality](docs/MEMBER-EXPERIENCE.md) (Chinese documentation).
 
 ## License
 
@@ -96,6 +100,6 @@ See the [premium playback guide](docs/DOLBY_VISION.md) for quality and device li
 
 ## Playback verification failures
 
-Version 2.4.1 attempts one device-identity recovery for recognized playback verification failures. If playback still fails, use **Settings → Reset device identity**, then retry. This preserves your login and has a five-minute cooldown. Run network diagnostics if the issue persists. Resetting an identity does not guarantee removal of account or regional restrictions.
+Version 2.4.1 attempts one device-identity recovery for recognized playback verification failures. In the 2.5.0 candidate, if playback still fails, use **Settings → Account repair → Rebuild device identity**, then retry. This preserves your login and has a five-minute cooldown. Run network diagnostics if the issue persists. Resetting an identity does not guarantee removal of account or regional restrictions.
 
-New diagnostic reports include the latest playback-URL failure in the current service session: HTTP/API codes, elapsed time, requested quality, public video identifiers, and recovery results. Open diagnostics before restarting and scan the QR code to submit. Nothing is uploaded automatically; cookies, voucher values, and full signed URLs are excluded.
+New diagnostic reports include the latest playback-URL failure in the current service session: HTTP/API codes, elapsed time, requested quality and recovery results. Open diagnostics before restarting and scan the QR code to submit. Nothing is uploaded automatically; cookies, voucher values, and full signed URLs are excluded.

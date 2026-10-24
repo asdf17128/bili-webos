@@ -4,6 +4,8 @@ import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 const output = process.env.CDN_TEST_OUTPUT || '/tmp/bili-cdn-auto/browser';
+const baseURL = process.env.CDN_BASE_URL || 'http://127.0.0.1:5173';
+const viteOrigin = new URL(baseURL).origin;
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch(), results = [];
 const ALI = 'upos-sz-mirrorali.bilivideo.com', FAST = 'upos-sz-mirrorhwo1.bilivideo.com';
@@ -23,7 +25,8 @@ const shaka = `class Player {
 export default {Player,polyfill:{installAll(){}}};`;
 async function run(name, fn, options = {}) {
  if(process.env.CDN_FILTER&&!new RegExp(process.env.CDN_FILTER).test(name))return;
- const context=await browser.newContext({viewport:{width:1920,height:1080}});
+ const context=await browser.newContext({viewport:{width:1920,height:1080},serviceWorkers:'block'});
+ await context.routeWebSocket('**/*',socket=>socket.close());
  await context.addInitScript(({options,ALI,FAST})=>{
   delete window.webOS;window.__loads=0;window.__media={paused:false,buffer:options.buffer??30};window.__deferLoad=!!options.defer;
   HTMLMediaElement.prototype.play=()=>Promise.resolve();HTMLMediaElement.prototype.pause=()=>{};
@@ -36,7 +39,7 @@ async function run(name, fn, options = {}) {
  await page.route('**/*',async route=>{
   const u=new URL(route.request().url());
   if(u.pathname.includes('shaka-player'))return route.fulfill({contentType:'application/javascript',body:shaka});
-  if(u.port==='5173')return route.continue();
+  if(u.origin===viteOrigin)return route.continue();
   if(u.port==='9528')return route.abort();
   if(u.pathname.includes('/upgcxcode/')) {
    const host=u.pathname.split('/proxy/')[1]?.split('/')[0]||u.hostname;
@@ -54,7 +57,7 @@ async function run(name, fn, options = {}) {
   return route.fulfill({json:{code:0,data}});
  });
  try{
-  await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>!!window.__openVideo);
+  await page.goto(baseURL);await page.waitForFunction(()=>!!window.__openVideo);
   await page.evaluate(()=>window.__openVideo({bvid:'BVtest',resumeMode:'none'}));await page.waitForFunction(()=>window.__uris?.length);
   await fn(page,{probes,segments});results.push({name,pass:true});console.log('PASS',name);
  }catch(e){results.push({name,pass:false,error:e.message});console.log('FAIL',name,e.message.split('\n')[0]);await page.screenshot({path:`${output}/failure-${results.length}.png`});}

@@ -13,7 +13,7 @@ await mkdir(output,{recursive:true});
 const browser = await chromium.launch();
 const results = [];
 const secret = 'PRIVATE_USER_93 SESSDATA=cookie-secret token=signed-secret 192.168.7.18 2001:db8::12 BV1privateTitle';
-const modes = (process.env.DIAG_FILTER || 'risk351,risk352,voucher,empty,offline,healthy,english,spanish').split(',');
+const modes = (process.env.DIAG_FILTER || 'risk351,risk352,voucher,empty,offline,healthy,english,spanish,mixed').split(',');
 for (const mode of modes) {
   const context = await browser.newContext({viewport:{width:1920,height:1080},serviceWorkers:'block'});
   await context.routeWebSocket('**/*',socket=>socket.close());
@@ -37,8 +37,10 @@ for (const mode of modes) {
     let code=0,data={};
     if (u.pathname.endsWith('/nav')) data={uname:secret,mid:123456789,isLogin:true,wbi_img:{img_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png',sub_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png'}};
     if (u.pathname.endsWith('/view')) data={cid:2,title:secret,bvid:'BV1privateTitle'};
+    if (mode==='mixed' && u.pathname.endsWith('/rcmd')) data={item:[{goto:'av',bvid:'BV1synthetic',cid:3,duration:600}]};
     if (u.pathname.endsWith('/playurl')) {
-      if (mode==='risk351'||mode==='risk352') code=mode==='risk351'?-351:-352;
+      if(mode==='mixed' && u.searchParams.get('cid')==='2') code=-351;
+      else if (mode==='risk351'||mode==='risk352') code=mode==='risk351'?-351:-352;
       else if(mode==='voucher') data={v_voucher:secret};
       else if(mode==='empty') data={};
       else data={dash:{video:[{baseUrl:'https://upos-sz-mirrorcosov.bilivideo.com/upgcxcode/private.m4s?token=signed-secret'}]}};
@@ -69,6 +71,9 @@ for (const mode of modes) {
       assert.match(text,/\[fail\] playurl code=0 hasStream=no/);
       assert.match(text,new RegExp('reason='+(mode==='voucher'?'verification_required':'no_stream')));
       assert.match(text,/\[skip\] cdn reason=no_stream/);
+    } else if(mode==='mixed') {
+      assert.match(text,/\[fail\] playurl code=-351[^\n]*source=reference/);
+      assert.match(text,/\[ok\] cdn [^\n]*source=recommendation/);
     } else if(mode==='offline') {
       assert.match(text,/\[fail\] api reason=network/);
       assert.match(text,/\[skip\] playurl reason=no_cid/);

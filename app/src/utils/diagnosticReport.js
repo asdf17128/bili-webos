@@ -23,16 +23,26 @@ export function diagnosticContextLines(svc, now = Date.now()) {
   const lines = [];
   if (typeof svc.loggedIn === 'boolean') lines.push('session: login=' + (svc.loggedIn ? 'Y' : 'N'));
   if (svc.identity) lines.push('identity: pending=' + (svc.identity.pending === true) + ' cooldown=' + n(svc.identity.cooldownSec, 0, 86400) + 's');
+  const recovery = svc.playback?.lastRecovery;
+  if (recovery && typeof recovery === 'object') {
+    lines.push('previous-recovery: age=' + n((now - recovery.at) / 1000, 0, 31536000) +
+      's state=' + allowed(recovery.recovery, ['pending', 'retried', 'timeout', 'persistence', 'session_changed', 'invalid_response', 'identity_unchanged', 'reset', 'dns', 'transport'], 'unknown') +
+      ' final=' + allowed(recovery.outcome, ['ok', 'failed'], 'unknown'));
+    (Array.isArray(recovery.attempts) ? recovery.attempts.slice(0, 2) : []).forEach((a, i) => {
+      if (a && typeof a === 'object') lines.push('previous-attempt' + (i + 1) + ': http=' + n(a.http, 100, 599) +
+        ' code=' + n(a.code, -100000, 100000) + ' stream=' + (a.stream === true));
+    });
+  }
   const f = svc.playback?.lastFailure;
   if (!f || typeof f !== 'object') return lines;
   lines.push('failure: ' + allowed(f.kind, ['ugc', 'wbi', 'pgc'], 'unknown') + ' age=' + n((now - f.at) / 1000, 0, 31536000) + 's qn=' + n(f.qn, 0, 999) + ' fnval=' + n(f.fnval, 0, 65535));
   (Array.isArray(f.attempts) ? f.attempts.slice(0, 2) : []).forEach((a, i) => {
     if (!a || typeof a !== 'object') return;
     let row = 'attempt' + (i + 1) + ': http=' + n(a.http, 100, 599) + ' code=' + n(a.code, -100000, 100000) + ' voucher=' + (a.voucher === true) + ' stream=' + (a.stream === true) + ' ms=' + n(a.ms);
-    if (a.error) row += ' error=' + allowed(a.error, ['timeout', 'cooldown', 'persistence', 'session_changed', 'invalid_response', 'reset', 'dns', 'transport', 'non_json'], 'unknown');
+    if (a.error) row += ' error=' + allowed(a.error, ['timeout', 'cooldown', 'persistence', 'session_changed', 'invalid_response', 'identity_unchanged', 'reset', 'dns', 'transport', 'non_json'], 'unknown');
     lines.push(row);
   });
-  lines.push('recovery=' + allowed(f.recovery, ['none', 'pending', 'retried', 'timeout', 'cooldown', 'persistence', 'session_changed', 'invalid_response', 'reset', 'dns', 'transport'], 'unknown') + ' final=' + allowed(f.outcome, ['ok', 'failed'], 'unknown'));
+  lines.push('recovery=' + allowed(f.recovery, ['none', 'pending', 'retried', 'timeout', 'cooldown', 'persistence', 'session_changed', 'invalid_response', 'identity_unchanged', 'reset', 'dns', 'transport'], 'unknown') + ' final=' + allowed(f.outcome, ['ok', 'failed'], 'unknown'));
   return lines;
 }
 
@@ -72,6 +82,7 @@ function fields(row) {
     const value = number(row?.[key], 0, key === 'ms' ? 3600000 : 9999);
     if (value !== null) out[key] = value;
   }
+  if (['reference', 'recommendation'].includes(row?.source)) out.source = row.source;
   return out;
 }
 

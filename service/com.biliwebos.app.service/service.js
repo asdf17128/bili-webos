@@ -149,6 +149,9 @@ function acquireIdentity(callback) {
       if (!j || j.code !== 0 || !j.data || typeof j.data.b_3 !== 'string' || !j.data.b_3) {
         finish(new Error('Fingerprint response has no usable buvid')); return;
       }
+      if (j.data.b_3 === storedCookies.buvid3 && j.data.b_4 === storedCookies.buvid4) {
+        finish(new Error('Fingerprint identity unchanged')); return;
+      }
       var next = { buvid3: j.data.b_3 };
       if (typeof j.data.b_4 === 'string' && j.data.b_4) next.buvid4 = j.data.b_4;
       (res.headers['set-cookie'] || []).forEach(function (sc) {
@@ -445,7 +448,7 @@ service.register('fetch', function (message) {
             message.respond({ returnValue: false, error: bodyError.message });
             return;
           }
-          if (!retried && res.statusCode === 200 && isPlaybackRisk(parsed, message.payload.method, data)) {
+          if (!retried && message.payload.diagnostic !== true && res.statusCode === 200 && isPlaybackRisk(parsed, message.payload.method, data)) {
             playbackDiagnostics.recovery(diagnostic, 'pending');
             function recovered(err) {
               playbackDiagnostics.recovery(diagnostic, 'retried', err);

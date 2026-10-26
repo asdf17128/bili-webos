@@ -38,11 +38,13 @@ export default function DiagPanel() {
     const route = storage.getSettings().cdnRoute || 'auto';
     const results = [];
     const started = {};
+    let cdnSource = 'reference';
     const push = (name, status, detail, evidence = {}) => {
       if (dead) return;
       const i = results.findIndex(r => r.name === name);
       if (status === 'run') started[name] = Date.now();
       const row = { name, stage: KEY[name], status, detail: String(detail || '').slice(0, 140),
+        ...((KEY[name] === 'cdn' || KEY[name] === 'cdnspeed') ? { source: cdnSource } : {}),
         ...evidence, ms: status === 'run' ? undefined : Math.max(0, Date.now() - (started[name] || Date.now())) };
       if (i >= 0) results[i] = row; else results.push(row);
       setRows(results.slice());
@@ -120,7 +122,7 @@ export default function DiagPanel() {
       } else try {
         const p = await wbiFetch('/x/player/playurl', { bvid: PROBE_BVID, cid: probeCid, qn: 16, fnval: 16 }, { diagnostic: true });
         const evidence = describePlayResponse(p);
-        push('取流 playurl', evidence.status, diagnosticDetail(evidence), evidence);
+        push('取流 playurl', evidence.status, diagnosticDetail(evidence), { ...evidence, source: 'reference' });
         if (evidence.status === 'ok') probeRepresentation = p.data?.dash?.video?.[0] || null;
       } catch (e) { fail('取流 playurl', e); }
 
@@ -134,7 +136,9 @@ export default function DiagPanel() {
           try {
             const p2 = await wbiFetch('/x/player/playurl', { bvid: rcmdPick.bvid, cid: rcmdPick.cid, qn: 64, fnval: 16 }, { diagnostic: true });
             const v2 = p2 && p2.code === 0 && p2.data && p2.data.dash && p2.data.dash.video && p2.data.dash.video[0];
-            if (describePlayResponse(p2).status === 'ok' && v2) representation = v2;
+            if (describePlayResponse(p2).status === 'ok' && v2) {
+              representation = v2; cdnSource = 'recommendation';
+            }
           } catch (e) { /* 热门视频取流失败就退回 av2 */ }
         }
         if (!representation) {

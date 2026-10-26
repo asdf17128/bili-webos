@@ -5,7 +5,7 @@
 // v1.5.0" forever. tools/verify.sh now gates on it.
 export const APP_VERSION = '2.5.1';
 // Test distribution only; numeric version/update comparison remains unchanged.
-export const TEST_BUILD = '';
+export const TEST_BUILD = 'riskfix.1';
 export const BUILD_VERSION = APP_VERSION + (TEST_BUILD ? ' ' + TEST_BUILD : '');
 
 // Compare two "x.y.z" strings. Returns >0 if a is newer than b.

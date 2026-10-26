@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import qrcode from 'qrcode-generator';
-import { apiFetch, wbiFetch, getRecommend, getServiceDiagnostics, mediaProxyBase } from '../api/client';
+import { apiFetch, wbiFetch, getPlayUrl, probeLegacyPlayUrl, getRecommend, getServiceDiagnostics, mediaProxyBase } from '../api/client';
 import { diagnosticUrls, probeRange } from '../player/cdnProbe';
 import { getPlaybackReport } from '../player/playbackHealth';
 import { getErrors } from '../utils/errlog';
@@ -16,7 +16,7 @@ import { describePlayResponse, diagnosticError, diagnosticDetail, diagnosticRepo
 // that opens a PREFILLED GitHub issue with the report — the user just scans
 // with a phone and taps submit. Zero servers, nothing uploads by itself.
 
-const KEY = { '后台服务': 'svc', 'API 连通': 'api', '推荐流(风控)': 'rcmd', '视频信息 view': 'view', '取流 playurl': 'playurl', '视频 CDN': 'cdn', 'CDN 测速': 'cdnspeed', '图片代理': 'imgproxy' };
+const KEY = { '后台服务': 'svc', 'API 连通': 'api', '推荐流(风控)': 'rcmd', '视频信息 view': 'view', '取流 playurl': 'playurl', '旧接口对照': 'playurl_legacy', '视频 CDN': 'cdn', 'CDN 测速': 'cdnspeed', '图片代理': 'imgproxy' };
 
 // A well-known stable video for the playurl probe (B站 first video, av2).
 const PROBE_BVID = 'BV1xx411c7mD';
@@ -120,10 +120,18 @@ export default function DiagPanel() {
       if (!probeCid) {
         push('取流 playurl', 'skip', t('缺少视频信息，未尝试取流'), { reason: 'no_cid' });
       } else try {
-        const p = await wbiFetch('/x/player/playurl', { bvid: PROBE_BVID, cid: probeCid, qn: 16, fnval: 16 }, { diagnostic: true });
+        const p = await getPlayUrl(PROBE_BVID, probeCid, 127, { diagnostic: true });
         const evidence = describePlayResponse(p);
-        push('取流 playurl', evidence.status, diagnosticDetail(evidence), { ...evidence, source: 'reference' });
+        push('取流 playurl', evidence.status, diagnosticDetail(evidence), { ...evidence, source: 'reference', endpoint: 'wbi' });
         if (evidence.status === 'ok') probeRepresentation = p.data?.dash?.video?.[0] || null;
+        else if (!dead) {
+          // Same video, quality and flags; both requests are observational.
+          push('旧接口对照', 'run', '');
+          try {
+            const legacy = describePlayResponse(await probeLegacyPlayUrl(PROBE_BVID, probeCid, 127));
+            push('旧接口对照', legacy.status, diagnosticDetail(legacy), { ...legacy, source: 'reference', endpoint: 'legacy' });
+          } catch (error) { fail('旧接口对照', error); }
+        }
       } catch (e) { fail('取流 playurl', e); }
 
       // 4b. 视频 CDN (#29):接口全通但拉不到流,以前只能对着一堆 E: 猜。
@@ -134,7 +142,7 @@ export default function DiagPanel() {
         let representation = probeRepresentation;
         if (rcmdPick) {
           try {
-            const p2 = await wbiFetch('/x/player/playurl', { bvid: rcmdPick.bvid, cid: rcmdPick.cid, qn: 64, fnval: 16 }, { diagnostic: true });
+            const p2 = await getPlayUrl(rcmdPick.bvid, rcmdPick.cid, 64, { diagnostic: true });
             const v2 = p2 && p2.code === 0 && p2.data && p2.data.dash && p2.data.dash.video && p2.data.dash.video[0];
             if (describePlayResponse(p2).status === 'ok' && v2) {
               representation = v2; cdnSource = 'recommendation';

@@ -1,5 +1,6 @@
 // Spanish dictionary. Keys are the Chinese source strings (see index.js).
 export default {
+  "旧接口对照": "Comparación con la API anterior",
   "冷却剩余 {n} 秒，结束后自动检查。": "Espera: {n}s. El estado se actualizará automáticamente.",
   "重置设备标识": "Restablecer identidad del dispositivo",
   "正在重置…": "Restableciendo…",

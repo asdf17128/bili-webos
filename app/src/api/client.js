@@ -725,14 +725,25 @@ export async function gtxTranslate(texts, tl) {
   return res.map(function (it) { return Array.isArray(it) ? String(it[0]) : String(it); });
 }
 
-export async function getPlayUrl(videoOrBvid, cid, qn) {
+function ugcPlayParams(videoOrBvid, cid, qn) {
   var payload = {
     cid: cid, qn: qn || 80, fnval: 4048, fnver: 0, fourk: 1, platform: 'pc',
   };
   if (typeof videoOrBvid === 'string') payload.bvid = videoOrBvid;
   else if (videoOrBvid?.bvid) payload.bvid = videoOrBvid.bvid;
   else if (videoOrBvid?.aid) payload.avid = videoOrBvid.aid;
-  return wbiFetch('/x/player/playurl', payload);
+  return payload;
+}
+
+// Signed UGC requests belong on the WBI endpoint. Keep the legacy HTML5
+// transport separate; do not silently retry risk responses as anonymous users.
+export async function getPlayUrl(videoOrBvid, cid, qn, options) {
+  return wbiFetch('/x/player/wbi/playurl', ugcPlayParams(videoOrBvid, cid, qn), options);
+}
+
+// Read-only comparison, never a playback fallback or an identity reset.
+export async function probeLegacyPlayUrl(videoOrBvid, cid, qn) {
+  return wbiFetch('/x/player/playurl', ugcPlayParams(videoOrBvid, cid, qn), { diagnostic: true });
 }
 
 // ============ Bangumi / 番剧 (PGC) ============

@@ -1,6 +1,6 @@
 // This is the ONLY export boundary. Never serialize raw API/service/errors,
 // URLs, cookies, UA strings or arbitrary keys, even in a local preview.
-export const DIAGNOSTIC_STAGES = ['svc', 'api', 'rcmd', 'view', 'playurl', 'cdn', 'cdnspeed', 'imgproxy'];
+export const DIAGNOSTIC_STAGES = ['svc', 'api', 'rcmd', 'view', 'playurl', 'playurl_legacy', 'cdn', 'cdnspeed', 'imgproxy'];
 const STARTUP_STAGES = ['engine', 'attach', 'view', 'resume', 'url', 'probe', 'load'];
 const STATUSES = ['ok', 'fail', 'skip', 'warn', 'run'];
 const REASONS = ['api_error', 'invalid_response', 'verification_required', 'no_stream', 'no_cid', 'timeout', 'network', 'http', 'unknown', 'unavailable'];
@@ -82,6 +82,7 @@ function fields(row) {
     const value = number(row?.[key], 0, key === 'ms' ? 3600000 : 9999);
     if (value !== null) out[key] = value;
   }
+  if (['wbi', 'legacy'].includes(row?.endpoint)) out.endpoint = row.endpoint;
   if (['reference', 'recommendation'].includes(row?.source)) out.source = row.source;
   return out;
 }

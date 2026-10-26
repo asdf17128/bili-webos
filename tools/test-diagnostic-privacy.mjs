@@ -13,7 +13,7 @@ await mkdir(output,{recursive:true});
 const browser = await chromium.launch();
 const results = [];
 const secret = 'PRIVATE_USER_93 SESSDATA=cookie-secret token=signed-secret 192.168.7.18 2001:db8::12 BV1privateTitle';
-const modes = (process.env.DIAG_FILTER || 'risk351,risk352,voucher,empty,offline,healthy,english,spanish,mixed').split(',');
+const modes = (process.env.DIAG_FILTER || 'risk351,risk352,voucher,empty,offline,healthy,english,spanish,mixed,wbi-risk-legacy-ok,wbi-ok-legacy-risk').split(',');
 for (const mode of modes) {
   const context = await browser.newContext({viewport:{width:1920,height:1080},serviceWorkers:'block'});
   await context.routeWebSocket('**/*',socket=>socket.close());
@@ -27,7 +27,7 @@ for (const mode of modes) {
   await page.route('**/*',async route=>{
     const u = new URL(route.request().url());
     if (u.origin === base) return route.continue();
-    requests.push({host:u.hostname,path:u.pathname,method:route.request().method(),containsReport:decodeURIComponent(route.request().url()).includes('diag=1') || (route.request().postData() || '').includes('diag=1')});
+    requests.push({query:Object.fromEntries([...u.searchParams].filter(([key])=>!['wts','w_rid'].includes(key))),host:u.hostname,path:u.pathname,method:route.request().method(),containsReport:decodeURIComponent(route.request().url()).includes('diag=1') || (route.request().postData() || '').includes('diag=1')});
     if (u.port === '9528') return route.abort();
     if (mode === 'offline' && u.port === '9527') return route.abort();
     if (u.pathname.includes('/upgcxcode/')) {
@@ -39,7 +39,9 @@ for (const mode of modes) {
     if (u.pathname.endsWith('/view')) data={cid:2,title:secret,bvid:'BV1privateTitle'};
     if (mode==='mixed' && u.pathname.endsWith('/rcmd')) data={item:[{goto:'av',bvid:'BV1synthetic',cid:3,duration:600}]};
     if (u.pathname.endsWith('/playurl')) {
-      if(mode==='mixed' && u.searchParams.get('cid')==='2') code=-351;
+      if(mode==='wbi-risk-legacy-ok' && u.pathname.includes('/wbi/')) code=-351;
+      else if(mode==='wbi-ok-legacy-risk' && !u.pathname.includes('/wbi/')) code=-351;
+      else if(mode==='mixed' && u.searchParams.get('cid')==='2') code=-351;
       else if (mode==='risk351'||mode==='risk352') code=mode==='risk351'?-351:-352;
       else if(mode==='voucher') data={v_voucher:secret};
       else if(mode==='empty') data={};
@@ -63,7 +65,20 @@ for (const mode of modes) {
     const text=await preview.innerText();
     assert.match(text,/stage url code=-351 hasStream=no voucher=no ms=80 attempts=2 errors=1/);
     assert.doesNotMatch(await page.locator('.diagnostic-panel').innerText(),/PRIVATE_USER|SESSDATA|cookie-secret|signed-secret|192\.168|2001:db8|BV1privateTitle/);
-    if (mode.startsWith('risk')) {
+    const plays=requests.filter(r=>r.path.endsWith('/playurl'));
+    if(mode==='wbi-risk-legacy-ok') {
+      assert.match(text,/\[fail\] playurl code=-351[^\n]*endpoint=wbi/);
+      assert.match(text,/\[ok\] playurl_legacy code=0[^\n]*endpoint=legacy/);
+      assert.equal(plays.length,2);
+      assert.ok(plays[0].path.endsWith('/x/player/wbi/playurl'));
+      assert.ok(plays[1].path.endsWith('/x/player/playurl'));
+      assert.deepEqual(plays[0].query,plays[1].query,'comparison must use identical parameters');
+      assert.equal(plays[0].query.qn,'127');
+      assert.equal(plays[0].query.fnval,'4048');
+    } else if(mode==='wbi-ok-legacy-risk') {
+      assert.equal(plays.length,1,'healthy WBI must not call the legacy endpoint');
+      assert.match(text,/\[ok\] playurl code=0[^\n]*endpoint=wbi/);
+    } else if (mode.startsWith('risk')) {
       assert.match(text,new RegExp('\\[fail\\] playurl code=-'+mode.slice(4)));
       assert.match(text,/\[skip\] cdn reason=no_stream/);
       assert.doesNotMatch(text,/\[fail\] cdn|reason=no_cid/);

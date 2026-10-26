@@ -2,6 +2,7 @@
 // ADDING A LANGUAGE: copy this file to <code>.js, translate values, register
 // it in index.js DICTS. That's all.
 export default {
+  "旧接口对照": "Legacy endpoint comparison",
   "冷却剩余 {n} 秒，结束后自动检查。": "Cooldown: {n}s. Status will refresh automatically.",
   "重置设备标识": "Reset device identity",
   "正在重置…": "Resetting…",

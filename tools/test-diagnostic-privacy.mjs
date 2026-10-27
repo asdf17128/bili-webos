@@ -99,11 +99,17 @@ for (const mode of modes) {
     }
     // Trusted remote-style input reaches the new adjacent action from diagnostics.
     await page.locator('[data-focus-id="content-9-0"]').hover();
-    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowDown');
     await page.waitForFunction(()=>window.__focusState().current==='content-9-1');
     await page.keyboard.press('Enter');
     await page.locator('.diagnostic-report svg').waitFor();
-    await page.keyboard.press('ArrowLeft');
+    const rect=await page.locator('.diagnostic-report svg').boundingBox();
+    assert.ok(rect && rect.y >= 0 && rect.y+rect.height <= 1080, 'generated QR is entirely on-screen');
+    await page.keyboard.press('ArrowDown');
+    await page.waitForFunction(()=>window.__focusState().current==='content-10-0');
+    await page.keyboard.press('ArrowUp');
+    await page.waitForFunction(()=>window.__focusState().current==='content-9-1');
+    await page.keyboard.press('ArrowUp');
     await page.waitForFunction(()=>window.__focusState().current==='content-9-0');
     await page.keyboard.press('ArrowRight');
     await page.waitForFunction(()=>window.__focusState().current==='content-9-1');

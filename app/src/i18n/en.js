@@ -2,6 +2,8 @@
 // ADDING A LANGUAGE: copy this file to <code>.js, translate values, register
 // it in index.js DICTS. That's all.
 export default {
+  "下方探针使用测试视频，不代表刚才播放的视频；请结合上方最近一次起播判断。": "The checks below use test videos, not the video you just played. Compare them with the latest playback above.",
+  "二维码生成失败，请拍摄下方诊断报告反馈。": "Could not generate the QR code. Please photograph the diagnostic report below.",
   "旧接口对照": "Legacy endpoint comparison",
   "冷却剩余 {n} 秒，结束后自动检查。": "Cooldown: {n}s. Status will refresh automatically.",
   "重置设备标识": "Reset device identity",

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import qrcode from 'qrcode-generator';
 import { apiFetch, wbiFetch, getPlayUrl, probeLegacyPlayUrl, getRecommend, getServiceDiagnostics, mediaProxyBase } from '../api/client';
 import { diagnosticUrls, probeRange } from '../player/cdnProbe';
@@ -26,9 +26,14 @@ export default function DiagPanel() {
   const [reportText, setReportText] = useState('');
   const [exportVisible, setExportVisible] = useState(false);
   const [reportUrl, setReportUrl] = useState('');
+  const qrRef = useRef(null);
+  useEffect(() => {
+    if (exportVisible) qrRef.current?.scrollIntoView({ block: 'center' });
+  }, [exportVisible, reportUrl]);
   const [lastPlayback] = useState(getPlaybackReport);
   const { props: exportProps } = useFocusable({
     id: 'content-9-1', row: 9, col: 1, group: 'content',
+    onNavigate: direction => direction === 'up' ? 'content-9-0' : direction === 'down' ? 'content-10-0' : null,
     onSelect: () => { if (reportUrl) setExportVisible(v => !v); },
   });
 
@@ -264,6 +269,7 @@ export default function DiagPanel() {
               <div>{t('从打开视频开始')}：{t('首个媒体响应')} {seconds(startup.points.response)} · {t('媒体就绪')} {seconds(startup.points.data)} · {t('播放事件')} {seconds(startup.points.playing)}</div>
             </>}
           </div>
+          <div style={{ color: '#aaa', marginBottom: 8, fontSize: 'calc(16px * var(--ui-scale))' }}>{t('下方探针使用测试视频，不代表刚才播放的视频；请结合上方最近一次起播判断。')}</div>
           {rows.map(r => (
             <div key={r.name} style={{ fontSize: 'calc(18px * var(--ui-scale))', lineHeight: 1.9, color: r.status === 'fail' ? '#ff7a7a' : '#ccc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {ICON[r.status] || ''} {t(r.name)}{r.detail ? ` — ${r.detail}` : ''}
@@ -276,15 +282,16 @@ export default function DiagPanel() {
               {exportVisible ? t('隐藏反馈二维码') : t('生成反馈二维码')}
             </div>
             <div style={{ color: '#aaa', marginTop: 8 }}>{t('扫码后会把预览内容带到 GitHub；只有提交 issue 后才会公开。')}</div>
+            {exportVisible && !qrSvg && <p role="alert">{t('二维码生成失败，请拍摄下方诊断报告反馈。')}</p>}
             {reportText && <pre className="diagnostic-preview" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'break-word', lineHeight: 1.5 }}>{reportText}</pre>}
 
           </div>
         </div>
         {qrSvg && (
-          <div className="diagnostic-report" style={{ width: qrWidth, flexShrink: 0, textAlign: 'center' }}>
+          <div ref={qrRef} className="diagnostic-report" style={{ width: qrWidth, flexShrink: 0, textAlign: 'center' }}>
             <div style={{ background: '#fff', borderRadius: 8, padding: 6, display: 'inline-block' }}
               dangerouslySetInnerHTML={{ __html: qrSvg }} />
-            <div style={{ fontSize: 'calc(16px * var(--ui-scale))', color: '#999', marginTop: 8, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 'calc(16px * var(--ui-scale))', color: '#ccc', marginTop: 8, lineHeight: 1.5 }}>
               {t('扫码后会把预览内容带到 GitHub；只有提交 issue 后才会公开。')}
             </div>
           </div>

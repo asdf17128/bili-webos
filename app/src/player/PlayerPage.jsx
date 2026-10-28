@@ -1,3 +1,4 @@
+import { mediaKeyAction } from './mediaKeys';
 import NerdInfo from './NerdInfo';
 import { requestedQuality } from '../utils/qualityPreference';
 import Icon from '../components/Icon';
@@ -2187,6 +2188,21 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   // ========== Keyboard handler ==========
   useEffect(() => {
     const handler = (e) => {
+      const mediaAction = mediaKeyAction(e);
+      if (mediaAction) {
+        e.preventDefault(); e.stopPropagation();
+        const media = videoRef.current;
+        if (e.repeat || loadErrorRef.current || !media) return true;
+        setEndNextIn(null);
+        if (mediaAction === 'pause' || mediaAction === 'toggle' && !media.paused) {
+          media.pause(); setPlaying(false);
+        } else if (media.paused) {
+          // The media play event updates UI; rejection must not claim playback.
+          const pending = media.play();
+          if (pending?.catch) pending.catch(() => {});
+        }
+        return true;
+      }
       // 加载失败页优先于所有分支:此时整屏只剩一个动作(去网络诊断)。
       // 放后面会被 focusArea==='none' 的"OK 呼出控制条"先吃掉(2026-08-21 实测)。
       if (loadErrorRef.current && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {

@@ -1,3 +1,4 @@
+import { normalizePgcPlayurl } from './pgcPlayurl';
 // Bilibili API client
 // On webOS TV: uses Luna JS Service (no external proxy needed)
 // Fallback: uses HTTP proxy on Mac
@@ -755,7 +756,7 @@ export async function getBangumiPlayUrl(opts, qn) {
   var payload = { qn: qn || 80, fnval: 4048, fnver: 0, fourk: 1 };
   if (o.epid) payload.ep_id = o.epid;
   if (o.cid) payload.cid = o.cid;
-  return wbiFetch('/pgc/player/web/playurl', payload);
+  return normalizePgcPlayurl(await wbiFetch('/pgc/player/web/v2/playurl', payload));
 }
 
 // Season metadata (episode list with per-episode cid/cover/title). Accepts

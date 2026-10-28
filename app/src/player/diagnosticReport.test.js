@@ -33,3 +33,8 @@ test('CDN report distinguishes a different probe source without exposing video i
  assert.match(text,/cdn source=recommendation/);
  assert.doesNotMatch(text,/PRIVATE/);
 });
+
+test('PGC v2 diagnostic family survives export',()=>{
+ const text=diagnosticReportText({service:{playback:{lastFailure:{kind:'pgc_v2',attempts:[],at:Date.now()}}}});
+ assert.match(text,/failure: pgc_v2/);
+});

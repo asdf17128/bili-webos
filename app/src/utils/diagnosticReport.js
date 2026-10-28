@@ -36,7 +36,7 @@ export function diagnosticContextLines(svc, now = Date.now()) {
   }
   const f = svc.playback?.lastFailure;
   if (!f || typeof f !== 'object') return lines;
-  lines.push('failure: ' + allowed(f.kind, ['ugc', 'wbi', 'pgc'], 'unknown') + ' age=' + n((now - f.at) / 1000, 0, 31536000) + 's qn=' + n(f.qn, 0, 999) + ' fnval=' + n(f.fnval, 0, 65535));
+  lines.push('failure: ' + allowed(f.kind, ['ugc', 'wbi', 'pgc', 'pgc_v2'], 'unknown') + ' age=' + n((now - f.at) / 1000, 0, 31536000) + 's qn=' + n(f.qn, 0, 999) + ' fnval=' + n(f.fnval, 0, 65535));
   (Array.isArray(f.attempts) ? f.attempts.slice(0, 2) : []).forEach((a, i) => {
     if (!a || typeof a !== 'object') return;
     let row = 'attempt' + (i + 1) + ': http=' + n(a.http, 100, 599) + ' code=' + n(a.code, -100000, 100000) + ' voucher=' + (a.voucher === true) + ' stream=' + (a.stream === true) + ' ms=' + n(a.ms);

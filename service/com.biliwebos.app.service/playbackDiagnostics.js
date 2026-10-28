@@ -1,11 +1,12 @@
 // Bounded, allowlisted evidence. Never retain response bodies, headers, cookie
 // values, voucher values, titles or full URLs, including transient errors.
+var playurlBody = require('./playurlBody');
 module.exports = function () {
   var rows = [], sequence = 0, lastFailure = null, lastRecovery = null;
   function number(value) { if (value == null) return null; var n = Number(value); return isFinite(n) && n >= 0 && n <= 9007199254740991 ? n : null; }
   function kind(parsed) {
     if (parsed.hostname !== 'api.bilibili.com') return null;
-    return {'/x/player/playurl':'ugc','/x/player/wbi/playurl':'wbi','/pgc/player/web/playurl':'pgc'}[parsed.pathname] || null;
+    return {'/x/player/playurl':'ugc','/x/player/wbi/playurl':'wbi','/pgc/player/web/playurl':'pgc','/pgc/player/web/v2/playurl':'pgc_v2'}[parsed.pathname] || null;
   }
   function error(err) {
     var text = String(err && (err.code || err.message) || '');
@@ -33,7 +34,7 @@ module.exports = function () {
       if(err)a.error=error(err);
       else {
         var j;try{j=JSON.parse(body.toString('utf-8'));}catch(e){a.error='non_json';}
-        if(j){var d=j.data||j.result||{};a.code=typeof j.code==='number'&&isFinite(j.code)?j.code:null;a.voucher=!!d.v_voucher;a.stream=!!((d.dash&&d.dash.video&&d.dash.video.length)||(d.durl&&d.durl.length));}
+        if(j){var d=playurlBody(j);a.code=typeof j.code==='number'&&isFinite(j.code)?j.code:null;a.voucher=!!d.v_voucher;a.stream=!!((d.dash&&d.dash.video&&d.dash.video.length)||(d.durl&&d.durl.length));}
       }
       if(row.attempts.length<2)row.attempts.push(a);
       row.outcome = a.error || a.http !== 200 || a.code !== 0 || !a.stream ? 'failed' : 'ok';

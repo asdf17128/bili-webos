@@ -11,7 +11,17 @@ async function run(name,fn){let f;const state={spi:0,plays:0,mode:'risk',code:-3
  }});await fn(f,state);results.push({name,pass:true});console.log('PASS',name);
  }catch(e){results.push({name,pass:false,error:e.message});console.log('FAIL',name,e.message)}finally{if(f){f.release();await f.close()}}}
 const fetchPlay=async(f,path='/x/player/playurl')=>{const r=await f.call('fetch',{url:'https://api.bilibili.com'+path+'?cid=1&qn=80'});return r.body?JSON.parse(r.body):r};
-for(const [path,code] of [['/x/player/playurl',-351],['/x/player/wbi/playurl',0],['/pgc/player/web/playurl',-352]])await run('recovers '+path+' code='+code,async(f,s)=>{s.code=code;assert.equal((await fetchPlay(f,path)).code,0);assert.equal(s.spi,1);assert.equal(s.plays,2);const c=(await f.call('getCookies')).cookies;assert.equal(c.SESSDATA,fakeAuth.SESSDATA);assert.equal(c.b_nut,'server-nut');assert.equal(c.buvid4,'renewed-four')});
+for(const [path,code] of [['/x/player/playurl',-351],['/x/player/wbi/playurl',0],['/pgc/player/web/playurl',-352],['/pgc/player/web/v2/playurl',-352]])await run('recovers '+path+' code='+code,async(f,s)=>{s.code=code;assert.equal((await fetchPlay(f,path)).code,0);assert.equal(s.spi,1);assert.equal(s.plays,2);const c=(await f.call('getCookies')).cookies;assert.equal(c.SESSDATA,fakeAuth.SESSDATA);assert.equal(c.b_nut,'server-nut');assert.equal(c.buvid4,'renewed-four')});
+await run('nested PGC v2 voucher retries at most once and reports the right family',async(f,s)=>{
+ s.response={code:0,result:{video_info:{v_voucher:'private'}}};await fetchPlay(f,'/pgc/player/web/v2/playurl');
+ assert.equal(s.spi,1);assert.equal(s.plays,2);
+ const row=(await f.call('getDiagnostics')).playback.lastFailure;assert.equal(row.kind,'pgc_v2');assert.equal(row.attempts[0].voucher,true);
+});
+await run('nested PGC v2 usable stream never rotates identity',async(f,s)=>{
+ s.response={code:0,result:{v_voucher:'private',video_info:{dash:{video:[{baseUrl:'https://media.invalid/video'}]}}}};
+ await fetchPlay(f,'/pgc/player/web/v2/playurl');assert.equal(s.spi,0);assert.equal(s.plays,1);
+ assert.equal((await f.call('getDiagnostics')).playback.lastFailure,null);
+});
 await run('concurrent failures share one refresh',async(f,s)=>{const r=await Promise.all(Array.from({length:8},()=>fetchPlay(f)));assert(r.every(x=>x.code===0));assert.equal(s.spi,1);assert.equal(s.plays,16)});
 await run('persistent risk retries once and cooldown blocks more refreshes',async(f,s)=>{s.mode='always';assert.equal((await fetchPlay(f)).code,-351);assert.equal(s.plays,2);assert.equal((await fetchPlay(f)).code,-351);assert.equal(s.plays,3);assert.equal(s.spi,1)});
 await run('invalid fingerprint keeps original identity and login',async(f,s)=>{s.mode='bad-spi';assert.equal((await fetchPlay(f)).code,-351);assert.equal(s.spi,1);assert.equal(s.plays,1);assert.equal((await f.call('getCookies')).cookies.buvid3,fakeAuth.buvid3);await fetchPlay(f);assert.equal(s.spi,1)});

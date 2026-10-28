@@ -16,6 +16,7 @@ var childProcess = require('child_process');
 var biliReferer = require('./biliReferer');
 var upstreamRequest = require('./upstreamRequest');
 var decompressResponse = require('./httpBody');
+var playurlBody = require('./playurlBody');
 var playbackDiagnostics = require('./playbackDiagnostics')();
 // The WHATWG URL GLOBAL only exists on Node 10+. webOS 5 runs Node 8, where
 // every `new URL(...)` threw ReferenceError — caught by the surrounding
@@ -201,11 +202,11 @@ ensureBuvid(0);
 
 function isPlaybackRisk(parsed, method, response) {
   if (parsed.hostname !== 'api.bilibili.com' || (method && method !== 'GET')) return false;
-  if (!/^\/(x\/player\/(wbi\/)?playurl|pgc\/player\/web\/playurl)$/.test(parsed.pathname)) return false;
+  if (!/^\/(x\/player\/(wbi\/)?playurl|pgc\/player\/web\/(v2\/)?playurl)$/.test(parsed.pathname)) return false;
   var j;
   try { j = JSON.parse(response.toString('utf-8')); } catch (e) { return false; }
   if (!j) return false;
-  var data = j.data || j.result || {};
+  var data = playurlBody(j);
   var hasStream = (data.dash && data.dash.video && data.dash.video.length) || (data.durl && data.durl.length);
   return j.code === -351 || j.code === -352 || (j.code === 0 && !!data.v_voucher && !hasStream);
 }

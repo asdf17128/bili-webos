@@ -74,7 +74,7 @@ async function run(name, mode, fn, scale) {
   if(u.pathname.endsWith('/view')){calls.info++;calls.events.push({type:'view',at:Date.now()});if(mode==='slow-info')await new Promise(r=>setTimeout(r,1200));data={aid:1,cid:2,bvid:'BVtest',pages:mode==='startup-part'?[{cid:2},{cid:3}]:[{cid:2}],title:mode.startsWith('layout')?'日本有钱人的小别墅能有多离谱！超迷你设计成这样就问你敢住吗':'加载回归',owner:{mid:1,name:mode.startsWith('layout')?'11区小豪的故事':'测试'},pubdate:1790323200,stat:{}};}
   if(u.pathname.endsWith('/playurl')){
     if(mode==='pgc-region') { calls.playurl++; return route.fulfill({json:{code:-10403,result:{}}}); }
-    if(mode==='pgc-voucher') { calls.playurl++; return route.fulfill({json:{code:0,result:{v_voucher:'private'}}}); }
+    if(mode==='pgc-voucher') { calls.playurl++; return route.fulfill({json:{code:0,result:{video_info:{v_voucher:'private'}}}}); }
     if(mode==='quality-voucher' && calls.playurl>0) { calls.playurl++; return route.fulfill({json:{code:0,data:{v_voucher:'private'}}}); }
     if(mode==='risk-voucher') { calls.playurl++; return route.fulfill({json:{code:0,data:{v_voucher:'private'}}}); }
     calls.playurl++;(calls.requestedQualities||(calls.requestedQualities=[])).push(Number(u.searchParams.get('qn')));calls.events.push({type:'playurl',cid:u.searchParams.get('cid'),at:Date.now()});if(mode.startsWith('startup'))await new Promise(r=>setTimeout(r,500));
@@ -128,7 +128,10 @@ async function run(name, mode, fn, scale) {
   if(u.pathname.endsWith('/list.so'))return route.fulfill({contentType:'text/xml',body:'<i><d p="1,1,28,16777215,0,0,0,0">弹幕字号验证</d></i>'});
   if(u.pathname.endsWith('/archive/related') && mode.startsWith('layout'))data=Array.from({length:30},(_,i)=>({bvid:'BVrelated'+i,title:'推荐视频 '+i,owner:{name:'测试UP'},duration:553}));
   if(u.pathname.endsWith('/x/v2/reply')) data={page:{count:3},replies:Array.from({length:3},(_,i)=>({rpid:i+1,member:{uname:'测试用户'},content:{message:'评论内容 '+i},like:1}))};
-  if(mode==='pgc-success' && u.pathname.endsWith('/playurl')) return route.fulfill({json:{code:0,result:data}});
+  if(mode==='pgc-success' && u.pathname.endsWith('/playurl')) {
+    assert.ok(u.pathname.endsWith('/pgc/player/web/v2/playurl'));
+    return route.fulfill({json:{code:0,result:{video_info:data}}});
+  }
   return route.fulfill({json:{code:0,data}});
  });
  try {await page.goto(baseURL);await page.waitForFunction(()=>!!window.__openVideo);await fn(page,calls);assert.ok((await page.evaluate(()=>window.__probe.mimes)).every(m=>'application/dash+xml'===m),'every generated MPD load, including recovery, supplies DASH MIME');results.push({name,pass:true});console.log('PASS',name);}
@@ -712,6 +715,25 @@ await run('member full quality ladder scrolls with remote at large UI size','mem
  assert.match(bounds.text,/360P/);assert.ok(bounds.top>=bounds.parentTop&&bounds.bottom<=bounds.parentBottom+1&&bounds.parentTop>=0,JSON.stringify(bounds));
  await page.screenshot({path:output+'/member-quality-menu.png'});
 },{ui:1.25});
+await run('remote media keys support play pause toggle and ignore held repeats','media-keys',async page=>{
+ await open(page);await page.waitForFunction(()=>window.__probe.loads===1);
+ await page.evaluate(()=>{
+   window.__mediaKeys={paused:false,plays:0,pauses:0};const media=document.querySelector('video');
+   Object.defineProperty(media,'paused',{configurable:true,get:()=>window.__mediaKeys.paused});
+   media.play=()=>{window.__mediaKeys.plays++;window.__mediaKeys.paused=false;media.dispatchEvent(new Event('play'));return Promise.resolve()};
+   media.pause=()=>{window.__mediaKeys.pauses++;window.__mediaKeys.paused=true;media.dispatchEvent(new Event('pause'))};
+ });
+ const key=(key,keyCode,repeat=false)=>page.evaluate(({key,keyCode,repeat})=>window.dispatchEvent(new KeyboardEvent('keydown',{key,keyCode,repeat,bubbles:true,cancelable:true})),{key,keyCode,repeat});
+ await key('Unidentified',19);assert.equal(await page.evaluate(()=>document.querySelector('video').paused),true);
+ await key('Unidentified',415);await key('Unidentified',415);assert.equal(await page.evaluate(()=>window.__mediaKeys.plays),1);
+ await key('MediaPlayPause',0);await key('MediaPlayPause',0,true);assert.equal(await page.evaluate(()=>document.querySelector('video').paused),true);
+ await key('Unidentified',179);assert.equal(await page.evaluate(()=>document.querySelector('video').paused),false);
+ await page.evaluate(()=>Object.defineProperty(document.querySelector('video'),'readyState',{configurable:true,get:()=>1}));
+ await key('MediaPause',0);assert.equal(await page.evaluate(()=>document.querySelector('video').paused),true);await key('MediaPlay',0);assert.equal(await page.evaluate(()=>document.querySelector('video').paused),false);
+ // Media buttons must not open navigation panels or change quality.
+ assert.equal(await page.locator('.quality-panel').count(),0);
+ assert.equal(await page.evaluate(()=>window.__probe.loads),1);
+});
 for (const mode of ['pgc-success','pgc-region','pgc-voucher']) await run('PGC result envelope and refusal: '+mode,mode,async(page,calls)=>{
  await page.evaluate(()=>window.__openVideo({isBangumi:true,epid:123,cid:456,resumeMode:'none'}));
  if(mode==='pgc-success') { await page.waitForFunction(()=>window.__probe.loads===1);assert.equal((await report(page)).startup.stages.url.hasStream,true); }

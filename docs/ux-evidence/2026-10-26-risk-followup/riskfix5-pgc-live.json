@@ -1,0 +1,19 @@
+{
+  "scope": "anonymous signed request, same quality parameters and root Referer as client",
+  "rows": [
+    {
+      "path": "/pgc/player/web/playurl",
+      "code": 0,
+      "nested": false,
+      "hasStream": true,
+      "voucher": false
+    },
+    {
+      "path": "/pgc/player/web/v2/playurl",
+      "code": 0,
+      "nested": true,
+      "hasStream": true,
+      "voucher": false
+    }
+  ]
+}

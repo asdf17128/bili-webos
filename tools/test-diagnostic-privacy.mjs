@@ -145,6 +145,8 @@ if (!process.env.DIAG_FILTER) {
   try {
     const fields={code:'ECONNREFUSED',reason:'verification_required',hasStream:false,voucher:true,ms:3600000,retries:9999,attempts:9999,errors:9999};
     const input={version:'999.999.99999 abcdefghijklmnopqrstuvwx.9999',chromeMajor:999,nodeVersion:'999.999.99999',platform:'browser',route:'cosov',
+      qualitySwitch:{state:'failed',kind:'pgc',stage:'load',requested:126,selected:126,profile:5,fps:60,mediaCode:3016,category:3,...fields},
+      service:{cookieKeys:['buvid3','buvid4','_uuid','buvid_fp','b_nut']},
       checks:DIAGNOSTIC_STAGES.map(stage=>({stage,status:'fail',...fields})),
       startup:{state:'cancelled',elapsedMs:3600000,retries:9999,stages:Object.fromEntries(['engine','attach','view','resume','url','probe','load'].map(stage=>[stage,{...fields,count:9999}]))},
       errors:[{code:'ECONNREFUSED',d:'network'},{code:'ETIMEDOUT',d:'timeout'},{code:403,d:'HTTP 403'},{code:-100000,d:'unknown'}]};

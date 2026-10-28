@@ -23,6 +23,7 @@ export function diagnosticContextLines(svc, now = Date.now()) {
   const lines = [];
   if (typeof svc.loggedIn === 'boolean') lines.push('session: login=' + (svc.loggedIn ? 'Y' : 'N'));
   if (svc.identity) lines.push('identity: pending=' + (svc.identity.pending === true) + ' cooldown=' + n(svc.identity.cooldownSec, 0, 86400) + 's');
+  if (Array.isArray(svc.cookieKeys)) lines.push('identity-fields: ' + ['buvid3', 'buvid4', 'b_nut', '_uuid', 'buvid_fp'].map(key => key + '=' + (svc.cookieKeys.includes(key) ? 'Y' : 'N')).join(' '));
   const recovery = svc.playback?.lastRecovery;
   if (recovery && typeof recovery === 'object') {
     lines.push('previous-recovery: age=' + n((now - recovery.at) / 1000, 0, 31536000) +
@@ -92,7 +93,7 @@ export function diagnosticDetail(row) {
   return Object.keys(safe).map(key => key + '=' + (typeof safe[key] === 'boolean' ? (safe[key] ? 'yes' : 'no') : safe[key])).join(' ');
 }
 
-export function buildDiagnosticReport({ version: appVersion, chromeMajor, nodeVersion, platform, route, checks, startup, errors, service } = {}) {
+export function buildDiagnosticReport({ version: appVersion, chromeMajor, nodeVersion, platform, route, checks, startup, qualitySwitch, errors, service } = {}) {
   const report = {
     schema: 1, version: buildVersion(appVersion),
     context: diagnosticContextLines(service),
@@ -103,6 +104,18 @@ export function buildDiagnosticReport({ version: appVersion, chromeMajor, nodeVe
       return row ? { stage, status: allowed(row.status, STATUSES, 'fail'), ...fields(row) } : null;
     }).filter(Boolean),
   };
+  if (qualitySwitch && typeof qualitySwitch === 'object') {
+    report.qualitySwitch = {
+      state: allowed(qualitySwitch.state, ['loading', 'ready', 'failed'], 'unknown'),
+      kind: allowed(qualitySwitch.kind, ['wbi', 'pgc'], 'unknown'),
+      stage: allowed(qualitySwitch.stage, ['url', 'selection', 'probe', 'load'], 'unknown'),
+      ...fields(qualitySwitch),
+    };
+    for (const key of ['requested', 'selected', 'served', 'fps', 'profile', 'mediaCode', 'category']) {
+      const value = number(qualitySwitch[key], 0, key === 'mediaCode' ? 100000 : 999);
+      if (value !== null) report.qualitySwitch[key] = value;
+    }
+  }
   if (startup) {
     report.startup = { state: allowed(startup.state, ['loading', 'ready', 'failed', 'cancelled'], 'unknown'),
       ...fields({ ms: startup.elapsedMs, retries: startup.retries }),
@@ -124,7 +137,9 @@ export function diagnosticReportText(input) {
   const r = buildDiagnosticReport(input);
   const lines = ['diag=1 app=' + r.version,
     'env chromeMajor=' + (r.environment.chromeMajor ?? '?') + ' node=' + r.environment.node + ' platform=' + r.environment.platform,
-    'route=' + r.route, ...r.context];
+    'route=' + r.route];
+  if (r.qualitySwitch) lines.push('quality-switch: ' + Object.entries(r.qualitySwitch).map(([k, v]) => k + '=' + v).join(' '));
+  lines.push(...r.context);
   for (const row of r.checks) lines.push('[' + row.status + '] ' + row.stage + ' ' + diagnosticDetail(row));
   if (r.startup) {
     lines.push('startup ' + r.startup.state + ' ' + diagnosticDetail(r.startup));

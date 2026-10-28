@@ -227,7 +227,7 @@ export default function DiagPanel() {
       const chrome = /Chrome\/(\d+)/.exec(navigator.userAgent);
       const report = { version: BUILD_VERSION, chromeMajor: chrome ? Number(chrome[1]) : null,
         nodeVersion: svc?.nodeVersion, platform: window.PalmServiceBridge ? 'tv' : 'browser',
-        route, checks: results, startup: lastPlayback?.startup, service: svc,
+        route, checks: results, startup: lastPlayback?.startup, qualitySwitch: lastPlayback?.qualitySwitch, service: svc,
         errors: [...(svc?.recentErrors || []).slice(-4), ...getErrors().slice(-4)] };
       if (!dead) { setReportText(diagnosticReportText(report)); setReportUrl(diagnosticIssueUrl(report)); }
 

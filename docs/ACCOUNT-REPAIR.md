@@ -8,7 +8,7 @@
 - [#51 的报告者回执](https://github.com/asdf17128/bili-webos/issues/51#issuecomment-6293005593)：LG C2 / Node 16，保留 SESSDATA、替换 buvid3 / buvid4 / b_nut 后恢复；普通退出再登录未解决。报告中旧接口 -351，WBI 接口 code=0 但只有 v_voucher、无可播放流。这是单个环境的用户证据，不是已独立证明的普遍根因。
 - [#52](https://github.com/asdf17128/bili-webos/issues/52)、[相关评论](https://github.com/asdf17128/bili-webos/issues/52#issuecomment-6331018880)：Node 8 / Chrome 68 类似故障，没有成功修复回执。
 
-没有实现评论中未经验证的 ExClimbWuzhi 激活、位置伪造或手工粘贴凭据。保留 2.4.1 的有限自动风控恢复，最多重试一次，与手动重建互斥。已有退出逻辑保留设备 cookie；服务启动时已有 buvid3 会跳过初始化，前端直播 ensureBuvid 原先另有更新路径，不能概括成所有路径从不更新。
+2026-10-27，#51 报告者补充：WBI 仍返回 voucher 时，补齐 `_uuid` / `buvid_fp` / `b_nut` 并调用 ExClimbWuzhi 后，同视频从 6/6 失败变为 6/6 成功。这是用户现场的组合改动对照；尚未提供可审查实现，也未分离字段补全与激活各自的作用。当前未合入 ExClimbWuzhi，已请求脱敏补丁和已有分步证据。riskfix.4 诊断仅新增上述固定字段的存在标记，不收集字段值。没有加入位置伪造或手工粘贴凭据。保留 2.4.1 的有限自动风控恢复，最多重试一次，与手动重建互斥。已有退出逻辑保留设备 cookie；服务启动时已有 buvid3 会跳过初始化，前端直播 ensureBuvid 原先另有更新路径，不能概括成所有路径从不更新。
 
 ## 操作与影响
 

@@ -73,6 +73,9 @@ async function run(name, mode, fn, scale) {
   if(u.pathname.endsWith('/nav'))data={...(mode.startsWith('member-')?{isLogin:true,uname:'Member fixture',mid:1,vipStatus:1,vipType:2}:{}),wbi_img:{img_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png',sub_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png'}};
   if(u.pathname.endsWith('/view')){calls.info++;calls.events.push({type:'view',at:Date.now()});if(mode==='slow-info')await new Promise(r=>setTimeout(r,1200));data={aid:1,cid:2,bvid:'BVtest',pages:mode==='startup-part'?[{cid:2},{cid:3}]:[{cid:2}],title:mode.startsWith('layout')?'日本有钱人的小别墅能有多离谱！超迷你设计成这样就问你敢住吗':'加载回归',owner:{mid:1,name:mode.startsWith('layout')?'11区小豪的故事':'测试'},pubdate:1790323200,stat:{}};}
   if(u.pathname.endsWith('/playurl')){
+    if(mode==='pgc-region') { calls.playurl++; return route.fulfill({json:{code:-10403,result:{}}}); }
+    if(mode==='pgc-voucher') { calls.playurl++; return route.fulfill({json:{code:0,result:{v_voucher:'private'}}}); }
+    if(mode==='quality-voucher' && calls.playurl>0) { calls.playurl++; return route.fulfill({json:{code:0,data:{v_voucher:'private'}}}); }
     if(mode==='risk-voucher') { calls.playurl++; return route.fulfill({json:{code:0,data:{v_voucher:'private'}}}); }
     calls.playurl++;(calls.requestedQualities||(calls.requestedQualities=[])).push(Number(u.searchParams.get('qn')));calls.events.push({type:'playurl',cid:u.searchParams.get('cid'),at:Date.now()});if(mode.startsWith('startup'))await new Promise(r=>setTimeout(r,500));
     const qn=mode==='quality-restore'||mode.startsWith('native-speed')?Number(u.searchParams.get('qn')||80):mode==='resolution-8k'?127:mode==='codec-fallback'?120:mode.startsWith('dolby')?126:80;
@@ -125,6 +128,7 @@ async function run(name, mode, fn, scale) {
   if(u.pathname.endsWith('/list.so'))return route.fulfill({contentType:'text/xml',body:'<i><d p="1,1,28,16777215,0,0,0,0">弹幕字号验证</d></i>'});
   if(u.pathname.endsWith('/archive/related') && mode.startsWith('layout'))data=Array.from({length:30},(_,i)=>({bvid:'BVrelated'+i,title:'推荐视频 '+i,owner:{name:'测试UP'},duration:553}));
   if(u.pathname.endsWith('/x/v2/reply')) data={page:{count:3},replies:Array.from({length:3},(_,i)=>({rpid:i+1,member:{uname:'测试用户'},content:{message:'评论内容 '+i},like:1}))};
+  if(mode==='pgc-success' && u.pathname.endsWith('/playurl')) return route.fulfill({json:{code:0,result:data}});
   return route.fulfill({json:{code:0,data}});
  });
  try {await page.goto(baseURL);await page.waitForFunction(()=>!!window.__openVideo);await fn(page,calls);assert.ok((await page.evaluate(()=>window.__probe.mimes)).every(m=>'application/dash+xml'===m),'every generated MPD load, including recovery, supplies DASH MIME');results.push({name,pass:true});console.log('PASS',name);}
@@ -576,7 +580,18 @@ await run('failed quality load restores original stream with explicit DASH MIME'
  await page.waitForFunction(()=>window.__probe.loads===3);
  await page.waitForFunction(()=>!document.querySelector('.player-page .loading'));
  assert.deepEqual(await page.evaluate(()=>window.__probe.mimes),Array(3).fill('application/dash+xml'));
+ const switchReport=(await report(page)).qualitySwitch;assert.equal(switchReport.state,'failed');assert.equal(switchReport.stage,'load');assert.equal(switchReport.category,1);
  assert.equal(await page.locator('.player-page .player-error').count(),0);
+});
+await run('quality voucher explains API refusal and preserves the playing stream','quality-voucher',async page=>{
+ await open(page);await page.waitForFunction(()=>window.__probe.loads===1);
+ await page.keyboard.press('ArrowUp');await page.locator('.player-btn').filter({hasText:'1080P'}).click();
+ await page.locator('.quality-option').filter({hasText:'360P'}).click();
+ await page.waitForFunction(()=>document.body.innerText.includes('风控校验未通过'));
+ assert.equal(await page.evaluate(()=>window.__probe.loads),1);
+ const r=(await report(page)).qualitySwitch;
+ assert.equal(r.state,'failed');assert.equal(r.stage,'url');assert.equal(r.reason,'verification_required');assert.equal(r.hasStream,false);
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('bili_settings')).quality),80);
 });
 await run('missing requested quality keeps existing stream and never blames membership','quality-missing',async page=>{
  await page.evaluate(()=>window.__openVideo({bvid:'BVtest',resumeMode:'none'}));
@@ -697,6 +712,16 @@ await run('member full quality ladder scrolls with remote at large UI size','mem
  assert.match(bounds.text,/360P/);assert.ok(bounds.top>=bounds.parentTop&&bounds.bottom<=bounds.parentBottom+1&&bounds.parentTop>=0,JSON.stringify(bounds));
  await page.screenshot({path:output+'/member-quality-menu.png'});
 },{ui:1.25});
+for (const mode of ['pgc-success','pgc-region','pgc-voucher']) await run('PGC result envelope and refusal: '+mode,mode,async(page,calls)=>{
+ await page.evaluate(()=>window.__openVideo({isBangumi:true,epid:123,cid:456,resumeMode:'none'}));
+ if(mode==='pgc-success') { await page.waitForFunction(()=>window.__probe.loads===1);assert.equal((await report(page)).startup.stages.url.hasStream,true); }
+ else {
+   await page.waitForFunction(()=>!!document.querySelector('.player-error'));
+   assert.equal(await page.evaluate(()=>window.__probe.loads),0);assert.equal(calls.playurl,1);
+   assert.ok((await page.locator('body').innerText()).includes(mode==='pgc-region'?'当前地区不可观看':'风控校验未通过'));
+   assert.equal((await report(page)).startup.stages.url.hasStream,false);
+ }
+});
 await run('voucher-only playurl shows risk error without decoder or retry loop','risk-voucher',async(page,calls)=>{
  await open(page);await page.waitForSelector('.player-error');
  assert.match(await page.locator('.player-error').innerText(),/风控/);

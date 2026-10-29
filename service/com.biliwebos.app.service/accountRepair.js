@@ -169,6 +169,7 @@ function createAccountRepair(options) {
           // SPI may omit Set-Cookie entirely. Do not invent b_nut or carry a
           // stale value across identities; match automatic recovery semantics.
           delete candidate.b_nut;
+          delete candidate._uuid; // A replacement identity needs its own activation UUID.
           if (nut !== undefined) candidate.b_nut = nut;
           if (!persist(candidate)) { finish('PERSISTENCE_FAILED'); return; }
           options.setCookies(candidate);

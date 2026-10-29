@@ -1,5 +1,9 @@
 // Spanish dictionary. Keys are the Chinese source strings (see index.js).
 export default {
+  "下方探针使用测试视频，不代表刚才播放的视频；请结合上方最近一次起播判断。": "Las comprobaciones usan vídeos de prueba, no el vídeo que acabas de reproducir. Compáralas con la última reproducción de arriba.",
+  "二维码生成失败，请拍摄下方诊断报告反馈。": "No se pudo generar el código QR. Fotografía el informe de diagnóstico de abajo.",
+  "旧接口对照": "Comparación con la API anterior",
+  "冷却剩余 {n} 秒，结束后自动检查。": "Espera: {n}s. El estado se actualizará automáticamente.",
   "重置设备标识": "Restablecer identidad del dispositivo",
   "正在重置…": "Restableciendo…",
   "已重置，请重试播放": "Restablecido. Vuelve a reproducir.",

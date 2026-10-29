@@ -1,0 +1,46 @@
+{
+  "scope": "isolated anonymous desktop Chromium; no TV/account",
+  "fields": {
+    "uuid": true,
+    "buvid_fp": false,
+    "b_nut": false
+  },
+  "before": [
+    {
+      "code": 0,
+      "voucher": false,
+      "stream": true
+    },
+    {
+      "code": 0,
+      "voucher": false,
+      "stream": true
+    },
+    {
+      "code": 0,
+      "voucher": false,
+      "stream": true
+    }
+  ],
+  "activation": {
+    "code": 0,
+    "accepted": true
+  },
+  "after": [
+    {
+      "code": 0,
+      "voucher": false,
+      "stream": true
+    },
+    {
+      "code": 0,
+      "voucher": false,
+      "stream": true
+    },
+    {
+      "code": 0,
+      "voucher": false,
+      "stream": true
+    }
+  ]
+}

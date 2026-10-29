@@ -1,3 +1,5 @@
+import { deviceEnvironment } from './deviceEnvironment';
+import { normalizePgcPlayurl } from './pgcPlayurl';
 // Bilibili API client
 // On webOS TV: uses Luna JS Service (no external proxy needed)
 // Fallback: uses HTTP proxy on Mac
@@ -135,6 +137,7 @@ function lunaFetch(url, options) {
       if (options.sessionGuard) options.sessionGuard();
     } catch (e) { reject(e); return; }
     var params = { url: url, method: options.method || 'GET', diagnostic: options.diagnostic === true };
+    if (!params.diagnostic && /\/player\/(wbi\/|web\/(v2\/)?)?playurl(?:\?|$)/.test(url)) params.deviceEnvironment = deviceEnvironment();
     if (options.body) params.body = options.body;
     if (options.contentType) params.contentType = options.contentType;
     if (options.range) params.range = options.range;
@@ -216,7 +219,7 @@ async function smartFetch(host, path, options) {
   checkSession(generation);
   var url = 'https://' + host + path;
   var opts = options || {};
-  if (/^\/(x\/player\/(wbi\/)?playurl|pgc\/player\/web\/playurl)\?/.test(path)) opts = { ...opts, deadlineMs: opts.deadlineMs || 35000 };
+  if (/^\/(x\/player\/(wbi\/)?playurl|pgc\/player\/web\/(v2\/)?playurl)\?/.test(path)) opts = { ...opts, deadlineMs: opts.deadlineMs || 35000 };
   if (opts.sessionGuard) opts.sessionGuard();
 
   if (hasLunaService()) {
@@ -242,6 +245,7 @@ async function smartFetch(host, path, options) {
     var br = await devLunaCall('fetch', {
       url: url, method: opts.method || 'GET', body: opts.body,
       contentType: opts.contentType, range: opts.range, diagnostic: opts.diagnostic === true,
+      deviceEnvironment: !opts.diagnostic && /\/playurl\?/.test(path) ? deviceEnvironment() : undefined,
     }, opts.deadlineMs);
     checkSession(generation);
     if (opts.sessionGuard) opts.sessionGuard();
@@ -725,14 +729,25 @@ export async function gtxTranslate(texts, tl) {
   return res.map(function (it) { return Array.isArray(it) ? String(it[0]) : String(it); });
 }
 
-export async function getPlayUrl(videoOrBvid, cid, qn) {
+function ugcPlayParams(videoOrBvid, cid, qn) {
   var payload = {
     cid: cid, qn: qn || 80, fnval: 4048, fnver: 0, fourk: 1, platform: 'pc',
   };
   if (typeof videoOrBvid === 'string') payload.bvid = videoOrBvid;
   else if (videoOrBvid?.bvid) payload.bvid = videoOrBvid.bvid;
   else if (videoOrBvid?.aid) payload.avid = videoOrBvid.aid;
-  return wbiFetch('/x/player/playurl', payload);
+  return payload;
+}
+
+// Signed UGC requests belong on the WBI endpoint. Keep the legacy HTML5
+// transport separate; do not silently retry risk responses as anonymous users.
+export async function getPlayUrl(videoOrBvid, cid, qn, options) {
+  return wbiFetch('/x/player/wbi/playurl', ugcPlayParams(videoOrBvid, cid, qn), options);
+}
+
+// Read-only comparison, never a playback fallback or an identity reset.
+export async function probeLegacyPlayUrl(videoOrBvid, cid, qn) {
+  return wbiFetch('/x/player/playurl', ugcPlayParams(videoOrBvid, cid, qn), { diagnostic: true });
 }
 
 // ============ Bangumi / 番剧 (PGC) ============
@@ -744,7 +759,7 @@ export async function getBangumiPlayUrl(opts, qn) {
   var payload = { qn: qn || 80, fnval: 4048, fnver: 0, fourk: 1 };
   if (o.epid) payload.ep_id = o.epid;
   if (o.cid) payload.cid = o.cid;
-  return wbiFetch('/pgc/player/web/playurl', payload);
+  return normalizePgcPlayurl(await wbiFetch('/pgc/player/web/v2/playurl', payload));
 }
 
 // Season metadata (episode list with per-episode cid/cover/title). Accepts

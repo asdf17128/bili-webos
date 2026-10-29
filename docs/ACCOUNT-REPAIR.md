@@ -8,7 +8,7 @@
 - [#51 的报告者回执](https://github.com/asdf17128/bili-webos/issues/51#issuecomment-6293005593)：LG C2 / Node 16，保留 SESSDATA、替换 buvid3 / buvid4 / b_nut 后恢复；普通退出再登录未解决。报告中旧接口 -351，WBI 接口 code=0 但只有 v_voucher、无可播放流。这是单个环境的用户证据，不是已独立证明的普遍根因。
 - [#52](https://github.com/asdf17128/bili-webos/issues/52)、[相关评论](https://github.com/asdf17128/bili-webos/issues/52#issuecomment-6331018880)：Node 8 / Chrome 68 类似故障，没有成功修复回执。
 
-没有实现评论中未经验证的 ExClimbWuzhi 激活、位置伪造或手工粘贴凭据。保留 2.4.1 的有限自动风控恢复，最多重试一次，与手动重建互斥。已有退出逻辑保留设备 cookie；服务启动时已有 buvid3 会跳过初始化，前端直播 ensureBuvid 原先另有更新路径，不能概括成所有路径从不更新。
+2026-10-27，#51 报告者补充：WBI 仍返回 voucher 时，补齐 `_uuid` / `buvid_fp` / `b_nut` 并调用 ExClimbWuzhi 后，同视频从 6/6 失败变为 6/6 成功。这是用户现场的组合改动对照；尚未提供可审查实现，也未分离字段补全与激活各自的作用。当前未合入 ExClimbWuzhi，已请求脱敏补丁和已有分步证据。riskfix.4 诊断仅新增上述固定字段的存在标记，不收集字段值。没有加入位置伪造或手工粘贴凭据。保留 2.4.1 的有限自动风控恢复，最多重试一次，与手动重建互斥。已有退出逻辑保留设备 cookie；服务启动时已有 buvid3 会跳过初始化，前端直播 ensureBuvid 原先另有更新路径，不能概括成所有路径从不更新。
 
 ## 操作与影响
 
@@ -34,3 +34,11 @@
 确定性服务/客户端/浏览器测试全部使用隔离 fixture。实际 Node 0.12.2 与 8.17.0 执行新设备更新模块的内存测试，不启动真实服务或连接真实账号；不等于 webOS/Luna、真实上游或电视验收。
 
 详见 [开发复跑说明](DEVELOPMENT.md)、[功能清单](FEATURES.md) 和 [测试记录](TESTCASES.md)。当前为 2.5.0 合并候选，尚未发布；本地验证已完成，用户随后允许真机验证，最终包长测进行中，发布门禁保留。
+
+## 2026-10-29 激活验证进展
+
+#51 已补充分步对照及字段生成片段：仅补字段组仍有 19/36 次 voucher，补字段并激活组 0/24 次；仍限单账号、视频、出口和短时窗口，且使用桌面固定指纹。维护侧新增隔离匿名实验脚本 `tools/probe-device-activation.mjs --live`，用临时 Chromium 的实际环境字段，不读电视凭据，不生成 buvid_fp/b_nut。激活返回 code=0，但激活前后各 3 次取流均成功，因此尚未独立验证修复作用。riskfix.5 没有接入自动激活。详见 [测试记录](ux-evidence/2026-10-26-risk-followup/riskfix5.md)。
+
+## riskfix.6 受控激活
+
+收到实际播放的 voucher-only 响应且有完整 WebView 环境字段时，服务可对现有设备身份激活一次。仅向固定官方接口传送实际 UA/平台/语言/屏幕/时区/逻辑核心数和设备标识，不带登录 Cookie，不生成 buvid_fp/b_nut。成功返回且会话未变化后原子保存随机 UUID，最多重试取流一次。独立的 5 分钟激活冷却持久化，诊断探针不触发；旧的手动重建设备标识本身仍不执行激活。详见 [实现与验证](ux-evidence/2026-10-26-risk-followup/riskfix6.md)。这是测试候选，尚待受影响电视确认。

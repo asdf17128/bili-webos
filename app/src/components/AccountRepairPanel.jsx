@@ -28,6 +28,26 @@ export default function AccountRepairPanel({ onClose, onRequestLogin }) {
   const [busy, setBusy] = useState(false);
   const [report, setReport] = useState(null);
   const [service, setService] = useState(null);
+  const [remaining, setRemaining] = useState(0);
+  // Count down locally, then verify with the service. Never unlock on the
+  // local clock alone: another playback request may have started a cooldown.
+  useEffect(() => {
+    if (!service || busy) return;
+    let stopped = false, timer;
+    const deadline = Date.now() + (service.retryAfterSeconds || 0) * 1000;
+    setRemaining(service.retryAfterSeconds || 0);
+    const tick = async () => {
+      if (stopped) return;
+      const seconds = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      setRemaining(seconds);
+      if (seconds > 0) { timer = setTimeout(tick, 1000); return; }
+      if (!service.retryAfterSeconds && !service.busy) return;
+      const result = await accountRepair.status();
+      if (!stopped && mounted.current) setService(result.service || null);
+    };
+    timer = setTimeout(tick, 1000);
+    return () => { stopped = true; clearTimeout(timer); };
+  }, [service, busy]);
   // The opener's keyup may precede this component's effect. Its keydown has
   // already passed window capture; ignore repeats and arm the next fresh press.
   const mounted = useRef(true), pending = useRef(false), armed = useRef(true);
@@ -134,7 +154,7 @@ export default function AccountRepairPanel({ onClose, onRequestLogin }) {
         </div>}
         {service?.supported === true ? <p className="account-repair-note">{service.busy
           ? t('已有修复操作进行中，请稍后检查。')
-          : service.retryAfterSeconds ? t('请在 {n} 秒后重新检查。', { n: service.retryAfterSeconds })
+          : service.retryAfterSeconds ? t('冷却剩余 {n} 秒，结束后自动检查。', { n: remaining })
           : service.hasDeviceIdentity ? t('已检测到设备标识；重建需要单独确认。') : t('未检测到完整设备标识，可主动尝试重建。')}</p>
           : <p className="account-repair-note">{t('请先检查账号；服务支持此功能后才能重建设备标识。')}</p>}
         {busy && <p role="status">{t('正在处理…关闭窗口不会取消已发出的请求。')}</p>}

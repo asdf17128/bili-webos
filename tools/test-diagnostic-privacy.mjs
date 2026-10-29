@@ -13,7 +13,7 @@ await mkdir(output,{recursive:true});
 const browser = await chromium.launch();
 const results = [];
 const secret = 'PRIVATE_USER_93 SESSDATA=cookie-secret token=signed-secret 192.168.7.18 2001:db8::12 BV1privateTitle';
-const modes = (process.env.DIAG_FILTER || 'risk351,risk352,voucher,empty,offline,healthy,english,spanish').split(',');
+const modes = (process.env.DIAG_FILTER || 'risk351,risk352,voucher,empty,offline,healthy,english,spanish,mixed,wbi-risk-legacy-ok,wbi-ok-legacy-risk').split(',');
 for (const mode of modes) {
   const context = await browser.newContext({viewport:{width:1920,height:1080},serviceWorkers:'block'});
   await context.routeWebSocket('**/*',socket=>socket.close());
@@ -27,7 +27,7 @@ for (const mode of modes) {
   await page.route('**/*',async route=>{
     const u = new URL(route.request().url());
     if (u.origin === base) return route.continue();
-    requests.push({host:u.hostname,path:u.pathname,method:route.request().method(),containsReport:decodeURIComponent(route.request().url()).includes('diag=1') || (route.request().postData() || '').includes('diag=1')});
+    requests.push({query:Object.fromEntries([...u.searchParams].filter(([key])=>!['wts','w_rid'].includes(key))),host:u.hostname,path:u.pathname,method:route.request().method(),containsReport:decodeURIComponent(route.request().url()).includes('diag=1') || (route.request().postData() || '').includes('diag=1')});
     if (u.port === '9528') return route.abort();
     if (mode === 'offline' && u.port === '9527') return route.abort();
     if (u.pathname.includes('/upgcxcode/')) {
@@ -37,8 +37,12 @@ for (const mode of modes) {
     let code=0,data={};
     if (u.pathname.endsWith('/nav')) data={uname:secret,mid:123456789,isLogin:true,wbi_img:{img_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png',sub_url:'https://a/abcdefghijklmnopqrstuvwxyz123456.png'}};
     if (u.pathname.endsWith('/view')) data={cid:2,title:secret,bvid:'BV1privateTitle'};
+    if (mode==='mixed' && u.pathname.endsWith('/rcmd')) data={item:[{goto:'av',bvid:'BV1synthetic',cid:3,duration:600}]};
     if (u.pathname.endsWith('/playurl')) {
-      if (mode==='risk351'||mode==='risk352') code=mode==='risk351'?-351:-352;
+      if(mode==='wbi-risk-legacy-ok' && u.pathname.includes('/wbi/')) code=-351;
+      else if(mode==='wbi-ok-legacy-risk' && !u.pathname.includes('/wbi/')) code=-351;
+      else if(mode==='mixed' && u.searchParams.get('cid')==='2') code=-351;
+      else if (mode==='risk351'||mode==='risk352') code=mode==='risk351'?-351:-352;
       else if(mode==='voucher') data={v_voucher:secret};
       else if(mode==='empty') data={};
       else data={dash:{video:[{baseUrl:'https://upos-sz-mirrorcosov.bilivideo.com/upgcxcode/private.m4s?token=signed-secret'}]}};
@@ -61,7 +65,20 @@ for (const mode of modes) {
     const text=await preview.innerText();
     assert.match(text,/stage url code=-351 hasStream=no voucher=no ms=80 attempts=2 errors=1/);
     assert.doesNotMatch(await page.locator('.diagnostic-panel').innerText(),/PRIVATE_USER|SESSDATA|cookie-secret|signed-secret|192\.168|2001:db8|BV1privateTitle/);
-    if (mode.startsWith('risk')) {
+    const plays=requests.filter(r=>r.path.endsWith('/playurl'));
+    if(mode==='wbi-risk-legacy-ok') {
+      assert.match(text,/\[fail\] playurl code=-351[^\n]*endpoint=wbi/);
+      assert.match(text,/\[ok\] playurl_legacy code=0[^\n]*endpoint=legacy/);
+      assert.equal(plays.length,2);
+      assert.ok(plays[0].path.endsWith('/x/player/wbi/playurl'));
+      assert.ok(plays[1].path.endsWith('/x/player/playurl'));
+      assert.deepEqual(plays[0].query,plays[1].query,'comparison must use identical parameters');
+      assert.equal(plays[0].query.qn,'127');
+      assert.equal(plays[0].query.fnval,'4048');
+    } else if(mode==='wbi-ok-legacy-risk') {
+      assert.equal(plays.length,1,'healthy WBI must not call the legacy endpoint');
+      assert.match(text,/\[ok\] playurl code=0[^\n]*endpoint=wbi/);
+    } else if (mode.startsWith('risk')) {
       assert.match(text,new RegExp('\\[fail\\] playurl code=-'+mode.slice(4)));
       assert.match(text,/\[skip\] cdn reason=no_stream/);
       assert.doesNotMatch(text,/\[fail\] cdn|reason=no_cid/);
@@ -69,6 +86,9 @@ for (const mode of modes) {
       assert.match(text,/\[fail\] playurl code=0 hasStream=no/);
       assert.match(text,new RegExp('reason='+(mode==='voucher'?'verification_required':'no_stream')));
       assert.match(text,/\[skip\] cdn reason=no_stream/);
+    } else if(mode==='mixed') {
+      assert.match(text,/\[fail\] playurl code=-351[^\n]*source=reference/);
+      assert.match(text,/\[ok\] cdn [^\n]*source=recommendation/);
     } else if(mode==='offline') {
       assert.match(text,/\[fail\] api reason=network/);
       assert.match(text,/\[skip\] playurl reason=no_cid/);
@@ -79,11 +99,17 @@ for (const mode of modes) {
     }
     // Trusted remote-style input reaches the new adjacent action from diagnostics.
     await page.locator('[data-focus-id="content-9-0"]').hover();
-    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowDown');
     await page.waitForFunction(()=>window.__focusState().current==='content-9-1');
     await page.keyboard.press('Enter');
     await page.locator('.diagnostic-report svg').waitFor();
-    await page.keyboard.press('ArrowLeft');
+    const rect=await page.locator('.diagnostic-report svg').boundingBox();
+    assert.ok(rect && rect.y >= 0 && rect.y+rect.height <= 1080, 'generated QR is entirely on-screen');
+    await page.keyboard.press('ArrowDown');
+    await page.waitForFunction(()=>window.__focusState().current==='content-10-0');
+    await page.keyboard.press('ArrowUp');
+    await page.waitForFunction(()=>window.__focusState().current==='content-9-1');
+    await page.keyboard.press('ArrowUp');
     await page.waitForFunction(()=>window.__focusState().current==='content-9-0');
     await page.keyboard.press('ArrowRight');
     await page.waitForFunction(()=>window.__focusState().current==='content-9-1');
@@ -119,6 +145,8 @@ if (!process.env.DIAG_FILTER) {
   try {
     const fields={code:'ECONNREFUSED',reason:'verification_required',hasStream:false,voucher:true,ms:3600000,retries:9999,attempts:9999,errors:9999};
     const input={version:'999.999.99999 abcdefghijklmnopqrstuvwx.9999',chromeMajor:999,nodeVersion:'999.999.99999',platform:'browser',route:'cosov',
+      qualitySwitch:{state:'failed',kind:'pgc',stage:'load',requested:126,selected:126,profile:5,fps:60,mediaCode:3016,category:3,...fields},
+      service:{cookieKeys:['buvid3','buvid4','_uuid','buvid_fp','b_nut']},
       checks:DIAGNOSTIC_STAGES.map(stage=>({stage,status:'fail',...fields})),
       startup:{state:'cancelled',elapsedMs:3600000,retries:9999,stages:Object.fromEntries(['engine','attach','view','resume','url','probe','load'].map(stage=>[stage,{...fields,count:9999}]))},
       errors:[{code:'ECONNREFUSED',d:'network'},{code:'ETIMEDOUT',d:'timeout'},{code:403,d:'HTTP 403'},{code:-100000,d:'unknown'}]};

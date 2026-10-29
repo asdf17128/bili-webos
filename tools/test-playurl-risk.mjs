@@ -5,13 +5,23 @@ const output=process.env.RISK_OUTPUT||'/tmp/bili-playurl-risk';mkdirSync(output,
 async function run(name,fn){let f;const state={spi:0,plays:0,mode:'risk',code:-351};try{
  f=await serviceFixture({serviceSource:process.env.RISK_SOURCE,upstreamReply(req,res){
   const send=x=>{res.setHeader('Content-Type','application/json');res.end(JSON.stringify(x));return true};
-  if(req.url.includes('/finger/spi')){state.spi++;res.setHeader('Set-Cookie',['b_nut=server-nut; Path=/']);return state.mode==='bad-spi'?send({code:0,data:{}}):send({code:0,data:{b_3:'renewed-three',b_4:'renewed-four'}})}
+  if(req.url.includes('/finger/spi')){state.spi++;res.setHeader('Set-Cookie',['b_nut=server-nut; Path=/']);if(state.mode==='same-spi')return send({code:0,data:{b_3:fakeAuth.buvid3}});return state.mode==='bad-spi'?send({code:0,data:{}}):send({code:0,data:{b_3:'renewed-three',b_4:'renewed-four'}})}
   if(req.url.includes('/late-identity')){res.setHeader('Set-Cookie',['buvid3=stale-identity']);return send({code:0})}
   if(req.url.includes('playurl')||req.url.includes('/unrelated')){state.plays++;if(state.response)return send(state.response);if(state.mode==='always'||!req.headers.cookie?.includes('buvid3=renewed-three'))return send(state.code===0?{code:0,data:{v_voucher:'private-voucher'}}:{code:state.code});return send({code:0,data:{dash:{video:[{baseUrl:'https://media.invalid/video'}]}}})}
  }});await fn(f,state);results.push({name,pass:true});console.log('PASS',name);
  }catch(e){results.push({name,pass:false,error:e.message});console.log('FAIL',name,e.message)}finally{if(f){f.release();await f.close()}}}
 const fetchPlay=async(f,path='/x/player/playurl')=>{const r=await f.call('fetch',{url:'https://api.bilibili.com'+path+'?cid=1&qn=80'});return r.body?JSON.parse(r.body):r};
-for(const [path,code] of [['/x/player/playurl',-351],['/x/player/wbi/playurl',0],['/pgc/player/web/playurl',-352]])await run('recovers '+path+' code='+code,async(f,s)=>{s.code=code;assert.equal((await fetchPlay(f,path)).code,0);assert.equal(s.spi,1);assert.equal(s.plays,2);const c=(await f.call('getCookies')).cookies;assert.equal(c.SESSDATA,fakeAuth.SESSDATA);assert.equal(c.b_nut,'server-nut');assert.equal(c.buvid4,'renewed-four')});
+for(const [path,code] of [['/x/player/playurl',-351],['/x/player/wbi/playurl',0],['/pgc/player/web/playurl',-352],['/pgc/player/web/v2/playurl',-352]])await run('recovers '+path+' code='+code,async(f,s)=>{s.code=code;assert.equal((await fetchPlay(f,path)).code,0);assert.equal(s.spi,1);assert.equal(s.plays,2);const c=(await f.call('getCookies')).cookies;assert.equal(c.SESSDATA,fakeAuth.SESSDATA);assert.equal(c.b_nut,'server-nut');assert.equal(c.buvid4,'renewed-four')});
+await run('nested PGC v2 voucher retries at most once and reports the right family',async(f,s)=>{
+ s.response={code:0,result:{video_info:{v_voucher:'private'}}};await fetchPlay(f,'/pgc/player/web/v2/playurl');
+ assert.equal(s.spi,1);assert.equal(s.plays,2);
+ const row=(await f.call('getDiagnostics')).playback.lastFailure;assert.equal(row.kind,'pgc_v2');assert.equal(row.attempts[0].voucher,true);
+});
+await run('nested PGC v2 usable stream never rotates identity',async(f,s)=>{
+ s.response={code:0,result:{v_voucher:'private',video_info:{dash:{video:[{baseUrl:'https://media.invalid/video'}]}}}};
+ await fetchPlay(f,'/pgc/player/web/v2/playurl');assert.equal(s.spi,0);assert.equal(s.plays,1);
+ assert.equal((await f.call('getDiagnostics')).playback.lastFailure,null);
+});
 await run('concurrent failures share one refresh',async(f,s)=>{const r=await Promise.all(Array.from({length:8},()=>fetchPlay(f)));assert(r.every(x=>x.code===0));assert.equal(s.spi,1);assert.equal(s.plays,16)});
 await run('persistent risk retries once and cooldown blocks more refreshes',async(f,s)=>{s.mode='always';assert.equal((await fetchPlay(f)).code,-351);assert.equal(s.plays,2);assert.equal((await fetchPlay(f)).code,-351);assert.equal(s.plays,3);assert.equal(s.spi,1)});
 await run('invalid fingerprint keeps original identity and login',async(f,s)=>{s.mode='bad-spi';assert.equal((await fetchPlay(f)).code,-351);assert.equal(s.spi,1);assert.equal(s.plays,1);assert.equal((await f.call('getCookies')).cookies.buvid3,fakeAuth.buvid3);await fetchPlay(f);assert.equal(s.spi,1)});
@@ -25,4 +35,24 @@ await run('startup reuses repaired identity instead of fetching again',async(f,s
 await run('cooldown survives service restart',async(f,s)=>{await f.call('resetDeviceIdentity');await f.close();const second=await serviceFixture({initialDisk:f.disk});try{assert.equal((await second.call('resetDeviceIdentity')).returnValue,false);assert.equal((await second.call('getCookies')).cookies.buvid3,'renewed-three');assert.equal(second.state.requests.length,0)}finally{await second.close()}});
 await run('cooldown write failure performs no fingerprint request',async(f,s)=>{f.state.failIdentitySave=true;assert.equal((await f.call('resetDeviceIdentity')).returnValue,false);assert.equal(s.spi,0);assert.equal((await f.call('getCookies')).cookies.buvid3,fakeAuth.buvid3)});
 await run('POST and other hosts never auto-rotate',async(f,s)=>{await f.call('fetch',{url:'https://api.bilibili.com/x/player/playurl',method:'POST'});await f.call('fetch',{url:'https://api.live.bilibili.com/x/player/playurl'});assert.equal(s.spi,0)});
+await run('diagnostic probes cannot rotate identity or consume repair cooldown',async(f,s)=>{
+ const r=await f.call('fetch',{url:'https://api.bilibili.com/x/player/playurl?cid=1',diagnostic:true});
+ assert.equal(JSON.parse(r.body).code,-351);assert.equal(s.spi,0);assert.equal(s.plays,1);
+ assert.equal((await f.call('getAccountRepairStatus')).retryAfterSeconds,0);
+ assert.equal((await fetchPlay(f)).code,0);assert.equal(s.spi,1);
+});
+await run('subsequent cooldown failures retain the previous recovery result',async(f,s)=>{
+ s.mode='always';await fetchPlay(f);await fetchPlay(f);
+ const d=(await f.call('getDiagnostics')).playback;
+ assert.equal(d.lastFailure.recovery,'cooldown');
+ assert.equal(d.lastRecovery.recovery,'retried');
+ assert.equal(d.lastRecovery.attempts.length,2);
+ assert.equal(d.lastRecovery.outcome,'failed');
+});
+await run('unchanged identity is reported without retrying or discarding cookies',async(f,s)=>{
+ s.mode='same-spi';await fetchPlay(f);
+ assert.equal(s.spi,1);assert.equal(s.plays,1);
+ assert.deepEqual((await f.call('getCookies')).cookies,fakeAuth);
+ assert.equal((await f.call('getDiagnostics')).playback.lastRecovery.recovery,'identity_unchanged');
+});
 writeFileSync(output+'/results.json',JSON.stringify(results,null,2));process.exitCode=results.every(r=>r.pass)?0:1;

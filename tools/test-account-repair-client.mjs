@@ -432,3 +432,11 @@ test('default signing-cache dependency clears the real module cache without any 
   assert.equal(next.imgKey, 'b'.repeat(32));
   clearWbiKeys();
 });
+
+test('status refresh is local, read-only and strips private fields', async () => {
+  const f = fixture();
+  const r = await f.controller.status();
+  assert.equal(r.service.supported, true);
+  assert.deepEqual(f.calls, ['status']);
+  assert.ok(!JSON.stringify(r).includes(SECRET));
+});

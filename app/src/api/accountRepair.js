@@ -243,5 +243,13 @@ export function createAccountRepair({
     });
   }
 
-  return { check: () => inspect('check'), refresh: () => inspect('refresh'), repairDevice };
+  function status() {
+    return run('status', async (entry, guards) => {
+      const service = readServiceStatus(await getServiceStatus(guards));
+      guards.sessionGuard();
+      return result('status', service?.supported ? 'checked' : 'unavailable', 'service-status', { service });
+    });
+  }
+
+  return { check: () => inspect('check'), refresh: () => inspect('refresh'), status, repairDevice };
 }

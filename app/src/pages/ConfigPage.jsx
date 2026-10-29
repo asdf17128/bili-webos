@@ -234,6 +234,7 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
   useEffect(() => { if (showDiag) setFocus('content-9-0'); }, []);
   const { props: diagProps } = useFocusable({
     id: 'content-9-0', row: 9, col: 0, group: 'content',
+    onNavigate: direction => showDiag && direction === 'down' ? 'content-9-1' : null,
     onSelect: () => setShowDiag(v => !v),
   });
 
@@ -253,6 +254,7 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
   }));
   const { props: langProps } = useFocusable({
     id: 'content-10-0', row: 10, col: 0, group: 'content',
+    onNavigate: direction => showDiag && direction === 'up' ? 'content-9-1' : null,
     onSelect: () => openPicker(LANG_ROW_LABEL, LANG_OPTS, langPref,
       (v) => { if (v !== langPref) setLanguage(v); /* persists + reloads */ }),
   });

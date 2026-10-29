@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import qrcode from 'qrcode-generator';
-import { apiFetch, wbiFetch, getRecommend, getServiceDiagnostics, mediaProxyBase } from '../api/client';
+import { apiFetch, wbiFetch, getPlayUrl, probeLegacyPlayUrl, getRecommend, getServiceDiagnostics, mediaProxyBase } from '../api/client';
 import { diagnosticUrls, probeRange } from '../player/cdnProbe';
 import { getPlaybackReport } from '../player/playbackHealth';
 import { getErrors } from '../utils/errlog';
@@ -16,7 +16,7 @@ import { describePlayResponse, diagnosticError, diagnosticDetail, diagnosticRepo
 // that opens a PREFILLED GitHub issue with the report — the user just scans
 // with a phone and taps submit. Zero servers, nothing uploads by itself.
 
-const KEY = { '后台服务': 'svc', 'API 连通': 'api', '推荐流(风控)': 'rcmd', '视频信息 view': 'view', '取流 playurl': 'playurl', '视频 CDN': 'cdn', 'CDN 测速': 'cdnspeed', '图片代理': 'imgproxy' };
+const KEY = { '后台服务': 'svc', 'API 连通': 'api', '推荐流(风控)': 'rcmd', '视频信息 view': 'view', '取流 playurl': 'playurl', '旧接口对照': 'playurl_legacy', '视频 CDN': 'cdn', 'CDN 测速': 'cdnspeed', '图片代理': 'imgproxy' };
 
 // A well-known stable video for the playurl probe (B站 first video, av2).
 const PROBE_BVID = 'BV1xx411c7mD';
@@ -26,9 +26,14 @@ export default function DiagPanel() {
   const [reportText, setReportText] = useState('');
   const [exportVisible, setExportVisible] = useState(false);
   const [reportUrl, setReportUrl] = useState('');
+  const qrRef = useRef(null);
+  useEffect(() => {
+    if (exportVisible) qrRef.current?.scrollIntoView({ block: 'center' });
+  }, [exportVisible, reportUrl]);
   const [lastPlayback] = useState(getPlaybackReport);
   const { props: exportProps } = useFocusable({
     id: 'content-9-1', row: 9, col: 1, group: 'content',
+    onNavigate: direction => direction === 'up' ? 'content-9-0' : direction === 'down' ? 'content-10-0' : null,
     onSelect: () => { if (reportUrl) setExportVisible(v => !v); },
   });
 
@@ -38,11 +43,13 @@ export default function DiagPanel() {
     const route = storage.getSettings().cdnRoute || 'auto';
     const results = [];
     const started = {};
+    let cdnSource = 'reference';
     const push = (name, status, detail, evidence = {}) => {
       if (dead) return;
       const i = results.findIndex(r => r.name === name);
       if (status === 'run') started[name] = Date.now();
       const row = { name, stage: KEY[name], status, detail: String(detail || '').slice(0, 140),
+        ...((KEY[name] === 'cdn' || KEY[name] === 'cdnspeed') ? { source: cdnSource } : {}),
         ...evidence, ms: status === 'run' ? undefined : Math.max(0, Date.now() - (started[name] || Date.now())) };
       if (i >= 0) results[i] = row; else results.push(row);
       setRows(results.slice());
@@ -118,10 +125,18 @@ export default function DiagPanel() {
       if (!probeCid) {
         push('取流 playurl', 'skip', t('缺少视频信息，未尝试取流'), { reason: 'no_cid' });
       } else try {
-        const p = await wbiFetch('/x/player/playurl', { bvid: PROBE_BVID, cid: probeCid, qn: 16, fnval: 16 }, { diagnostic: true });
+        const p = await getPlayUrl(PROBE_BVID, probeCid, 127, { diagnostic: true });
         const evidence = describePlayResponse(p);
-        push('取流 playurl', evidence.status, diagnosticDetail(evidence), evidence);
+        push('取流 playurl', evidence.status, diagnosticDetail(evidence), { ...evidence, source: 'reference', endpoint: 'wbi' });
         if (evidence.status === 'ok') probeRepresentation = p.data?.dash?.video?.[0] || null;
+        else if (!dead) {
+          // Same video, quality and flags; both requests are observational.
+          push('旧接口对照', 'run', '');
+          try {
+            const legacy = describePlayResponse(await probeLegacyPlayUrl(PROBE_BVID, probeCid, 127));
+            push('旧接口对照', legacy.status, diagnosticDetail(legacy), { ...legacy, source: 'reference', endpoint: 'legacy' });
+          } catch (error) { fail('旧接口对照', error); }
+        }
       } catch (e) { fail('取流 playurl', e); }
 
       // 4b. 视频 CDN (#29):接口全通但拉不到流,以前只能对着一堆 E: 猜。
@@ -132,9 +147,11 @@ export default function DiagPanel() {
         let representation = probeRepresentation;
         if (rcmdPick) {
           try {
-            const p2 = await wbiFetch('/x/player/playurl', { bvid: rcmdPick.bvid, cid: rcmdPick.cid, qn: 64, fnval: 16 }, { diagnostic: true });
+            const p2 = await getPlayUrl(rcmdPick.bvid, rcmdPick.cid, 64, { diagnostic: true });
             const v2 = p2 && p2.code === 0 && p2.data && p2.data.dash && p2.data.dash.video && p2.data.dash.video[0];
-            if (describePlayResponse(p2).status === 'ok' && v2) representation = v2;
+            if (describePlayResponse(p2).status === 'ok' && v2) {
+              representation = v2; cdnSource = 'recommendation';
+            }
           } catch (e) { /* 热门视频取流失败就退回 av2 */ }
         }
         if (!representation) {
@@ -210,7 +227,7 @@ export default function DiagPanel() {
       const chrome = /Chrome\/(\d+)/.exec(navigator.userAgent);
       const report = { version: BUILD_VERSION, chromeMajor: chrome ? Number(chrome[1]) : null,
         nodeVersion: svc?.nodeVersion, platform: window.PalmServiceBridge ? 'tv' : 'browser',
-        route, checks: results, startup: lastPlayback?.startup, service: svc,
+        route, checks: results, startup: lastPlayback?.startup, qualitySwitch: lastPlayback?.qualitySwitch, service: svc,
         errors: [...(svc?.recentErrors || []).slice(-4), ...getErrors().slice(-4)] };
       if (!dead) { setReportText(diagnosticReportText(report)); setReportUrl(diagnosticIssueUrl(report)); }
 
@@ -252,6 +269,7 @@ export default function DiagPanel() {
               <div>{t('从打开视频开始')}：{t('首个媒体响应')} {seconds(startup.points.response)} · {t('媒体就绪')} {seconds(startup.points.data)} · {t('播放事件')} {seconds(startup.points.playing)}</div>
             </>}
           </div>
+          <div style={{ color: '#aaa', marginBottom: 8, fontSize: 'calc(16px * var(--ui-scale))' }}>{t('下方探针使用测试视频，不代表刚才播放的视频；请结合上方最近一次起播判断。')}</div>
           {rows.map(r => (
             <div key={r.name} style={{ fontSize: 'calc(18px * var(--ui-scale))', lineHeight: 1.9, color: r.status === 'fail' ? '#ff7a7a' : '#ccc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {ICON[r.status] || ''} {t(r.name)}{r.detail ? ` — ${r.detail}` : ''}
@@ -264,15 +282,16 @@ export default function DiagPanel() {
               {exportVisible ? t('隐藏反馈二维码') : t('生成反馈二维码')}
             </div>
             <div style={{ color: '#aaa', marginTop: 8 }}>{t('扫码后会把预览内容带到 GitHub；只有提交 issue 后才会公开。')}</div>
+            {exportVisible && !qrSvg && <p role="alert">{t('二维码生成失败，请拍摄下方诊断报告反馈。')}</p>}
             {reportText && <pre className="diagnostic-preview" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'break-word', lineHeight: 1.5 }}>{reportText}</pre>}
 
           </div>
         </div>
         {qrSvg && (
-          <div className="diagnostic-report" style={{ width: qrWidth, flexShrink: 0, textAlign: 'center' }}>
+          <div ref={qrRef} className="diagnostic-report" style={{ width: qrWidth, flexShrink: 0, textAlign: 'center' }}>
             <div style={{ background: '#fff', borderRadius: 8, padding: 6, display: 'inline-block' }}
               dangerouslySetInnerHTML={{ __html: qrSvg }} />
-            <div style={{ fontSize: 'calc(16px * var(--ui-scale))', color: '#999', marginTop: 8, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 'calc(16px * var(--ui-scale))', color: '#ccc', marginTop: 8, lineHeight: 1.5 }}>
               {t('扫码后会把预览内容带到 GitHub；只有提交 issue 后才会公开。')}
             </div>
           </div>

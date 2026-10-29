@@ -1,3 +1,4 @@
+import { mediaKeyAction } from './mediaKeys';
 import NerdInfo from './NerdInfo';
 import { requestedQuality } from '../utils/qualityPreference';
 import Icon from '../components/Icon';
@@ -13,6 +14,7 @@ import { selectVideoRepresentation, webOSVideoLimit, listPreferredAudio, hasAudi
 import { createTargetDolby120Session, findDolbyTransformFailure } from './dolby120Transform';
 import { createDolbyRuntime } from './dolbyRuntime';
 import { createStartupTrace } from './startupTrace';
+import { createQualitySwitchTrace } from './qualitySwitchTrace';
 import { logErr } from '../utils/errlog';
 
 import { formatDuration, formatTime, formatCount, QUALITY_MAP, cleanTitle, pickAigcText } from '../utils/format';
@@ -1184,6 +1186,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       try { return !window.MediaSource?.isTypeSupported || window.MediaSource.isTypeSupported(type); }
       catch { return false; }
     };
+    trace?.stage?.('selection');
     const selected = selectVideoRepresentation(dash, wantQn, { allowFallback: !options.strict, isTypeSupported: supported, maxResolution: webOSVideoLimit(window.PalmSystem?.deviceInfo) });
     if (!selected.representation) throw Object.assign(new Error('Requested video quality is unavailable'), { category: 4 });
     let audio = listPreferredAudio(dash, supported);
@@ -1195,6 +1198,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       cdnAutoRef.current?.setSource(representation);
       const session = createTargetDolby120Session(video, cidRef.current, representation);
       let dolby = null, dolbyCodec = null;
+      trace?.stage?.('selection');
+      trace?.media?.(representation, null);
       const nativeDolby = /^(dvh1|dvhe)\./i.test(representation.codecs || '');
       if (nativeDolby && !session && !dolbySignalingFrameRateAllowed(representation)) {
         lastError = Object.assign(new Error('Unverified high-frame-rate Dolby representation'), { category: 4 });
@@ -1208,6 +1213,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
           if (dolby && supported(`video/mp4; codecs="${dolby.codec}"`)) dolbyCodec = dolby.codec;
         } catch (e) { if (isActive()) logErr('dolby-probe', e.message); }
       }
+      trace?.media?.(representation, dolby);
       // Profile 5 has no HDR-compatible base layer. Never relabel native DV
       // bytes as HEVC; only a confirmed compatible generic HEVC source may fall back.
       const canUseBase = !nativeDolby && dolby?.profile === 8 && [1, 4].includes(dolby.compatibilityId);
@@ -2055,6 +2061,10 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     const wasPaused = transition ? transition.wasPaused : videoRef.current.paused;
     const previous = loadedStreamRef.current;
     let loadStarted = false;
+    let switchHint = null;
+    const switchTrace = createQualitySwitchTrace(values => {
+      if (isActive()) updatePlaybackReport({ qualitySwitch: values });
+    }, { kind: isBangumi ? 'pgc' : 'wbi', requested: requestedQuality(qn) });
     setLoading(true); setBuffering(false);
     cdnAutoRef.current?.setSource(null);
     try {
@@ -2067,12 +2077,15 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       pendingSeekRef.current = null;
       const cid = video.cid || cidRef.current;
       const requestQn = requestedQuality(qn);
-      const res = isBangumi ? await getBangumiPlayUrl({ epid: video.epid, cid }, requestQn) : await getPlayUrl(video, cid, requestQn);
+      const res = await switchTrace.measure('url', () => isBangumi ? getBangumiPlayUrl({ epid: video.epid, cid }, requestQn) : getPlayUrl(video, cid, requestQn));
       if (!isActive()) return;
+      switchHint = apiErrorHint(playurlErrorCode(res), { loggedIn: !!storage.getAuth()?.SESSDATA });
+      if (switchHint) throw new Error('Playback API rejected quality switch');
       const meta = res?.result || res?.data;
       if (!meta?.dash) throw new Error('No DASH stream');
-      const served = await loadDash(player, meta.dash, qn === 'auto' ? undefined : qn, pos, isActive, null, { strict: qn !== 'auto', onLoad: () => { loadStarted = true; } });
+      const served = await loadDash(player, meta.dash, qn === 'auto' ? undefined : qn, pos, isActive, switchTrace, { strict: qn !== 'auto', onLoad: () => { loadStarted = true; } });
       if (!isActive()) return;
+      switchTrace.ready(served);
       if (persistPreference) {
         storage.setSettings({ ...storage.getSettings(), quality: qn === 'auto' ? 'auto' : served, qualityMode: qn === 'auto' ? 'auto' : 'manual' });
         setAutoQuality(qn === 'auto');
@@ -2081,7 +2094,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       if (!wasPaused) videoRef.current.play();
     } catch (e) {
       if (!isActive()) return;
-      showPlayerToast(t('画质切换失败，已保留原画质'));
+      switchTrace.fail(e);
+      showPlayerToast(switchHint || t('画质切换失败，已保留原画质'));
       // A failed decoder load can unload the old stream; restore it at the
       // captured position, including the user's paused state.
       if (previous) cdnAutoRef.current?.setSource(previous.representation);
@@ -2174,6 +2188,21 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   // ========== Keyboard handler ==========
   useEffect(() => {
     const handler = (e) => {
+      const mediaAction = mediaKeyAction(e);
+      if (mediaAction) {
+        e.preventDefault(); e.stopPropagation();
+        const media = videoRef.current;
+        if (e.repeat || loadErrorRef.current || !media) return true;
+        setEndNextIn(null);
+        if (mediaAction === 'pause' || mediaAction === 'toggle' && !media.paused) {
+          media.pause(); setPlaying(false);
+        } else if (media.paused) {
+          // The media play event updates UI; rejection must not claim playback.
+          const pending = media.play();
+          if (pending?.catch) pending.catch(() => {});
+        }
+        return true;
+      }
       // 加载失败页优先于所有分支:此时整屏只剩一个动作(去网络诊断)。
       // 放后面会被 focusArea==='none' 的"OK 呼出控制条"先吃掉(2026-08-21 实测)。
       if (loadErrorRef.current && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {

@@ -1,3 +1,4 @@
+import { deviceEnvironment } from './deviceEnvironment';
 import { normalizePgcPlayurl } from './pgcPlayurl';
 // Bilibili API client
 // On webOS TV: uses Luna JS Service (no external proxy needed)
@@ -136,6 +137,7 @@ function lunaFetch(url, options) {
       if (options.sessionGuard) options.sessionGuard();
     } catch (e) { reject(e); return; }
     var params = { url: url, method: options.method || 'GET', diagnostic: options.diagnostic === true };
+    if (!params.diagnostic && /\/player\/(wbi\/|web\/(v2\/)?)?playurl(?:\?|$)/.test(url)) params.deviceEnvironment = deviceEnvironment();
     if (options.body) params.body = options.body;
     if (options.contentType) params.contentType = options.contentType;
     if (options.range) params.range = options.range;
@@ -217,7 +219,7 @@ async function smartFetch(host, path, options) {
   checkSession(generation);
   var url = 'https://' + host + path;
   var opts = options || {};
-  if (/^\/(x\/player\/(wbi\/)?playurl|pgc\/player\/web\/playurl)\?/.test(path)) opts = { ...opts, deadlineMs: opts.deadlineMs || 35000 };
+  if (/^\/(x\/player\/(wbi\/)?playurl|pgc\/player\/web\/(v2\/)?playurl)\?/.test(path)) opts = { ...opts, deadlineMs: opts.deadlineMs || 35000 };
   if (opts.sessionGuard) opts.sessionGuard();
 
   if (hasLunaService()) {
@@ -243,6 +245,7 @@ async function smartFetch(host, path, options) {
     var br = await devLunaCall('fetch', {
       url: url, method: opts.method || 'GET', body: opts.body,
       contentType: opts.contentType, range: opts.range, diagnostic: opts.diagnostic === true,
+      deviceEnvironment: !opts.diagnostic && /\/playurl\?/.test(path) ? deviceEnvironment() : undefined,
     }, opts.deadlineMs);
     checkSession(generation);
     if (opts.sessionGuard) opts.sessionGuard();

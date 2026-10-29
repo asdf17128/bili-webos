@@ -120,9 +120,9 @@ var IDENTITY_COOLDOWN = 5 * 60 * 1000;
 var IDENTITY_STATE = path.join('/media/internal', 'bili_identity_state.json');
 var identityAttempt = 0;
 try { identityAttempt = Number(JSON.parse(fs.readFileSync(IDENTITY_STATE, 'utf-8')).attempt) || 0; } catch (e) {}
-function isIdentityCookie(key) { return key === 'buvid3' || key === 'buvid4' || key === 'b_nut'; }
+function isIdentityCookie(key) { return key === 'buvid3' || key === 'buvid4' || key === 'b_nut' || key === '_uuid'; }
 function acquireIdentity(callback) {
-  if (accountRepair.status().busy) { callback(new Error('Device identity repair in progress')); return; }
+  if ((activation && activation.status().busy) || accountRepair.status().busy) { callback(new Error('Device identity repair in progress')); return; }
   if (identityFlight) { identityFlight.push(callback); return; }
   var listeners = identityFlight = [callback];
   var generation = cookieGeneration;
@@ -181,7 +181,7 @@ function claimIdentityAttempt() {
   return null;
 }
 function refreshIdentity(callback) {
-  if (accountRepair.status().busy) { callback(new Error('Device identity repair in progress')); return; }
+  if ((activation && activation.status().busy) || accountRepair.status().busy) { callback(new Error('Device identity repair in progress')); return; }
   if (identityFlight) { acquireIdentity(callback); return; }
   var error = claimIdentityAttempt();
   if (error) { callback(error); return; }
@@ -199,6 +199,29 @@ function ensureBuvid(attempt) {
   });
 }
 ensureBuvid(0);
+
+var activation = require('./deviceActivation').create({
+  fs:fs,stateFile:path.join('/media/internal','bili_activation_state.json'),cookieFile:COOKIE_FILE,
+  getCookies:function(){return storedCookies;},generation:function(){return cookieGeneration;},identity:function(){return identityEpoch;},
+  blocked:function(){return !!identityFlight || accountRepair.status().busy;},
+  commit:function(next){storedCookies=next;identityEpoch++;},
+  send:function(cookies,profile,payload,done){
+    var response;
+    var request=upstreamRequest(https.request.bind(https),{hostname:'api.bilibili.com',port:443,path:'/x/internal/gaia-gateway/ExClimbWuzhi',method:'POST',agent:false,rejectUnauthorized:true,
+      headers:{'User-Agent':profile.ua,Referer:'https://www.bilibili.com/','Content-Type':'application/json',Cookie:serializeCookies(cookies)}},
+      JSON.stringify({payload:JSON.stringify(payload)}),function(err,res){
+        if(err){done(new Error('Activation request failed'));return;}
+        response=res;
+        var size=0;res.on('data',function(chunk){size+=chunk.length;if(size>65536){done(new Error('Activation response too large'));res.destroy();}});
+        decompressResponse(res,function(error,body){
+          if(error||res.statusCode!==200){done(new Error('Activation response failed'));return;}
+          var j;try{j=JSON.parse(body.toString('utf8'));}catch(e){done(new Error('Activation invalid response'));return;}
+          done(null,j&&j.code);
+        });
+      },8000);
+    return function(){request.cancel();if(response)response.destroy();};
+  }
+});
 
 function isPlaybackRisk(parsed, method, response) {
   if (parsed.hostname !== 'api.bilibili.com' || (method && method !== 'GET')) return false;
@@ -459,7 +482,12 @@ service.register('fetch', function (message) {
               respond();
             }
             if (requestIdentity !== identityEpoch) recovered(null);
-            else refreshIdentity(recovered);
+            else {
+              var responseJson;try{responseJson=JSON.parse(data.toString('utf8'));}catch(ignore){}
+              var payload=playurlBody(responseJson);
+              if(responseJson && responseJson.code===0 && payload.v_voucher && require('./deviceActivation').profile(message.payload.deviceEnvironment)) activation.run(message.payload.deviceEnvironment,recovered);
+              else refreshIdentity(recovered);
+            }
             return;
           }
           respond();
@@ -503,12 +531,13 @@ service.register('getCookies', function (message) {
 
 service.register('getAccountRepairStatus', function (message) {
   var status = accountRepair.status();
-  status.busy = status.busy || !!identityFlight;
+  status.busy = status.busy || !!identityFlight || activation.status().busy;
   status.retryAfterSeconds = Math.max(status.retryAfterSeconds, identityCooldownSeconds());
   message.respond(status);
 });
 
 service.register('repairDeviceIdentity', function (message) {
+  if(activation.status().busy){message.respond({returnValue:false,errorCode:'BUSY',error:'Device activation in progress'});return;}
   var status = accountRepair.status();
   if (message.payload && message.payload.confirm === true && !status.busy && !status.retryAfterSeconds) {
     if (identityFlight) { message.respond({ returnValue: false, errorCode: 'BUSY', error: 'Device identity recovery in progress' }); return; }
@@ -539,7 +568,7 @@ service.register('clearCookies', function (message) {
   cookieGeneration++;
   // Keep anonymous risk-control fingerprints; remove ALL account cookies.
   var anonymous = {};
-  ['buvid3', 'buvid4', 'b_nut'].forEach(function (key) {
+  ['buvid3', 'buvid4', 'b_nut', '_uuid'].forEach(function (key) {
     if (storedCookies[key]) anonymous[key] = storedCookies[key];
   });
   storedCookies = anonymous;
@@ -646,6 +675,7 @@ service.register('getDiagnostics', function (message) {
     localProxyPort: LOCAL_PROXY_PORT,
     recentErrors: recentErrors,
     playback: playbackDiagnostics.snapshot(),
+    activation: activation.status(),
     identity: { pending: !!identityFlight, cooldownSec: Math.max(0, Math.min(300, Math.ceil((identityAttempt + IDENTITY_COOLDOWN - Date.now()) / 1000))) },
   });
 });

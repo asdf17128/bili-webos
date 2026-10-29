@@ -24,6 +24,7 @@ export function diagnosticContextLines(svc, now = Date.now()) {
   if (typeof svc.loggedIn === 'boolean') lines.push('session: login=' + (svc.loggedIn ? 'Y' : 'N'));
   if (svc.identity) lines.push('identity: pending=' + (svc.identity.pending === true) + ' cooldown=' + n(svc.identity.cooldownSec, 0, 86400) + 's');
   if (Array.isArray(svc.cookieKeys)) lines.push('identity-fields: ' + ['buvid3', 'buvid4', 'b_nut', '_uuid', 'buvid_fp'].map(key => key + '=' + (svc.cookieKeys.includes(key) ? 'Y' : 'N')).join(' '));
+  if(svc.activation) lines.push('activation: state=' + allowed(svc.activation.state,['idle','pending','accepted','failed','timeout','persistence','session_changed'],'unknown') + ' cooldown=' + n(svc.activation.cooldownSec,0,300) + 's');
   const recovery = svc.playback?.lastRecovery;
   if (recovery && typeof recovery === 'object') {
     lines.push('previous-recovery: age=' + n((now - recovery.at) / 1000, 0, 31536000) +

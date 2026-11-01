@@ -46,6 +46,11 @@ try {
         }
         if (u.pathname.endsWith('/playurl')) {
           state.playurl++;
+          assert.ok(u.pathname.endsWith('/x/player/wbi/playurl'), 'normal UGC must use the WBI endpoint');
+          assert.equal(u.searchParams.get('qn'), '80');
+          assert.equal(u.searchParams.get('fnval'), '4048');
+          assert.equal(u.searchParams.get('fourk'), '1');
+          assert.equal(u.searchParams.get('cid'), '2');
           const query = u.search.slice(1).replace(/&w_rid=[^&]+$/, '');
           const expected = createHash('md5').update(query + mixin).digest('hex');
           const signed = u.searchParams.get('w_rid') === expected && u.searchParams.get('wts') === String(now / 1000);

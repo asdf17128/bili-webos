@@ -374,6 +374,46 @@ await test('busy service and cooldown block duplicate rebuild requests', async f
   assert.equal(await action(f.page, f.labels.confirm).count(), 0); assert.equal(f.calls.repair.length, 0);
 }, { status: { busy: true, retryAfterSeconds: 600 } });
 
+await test('cooldown expires and verifies local status without account requests or repair', async f => {
+  await open(f); await f.page.clock.install();
+  await choose(f.page, f.labels.check);
+  await poll(() => f.calls.status.length === 1, 'initial status');
+  await poll(async () => (await dialog(f.page).innerText()).includes('冷却剩余'), 'cooldown visible');
+  const nav = f.calls.nav;
+  f.controls.status.retryAfterSeconds = 0;
+  await f.page.clock.fastForward(3100);
+  await poll(async () => await action(f.page, f.labels.device).getAttribute('aria-disabled') === 'false', 'button unlocks after service confirmation');
+  assert.equal(f.calls.status.length, 2);
+  assert.equal(f.calls.nav, nav); assert.equal(f.calls.repair.length, 0);
+  await f.page.clock.resume();
+}, { status: { retryAfterSeconds: 3 } });
+
+await test('cooldown expiry never unlocks on a stale local clock or failed status read', async f => {
+  await open(f); await f.page.clock.install(); await choose(f.page, f.labels.check);
+  await poll(() => f.calls.status.length === 1, 'initial cooldown');
+  await poll(async () => (await dialog(f.page).innerText()).includes('冷却剩余'), 'cooldown visible');
+  f.controls.status.retryAfterSeconds = 30;
+  await f.page.clock.fastForward(2100);
+  await poll(() => f.calls.status.length === 2, 'service extends cooldown');
+  assert.equal(await action(f.page, f.labels.device).getAttribute('aria-disabled'), 'true');
+  f.controls.statusMode = 'network';
+  await f.page.clock.fastForward(31000);
+  await poll(() => f.calls.status.length >= 3, 'failed status attempted');
+  assert.equal(await action(f.page, f.labels.device).getAttribute('aria-disabled'), 'true');
+  assert.equal(f.calls.repair.length, 0);
+  await f.page.clock.resume();
+}, { status: { retryAfterSeconds: 2 } });
+
+await test('closing cooldown panel cancels its status refresh', async f => {
+  await open(f); await f.page.clock.install(); await choose(f.page, f.labels.check);
+  await poll(async () => (await dialog(f.page).innerText()).includes('冷却剩余'), 'cooldown visible');
+  const count = f.calls.status.length;
+  await f.page.keyboard.press('Escape'); await dialog(f.page).waitFor({state:'detached'});
+  await f.page.clock.fastForward(5000);
+  assert.equal(f.calls.status.length, count); assert.equal(f.calls.repair.length, 0);
+  await f.page.clock.resume();
+}, { status: { retryAfterSeconds: 2 } });
+
 await test('pending repair blocks repeated keys and timeout cannot claim success', async f => {
   await open(f); const before = await snapshot(f.page); await confirmation(f); await f.page.clock.install();
   await action(f.page, f.labels.confirm).hover(); await f.page.keyboard.down('Enter');

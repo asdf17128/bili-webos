@@ -12,3 +12,29 @@ test('allowlisted export excludes content, credentials and arbitrary recovery st
  assert.deepEqual(diagnosticContextLines(null),[]);
  assert.deepEqual(diagnosticContextLines({}),[]);
 });
+
+test('exports previous recovery separately from the latest cooldown failure', () => {
+ const lines=diagnosticContextLines({playback:{
+  lastRecovery:{at:1000,recovery:'retried',outcome:'failed',attempts:[{http:200,code:-351,stream:false},{http:200,code:-351,stream:false,secret:'PRIVATE'}]},
+  lastFailure:{at:2000,recovery:'cooldown',outcome:'failed',attempts:[]}
+ }},3000).join('\n');
+ assert.match(lines,/previous-recovery: age=2s state=retried final=failed/);
+ assert.match(lines,/previous-attempt2: http=200 code=-351 stream=false/);
+ assert.match(lines,/recovery=cooldown/);
+ assert.doesNotMatch(lines,/PRIVATE/);
+});
+test('CDN report distinguishes a different probe source without exposing video ids', () => {
+ const text=diagnosticReportText({checks:[
+  {stage:'playurl',status:'fail',code:-351,source:'reference'},
+  {stage:'cdn',status:'ok',source:'recommendation',bvid:'PRIVATE'},
+  {stage:'cdnspeed',status:'ok',source:'PRIVATE'}
+ ]});
+ assert.match(text,/playurl code=-351 source=reference/);
+ assert.match(text,/cdn source=recommendation/);
+ assert.doesNotMatch(text,/PRIVATE/);
+});
+
+test('PGC v2 diagnostic family survives export',()=>{
+ const text=diagnosticReportText({service:{playback:{lastFailure:{kind:'pgc_v2',attempts:[],at:Date.now()}}}});
+ assert.match(text,/failure: pgc_v2/);
+});

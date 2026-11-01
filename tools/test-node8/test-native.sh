@@ -21,7 +21,7 @@ mkdir -p "$WORK/node_modules"
 cp -R stub/webos-service "$WORK/node_modules/"
 cp -R ../../service/com.biliwebos.app.service/node_modules/. "$WORK/node_modules/"
 cp ../../service/com.biliwebos.app.service/cacert.pem "$WORK/"
-cp run8.js native-preload.js "$WORK/"
+cp run8.js activation-runtime.js native-preload.js "$WORK/"
 cd "$WORK"
 for runtime in "$BILI_NODE012_BINARY" "$BILI_NODE8_BINARY"; do
   # Reset only disposable fixture state between runtimes.

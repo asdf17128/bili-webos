@@ -66,7 +66,7 @@ function fixture({ bootstrap = false } = {}) {
   function load(name) {
     if (Object.hasOwn(substitutions, name)) return substitutions[name];
     if (!name.startsWith('.')) {
-      assert.ok(['url', 'path', 'zlib'].includes(name), 'unexpected native dependency: ' + name);
+      assert.ok(['url', 'path', 'zlib', 'crypto'].includes(name), 'unexpected native dependency: ' + name);
       return nativeRequire(name);
     }
     const filename = path.join(root, name + '.js');

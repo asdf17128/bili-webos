@@ -1,0 +1,9 @@
+# riskfix.4: follow-up evidence and quality-switch errors
+
+2026-10-28. #57 first confirmed WBI restored 4K, then reported voucher-only failures again. #61 reports rapid reentry failures, all PGC failing, and Dolby switching failures on BV1kX4y197P4/BV1dgnd6vE7a. Its attached trace is WBI UGC, not PGC. #62 duplicates #51 author on stable old endpoint. #51 reports six voucher failures versus six successes after adding three device fields plus activation; no implementation or single-variable comparison yet. Treat this as reporter evidence, not independently verified root cause.
+
+Fixed quality switching's generic error masking: use existing structured API error hints, preserve original stream/preference. Added separate bounded quality-switch evidence (API result, stage, requested/selected/served tier, frame rate, profile, media error/category). Restoration does not erase the failed attempt; stale operations cannot publish. Added fixed cookie-name presence flags only, never values. No speculative activation or endpoint changes.
+
+Validation: 230 unit passes / 1 external Dolby corpus skip; 7 report unit passes; 17 selected player browser cases plus 3 new PGC cases (5-case rerun includes 2 overlaps), controlled decoder, not real hardware. 11 diagnostic scenarios plus maximum report (1707 bytes, URL 2105 bytes) pixel decode passed. Production build/package passed. Evidence /tmp/bili-riskfix4-*.log and /tmp/bili-riskfix4-{player,pgc,diag}. No TV access.
+
+Keep draft PR #59 and affected issues open. Request failure-site PGC and Dolby reports separately, exact episode/part links and official-client comparison. Ask #51 for a redacted implementation/PR, fingerprint source and activation-result checks, and any existing fields-only versus activation comparison; do not request credentials or ask for repeated destructive resets. Test distribution only, stable stays 2.5.1.

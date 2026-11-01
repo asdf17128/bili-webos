@@ -14,6 +14,7 @@ export async function serviceFixture({ occupied = false, loggedIn = true, upstre
   const state = { failSave: false, hold: '', held: [], requests: [], clears: 0 };
   const disk = initialDisk || new Map([[cookieFile, JSON.stringify(loggedIn ? fakeAuth : { buvid3: 'fixture-buvid' })]]);
   const servers = [];
+  const files = new Map(); let nextFd = 10;
   const timers = new Set();
   const listen = server => new Promise((resolve, reject) => {
     server.once('error', reject); server.listen(0, '127.0.0.1', () => { server.removeListener('error', reject); resolve(server.address().port); });
@@ -60,6 +61,11 @@ export async function serviceFixture({ occupied = false, loggedIn = true, upstre
     if (name === 'https') return { Agent: http.Agent, request: (opts, cb) => http.request({ ...opts, hostname: '127.0.0.1', port: upstreamPort }, cb) };
     if (name === 'http') return { ...http, createServer: (...args) => { const s = http.createServer(...args); servers.push(s); return s; } };
     if (name === 'fs') return {
+      openSync: (p, flags) => {if(disk.has(p))throw new Error('exists');const fd=nextFd++;files.set(fd,p);disk.set(p,'');return fd;},
+      writeSync: (fd, bytes, offset, length) => {const p=files.get(fd);disk.set(p,disk.get(p)+bytes.slice(offset,offset+length).toString());return length;},
+      fsyncSync: () => {}, closeSync: fd => files.delete(fd),
+      renameSync: (from,to) => {if(to===cookieFile&&state.failSave)throw new Error('fixture disk failure');disk.set(to,disk.get(from));disk.delete(from);},
+      unlinkSync: p => disk.delete(p),
       existsSync: p => disk.has(p), readFileSync: p => disk.get(p),
       writeFileSync: (p, value) => { if ((p === cookieFile && state.failSave) || (p.endsWith('bili_identity_state.json') && state.failIdentitySave)) throw new Error('fixture disk failure'); disk.set(p, value); },
     };

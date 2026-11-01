@@ -1,15 +1,17 @@
 // Bounded, allowlisted evidence. Never retain response bodies, headers, cookie
 // values, voucher values, titles or full URLs, including transient errors.
+var playurlBody = require('./playurlBody');
 module.exports = function () {
-  var rows = [], sequence = 0, lastFailure = null;
+  var rows = [], sequence = 0, lastFailure = null, lastRecovery = null;
   function number(value) { if (value == null) return null; var n = Number(value); return isFinite(n) && n >= 0 && n <= 9007199254740991 ? n : null; }
   function kind(parsed) {
     if (parsed.hostname !== 'api.bilibili.com') return null;
-    return {'/x/player/playurl':'ugc','/x/player/wbi/playurl':'wbi','/pgc/player/web/playurl':'pgc'}[parsed.pathname] || null;
+    return {'/x/player/playurl':'ugc','/x/player/wbi/playurl':'wbi','/pgc/player/web/playurl':'pgc','/pgc/player/web/v2/playurl':'pgc_v2'}[parsed.pathname] || null;
   }
   function error(err) {
     var text = String(err && (err.code || err.message) || '');
     if (/timeout|deadline|ETIMEDOUT/i.test(text)) return 'timeout';
+    if (/identity unchanged/.test(text)) return 'identity_unchanged';
     if (/cooldown/.test(text)) return 'cooldown';
     if (/persist/.test(text)) return 'persistence';
     if (/session changed/.test(text)) return 'session_changed';
@@ -32,16 +34,19 @@ module.exports = function () {
       if(err)a.error=error(err);
       else {
         var j;try{j=JSON.parse(body.toString('utf-8'));}catch(e){a.error='non_json';}
-        if(j){var d=j.data||j.result||{};a.code=typeof j.code==='number'&&isFinite(j.code)?j.code:null;a.voucher=!!d.v_voucher;a.stream=!!((d.dash&&d.dash.video&&d.dash.video.length)||(d.durl&&d.durl.length));}
+        if(j){var d=playurlBody(j);a.code=typeof j.code==='number'&&isFinite(j.code)?j.code:null;a.voucher=!!d.v_voucher;a.stream=!!((d.dash&&d.dash.video&&d.dash.video.length)||(d.durl&&d.durl.length));}
       }
       if(row.attempts.length<2)row.attempts.push(a);
       row.outcome = a.error || a.http !== 200 || a.code !== 0 || !a.stream ? 'failed' : 'ok';
+      if (lastRecovery && lastRecovery.id === row.id) lastRecovery=JSON.parse(JSON.stringify(row));
       if (!row.probe && (row.outcome === 'failed' || (lastFailure && lastFailure.id === row.id))) lastFailure=JSON.parse(JSON.stringify(row));
     },
     recovery: function(row,state,err) {
       if(!row)return;row.recovery=err?error(err):state;
       if(lastFailure&&lastFailure.id===row.id)lastFailure.recovery=row.recovery;
+      // Later cooldown failures must not erase the actual recovery attempt.
+      if (!row.probe && row.recovery !== 'cooldown' && row.recovery !== 'pending') lastRecovery=JSON.parse(JSON.stringify(row));
     },
-    snapshot: function() { return JSON.parse(JSON.stringify({schema:1,recent:rows,lastFailure:lastFailure})); }
+    snapshot: function() { return JSON.parse(JSON.stringify({schema:1,recent:rows,lastFailure:lastFailure,lastRecovery:lastRecovery})); }
   };
 };

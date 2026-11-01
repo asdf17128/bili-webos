@@ -107,6 +107,7 @@ export default function RecoverablePlayer(props) {
 function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   useTitlesMT(); // re-render when list-title translations land (no-op on zh)
   const videoRef = useRef(null);
+  const pointerDismissedRef = useRef(false);
   const shakaRef = useRef(null);
   const transferRef = useRef({ bytes: 0, host: '' });
   const [nerdInfo] = useState(() => storage.getSettings().nerdInfo === true);
@@ -1548,6 +1549,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   commitScrubRef.current = commitScrub;
 
   const scrubBy = useCallback((dir) => {
+    pointerDismissedRef.current = false;
     const v = videoRef.current;
     if (!v || !v.duration || isNaN(v.duration)) return;
     const now = Date.now();
@@ -1581,6 +1583,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   }, []);
 
   const openControls = useCallback(() => {
+    pointerDismissedRef.current = false;
     setShowControls(true);
     setFocusArea('controls');
     setFocusIdx(0);
@@ -2237,6 +2240,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
 
         if (scrubTargetRef.current != null) {
           // Scrubbing: back cancels the pending seek, keep watching
+          pointerDismissedRef.current = true;
           clearScrub();
           setShowControls(false);
           setFocusArea('none');
@@ -2263,6 +2267,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
           endRelHold(null);
           closeRelatedPanel();
         } else if (showControls) {
+          // Explicit dismissal persists until an intentional remote action.
+          pointerDismissedRef.current = true;
           // Controls visible: return to the unobstructed video.
           setShowControls(false);
           setShowRelated(false);
@@ -2660,6 +2666,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   // its own interaction going.
   const lastMoveRef = useRef(0);
   const handlePointerMove = useCallback(() => {
+    if (pointerDismissedRef.current) return;
     const now = Date.now();
     if (now - lastMoveRef.current < 400) return;
     lastMoveRef.current = now;
@@ -2669,7 +2676,12 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   }, [ended, showControls, showSubPanel, showQuality, hideControlsLater]);
 
   return (
-    <div className="player-page player-page-vod" onMouseMove={handlePointerMove}>
+    <div className="player-page player-page-vod" onMouseMove={handlePointerMove}
+      onWheelCapture={event => {
+        if (!showControls && !loadErrorRef.current && !ended && event.deltaY) {
+          event.stopPropagation(); openControls();
+        }
+      }}>
       {nerdInfo && <NerdInfo videoRef={videoRef} playerRef={shakaRef} transferRef={transferRef} audio={streamFormat.audio} />}
       <video ref={videoRef} className="player-video"
         style={showCommentRail ? { width: RAIL_VIDEO_WIDTH, height: RAIL_VIDEO_HEIGHT } : undefined} />

@@ -715,8 +715,23 @@ await run('member full quality ladder scrolls with remote at large UI size','mem
  assert.match(bounds.text,/360P/);assert.ok(bounds.top>=bounds.parentTop&&bounds.bottom<=bounds.parentBottom+1&&bounds.parentTop>=0,JSON.stringify(bounds));
  await page.screenshot({path:output+'/member-quality-menu.png'});
 },{ui:1.25});
-await run('remote media keys support play pause toggle and ignore held repeats','media-keys',async page=>{
+await run('Back dismissal ignores pointer jitter until deliberate wheel or D-pad input','pointer-dismiss',async page=>{
  await open(page);await page.waitForFunction(()=>window.__probe.loads===1);
+ await page.keyboard.press('ArrowUp');
+ await page.keyboard.press('Escape');
+ const visible=()=>page.evaluate(()=>getComputedStyle(document.querySelector('.player-controls')).opacity);
+ await page.waitForTimeout(500);assert.equal(await visible(),'0');
+ for(let i=0;i<3;i++){await page.mouse.move(500+i*20,400+i*10);await page.waitForTimeout(450);assert.equal(await visible(),'0');}
+ await page.mouse.wheel(0,120);await page.waitForTimeout(500);assert.equal(await visible(),'1');
+ await page.keyboard.press('Escape');await page.waitForTimeout(500);assert.equal(await visible(),'0');
+ await page.mouse.move(620,420);await page.waitForTimeout(500);assert.equal(await visible(),'0');
+ await page.keyboard.press('ArrowDown');await page.waitForTimeout(500);assert.equal(await visible(),'1');
+ // Auto-hide is distinct from explicit Back: pointer remains usable afterward.
+ await page.waitForTimeout(5500);await page.mouse.move(650,430);await page.waitForTimeout(500);assert.equal(await visible(),'1');
+});
+await run('remote media keys support play pause toggle and ignore held repeats','media-keys',async page=>{
+ await open(page);await page.waitForFunction(()=>window.__probe.mpds.length===1 && !document.querySelector('.player-page .loading'));
+ // Wait for startup's initial play before counting explicit remote commands.
  await page.evaluate(()=>{
    window.__mediaKeys={paused:false,plays:0,pauses:0};const media=document.querySelector('video');
    Object.defineProperty(media,'paused',{configurable:true,get:()=>window.__mediaKeys.paused});
@@ -725,7 +740,7 @@ await run('remote media keys support play pause toggle and ignore held repeats',
  });
  const key=(key,keyCode,repeat=false)=>page.evaluate(({key,keyCode,repeat})=>window.dispatchEvent(new KeyboardEvent('keydown',{key,keyCode,repeat,bubbles:true,cancelable:true})),{key,keyCode,repeat});
  await key('Unidentified',19);assert.equal(await page.evaluate(()=>document.querySelector('video').paused),true);
- await key('Unidentified',415);await key('Unidentified',415);assert.equal(await page.evaluate(()=>window.__mediaKeys.plays),1);
+ await key('Unidentified',415);await key('Unidentified',415);assert.equal(await page.evaluate(()=>window.__mediaKeys.plays),1,'dedicated Play is idempotent after startup');
  await key('MediaPlayPause',0);await key('MediaPlayPause',0,true);assert.equal(await page.evaluate(()=>document.querySelector('video').paused),true);
  await key('Unidentified',179);assert.equal(await page.evaluate(()=>document.querySelector('video').paused),false);
  await page.evaluate(()=>Object.defineProperty(document.querySelector('video'),'readyState',{configurable:true,get:()=>1}));

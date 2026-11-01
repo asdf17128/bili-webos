@@ -10,6 +10,16 @@ This log collects the release history previously included in the README. For ear
 
 <a id="unreleased"></a>
 
+## v2.5.2 — 2026-11-01
+
+- **播放修复**：普通视频使用 WBI 取流，番剧使用 PGC v2，保留账号和会员画质参数。
+- **验证恢复**：针对要求验证但未返回视频流的响应，使用实际电视环境字段激活当前设备身份，成功后重试一次；加入并发合并、持久化冷却、超时取消和账号切换保护。
+- **遥控器操作**：支持独立播放、暂停和播放／暂停合并键；按返回关闭控制栏后，不再被指针抖动立即唤起，滚轮与方向键仍可重新打开。
+- **诊断反馈**：补充画质切换阶段、杜比信息、媒体错误码和恢复状态；修复反馈二维码按钮被方向键跳过及二维码不在屏幕内的问题。
+- **错误提示**：画质切换被接口拒绝时显示对应提示，保留原画质；诊断测试视频与最近实际播放记录明确区分。
+
+Updated WBI/PGC v2 playback, bounded verification recovery, remote media keys, stable Back dismissal, and more actionable playback diagnostics.
+
 ## v2.5.1 — 2026-10-24
 
 ### 新功能与改进

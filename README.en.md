@@ -39,9 +39,9 @@ Use BiliTV in **English, Español or 中文**. English and Spanish interfaces al
 
 *Video quality and availability depend on the source, your Bilibili account, your TV and your region.*
 
-## What’s new in 2.5.1
+## What’s new in 2.5.2
 
-Adds **transparent playback controls, creator follower counts, and “Not interested” for recommended videos or creators**, plus a guided account repair panel in Settings. The playback shelf expands upward to show two rows of full-size listing cards with smooth navigation. Stronger white text with a fine dark edge improves readability, and follower counts fade together with the controls. Hold OK on a recommendation to choose video or creator feedback. Local restoration and official feedback cancellation are separate actions with explicit confirmation. See the [feature inventory](docs/FEATURES.md) for scope and limits; published packages remain on the release page.
+Updated regular-video and episode playback endpoints improve signed-in playback. Certain verification failures now get bounded device activation and one retry. Remote play/pause keys are supported, and Back-dismissed controls stay hidden despite pointer jitter. Diagnostics include quality-switch failures and recovery status, with easier remote navigation to the feedback QR code. See the [changelog](CHANGELOG.md).
 
 ## A closer look
 
@@ -100,6 +100,6 @@ See the [premium playback guide](docs/DOLBY_VISION.md) for quality and device li
 
 ## Playback verification failures
 
-Version 2.4.1 attempts one device-identity recovery for recognized playback verification failures. In 2.5.1, if playback still fails, use **Settings → Account repair → Rebuild device identity**, then retry. This preserves your login and has a five-minute cooldown. Run network diagnostics if the issue persists. Resetting an identity does not guarantee removal of account or regional restrictions.
+Version 2.5.2 attempts bounded device activation for certain verification responses, then retries playback once. A five-minute activation cooldown survives service restarts. If playback still fails, open **Settings → Network diagnostics** before restarting or playing another video and share the report. Account repair remains available separately; repeated identity resets do not guarantee recovery.
 
 New diagnostic reports include the latest playback-URL failure in the current service session: HTTP/API codes, elapsed time, requested quality and recovery results. Open diagnostics before restarting and scan the QR code to submit. Nothing is uploaded automatically; cookies, voucher values, and full signed URLs are excluded.

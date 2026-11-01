@@ -10,7 +10,7 @@ function profile(p) {
 }
 function atomic(fs,file,value) {
   var tmp=file+'.activation-tmp',fd;
-  try { fd=fs.openSync(tmp,'wx',384);var bytes=Buffer.from(JSON.stringify(value)),offset=0;while(offset<bytes.length){var written=fs.writeSync(fd,bytes,offset,bytes.length-offset);if(!written)throw new Error('Short write');offset+=written;}fs.fsyncSync(fd);fs.closeSync(fd);fd=null;fs.renameSync(tmp,file); }
+  try { fd=fs.openSync(tmp,'wx',384);var bytes=Buffer.from(JSON.stringify(value)),offset=0;while(offset<bytes.length){var written=fs.writeSync(fd,bytes,offset,bytes.length-offset,offset);if(!written)throw new Error('Short write');offset+=written;}fs.fsyncSync(fd);fs.closeSync(fd);fd=null;fs.renameSync(tmp,file); }
   catch(e){if(fd!=null)try{fs.closeSync(fd)}catch(ignore){};try{fs.unlinkSync(tmp)}catch(ignore){};throw e;}
 }
 exports.profile=profile;

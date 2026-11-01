@@ -112,6 +112,7 @@ node tools/test-soak-monitor.mjs || { echo "FAIL: soak monitor gap and frame acc
 npm test || { echo "FAIL: service unit tests"; exit 1; }
 node tools/test-service-stability.mjs || { echo "FAIL: service request lifecycle stress"; exit 1; }
 node tools/test-playurl-risk.mjs || { echo 'FAIL: playurl risk recovery'; exit 1; }
+node tools/test-device-activation.mjs || { echo 'FAIL: bounded device activation'; exit 1; }
 node tools/test-buvid-stability.mjs || { echo "FAIL: fingerprint startup deadlines"; exit 1; }
 node tools/test-service-subscriptions.mjs || { echo "FAIL: service subscription cancellation"; exit 1; }
 node tools/test-dev-bridge-subscriptions.mjs || { echo "FAIL: dev bridge subscription cancellation"; exit 1; }

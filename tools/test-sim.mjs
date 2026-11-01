@@ -633,7 +633,7 @@ async function main() {
     // ② 一个能按下去的出路(OK 直达网络诊断)
     await page.route('**/luna/fetch', async route => {
       const body = route.request().postData() || '';
-      if (body.includes('player/playurl')) {
+      if (/\/x\/player\/(?:wbi\/)?playurl(?:[?"]|$)/.test(body)) {
         return route.fulfill({ status: 200, contentType: 'application/json',
           body: JSON.stringify({ returnValue: true, statusCode: 200,
             body: JSON.stringify({ code: -351, message: '风控校验失败', data: null }) }) });

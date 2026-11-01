@@ -11,7 +11,7 @@ mkdir -p "$WORK/node_modules"
 cp -R stub/webos-service "$WORK/node_modules/"
 cp -R ../../service/com.biliwebos.app.service/node_modules/. "$WORK/node_modules/"
 cp ../../service/com.biliwebos.app.service/cacert.pem "$WORK/"
-cp run8.js "$WORK/"
+cp run8.js activation-runtime.js "$WORK/"
 # Docker Hub's historic node:0.12 manifest is no longer reliably pullable.
 # Run the official, SHA256-verified 0.12.2 binary inside the same x86 Node 8
 # image (matches webOS 4.x exactly, rather than its later 0.12.18 patch).

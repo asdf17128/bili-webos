@@ -1,6 +1,7 @@
 // REAL Node 8 — URL global genuinely absent. Evaluate the real service.js and
 // drive the exact code path that broke on webOS 5.
 require('./service.js');
+require('./activation-runtime');
 // Exercise the absolute deadline on an actual Agent queue on both runtimes.
 var deadlineHttp = require('http');
 var deadlineServer = deadlineHttp.createServer(function () {});

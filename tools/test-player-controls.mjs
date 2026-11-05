@@ -110,7 +110,7 @@ async function fixture(options = {}) {
     delete window.webOS; delete window.PalmServiceBridge;
     localStorage.clear();
     localStorage.setItem('bili_proxyUrl', JSON.stringify('http://127.0.0.1:9527'));
-    localStorage.setItem('bili_settings', JSON.stringify({ language: options.language || 'zh', uiScale: options.scale || 1, gridCols: 3, quality: 80, qualityMode: 'manual', subtitle: true, danmaku: false, playbackMode: 'stop' }));
+    localStorage.setItem('bili_settings', JSON.stringify({ language: options.language || 'zh', uiScale: options.scale || 1, gridCols: 3, quality: 80, qualityMode: 'manual', subtitle: true, danmaku: !!options.mask, danmakuMask: !!options.mask, playbackMode: 'stop' }));
     localStorage.setItem('bili_perfopt', JSON.stringify({ prefetchPage: false, warmPlayer: false }));
     // These credentials exist only in this new browser context. Every outgoing
     // HTTP/WS call outside Vite is intercepted before it reaches the network.
@@ -169,6 +169,8 @@ async function fixture(options = {}) {
     }
     if (url.pathname.endsWith('/playurl')) data = { quality: 80, accept_quality: [80, 64, 32, 16], dash: { duration: 600, video: [{ id: 80, bandwidth: 1000, baseUrl: 'https://media.fixture.invalid/video', codecs: 'avc1.640028', width: 1920, height: 1080, frameRate: '30', SegmentBase: { Initialization: '0-51', indexRange: '52-70' } }], audio: [] } };
     if (url.pathname.endsWith('/v2')) data = { last_play_cid: 2, last_play_time: 0, subtitle: { subtitles: [{ lan: 'zh-CN', lan_doc: '中文', subtitle_url: 'https://fixture.invalid/controls-subtitle.json' }] } };
+    if (url.pathname.endsWith('/v2') && options.mask && options.mask !== 'missing') data.dm_mask = {cid:options.mask === 'mismatch'?999:2,mask_url:'https://a.bilivideo.com/cmaskboss/test.webmask'};
+    if (url.pathname.endsWith('/test.webmask')) { (calls.maskRanges ||= []).push(request.headers().range); return route.fulfill({status:503,body:'unavailable',headers:{'access-control-allow-origin':'*'}}); }
     if (url.pathname.endsWith('/controls-subtitle.json')) return fulfill({ body: [{ from: 0, to: 600, content: '字幕保持可读，不应被控制栏遮挡' }] });
     if (url.pathname.endsWith('/list.so')) return route.fulfill({ contentType: 'text/xml', body: '<i></i>' });
     if (url.pathname.endsWith('/archive/related')) {
@@ -230,6 +232,18 @@ async function run(name, options, fn) {
     await writeFile(`${output}/results.json`, JSON.stringify({ baseline, baseUrl, sources, boundary: 'Real React/API/controller with controlled Shaka and media events; every non-Vite HTTP request and every WebSocket is intercepted. New contexts use only synthetic account/video data. No real media decoding, television, desktop foreground, or phone interaction.', results: reports }, null, 2));
   }
 }
+
+for(const mask of ['failure','missing','mismatch']) await run('person mask metadata integration '+mask, {mask}, async f=>{
+ await openControls(f.page);
+ await f.page.locator('.player-btn').filter({hasText:'弹幕设置'}).click();
+ const text=mask==='failure'?'人物遮罩加载失败，已使用普通弹幕':'当前视频未提供人物遮罩';
+ await f.page.getByRole('status').filter({hasText:text}).waitFor();
+ assert.equal((f.calls.maskRanges||[]).length,mask==='failure'?1:0);
+ if(mask==='failure')assert.equal(f.calls.maskRanges[0],'bytes=0-15');
+ assert.equal((await state(f.page)).probe.loads,1);
+ assert.ok(await f.page.evaluate(()=>[...document.querySelectorAll('.danmaku-container')].every(e=>e.style.maskImage==='none')));
+ await f.page.keyboard.press('Escape');assert.equal((await state(f.page)).focused,'弹幕设置');
+});
 
 await run('in-playback danmaku settings preserve playback and restore remote focus', {}, async f => {
  const page=f.page;await openControls(page);

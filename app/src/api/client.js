@@ -1,3 +1,4 @@
+import { maskUrl, MASK_LIMITS } from '../player/danmakuMask';
 import { parseDanmakuSegment } from '../player/danmakuSegments';
 import { deviceEnvironment } from './deviceEnvironment';
 import { normalizePgcPlayurl } from './pgcPlayurl';
@@ -197,6 +198,7 @@ function proxyFetchRaw(url, options) {
     method: options.method || 'GET',
     headers: {
       'Content-Type': options.contentType || 'application/json',
+      ...(options.range ? { Range: options.range } : {}),
     },
     body: options.body,
   }).then(function(res) {
@@ -1221,6 +1223,24 @@ export async function reportHeartbeat(bvid, cid, playedTime, realTime) {
 }
 
 // ============ Danmaku ============
+
+export async function getDanmakuMaskRange(url, start, end) {
+  const valid = maskUrl(url), expected = end - start + 1;
+  if (!valid || !Number.isSafeInteger(start) || start < 0 || !Number.isSafeInteger(end) || expected < 1 || expected > MASK_LIMITS.compressed) throw Error('Invalid mask range');
+  return withDeadline((async () => {
+    const response = await rawFetch(valid, { range: 'bytes=' + start + '-' + end, deadlineMs: 5000 });
+    if (response.status !== 206) throw Error('Mask range unavailable');
+    let bytes;
+    if (response.arrayBuffer) bytes = new Uint8Array(await response.arrayBuffer());
+    else {
+      if (typeof response.bodyBase64 !== 'string' || response.bodyBase64.length > Math.ceil(expected / 3) * 4) throw Error('Mask response limit');
+      const binary = atob(response.bodyBase64); bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    }
+    if (!bytes.length || bytes.length > expected) throw Error('Mask response limit');
+    return bytes;
+  })(), 6000);
+}
 
 export async function getDanmakuSegment(cid, segment) {
   const url = 'https://api.bilibili.com/x/v2/dm/web/seg.so?type=1&oid=' + encodeURIComponent(cid) + '&segment_index=' + segment;

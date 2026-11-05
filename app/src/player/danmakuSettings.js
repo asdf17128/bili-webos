@@ -10,6 +10,7 @@ export const DANMAKU_FIELDS = [
   ['danmakuScroll', '滚动弹幕', [false, true], ['关', '开'], true],
   ['danmakuTop', '顶部固定弹幕', [false, true], ['关', '开'], true],
   ['danmakuBottom', '底部固定弹幕', [false, true], ['关', '开'], true],
+  ['danmakuMask', '智能防挡人物（实验）', [false, true], ['关', '开'], false],
   ['danmakuColor', '彩色弹幕', [false, true], ['关', '开'], true],
 ];
 export function normalizeDanmaku(settings = {}) {

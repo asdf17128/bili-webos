@@ -504,4 +504,13 @@ export default {
   "向下浏览视频": "Down to browse videos",
   "{n}粉丝": "{n} followers",
   "调整后立即生效并自动保存。": "Changes apply immediately and are saved automatically.",
+  "智能防挡人物（实验）": "Avoid people (experimental)",
+  "人物遮罩仅部分视频提供；不支持时使用普通弹幕。": "Only some videos provide person masks; ordinary danmaku is used otherwise.",
+  "人物遮罩已启用": "Person masking is active",
+  "正在加载人物遮罩": "Loading person mask",
+  "人物遮罩加载失败，已使用普通弹幕": "Mask unavailable; using ordinary danmaku",
+  "当前设备不支持人物遮罩": "This device does not support person masks",
+  "当前视频未提供人物遮罩": "This video has no person mask",
+  "弹幕关闭时不加载人物遮罩": "Masks are not loaded while danmaku is off",
+  "当前片段暂无人物遮罩": "No person mask at this point in the video",
 };

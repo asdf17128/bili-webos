@@ -176,6 +176,8 @@ if [ -n "$UX" ]; then
   node tools/test-player-controls.mjs
   node tools/test-author-followers.mjs
   node tools/test-danmaku-segments.mjs || exit 1
+  node tools/test-danmaku-mask.mjs
+  node tools/test-danmaku-mask-browser.mjs
   node tools/test-danmaku-render.mjs
   node tools/test-playback-end.mjs
   node tools/test-live-loading.mjs

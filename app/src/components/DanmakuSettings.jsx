@@ -9,7 +9,7 @@ const SAMPLE = Array.from({ length: 80 }, (_, i) => ({ time: i * 0.2,
   text: i % 3 === 0 ? t('这段太精彩了！') : t('弹幕效果预览'), mode: [1, 5, 4, 1][i % 4],
   color: i % 5 === 0 ? '#ffcc66' : '#ffffff' }));
 
-export default function DanmakuSettings({ onClose, onChange }) {
+export default function DanmakuSettings({ onClose, onChange, maskStatus }) {
   const [settings, setSettings] = useState(() => normalizeDanmaku(storage.getSettings()));
   const [row, setRow] = useState(0);
   const [choice, setChoice] = useState(null);
@@ -64,6 +64,8 @@ export default function DanmakuSettings({ onClose, onChange }) {
         <aside><div className="dm-preview"><div className="dm-preview-stage">
           <DanmakuLayer danmakus={SAMPLE} currentTime={time} enabled settings={settings} fontScale={settings.danmakuScale} />
         </div></div><p>{t(onChange ? '调整后立即生效并自动保存。' : '调整后自动保存，下次播放生效。')}</p>
+          <p>{t('人物遮罩仅部分视频提供；不支持时使用普通弹幕。')}</p>
+          {onChange && settings.danmakuMask && <p role="status">{t({gap:'当前片段暂无人物遮罩',active:'人物遮罩已启用',loading:'正在加载人物遮罩',failed:'人物遮罩加载失败，已使用普通弹幕',unsupported:'当前设备不支持人物遮罩',unavailable:'当前视频未提供人物遮罩',off:'弹幕关闭时不加载人物遮罩'}[maskStatus] || '正在加载人物遮罩')}</p>}
           <p>{t('密集弹幕可能增加电视负担；卡顿时可降低密度。')}</p>
           <p>{t('直播应用外观和滚动设置；固定与彩色弹幕取决于片源。')}</p>
         </aside>

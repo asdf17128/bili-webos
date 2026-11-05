@@ -502,4 +502,13 @@ export default {
   "向下浏览视频": "Abajo para explorar vídeos",
   "{n}粉丝": "{n} seguidores",
   "调整后立即生效并自动保存。": "Los cambios se aplican al instante y se guardan automáticamente.",
+  "智能防挡人物（实验）": "Evitar personas (experimental)",
+  "人物遮罩仅部分视频提供；不支持时使用普通弹幕。": "Solo algunos vídeos ofrecen máscaras de personas; en los demás se usa danmaku normal.",
+  "人物遮罩已启用": "Máscara de personas activada",
+  "正在加载人物遮罩": "Cargando máscara de personas",
+  "人物遮罩加载失败，已使用普通弹幕": "Error de máscara; se usa danmaku normal",
+  "当前设备不支持人物遮罩": "Este dispositivo no admite máscaras de personas",
+  "当前视频未提供人物遮罩": "Este vídeo no ofrece máscara de personas",
+  "弹幕关闭时不加载人物遮罩": "Las máscaras no se cargan con danmaku desactivado",
+  "当前片段暂无人物遮罩": "No hay máscara de personas en este punto del vídeo",
 };

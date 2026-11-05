@@ -134,6 +134,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   const [autoQuality, setAutoQuality] = useState(() => storage.getSettings().quality === 'auto');
   const [showQuality, setShowQuality] = useState(false);
   const [showRelated, setShowRelated] = useState(false);
+  const [maskSource, setMaskSource] = useState(null);
+  const [maskStatus, setMaskStatus] = useState('off');
   const [danmakus, setDanmakus] = useState([]);
   const danmakuLoaderRef = useRef(null);
   const danmakuEnabledRef = useRef(true);
@@ -862,12 +864,15 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       // list would be the wrong part's.)
       setChapters([]);
       setSubTracks([]);
+      setMaskSource(null);
       selectSubtitle(null); // also bumps subReqRef → orphans in-flight bodies
       subBodyCacheRef.current = new Map(); // bodies are per-cid
       if (!isBangumi && videoAidRef.current) {
         afterFirstFrame(() => (playerMeta && playerMetaCid === cid
           ? Promise.resolve(playerMeta) : getPlayerV2(videoAidRef.current, cid)).then(pv => {
           if (!isActive()) return;
+          const mask = pv?.data?.dm_mask;
+          if (mask && String(mask.cid) === String(cid)) setMaskSource(mask);
           const vp = pv?.data?.view_points;
           if (Array.isArray(vp)) {
             const ch = vp
@@ -2811,11 +2816,11 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         </div>
       )}
 
-      {showDanmakuSettings && <DanmakuSettings onChange={setDanmakuSettings} onClose={() => {
+      {showDanmakuSettings && <DanmakuSettings maskStatus={maskStatus} onChange={setDanmakuSettings} onClose={() => {
         setShowDanmakuSettings(false); setShowControls(true); setFocusArea('controls');
         setFocusIdx(CONTROLS.indexOf('danmakuSettings')); hideControlsLater();
       }} />}
-      <DanmakuLayer preserveOnAppend settings={danmakuSettings} danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale} paused={!playing}
+      <DanmakuLayer preserveOnAppend videoRef={videoRef} maskSource={maskSource} onMaskStatus={setMaskStatus} settings={danmakuSettings} danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale} paused={!playing}
         mtRef={dmMtActive ? dmMtRef : null} />
 
       <SubtitleLayer videoRef={videoRef} cues={subCues} enabled={subLan != null && !showRelated}

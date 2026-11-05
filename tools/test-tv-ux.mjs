@@ -694,7 +694,7 @@ await test('danmaku settings remote navigation saves, cancels and restores focus
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.bili_settings).danmakuOpacity),1);
   await page.keyboard.press('Enter'); await page.keyboard.press('ArrowUp'); await page.keyboard.press('Enter');
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.bili_settings).danmakuOpacity),.75);
-  for(let i=0;i<9;i++) await page.keyboard.press('ArrowDown');
+  for(let i=0;i<20 && !/彩色弹幕/.test(await page.locator('.dm-setting-row.selected').innerText());i++) await page.keyboard.press('ArrowDown');
   assert.match(await page.locator('.dm-setting-row.selected').innerText(),/彩色弹幕/);
   const bounds=await page.locator('.dm-setting-row.selected').evaluate(el=>{const r=el.getBoundingClientRect(),p=el.parentNode.getBoundingClientRect();return {top:r.top,bottom:r.bottom,pt:p.top,pb:p.bottom};});
   assert.ok(bounds.top>=bounds.pt && bounds.bottom<=bounds.pb+1,JSON.stringify(bounds));
@@ -702,6 +702,8 @@ await test('danmaku settings remote navigation saves, cancels and restores focus
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.bili_settings).danmakuColor),false);
   await page.evaluate(()=>window.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',repeat:true,bubbles:true})));
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.bili_settings).danmakuColor),false,'held OK does not toggle again');
+  await page.keyboard.press('ArrowUp');assert.match(await page.locator('.dm-setting-row.selected').innerText(),/智能防挡人物/);
+  await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>JSON.parse(localStorage.bili_settings).danmakuMask),true);
   await page.screenshot({path:output+'/danmaku-settings.png'});
   await page.keyboard.press('Escape'); await page.locator('.dm-settings').waitFor({state:'detached'});
   assert.equal(await focused(page),'content-4-0');

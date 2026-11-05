@@ -1,0 +1,44 @@
+{
+  "samples": [
+    {
+      "time": 1,
+      "width": 640,
+      "height": 360,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 2,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      }
+    },
+    {
+      "time": 3,
+      "width": 640,
+      "height": 360,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 3,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      }
+    },
+    {
+      "time": 6,
+      "width": 640,
+      "height": 360,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 4,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      }
+    }
+  ],
+  "errors": []
+}

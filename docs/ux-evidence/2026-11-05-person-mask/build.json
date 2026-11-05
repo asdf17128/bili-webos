@@ -1,0 +1,15 @@
+{
+  "build": "2.5.2 danmaku-mask.1",
+  "packageSha256": "0fd6d894510ec59bc11fdcecd7582f729774aef5881498ee7887b0e8d264aa0b",
+  "files": {
+    "app/dist/assets/shaka-player.compiled-legacy-01vuRLq-.js": "e7555409c7b44282543f08a2c96f3b10f4925540208e22735c90e90c84138b0f",
+    "app/dist/assets/LivePlayerPage-legacy-CttVc6Uf.js": "309bf28ca59578a67d5dab27da77b6e3b3011f630f9a5171ffe1cd1ac1a9e261",
+    "app/dist/assets/polyfills-legacy-YJ3VCo0d.js": "3de09e4619411cc416d7e875c66cc8e2a73975981c8e432e717814127e6c1c81",
+    "app/dist/assets/index-legacy-Vdk8Yx7b.js": "2624d9e33b99859a3ffaf8f23208aeca25df6cac434a74543332b289b6e4f952",
+    "app/dist/assets/PlayerPage-legacy-BedLrapt.js": "713237ff5db1f03115f9ae9a91c46f8d194f1b1c89059cddce63ca0e548f7aee",
+    "app/dist/assets/NerdInfo-legacy-BqWhNEyV.js": "0c57266f2a59f15bcb517f6566503303860a2d3fcdb5a12c58a347487794aee2",
+    "app/dist/assets/react-vendor-legacy-B2h5bzJ7.js": "35b6eec340e5d94be0db7cb0978d708b51ed326b6b5144b1afb1d9a2d28cad7c"
+  },
+  "installedOnTv": false,
+  "published": false
+}

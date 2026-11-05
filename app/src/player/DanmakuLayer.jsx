@@ -1,3 +1,4 @@
+import { useDanmakuMask } from './useDanmakuMask';
 import React, { memo, useRef, useEffect } from 'react';
 
 import { normalizeDanmaku, appendDanmaku } from './danmakuSettings';
@@ -17,8 +18,9 @@ function lowerBound(items, time) {
 
 // Keep original list indices for translation; pending translations may retry
 // within the display window without ever flashing the original Chinese text.
-export default memo(function DanmakuLayer({ danmakus, currentTime, enabled, paused = false, fontScale = 1, mtRef = null, settings = {}, preserveOnAppend = false }) {
+export default memo(function DanmakuLayer({ danmakus, currentTime, enabled, paused = false, fontScale = 1, mtRef = null, settings = {}, preserveOnAppend = false, videoRef, maskSource, onMaskStatus }) {
   const containerRef = useRef(null);
+  useDanmakuMask(containerRef, videoRef, maskSource, enabled && settings.danmakuMask === true, onMaskStatus);
   const renderedRef = useRef(new Set());
   const options = normalizeDanmaku({ ...settings, danmakuScale: fontScale });
   const signature = JSON.stringify(options);

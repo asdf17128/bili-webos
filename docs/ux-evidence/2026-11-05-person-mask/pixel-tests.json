@@ -1,0 +1,78 @@
+{
+  "results": [
+    {
+      "name": "actual CSS pixels hide the silhouette and preserve letterboxes",
+      "pass": true
+    },
+    {
+      "name": "seek clears old mask synchronously and selects the target segment",
+      "pass": true
+    },
+    {
+      "name": "paused time keeps the frame stable and backward seek reloads the correct silhouette",
+      "pass": true
+    },
+    {
+      "name": "missing frames clear the silhouette and report a gap instead of endless loading",
+      "pass": true
+    },
+    {
+      "name": "off clears the mask, stops requests, and late results cannot reapply it",
+      "pass": true
+    },
+    {
+      "name": "failure and unavailable metadata fall back without retry loops",
+      "pass": true
+    },
+    {
+      "name": "SVG allowlist rejects executable and external content",
+      "pass": true
+    },
+    {
+      "name": "Luna binary transport forwards Range and decodes bounded base64",
+      "pass": true
+    },
+    {
+      "measurement": {
+        "frames": 366,
+        "decodeMs": 54,
+        "sanitizeMs": 80
+      }
+    },
+    {
+      "name": "real public mask SVGs decode and sanitize under CPU throttle",
+      "pass": true
+    }
+  ],
+  "requests": [
+    {
+      "path": "/proxy/a.bilivideo.com/cmaskboss/test.webmask",
+      "range": "bytes=0-15"
+    },
+    {
+      "path": "/proxy/a.bilivideo.com/cmaskboss/test.webmask",
+      "range": "bytes=0-47"
+    },
+    {
+      "path": "/proxy/a.bilivideo.com/cmaskboss/test.webmask",
+      "range": "bytes=48-797"
+    },
+    {
+      "path": "/proxy/a.bilivideo.com/cmaskboss/test.webmask",
+      "range": "bytes=798-525085"
+    },
+    {
+      "path": "/proxy/a.bilivideo.com/cmaskboss/test.webmask",
+      "range": "bytes=48-797"
+    },
+    {
+      "path": "/proxy/a.bilivideo.com/cmaskboss/late.webmask",
+      "range": "bytes=0-15"
+    },
+    {
+      "path": "/proxy/a.bilivideo.com/cmaskboss/bad.webmask",
+      "range": "bytes=0-15"
+    }
+  ],
+  "errors": []
+}

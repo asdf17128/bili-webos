@@ -1,0 +1,240 @@
+{
+  "controls": {
+    "passed": 39,
+    "failed": 0,
+    "cases": [
+      {
+        "name": "in-playback danmaku settings preserve playback and restore remote focus",
+        "pass": true
+      },
+      {
+        "name": "scene transparency coast",
+        "pass": true
+      },
+      {
+        "name": "scene transparency window",
+        "pass": true
+      },
+      {
+        "name": "visual 1920x1080 dark scale=1",
+        "pass": true
+      },
+      {
+        "name": "visual 1920x1080 light scale=1",
+        "pass": true
+      },
+      {
+        "name": "visual 1280x720 dark scale=1",
+        "pass": true
+      },
+      {
+        "name": "visual 1280x720 light scale=1",
+        "pass": true
+      },
+      {
+        "name": "visual 1920x1080 light scale=1.4",
+        "pass": true
+      },
+      {
+        "name": "visual 1280x720 light scale=1.25",
+        "pass": true
+      },
+      {
+        "name": "recommendation cards share listing appearance and extend the panel upward",
+        "pass": true
+      },
+      {
+        "name": "reopening a scrolled shelf restores a visible remote focus",
+        "pass": true
+      },
+      {
+        "name": "small wheel deltas accumulate without skipping multiple rows",
+        "pass": true
+      },
+      {
+        "name": "recommendation row scrolling animates remote",
+        "pass": true
+      },
+      {
+        "name": "recommendation row scrolling animates wheel",
+        "pass": true
+      },
+      {
+        "name": "expanded shelf shows two full rows without per-frame layout resizing 1080",
+        "pass": true
+      },
+      {
+        "name": "expanded shelf shows two full rows without per-frame layout resizing 720",
+        "pass": true
+      },
+      {
+        "name": "shelf animation under six-fold CPU slowdown",
+        "pass": true
+      },
+      {
+        "name": "recommendation cards remain continuous while opening and closing",
+        "pass": true
+      },
+      {
+        "name": "smooth shelf expansion wheel",
+        "pass": true
+      },
+      {
+        "name": "smooth shelf expansion remote",
+        "pass": true
+      },
+      {
+        "name": "shelf rapid reversal and reduced motion",
+        "pass": true
+      },
+      {
+        "name": "remote Down Up Back navigation scale=1",
+        "pass": true
+      },
+      {
+        "name": "remote Down Up Back navigation scale=1.4",
+        "pass": true
+      },
+      {
+        "name": "auto hide pause play and expanded shelf persistence",
+        "pass": true
+      },
+      {
+        "name": "deferred seek cancel commit and pointer progress",
+        "pass": true
+      },
+      {
+        "name": "subtitle popup and long press stay reachable",
+        "pass": true
+      },
+      {
+        "name": "quality popup returns to its control and keeps media state",
+        "pass": true
+      },
+      {
+        "name": "pointer preview expands existing recommendation shelf",
+        "pass": true
+      },
+      {
+        "name": "recommendation empty has no invented preview and remains navigable",
+        "pass": true
+      },
+      {
+        "name": "recommendation loading has no invented preview and remains navigable",
+        "pass": true
+      },
+      {
+        "name": "recommendation failure has no invented preview and remains navigable",
+        "pass": true
+      },
+      {
+        "name": "follower count stays with the control deck throughout hide and reopen",
+        "pass": true
+      },
+      {
+        "name": "author followers 0",
+        "pass": true
+      },
+      {
+        "name": "author followers 125678",
+        "pass": true
+      },
+      {
+        "name": "author followers unknown",
+        "pass": true
+      },
+      {
+        "name": "author followers failure",
+        "pass": true
+      },
+      {
+        "name": "long author small viewport light",
+        "pass": true
+      },
+      {
+        "name": "long author small viewport dark",
+        "pass": true
+      },
+      {
+        "name": "720 large text comment rail preserves control navigation",
+        "pass": true
+      }
+    ]
+  },
+  "danmaku": {
+    "cpuThrottle": 6,
+    "results": [
+      {
+        "measurement": "time field reads at 3500s / 100000 comments",
+        "value": 46
+      },
+      {
+        "name": "late-video lookup has bounded work",
+        "pass": true
+      },
+      {
+        "measurement": "peak animated nodes",
+        "value": 24
+      },
+      {
+        "name": "dense comments have a bounded number of animation layers",
+        "pass": true
+      },
+      {
+        "name": "forward seek clears the old screen and backward seek replays",
+        "pass": true
+      },
+      {
+        "name": "paused animations freeze and resume; hidden layer resets",
+        "pass": true
+      },
+      {
+        "name": "translation retries preserve original indices and do not flash Chinese",
+        "pass": true
+      },
+      {
+        "name": "font scales, animation cleanup and repeat render do not duplicate",
+        "pass": true
+      },
+      {
+        "name": "fixed, reverse and colored types respect filters and area bounds",
+        "pass": true
+      },
+      {
+        "name": "density caps and speed are applied; invalid options fall back safely",
+        "pass": true
+      },
+      {
+        "name": "lane spacing uses animation time rather than accelerated media time",
+        "pass": true
+      },
+      {
+        "name": "live overlay shares appearance and clears lanes on toggle",
+        "pass": true
+      },
+      {
+        "name": "segment boundary updates preserve active nodes and stable IDs",
+        "pass": true
+      },
+      {
+        "name": "density adjusts safe lane geometry and measurement cache stays bounded",
+        "pass": true
+      },
+      {
+        "name": "busy lanes retry briefly without duplicating or replaying expired comments",
+        "pass": true
+      }
+    ]
+  },
+  "otherGates": {
+    "ux": 74,
+    "recommendationMenu": 62,
+    "accountRepairUi": 26,
+    "playerLoading": 84,
+    "liveLoading": 15,
+    "segmentLoader": 7
+  },
+  "productionBuild": "passed, ES2016 parse checked",
+  "tvTestedThisChange": false,
+  "published": false
+}

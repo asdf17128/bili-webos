@@ -231,6 +231,30 @@ async function run(name, options, fn) {
   }
 }
 
+await run('in-playback danmaku settings preserve playback and restore remote focus', {}, async f => {
+ const page=f.page;await openControls(page);
+ await page.route('**/list.so?**',route=>route.fulfill({contentType:'text/xml',body:'<i><d p="120,1,28,16777215,0,0,hash,99">即时样式测试</d></i>'}));
+ await page.locator('.player-btn').filter({hasText:'弹幕 关'}).click();
+ const actual=page.locator('.player-page-vod > .danmaku-container .danmaku-item');
+ await actual.first().waitFor();assert.equal(await actual.first().evaluate(e=>e.style.fontSize),'28px');
+ const before=await state(page);
+ await page.locator('.player-btn').filter({hasText:'弹幕设置'}).click();
+ await page.getByRole('dialog',{name:'弹幕设置'}).waitFor();
+ await page.keyboard.press('Enter');await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('bili_settings')).danmakuScale),1.3);
+ await shot(f,'in-playback-danmaku-settings');
+ await page.keyboard.press('Escape');
+ await page.waitForFunction(()=>!document.querySelector('.dm-settings'));
+ assert.equal((await state(page)).focused,'弹幕设置');
+ await actual.first().waitFor();assert.equal(await actual.first().evaluate(e=>e.style.fontSize),'36px');
+ const after=await state(page);assert.equal(after.probe.loads,before.probe.loads);assert.ok(after.media.time>=before.media.time,'playback continues');assert.deepEqual(after.probe.seeks,before.probe.seeks,'settings never seek');assert.equal(after.media.paused,before.media.paused);
+ await shot(f,'in-playback-danmaku-applied');
+ await page.keyboard.press('Enter');await page.getByRole('dialog',{name:'弹幕设置'}).waitFor();
+ assert.ok((await page.locator('.dm-setting-row').first().innerText()).includes('大'));
+ await page.keyboard.press('Escape');await page.keyboard.press('ArrowLeft');
+ assert.ok((await state(page)).focused.startsWith('弹幕 '));
+});
+
 for (const scene of ['coast', 'window']) await run('scene transparency ' + scene, { scene, width: 1920, height: 1080 }, async f => {
   await f.page.waitForTimeout(700);
   await shot(f, `${baseline ? 'before' : 'after'}-scene-${scene}-video`);
@@ -506,14 +530,15 @@ if (!baseline) {
 
   await run('subtitle popup and long press stay reachable', { background: 'light' }, async f => {
     await f.page.waitForTimeout(700); await openControls(f.page);
-    for (let i = 0; i < 6; i++) await f.page.keyboard.press('ArrowRight');
+    for (let i = 0; i < 20 && !/字幕/.test((await state(f.page)).focused); i++) await f.page.keyboard.press('ArrowRight');
     assert.match((await state(f.page)).focused, /字幕/);
     await f.page.keyboard.press('Enter'); await f.page.locator('.ctrl-popup').waitFor();
     await f.page.waitForTimeout(5350);
     assert.equal((await state(f.page)).visibleControls, true, 'subtitle choice suspends auto-hide');
     await f.page.keyboard.press('Escape');
     assert.match((await state(f.page)).focused, /字幕/);
-    for (let i = 0; i < 5; i++) await f.page.keyboard.press('ArrowLeft');
+    for (let i = 0; i < 20 && await f.page.locator('.player-btn.focused').getAttribute('aria-label') !== '点赞'; i++) await f.page.keyboard.press('ArrowLeft');
+    assert.equal(await f.page.locator('.player-btn.focused').getAttribute('aria-label'),'点赞');
     await f.page.keyboard.down('Enter'); await f.page.waitForTimeout(500);
     await f.page.locator('.like-ring').waitFor(); await shot(f, 'after-like-hold');
     await f.page.keyboard.up('Enter');
@@ -531,7 +556,7 @@ if (!baseline) {
 
   await run('quality popup returns to its control and keeps media state', { background: 'dark' }, async f => {
     await f.page.waitForTimeout(700); await openControls(f.page);
-    for (let i = 0; i < 8; i++) await f.page.keyboard.press('ArrowRight');
+    for (let i = 0; i < 20 && (await state(f.page)).focused !== '1080P'; i++) await f.page.keyboard.press('ArrowRight');
     assert.equal((await state(f.page)).focused, '1080P');
     await f.page.keyboard.press('Enter'); await f.page.locator('.quality-popup').waitFor();
     await shot(f, 'after-quality-popup');

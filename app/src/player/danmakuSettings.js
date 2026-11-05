@@ -21,6 +21,25 @@ export function normalizeDanmaku(settings = {}) {
 }
 
 let canvas;
+const measurements = new Map();
+export function danmakuLaneHeight(settings) {
+  const s = normalizeDanmaku(settings);
+  // Reserve the largest supported source glyph, line box and outline so a
+  // later large comment cannot collide with a smaller one on the next lane.
+  const minimum = Math.ceil(36 * s.danmakuScale * 1.25) + 2 * s.danmakuOutline + 8;
+  return Math.ceil(minimum * (s.danmakuDensity === 12 ? 1.6 : s.danmakuDensity === 48 ? 1 : 1.25));
+}
+export function danmakuMeasureStats() { return { cached: measurements.size, limit: 512 }; }
+function measure(text, font) {
+  const key = font + ':' + text;
+  if (measurements.has(key)) return measurements.get(key);
+  canvas = canvas || document.createElement('canvas');
+  const ctx = canvas.getContext('2d'); ctx.font = font;
+  const width = Math.ceil(ctx.measureText(text).width) + 12;
+  if (measurements.size >= 512) measurements.delete(measurements.keys().next().value);
+  measurements.set(key, width);
+  return width;
+}
 export function appendDanmaku(container, lanes, dm, text, now, settings) {
   const s = normalizeDanmaku(settings);
   const mode = dm.mode === undefined ? 1 : dm.mode;
@@ -29,15 +48,12 @@ export function appendDanmaku(container, lanes, dm, text, now, settings) {
   const color = /^#[0-9a-f]{6}$/i.test(dm.color || '') ? dm.color : '#ffffff';
   if (!s.danmakuColor && color.toLowerCase() !== '#ffffff') return false;
   if (container.childElementCount >= s.danmakuDensity) return false;
-  const height = Math.round(64 * s.danmakuScale);
+  const height = danmakuLaneHeight(s);
   const count = Math.max(1, Math.floor((1020 * s.danmakuArea - 24) / height));
   // Clamp source sizes so huge/malformed comments cannot cover adjacent lanes.
   const size = Math.round(Math.max(16, Math.min(36, dm.size || 28)) * s.danmakuScale);
-  canvas = canvas || document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  ctx.font = `${s.danmakuWeight} ${size}px sans-serif`;
   const safeText = String(text).slice(0, 200);
-  const width = Math.ceil(ctx.measureText(safeText).width) + 12;
+  const width = measure(safeText, `${s.danmakuWeight} ${size}px sans-serif`);
   const velocity = 240 * s.danmakuSpeed;
   const duration = moving ? (1920 + width) / velocity : 4 / s.danmakuSpeed;
   const kind = moving ? (mode === 6 ? 'reverse' : 'scroll') : 'fixed';
@@ -56,6 +72,7 @@ export function appendDanmaku(container, lanes, dm, text, now, settings) {
   el.style.top = `${track * height + 12}px`;
   el.style.color = color;
   el.style.fontSize = `${size}px`;
+  el.style.lineHeight = '1.25';
   el.style.fontFamily = 'sans-serif';
   el.style.fontWeight = String(s.danmakuWeight);
   el.style.opacity = String(s.danmakuOpacity);

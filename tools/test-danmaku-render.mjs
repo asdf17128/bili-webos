@@ -101,8 +101,8 @@ await test('density caps and speed are applied; invalid options fall back safely
  assert.equal(await page.locator('.danmaku-item').evaluate(e=>e.style.fontSize),'28px');
 });
 await test('lane spacing uses animation time rather than accelerated media time',async()=>{
- await page.evaluate(()=>window.__draw({fontScale:1,settings:{danmakuDensity:48},danmakus:[...Array.from({length:15},()=>({time:0,text:'long enough to occupy lane'})),...Array.from({length:15},()=>({time:1,text:'next'}))],currentTime:0}));
- const first=await page.locator('.danmaku-item').count();assert.equal(first,15);
+ await page.evaluate(()=>window.__draw({fontScale:1,settings:{danmakuDensity:48},danmakus:[...Array.from({length:40},()=>({time:0,text:'long enough to occupy lane'})),...Array.from({length:40},()=>({time:1,text:'next'}))],currentTime:0}));
+ const first=await page.locator('.danmaku-item').count();assert.ok(first>0 && first<40);
  await page.evaluate(()=>window.__draw({currentTime:1}));
  assert.equal(await page.locator('.danmaku-item').count(),first,'a media-time jump must not free lanes before the text has moved');
 });
@@ -129,6 +129,24 @@ await test('segment boundary updates preserve active nodes and stable IDs',async
  assert.ok(await page.evaluate(()=>window.__kept.isConnected));
  assert.equal((await page.locator('.danmaku-item').allTextContents()).filter(x=>x==='keep me').length,1);
  await page.evaluate(()=>window.__draw({preserveOnAppend:false,enabled:false}));
+});
+await test('density adjusts safe lane geometry and measurement cache stays bounded',async()=>{
+ const result=await page.evaluate(async()=>{
+  const m=await import('/src/player/danmakuSettings.js');
+  const heights=[12,24,48].map(d=>m.danmakuLaneHeight({danmakuDensity:d,danmakuScale:1.6,danmakuOutline:2}));
+  const c=document.createElement('div');
+  for(let i=0;i<800;i++){m.appendDanmaku(c,[],{mode:1},'unique '+i,0,{});c.textContent='';}
+  return {heights,cache:m.danmakuMeasureStats()};
+ });assert.ok(result.heights[0]>result.heights[1]&&result.heights[1]>result.heights[2]);
+ assert.ok(result.heights[2]>=36*1.6*1.25+4);assert.ok(result.cache.cached<=512);
+});
+await test('busy lanes retry briefly without duplicating or replaying expired comments',async()=>{
+ await page.evaluate(()=>window.__draw({enabled:true,paused:false,fontScale:1.6,settings:{danmakuDensity:48,danmakuArea:.25},danmakus:Array.from({length:6},(_,i)=>({time:0,text:'x'+i})),currentTime:0}));
+ const first=await page.locator('.danmaku-item').count();assert.ok(first>0&&first<4);
+ await page.waitForTimeout(800);await page.evaluate(()=>window.__draw({currentTime:.8}));
+ const texts=await page.locator('.danmaku-item').allTextContents();assert.ok(texts.length>first);assert.equal(new Set(texts).size,texts.length);
+ await page.evaluate(()=>window.__draw({currentTime:1.2}));
+ assert.equal(await page.locator('.danmaku-item').count(),texts.length);
 });
 await writeFile(output+'/results.json',JSON.stringify({cpuThrottle:6,results},null,2));
 await browser.close();if(results.some(x=>x.pass===false))process.exitCode=1;

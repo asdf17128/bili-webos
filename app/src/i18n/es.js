@@ -501,4 +501,5 @@ export default {
   "已恢复本次 UP 显示，但未能保存": "Creador restaurado en esta sesión; no se pudo guardar",
   "向下浏览视频": "Abajo para explorar vídeos",
   "{n}粉丝": "{n} seguidores",
+  "调整后立即生效并自动保存。": "Los cambios se aplican al instante y se guardan automáticamente.",
 };

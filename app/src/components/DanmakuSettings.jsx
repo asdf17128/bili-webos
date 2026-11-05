@@ -9,7 +9,7 @@ const SAMPLE = Array.from({ length: 80 }, (_, i) => ({ time: i * 0.2,
   text: i % 3 === 0 ? t('这段太精彩了！') : t('弹幕效果预览'), mode: [1, 5, 4, 1][i % 4],
   color: i % 5 === 0 ? '#ffcc66' : '#ffffff' }));
 
-export default function DanmakuSettings({ onClose }) {
+export default function DanmakuSettings({ onClose, onChange }) {
   const [settings, setSettings] = useState(() => normalizeDanmaku(storage.getSettings()));
   const [row, setRow] = useState(0);
   const [choice, setChoice] = useState(null);
@@ -19,6 +19,7 @@ export default function DanmakuSettings({ onClose }) {
   const save = (key, value) => {
     const next = { ...settings, [key]: value };
     setSettings(next); storage.setSettings({ ...storage.getSettings(), ...next });
+    onChange?.(next);
   };
   const activate = index => {
     const f = DANMAKU_FIELDS[index];
@@ -56,13 +57,13 @@ export default function DanmakuSettings({ onClose }) {
         <div className="dm-settings-rows" ref={rowsRef}>
           {DANMAKU_FIELDS.map(([key, label, values, labels], i) => <button key={key}
             className={'dm-setting-row' + (i === row ? ' selected' : '')}
-            onMouseEnter={() => { if (choice === null) setRow(i); }} onClick={() => activate(i)}>
+            onMouseMove={() => { if (choice === null) setRow(i); }} onClick={() => activate(i)}>
             <span>{t(label)}</span><strong>{t(labels[values.indexOf(settings[key])])}</strong>
           </button>)}
         </div>
         <aside><div className="dm-preview"><div className="dm-preview-stage">
           <DanmakuLayer danmakus={SAMPLE} currentTime={time} enabled settings={settings} fontScale={settings.danmakuScale} />
-        </div></div><p>{t('调整后自动保存，下次播放生效。')}</p>
+        </div></div><p>{t(onChange ? '调整后立即生效并自动保存。' : '调整后自动保存，下次播放生效。')}</p>
           <p>{t('密集弹幕可能增加电视负担；卡顿时可降低密度。')}</p>
           <p>{t('直播应用外观和滚动设置；固定与彩色弹幕取决于片源。')}</p>
         </aside>
@@ -70,7 +71,7 @@ export default function DanmakuSettings({ onClose }) {
       {choice !== null && <div className="dm-choice-backdrop" onClick={() => setChoice(null)}>
         <div className="settings-picker dm-choice" onClick={e => e.stopPropagation()}><h3>{t(field[1])}</h3>
           {field[2].map((value, i) => <button key={String(value)} className={choice === i ? 'selected' : ''}
-            onMouseEnter={() => setChoice(i)} onClick={() => { save(field[0], value); setChoice(null); }}>
+            onMouseMove={() => setChoice(i)} onClick={() => { save(field[0], value); setChoice(null); }}>
             {t(field[3][i])}{settings[field[0]] === value ? ' ✓' : ''}
           </button>)}
         </div>

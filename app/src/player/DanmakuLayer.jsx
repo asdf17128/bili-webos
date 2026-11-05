@@ -53,7 +53,7 @@ export default memo(function DanmakuLayer({ danmakus, currentTime, enabled, paus
     }
     lastTimeRef.current = now;
     if (paused) return;
-    const start = lowerBound(danmakus, now - 0.5);
+    const start = lowerBound(danmakus, now - 1);
     // Remember only the current window, not every comment in a multi-hour film.
     const keyOf = i => preserveOnAppend ? (danmakus[i].id || [danmakus[i].time, danmakus[i].mode, danmakus[i].text].join('|')) : i;
     const windowKeys = new Set();
@@ -69,8 +69,9 @@ export default memo(function DanmakuLayer({ danmakus, currentTime, enabled, paus
       if (renderedRef.current.has(key)) continue;
       const text = mtRef ? mtRef.current?.get(i) : dm.text;
       if (!text) continue;
-      renderedRef.current.add(key);
-      appendDanmaku(container, trackRef.current, dm, text, clock.time, options);
+      // A full lane may become available on the next media tick. Retry only
+      // within the one-second source window; no unbounded delayed queue.
+      if (appendDanmaku(container, trackRef.current, dm, text, clock.time, options)) renderedRef.current.add(key);
     }
   }, [currentTime, danmakus, enabled, paused, fontScale, signature, mtRef, preserveOnAppend]);
 

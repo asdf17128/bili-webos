@@ -12,6 +12,10 @@ This log collects the release history previously included in the README. For ear
 
 ## 未发布 / Unreleased
 
+- 点播控制栏新增弹幕设置：字号、密度、区域、透明度等立即应用于当前视频，关闭后恢复遥控焦点，不打断播放。
+- 弹幕密度联动轨道间距，拥塞项短暂重试；共享有界文字测量缓存，减少重复计算。
+- In-playback danmaku controls, density-aware safe lane spacing, bounded admission retries and text measurement caching.
+
 - 弹幕设置面板：预览与保存字号、不透明度、粗细、描边、显示区域、密度、速度和类型过滤。
 - 支持顶部／底部固定、反向及普通滚动弹幕；点播和直播共享外观设置，轨道避让和数量上限保护性能。
 - 修复点播后半段弹幕覆盖不足：按播放进度加载分段弹幕，预取下一段，限制缓存；跳转隔离过期响应，分段切换保留在屏弹幕，兼容登录后的较大响应。

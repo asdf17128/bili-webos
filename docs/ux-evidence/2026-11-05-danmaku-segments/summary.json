@@ -1,0 +1,29 @@
+{
+  "continuous80MinutePass": false,
+  "firstRun": {
+    "sampledMs": 3904430,
+    "pass": false,
+    "reason": [
+      "video decoder unhealthy"
+    ]
+  },
+  "seekRetest": {
+    "elapsedMs": 1200507,
+    "pass": true,
+    "seekRecoveryMs": [
+      2122,
+      5431,
+      6970,
+      1348
+    ]
+  },
+  "apiChecks": 18,
+  "apiFailures": 0,
+  "maxDanmakuNodes": 48,
+  "maxCachedSegments": 3,
+  "maxHeapBytes": 14749776,
+  "finalRetainedHeapBytes": 143388,
+  "finalRetainedListeners": 0,
+  "settingsRestored": true,
+  "published": false
+}

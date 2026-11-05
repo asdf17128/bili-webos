@@ -1,0 +1,1973 @@
+{
+  "startedAt": "2026-11-05T06:01:42.802Z",
+  "requestedMinutes": 20,
+  "profile": "4k-seek",
+  "seeks": [
+    {
+      "minute": 0,
+      "fraction": 0.3,
+      "target": 57,
+      "recoveryMs": 2122,
+      "state": {
+        "visible": "visible",
+        "time": 57.708333,
+        "duration": 190,
+        "paused": false,
+        "ready": 4,
+        "width": 3996,
+        "height": 2160,
+        "error": null,
+        "danmaku": {
+          "requests": 1,
+          "failures": 0,
+          "discarded": 0,
+          "fallback": false,
+          "cached": 1,
+          "items": 2449,
+          "pending": 0
+        },
+        "nodes": 5,
+        "fixed": 1,
+        "decoded": 507,
+        "dropped": 0,
+        "monitor": {
+          "ticks": 7,
+          "maximumGapMs": 966,
+          "visiblePeak": 31
+        }
+      }
+    },
+    {
+      "minute": 5,
+      "fraction": 0.6,
+      "target": 113.4144,
+      "recoveryMs": 5431,
+      "state": {
+        "visible": "visible",
+        "time": 113.875,
+        "duration": 189.024,
+        "paused": false,
+        "ready": 4,
+        "width": 3996,
+        "height": 2160,
+        "error": null,
+        "danmaku": {
+          "requests": 1,
+          "failures": 0,
+          "discarded": 0,
+          "fallback": false,
+          "cached": 1,
+          "items": 2449,
+          "pending": 0
+        },
+        "nodes": 2,
+        "fixed": 0,
+        "decoded": 7866,
+        "dropped": 0,
+        "monitor": {
+          "ticks": 309,
+          "maximumGapMs": 2013,
+          "visiblePeak": 48
+        }
+      }
+    },
+    {
+      "minute": 10,
+      "fraction": 0.85,
+      "target": 160.6704,
+      "recoveryMs": 6970,
+      "state": {
+        "visible": "visible",
+        "time": 161.916666,
+        "duration": 189.024,
+        "paused": false,
+        "ready": 4,
+        "width": 3996,
+        "height": 2160,
+        "error": null,
+        "danmaku": {
+          "requests": 1,
+          "failures": 0,
+          "discarded": 0,
+          "fallback": false,
+          "cached": 1,
+          "items": 2449,
+          "pending": 0
+        },
+        "nodes": 3,
+        "fixed": 0,
+        "decoded": 15012,
+        "dropped": 0,
+        "monitor": {
+          "ticks": 611,
+          "maximumGapMs": 2013,
+          "visiblePeak": 48
+        }
+      }
+    },
+    {
+      "minute": 15,
+      "fraction": 0.3,
+      "target": 56.7072,
+      "recoveryMs": 1348,
+      "state": {
+        "visible": "visible",
+        "time": 57.166666,
+        "duration": 189.024,
+        "paused": false,
+        "ready": 4,
+        "width": 3996,
+        "height": 2160,
+        "error": null,
+        "danmaku": {
+          "requests": 1,
+          "failures": 0,
+          "discarded": 0,
+          "fallback": false,
+          "cached": 1,
+          "items": 2449,
+          "pending": 0
+        },
+        "nodes": 6,
+        "fixed": 1,
+        "decoded": 22227,
+        "dropped": 0,
+        "monitor": {
+          "ticks": 904,
+          "maximumGapMs": 2013,
+          "visiblePeak": 48
+        }
+      }
+    }
+  ],
+  "samples": [
+    {
+      "minute": 0,
+      "elapsedMs": 2541,
+      "visible": "visible",
+      "time": 57.708333,
+      "duration": 190,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 5,
+      "fixed": 1,
+      "decoded": 509,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 7,
+        "maximumGapMs": 966,
+        "visiblePeak": 31
+      },
+      "metrics": {
+        "heapBytes": 7009772,
+        "documents": 1,
+        "nodes": 855,
+        "listeners": 327,
+        "network": {
+          "active": 1,
+          "media": 1,
+          "startedMedia": 32,
+          "completedMedia": 31,
+          "failedMedia": 0
+        }
+      },
+      "api": {
+        "ok": true,
+        "status": 200,
+        "code": 0
+      }
+    },
+    {
+      "minute": 0.5,
+      "elapsedMs": 30414,
+      "visible": "visible",
+      "time": 85.458333,
+      "duration": 190,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 48,
+      "fixed": 0,
+      "decoded": 1180,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 35,
+        "maximumGapMs": 966,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6421648,
+        "documents": 1,
+        "nodes": 935,
+        "listeners": 327,
+        "network": {
+          "active": 1,
+          "media": 1,
+          "startedMedia": 49,
+          "completedMedia": 48,
+          "failedMedia": 0
+        }
+      }
+    },
+    {
+      "minute": 1,
+      "elapsedMs": 61342,
+      "visible": "visible",
+      "time": 115.75,
+      "duration": 190,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 21,
+      "fixed": 1,
+      "decoded": 1906,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 65,
+        "maximumGapMs": 966,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6434172,
+        "documents": 1,
+        "nodes": 885,
+        "listeners": 327,
+        "network": {
+          "active": 1,
+          "media": 1,
+          "startedMedia": 61,
+          "completedMedia": 60,
+          "failedMedia": 0
+        }
+      }
+    },
+    {
+      "minute": 1.5,
+      "elapsedMs": 90354,
+      "visible": "visible",
+      "time": 145.5,
+      "duration": 190,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 36,
+      "fixed": 1,
+      "decoded": 2616,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 95,
+        "maximumGapMs": 966,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6449128,
+        "documents": 1,
+        "nodes": 917,
+        "listeners": 327,
+        "network": {
+          "active": 1,
+          "media": 1,
+          "startedMedia": 74,
+          "completedMedia": 72,
+          "failedMedia": 1
+        }
+      }
+    },
+    {
+      "minute": 2,
+      "elapsedMs": 120303,
+      "visible": "visible",
+      "time": 175.416666,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 22,
+      "fixed": 1,
+      "decoded": 3336,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 125,
+        "maximumGapMs": 966,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6665944,
+        "documents": 1,
+        "nodes": 917,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 78,
+          "completedMedia": 77,
+          "failedMedia": 1
+        }
+      }
+    },
+    {
+      "minute": 2.5,
+      "elapsedMs": 150715,
+      "visible": "visible",
+      "time": 15.333333,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 48,
+      "fixed": 0,
+      "decoded": 4032,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 155,
+        "maximumGapMs": 966,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6473324,
+        "documents": 1,
+        "nodes": 939,
+        "listeners": 327,
+        "network": {
+          "active": 1,
+          "media": 1,
+          "startedMedia": 100,
+          "completedMedia": 98,
+          "failedMedia": 1
+        }
+      }
+    },
+    {
+      "minute": 3,
+      "elapsedMs": 180593,
+      "visible": "visible",
+      "time": 45.333333,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 42,
+      "fixed": 0,
+      "decoded": 4754,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 185,
+        "maximumGapMs": 966,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6484548,
+        "documents": 1,
+        "nodes": 923,
+        "listeners": 327,
+        "network": {
+          "active": 1,
+          "media": 1,
+          "startedMedia": 112,
+          "completedMedia": 110,
+          "failedMedia": 1
+        }
+      }
+    },
+    {
+      "minute": 3.5,
+      "elapsedMs": 210349,
+      "visible": "visible",
+      "time": 75.333333,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 48,
+      "fixed": 0,
+      "decoded": 5473,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 215,
+        "maximumGapMs": 966,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6726252,
+        "documents": 1,
+        "nodes": 935,
+        "listeners": 327,
+        "network": {
+          "active": 1,
+          "media": 1,
+          "startedMedia": 124,
+          "completedMedia": 122,
+          "failedMedia": 1
+        }
+      }
+    },
+    {
+      "minute": 4,
+      "elapsedMs": 240185,
+      "visible": "visible",
+      "time": 105.291666,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 35,
+      "fixed": 0,
+      "decoded": 6192,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 245,
+        "maximumGapMs": 966,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6512524,
+        "documents": 1,
+        "nodes": 909,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 135,
+          "completedMedia": 134,
+          "failedMedia": 1
+        }
+      }
+    },
+    {
+      "minute": 4.5,
+      "elapsedMs": 270224,
+      "visible": "visible",
+      "time": 135.333333,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 29,
+      "fixed": 1,
+      "decoded": 6913,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 275,
+        "maximumGapMs": 966,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 7357660,
+        "documents": 1,
+        "nodes": 911,
+        "listeners": 327,
+        "network": {
+          "active": 2,
+          "media": 2,
+          "startedMedia": 147,
+          "completedMedia": 144,
+          "failedMedia": 1
+        }
+      }
+    },
+    {
+      "minute": 5,
+      "elapsedMs": 305901,
+      "visible": "visible",
+      "time": 113.958333,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 3,
+      "fixed": 0,
+      "decoded": 7871,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 309,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6687100,
+        "documents": 1,
+        "nodes": 845,
+        "listeners": 327,
+        "network": {
+          "active": 2,
+          "media": 2,
+          "startedMedia": 167,
+          "completedMedia": 163,
+          "failedMedia": 2
+        }
+      },
+      "api": {
+        "ok": true,
+        "status": 200,
+        "code": 0
+      }
+    },
+    {
+      "minute": 5.5,
+      "elapsedMs": 330192,
+      "visible": "visible",
+      "time": 138.416666,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 28,
+      "fixed": 1,
+      "decoded": 8457,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 334,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6910608,
+        "documents": 1,
+        "nodes": 903,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 184,
+          "completedMedia": 181,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 6,
+      "elapsedMs": 360249,
+      "visible": "visible",
+      "time": 168.416666,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 28,
+      "fixed": 2,
+      "decoded": 9176,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 364,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6960116,
+        "documents": 1,
+        "nodes": 973,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 192,
+          "completedMedia": 189,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 6.5,
+      "elapsedMs": 390219,
+      "visible": "visible",
+      "time": 8.458333,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 42,
+      "fixed": 0,
+      "decoded": 9873,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 394,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 7629200,
+        "documents": 1,
+        "nodes": 929,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 210,
+          "completedMedia": 207,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 7,
+      "elapsedMs": 420199,
+      "visible": "visible",
+      "time": 38.458333,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 42,
+      "fixed": 0,
+      "decoded": 10594,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 424,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6733908,
+        "documents": 1,
+        "nodes": 949,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 222,
+          "completedMedia": 219,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 7.5,
+      "elapsedMs": 450211,
+      "visible": "visible",
+      "time": 68.458333,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 41,
+      "fixed": 0,
+      "decoded": 11316,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 454,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6794816,
+        "documents": 1,
+        "nodes": 957,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 234,
+          "completedMedia": 231,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 8,
+      "elapsedMs": 480229,
+      "visible": "visible",
+      "time": 98.458333,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 39,
+      "fixed": 0,
+      "decoded": 12035,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 484,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6866616,
+        "documents": 1,
+        "nodes": 931,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 246,
+          "completedMedia": 243,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 8.5,
+      "elapsedMs": 510229,
+      "visible": "visible",
+      "time": 128.458333,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 27,
+      "fixed": 0,
+      "decoded": 12754,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 514,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 7050312,
+        "documents": 1,
+        "nodes": 899,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 258,
+          "completedMedia": 255,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 9,
+      "elapsedMs": 540214,
+      "visible": "visible",
+      "time": 158.458333,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 39,
+      "fixed": 0,
+      "decoded": 13474,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 544,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 7393788,
+        "documents": 1,
+        "nodes": 983,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 270,
+          "completedMedia": 267,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 9.5,
+      "elapsedMs": 570214,
+      "visible": "visible",
+      "time": 188.416666,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 14,
+      "fixed": 2,
+      "decoded": 14065,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 574,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6724916,
+        "documents": 1,
+        "nodes": 941,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 270,
+          "completedMedia": 267,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 10,
+      "elapsedMs": 608051,
+      "visible": "visible",
+      "time": 162.291666,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 3,
+      "fixed": 0,
+      "decoded": 15012,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 611,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6681256,
+        "documents": 1,
+        "nodes": 851,
+        "listeners": 327,
+        "network": {
+          "active": 1,
+          "media": 1,
+          "startedMedia": 306,
+          "completedMedia": 302,
+          "failedMedia": 3
+        }
+      },
+      "api": {
+        "ok": true,
+        "status": 200,
+        "code": 0
+      }
+    },
+    {
+      "minute": 10.5,
+      "elapsedMs": 630202,
+      "visible": "visible",
+      "time": 184.458333,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 19,
+      "fixed": 1,
+      "decoded": 15589,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 634,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 7078596,
+        "documents": 1,
+        "nodes": 949,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 312,
+          "completedMedia": 309,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 11,
+      "elapsedMs": 660199,
+      "visible": "visible",
+      "time": 24.5,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 48,
+      "fixed": 0,
+      "decoded": 16320,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 664,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 7034008,
+        "documents": 1,
+        "nodes": 947,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 336,
+          "completedMedia": 333,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 11.5,
+      "elapsedMs": 690199,
+      "visible": "visible",
+      "time": 54.5,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 44,
+      "fixed": 0,
+      "decoded": 17040,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 694,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 7444308,
+        "documents": 1,
+        "nodes": 961,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 348,
+          "completedMedia": 345,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 12,
+      "elapsedMs": 720261,
+      "visible": "visible",
+      "time": 84.541666,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 48,
+      "fixed": 0,
+      "decoded": 17760,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 724,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 7415748,
+        "documents": 1,
+        "nodes": 961,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 360,
+          "completedMedia": 357,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 12.5,
+      "elapsedMs": 750205,
+      "visible": "visible",
+      "time": 114.5,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 23,
+      "fixed": 1,
+      "decoded": 18478,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 754,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 7284444,
+        "documents": 1,
+        "nodes": 893,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 372,
+          "completedMedia": 369,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 13,
+      "elapsedMs": 780197,
+      "visible": "visible",
+      "time": 144.5,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 38,
+      "fixed": 1,
+      "decoded": 19201,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 783,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6777604,
+        "documents": 1,
+        "nodes": 935,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 384,
+          "completedMedia": 381,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 13.5,
+      "elapsedMs": 810196,
+      "visible": "visible",
+      "time": 174.416666,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 23,
+      "fixed": 1,
+      "decoded": 19920,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 813,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 7328504,
+        "documents": 1,
+        "nodes": 909,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 390,
+          "completedMedia": 387,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 14,
+      "elapsedMs": 840210,
+      "visible": "visible",
+      "time": 14.583333,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 48,
+      "fixed": 0,
+      "decoded": 20617,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 843,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6881864,
+        "documents": 1,
+        "nodes": 965,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 410,
+          "completedMedia": 407,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 14.5,
+      "elapsedMs": 870243,
+      "visible": "visible",
+      "time": 44.583333,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 42,
+      "fixed": 0,
+      "decoded": 21341,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 873,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6929420,
+        "documents": 1,
+        "nodes": 939,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 422,
+          "completedMedia": 419,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 15,
+      "elapsedMs": 901621,
+      "visible": "visible",
+      "time": 57.25,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 6,
+      "fixed": 1,
+      "decoded": 22235,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 904,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 7323720,
+        "documents": 1,
+        "nodes": 979,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 434,
+          "completedMedia": 431,
+          "failedMedia": 3
+        }
+      },
+      "api": {
+        "ok": true,
+        "status": 200,
+        "code": 0
+      }
+    },
+    {
+      "minute": 15.5,
+      "elapsedMs": 930310,
+      "visible": "visible",
+      "time": 85.791666,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 46,
+      "fixed": 0,
+      "decoded": 22941,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 933,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6633256,
+        "documents": 1,
+        "nodes": 931,
+        "listeners": 327,
+        "network": {
+          "active": 1,
+          "media": 1,
+          "startedMedia": 440,
+          "completedMedia": 436,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 16,
+      "elapsedMs": 960472,
+      "visible": "visible",
+      "time": 115.875,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 23,
+      "fixed": 2,
+      "decoded": 23663,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 963,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6623136,
+        "documents": 1,
+        "nodes": 885,
+        "listeners": 327,
+        "network": {
+          "active": 1,
+          "media": 1,
+          "startedMedia": 452,
+          "completedMedia": 448,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 16.5,
+      "elapsedMs": 990895,
+      "visible": "visible",
+      "time": 146,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 41,
+      "fixed": 0,
+      "decoded": 24387,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 993,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6645988,
+        "documents": 1,
+        "nodes": 923,
+        "listeners": 327,
+        "network": {
+          "active": 1,
+          "media": 1,
+          "startedMedia": 464,
+          "completedMedia": 460,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 17,
+      "elapsedMs": 1020224,
+      "visible": "visible",
+      "time": 175.791666,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 20,
+      "fixed": 1,
+      "decoded": 25103,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 1023,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 7033424,
+        "documents": 1,
+        "nodes": 931,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 468,
+          "completedMedia": 465,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 17.5,
+      "elapsedMs": 1050674,
+      "visible": "visible",
+      "time": 15.958333,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 47,
+      "fixed": 0,
+      "decoded": 25804,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 1053,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6655392,
+        "documents": 1,
+        "nodes": 927,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 490,
+          "completedMedia": 487,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 18,
+      "elapsedMs": 1080693,
+      "visible": "visible",
+      "time": 45.916666,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 45,
+      "fixed": 0,
+      "decoded": 26524,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 1083,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6645524,
+        "documents": 1,
+        "nodes": 929,
+        "listeners": 327,
+        "network": {
+          "active": 1,
+          "media": 1,
+          "startedMedia": 502,
+          "completedMedia": 498,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 18.5,
+      "elapsedMs": 1110226,
+      "visible": "visible",
+      "time": 75.875,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 48,
+      "fixed": 0,
+      "decoded": 27244,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 1113,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 7070792,
+        "documents": 1,
+        "nodes": 937,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 514,
+          "completedMedia": 511,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 19,
+      "elapsedMs": 1140269,
+      "visible": "visible",
+      "time": 105.875,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 31,
+      "fixed": 0,
+      "decoded": 27961,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 1143,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6808508,
+        "documents": 1,
+        "nodes": 905,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 526,
+          "completedMedia": 523,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 19.5,
+      "elapsedMs": 1171476,
+      "visible": "visible",
+      "time": 136.166666,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 27,
+      "fixed": 1,
+      "decoded": 28690,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 1173,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 6689232,
+        "documents": 1,
+        "nodes": 903,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 538,
+          "completedMedia": 535,
+          "failedMedia": 3
+        }
+      }
+    },
+    {
+      "minute": 20,
+      "elapsedMs": 1200347,
+      "visible": "visible",
+      "time": 165.916666,
+      "duration": 189.024,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": null,
+      "danmaku": {
+        "requests": 1,
+        "failures": 0,
+        "discarded": 0,
+        "fallback": false,
+        "cached": 1,
+        "items": 2449,
+        "pending": 0
+      },
+      "nodes": 24,
+      "fixed": 0,
+      "decoded": 29405,
+      "dropped": 0,
+      "monitor": {
+        "ticks": 1203,
+        "maximumGapMs": 2013,
+        "visiblePeak": 48
+      },
+      "metrics": {
+        "heapBytes": 7449588,
+        "documents": 1,
+        "nodes": 959,
+        "listeners": 327,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 546,
+          "completedMedia": 543,
+          "failedMedia": 3
+        }
+      },
+      "api": {
+        "ok": true,
+        "status": 200,
+        "code": 0
+      }
+    }
+  ],
+  "phases": [
+    {
+      "index": 3,
+      "idle": {
+        "heapBytes": 5566284,
+        "documents": 1,
+        "nodes": 614,
+        "listeners": 212,
+        "network": {
+          "active": 0,
+          "media": 0,
+          "startedMedia": 0,
+          "completedMedia": 0,
+          "failedMedia": 0
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "pass": true,
+  "measurementStartedAt": "2026-11-05T06:01:53.195Z",
+  "elapsedMs": 1200507,
+  "finalIdle": {
+    "heapBytes": 5709672,
+    "documents": 1,
+    "nodes": 614,
+    "listeners": 212,
+    "network": {
+      "active": 0,
+      "media": 0,
+      "startedMedia": 546,
+      "completedMedia": 543,
+      "failedMedia": 3
+    }
+  },
+  "retainedHeapBytes": 143388,
+  "retainedListeners": 0,
+  "settingsRestored": true,
+  "pageErrors": [],
+  "finishedAt": "2026-11-05T06:21:55.964Z"
+}

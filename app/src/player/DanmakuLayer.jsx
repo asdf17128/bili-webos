@@ -17,7 +17,7 @@ function lowerBound(items, time) {
 
 // Keep original list indices for translation; pending translations may retry
 // within the display window without ever flashing the original Chinese text.
-export default memo(function DanmakuLayer({ danmakus, currentTime, enabled, paused = false, fontScale = 1, mtRef = null, settings = {} }) {
+export default memo(function DanmakuLayer({ danmakus, currentTime, enabled, paused = false, fontScale = 1, mtRef = null, settings = {}, preserveOnAppend = false }) {
   const containerRef = useRef(null);
   const renderedRef = useRef(new Set());
   const options = normalizeDanmaku({ ...settings, danmakuScale: fontScale });
@@ -31,7 +31,12 @@ export default memo(function DanmakuLayer({ danmakus, currentTime, enabled, paus
     trackRef.current = [];
     lastTimeRef.current = null;
     if (containerRef.current) containerRef.current.textContent = '';
-  }, [danmakus, signature, enabled]);
+  }, [signature, enabled]);
+  useEffect(() => {
+    if (preserveOnAppend) return;
+    renderedRef.current.clear(); trackRef.current = []; lastTimeRef.current = null;
+    if (containerRef.current) containerRef.current.textContent = '';
+  }, [danmakus, preserveOnAppend]);
 
   useEffect(() => {
     const clock = clockRef.current, stamp = performance.now();
@@ -50,17 +55,24 @@ export default memo(function DanmakuLayer({ danmakus, currentTime, enabled, paus
     if (paused) return;
     const start = lowerBound(danmakus, now - 0.5);
     // Remember only the current window, not every comment in a multi-hour film.
-    renderedRef.current.forEach(i => { if (i < start) renderedRef.current.delete(i); });
+    const keyOf = i => preserveOnAppend ? (danmakus[i].id || [danmakus[i].time, danmakus[i].mode, danmakus[i].text].join('|')) : i;
+    const windowKeys = new Set();
+    for (let i = start; i < Math.min(danmakus.length, start + MAX_WINDOW_ITEMS); i++) {
+      if (danmakus[i].time > now + 0.3) break;
+      windowKeys.add(keyOf(i));
+    }
+    renderedRef.current.forEach(key => { if (!windowKeys.has(key)) renderedRef.current.delete(key); });
     for (let i = start; i < Math.min(danmakus.length, start + MAX_WINDOW_ITEMS); i++) {
       const dm = danmakus[i];
       if (dm.time > now + 0.3) break;
-      if (renderedRef.current.has(i)) continue;
+      const key = keyOf(i);
+      if (renderedRef.current.has(key)) continue;
       const text = mtRef ? mtRef.current?.get(i) : dm.text;
       if (!text) continue;
-      renderedRef.current.add(i);
+      renderedRef.current.add(key);
       appendDanmaku(container, trackRef.current, dm, text, clock.time, options);
     }
-  }, [currentTime, danmakus, enabled, paused, fontScale, signature, mtRef]);
+  }, [currentTime, danmakus, enabled, paused, fontScale, signature, mtRef, preserveOnAppend]);
 
   if (!enabled) return null;
   return <div ref={containerRef} className={'danmaku-container' + (paused ? ' danmaku-paused' : '')}

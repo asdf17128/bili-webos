@@ -122,5 +122,13 @@ await test('live overlay shares appearance and clears lanes on toggle',async()=>
  await page.evaluate(async()=>{await window.__liveDraw(false);await window.__liveDraw(true);window.__liveRef.current.push('fresh');});
  assert.deepEqual(await page.locator('#live-fixture .danmaku-item').allTextContents(),['fresh']);
 });
+await test('segment boundary updates preserve active nodes and stable IDs',async()=>{
+ await page.evaluate(()=>window.__draw({fontScale:1,preserveOnAppend:true,settings:{},danmakus:[{id:'previous',time:359.8,text:'keep me'}],currentTime:359.8}));
+ await page.evaluate(()=>{window.__kept=document.querySelector('.danmaku-item');});
+ await page.evaluate(()=>window.__draw({danmakus:[{id:'previous',time:359.8,text:'keep me'},{id:'next',time:360.1,text:'next'}],currentTime:360.1}));
+ assert.ok(await page.evaluate(()=>window.__kept.isConnected));
+ assert.equal((await page.locator('.danmaku-item').allTextContents()).filter(x=>x==='keep me').length,1);
+ await page.evaluate(()=>window.__draw({preserveOnAppend:false,enabled:false}));
+});
 await writeFile(output+'/results.json',JSON.stringify({cpuThrottle:6,results},null,2));
 await browser.close();if(results.some(x=>x.pass===false))process.exitCode=1;

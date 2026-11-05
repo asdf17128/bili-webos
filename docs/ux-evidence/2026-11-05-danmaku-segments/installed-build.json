@@ -1,0 +1,61 @@
+{
+  "files": {
+    "app/dist/assets/shaka-player.compiled-legacy-01vuRLq-.js": "e7555409c7b44282543f08a2c96f3b10f4925540208e22735c90e90c84138b0f",
+    "app/dist/assets/NerdInfo-legacy-DJ8Avqii.js": "55d07a0993c930452f1e6b508e77e53ecb2de696f6b237b1a878fff83fd88c0a",
+    "app/dist/assets/index-legacy-DHhkoV9H.js": "50cece7f1e9cb50808262e47b2337f238bde0cffaef87a7bc45c258471ded26c",
+    "app/dist/assets/PlayerPage-legacy-BItWRZnG.js": "76c03bff6424ff1ab4c8ca1eeb5e7a1e1143cc2abda579a62e7e7230b30c00b3",
+    "app/dist/assets/react-vendor-legacy-B2h5bzJ7.js": "35b6eec340e5d94be0db7cb0978d708b51ed326b6b5144b1afb1d9a2d28cad7c",
+    "app/dist/assets/polyfills-legacy-Cbbx4oXU.js": "8b003fcd8624d2830df2e606d5113034d9779894cee8e9d51cdb887952e5fdb9",
+    "app/dist/assets/LivePlayerPage-legacy-DCrXuncn.js": "4078ec0ac9d87220121efea481052833723141f6bfb7477fad919d0435d03595"
+  },
+  "installedFiles": {
+    "app/dist/assets/shaka-player.compiled-legacy-01vuRLq-.js": {
+      "sha256": "e7555409c7b44282543f08a2c96f3b10f4925540208e22735c90e90c84138b0f",
+      "match": true
+    },
+    "app/dist/assets/NerdInfo-legacy-DJ8Avqii.js": {
+      "sha256": "55d07a0993c930452f1e6b508e77e53ecb2de696f6b237b1a878fff83fd88c0a",
+      "match": true
+    },
+    "app/dist/assets/index-legacy-DHhkoV9H.js": {
+      "sha256": "50cece7f1e9cb50808262e47b2337f238bde0cffaef87a7bc45c258471ded26c",
+      "match": true
+    },
+    "app/dist/assets/PlayerPage-legacy-BItWRZnG.js": {
+      "sha256": "76c03bff6424ff1ab4c8ca1eeb5e7a1e1143cc2abda579a62e7e7230b30c00b3",
+      "match": true
+    },
+    "app/dist/assets/react-vendor-legacy-B2h5bzJ7.js": {
+      "sha256": "35b6eec340e5d94be0db7cb0978d708b51ed326b6b5144b1afb1d9a2d28cad7c",
+      "match": true
+    },
+    "app/dist/assets/polyfills-legacy-Cbbx4oXU.js": {
+      "sha256": "8b003fcd8624d2830df2e606d5113034d9779894cee8e9d51cdb887952e5fdb9",
+      "match": true
+    },
+    "app/dist/assets/LivePlayerPage-legacy-DCrXuncn.js": {
+      "sha256": "4078ec0ac9d87220121efea481052833723141f6bfb7477fad919d0435d03595",
+      "match": true
+    }
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.6834.207 Safari/537.36 WebAppManager",
+    "visible": "visible",
+    "node": "v20.12.2",
+    "uptime": 310,
+    "loggedIn": true,
+    "castSubscribers": 1,
+    "danmakuSubscribers": 0,
+    "danmakuActive": false,
+    "scripts": [
+      "webOSTV.js",
+      "polyfills-legacy-Cbbx4oXU.js"
+    ],
+    "loadedBundles": [
+      "index-legacy-DHhkoV9H.js",
+      "PlayerPage-legacy-BItWRZnG.js"
+    ]
+  },
+  "loadedEntryMatches": true,
+  "installedAt": "2026-11-05T04:55:10.435Z"
+}

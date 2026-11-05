@@ -3,7 +3,7 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
-import jsQR from 'jsqr';
+import { decodeQr } from './_decode-qr.mjs';
 import { PNG } from 'pngjs';
 
 const baseline = process.argv.includes('--baseline');
@@ -817,7 +817,7 @@ for (const cols of [2, 3, 4]) for (const [sizeIndex, scale] of [1, 1.12, 1.25].e
 
 for (const response of [{code:-351}, {code:0,data:{v_voucher:'PRIVATE_VOUCHER_DO_NOT_EXPORT'}}]) {
   await test('diagnostic preserves risk code and voucher flag '+response.code, async ({page}) => {
-    await page.route('**/src/api/client.js', async route => {
+    await page.route('**/src/api/client.js*', async route => {
       const res = await route.fetch();
       const source = await res.text();
       const evidence = {loggedIn:true, nodeVersion:'v0.12.2', uptimeSec:1200, playback:{lastFailure:{kind:'wbi',at:Date.now(),bvid:'BV1xx411c7mD',cid:1234567890,qn:127,fnval:4048,recovery:'retried',outcome:'failed',attempts:[{http:200,code:-352,voucher:true,stream:false,ms:8000},{http:200,code:-352,voucher:true,stream:false,ms:9000}]}},identity:{pending:false,cooldownSec:299}};
@@ -836,7 +836,7 @@ for (const response of [{code:-351}, {code:0,data:{v_voucher:'PRIVATE_VOUCHER_DO
     assert.match(detail,/reason=no_stream/);
     assert.match(detail,new RegExp('code='+response.code+' hasStream=no voucher='+(response.code===0?'yes':'no')));
     const png=PNG.sync.read(await panel.locator('.diagnostic-report svg').screenshot({path:`${output}/risk-${response.code}.png`}));
-    const qr=jsQR(new Uint8ClampedArray(png.data),png.width,png.height);assert(qr,'QR decodes');
+    const qr=decodeQr(png);assert(qr,'QR decodes');
     const report=new URL(qr.data).searchParams.get('body');
     assert.match(report,new RegExp('\\[fail\\] playurl code='+response.code));
     assert.match(report,/\[skip\] cdn reason=no_stream/);assert(!report.includes('PRIVATE_VOUCHER'));
@@ -859,7 +859,7 @@ await test('diagnostic network failures finish visibly and remain scannable', as
   assert.equal((detail.match(/⏭️/g) || []).length, 2, detail);
   assert.ok(!detail.includes('⏳'), 'all probes must settle');
   const png = PNG.sync.read(await panel.locator('.diagnostic-report svg').screenshot({ path: `${output}/diagnostics-offline.png` }));
-  const qr = jsQR(new Uint8ClampedArray(png.data), png.width, png.height);
+  const qr = decodeQr(png);
   assert.ok(qr, 'failure report QR must decode from rendered pixels');
   const url = new URL(qr.data);
   assert.equal(url.origin, 'https://github.com');

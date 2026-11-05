@@ -1,3 +1,4 @@
+import { createDanmakuSegments } from './danmakuSegments';
 import { mediaKeyAction } from './mediaKeys';
 import NerdInfo from './NerdInfo';
 import { requestedQuality } from '../utils/qualityPreference';
@@ -5,7 +6,7 @@ import Icon from '../components/Icon';
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import './playerControls.css';
 import { thumbUrl } from '../utils/thumb';
-import { getLibraryPage, getPlayUrl, getDanmaku, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies, getReplyReplies, tripleVideo, likeVideo, coinVideo, favVideo, getFavFoldersFor, getVideoRelation, getHtml5PlayUrl, mediaProxyBase, addToView, delToView } from '../api/client';
+import { getLibraryPage, getPlayUrl, getDanmaku, getDanmakuSegment, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies, getReplyReplies, tripleVideo, likeVideo, coinVideo, favVideo, getFavFoldersFor, getVideoRelation, getHtml5PlayUrl, mediaProxyBase, addToView, delToView } from '../api/client';
 import { nextPlaylistItem } from '../utils/library';
 import { playPart, playAdvance } from './playIntent';
 import { getPlaybackMode } from './playbackMode';
@@ -133,9 +134,15 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   const [showQuality, setShowQuality] = useState(false);
   const [showRelated, setShowRelated] = useState(false);
   const [danmakus, setDanmakus] = useState([]);
+  const danmakuLoaderRef = useRef(null);
+  const danmakuEnabledRef = useRef(true);
   // Respect the user's persisted danmaku toggle (设置 → 弹幕) instead of always
   // starting on (thanks @ponymuch, PR #2).
   const [danmakuEnabled, setDanmakuEnabled] = useState(() => storage.getSettings().danmaku !== false);
+  danmakuEnabledRef.current = danmakuEnabled;
+  useEffect(() => {
+    danmakuLoaderRef.current?.update(currentTime, duration, danmakuEnabled);
+  }, [currentTime, duration, danmakuEnabled]);
   // Danmaku/subtitle font scales (设置 → 弹幕字号/字幕字号). Read once per mount.
   const [danmakuSettings] = useState(() => storage.getSettings());
   const [danmakuScale] = useState(() => storage.getSettings().danmakuScale || 1);
@@ -702,6 +709,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       mounted = false;
       extras = [];
       trace.dispose();
+      danmakuLoaderRef.current?.dispose(); danmakuLoaderRef.current = null;
+      delete window.__danmakuStats;
       media.removeEventListener('loadedmetadata', onMetadata);
       media.removeEventListener('playing', onPlaying);
       media.removeEventListener('loadeddata', onFirstFrame);
@@ -1113,7 +1122,16 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       });
 
       afterFirstFrame(() => {
-        getDanmaku(cid).then(items => { if (isActive()) setDanmakus(items); }).catch(() => {});
+        if (!isActive()) return;
+        danmakuLoaderRef.current?.dispose();
+        const loader = createDanmakuSegments({
+          fetchSegment: segment => getDanmakuSegment(cid, segment),
+          fetchFallback: () => getDanmaku(cid),
+          onItems: items => { if (isActive()) setDanmakus(items); },
+        });
+        danmakuLoaderRef.current = loader;
+        window.__danmakuStats = loader.stats;
+        loader.update(videoRef.current?.currentTime || 0, videoRef.current?.duration, danmakuEnabledRef.current);
       });
       if (!isActive()) return;
       if (isBangumi) {
@@ -2786,7 +2804,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         </div>
       )}
 
-      <DanmakuLayer settings={danmakuSettings} danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale} paused={!playing}
+      <DanmakuLayer preserveOnAppend settings={danmakuSettings} danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale} paused={!playing}
         mtRef={dmMtActive ? dmMtRef : null} />
 
       <SubtitleLayer videoRef={videoRef} cues={subCues} enabled={subLan != null && !showRelated}

@@ -14,6 +14,7 @@ This log collects the release history previously included in the README. For ear
 
 - 弹幕设置面板：预览与保存字号、不透明度、粗细、描边、显示区域、密度、速度和类型过滤。
 - 支持顶部／底部固定、反向及普通滚动弹幕；点播和直播共享外观设置，轨道避让和数量上限保护性能。
+- 修复点播后半段弹幕覆盖不足：按播放进度加载分段弹幕，预取下一段，限制缓存；跳转隔离过期响应，分段切换保留在屏弹幕，兼容登录后的较大响应。
 - Danmaku customization with preview, common comment types, bounded density and shared live appearance.
 
 ## v2.5.2 — 2026-11-01

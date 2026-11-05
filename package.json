@@ -13,6 +13,7 @@
     "test:settings:tv": "node tools/test-tv-settings.mjs"
   },
   "devDependencies": {
+    "@zxing/library": "^0.21.3",
     "jsqr": "^1.4.0",
     "playwright": "^1.62.1",
     "pngjs": "^7.0.0"

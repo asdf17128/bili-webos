@@ -1,3 +1,4 @@
+import { parseDanmakuSegment } from '../player/danmakuSegments';
 import { deviceEnvironment } from './deviceEnvironment';
 import { normalizePgcPlayurl } from './pgcPlayurl';
 // Bilibili API client
@@ -1221,6 +1222,24 @@ export async function reportHeartbeat(bvid, cid, playedTime, realTime) {
 
 // ============ Danmaku ============
 
+export async function getDanmakuSegment(cid, segment) {
+  const url = 'https://api.bilibili.com/x/v2/dm/web/seg.so?type=1&oid=' + encodeURIComponent(cid) + '&segment_index=' + segment;
+  return withDeadline((async () => {
+    const response = await rawFetch(url, { deadlineMs: 8000 });
+    const status = response.status || response.statusCode;
+    if (status !== 200) throw new Error('Danmaku HTTP ' + status);
+    let bytes;
+    if (response.arrayBuffer) bytes = new Uint8Array(await response.arrayBuffer());
+    else {
+      if (typeof response.bodyBase64 !== 'string' || response.bodyBase64.length > 5592410) throw new Error('Invalid binary danmaku response');
+      const binary = atob(response.bodyBase64);
+      bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    }
+    return parseDanmakuSegment(bytes);
+  })(), 9000);
+}
+
 export async function getDanmaku(cid) {
   var url = 'https://api.bilibili.com/x/v1/dm/list.so?oid=' + cid;
 
@@ -1252,6 +1271,7 @@ function parseDanmakuXml(xml) {
       size: parseInt(parts[2]),
       color: '#' + parseInt(parts[3]).toString(16).padStart(6, '0'),
       timestamp: parseInt(parts[4]),
+      id: parts[7] && parts[7] !== '0' ? parts[7] : undefined,
       text: d.textContent,
     });
   });

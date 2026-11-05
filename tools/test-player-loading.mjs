@@ -630,6 +630,21 @@ await run('transient network failure can recover on the second attempt','retry',
  await open(page);await page.waitForFunction(()=>window.__probe.loads===2);
  await page.waitForTimeout(300);assert.equal(calls.playurl,2);assert.equal(await page.locator('.player-page .loading').count(),0);
 });
+await run('danmaku segment binary transport decodes Luna base64 response','fonts',async(page)=>{
+ const result=await page.evaluate(async()=>{
+  const {getDanmakuSegment}=await import('/src/api/client.js');
+  const bytes=[10,9,16,232,7,24,1,58,2,111,107];
+  let requested;
+  window.PalmServiceBridge=function(){};
+  window.webOS={service:{request:(uri,options)=>{requested=options.parameters.url;setTimeout(()=>options.onSuccess({returnValue:true,status:200,bodyBase64:btoa(String.fromCharCode(...bytes))}),0);return {cancel(){}};}}};
+  const luna=await getDanmakuSegment(2,2);
+  delete window.webOS;delete window.PalmServiceBridge;
+  return {luna,requested};
+ });
+ assert.equal(result.luna[0].time,1);assert.equal(result.luna[0].text,'ok');
+ assert.match(result.requested,/segment_index=2/);
+});
+
 for(const [name,dm,sub] of [['small',.8,.85],['normal',1,1],['large',1.3,1.2],['largest',1.6,1.4]]){
  await run('actual danmaku and subtitle font sizes: '+name,'fonts',async(page)=>{
   await open(page);await page.locator('.danmaku-item').first().waitFor();await page.locator('.subtitle-text').waitFor();

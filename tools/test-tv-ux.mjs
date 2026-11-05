@@ -670,7 +670,7 @@ await test('settings font rows follow visual order in both directions', async ({
   await page.waitForTimeout(300); await page.keyboard.press('ArrowRight');
   await page.waitForSelector('.config-options .settings-row.focused');
   const label = () => page.locator('.config-options .settings-row.focused > span').first().innerText();
-  const order = ['弹幕', '看完移出稍后再看', '播放结束后', '每行视频', '弹幕字号', '字幕字号', '界面字号', 'CDN 线路'];
+  const order = ['弹幕', '看完移出稍后再看', '播放结束后', '每行视频', '弹幕设置', '字幕字号', '界面字号', 'CDN 线路'];
   for (let i = 0; i < order.length; i++) {
     assert.equal(await label(), order[i], 'Down follows the displayed setting order');
     if (i < order.length - 1) await page.keyboard.press('ArrowDown');
@@ -680,14 +680,57 @@ await test('settings font rows follow visual order in both directions', async ({
     assert.equal(await label(), order[i], 'Up reverses the same setting order');
   }
 });
+await test('danmaku settings remote navigation saves, cancels and restores focus', async ({ page }) => {
+  await ready(page); await page.waitForTimeout(400);
+  await page.locator('.sidebar-item').filter({hasText:'设置'}).click();
+  await page.locator('.settings-row').filter({hasText:'弹幕设置'}).click();
+  await page.locator('.dm-settings').waitFor();
+  await page.keyboard.press('Enter');
+  await page.locator('.dm-choice').waitFor();
+  await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter');
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.bili_settings).danmakuScale),1.3);
+  await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter');
+  await page.keyboard.press('ArrowUp'); await page.keyboard.press('Escape');
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.bili_settings).danmakuOpacity),1);
+  await page.keyboard.press('Enter'); await page.keyboard.press('ArrowUp'); await page.keyboard.press('Enter');
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.bili_settings).danmakuOpacity),.75);
+  for(let i=0;i<9;i++) await page.keyboard.press('ArrowDown');
+  assert.match(await page.locator('.dm-setting-row.selected').innerText(),/彩色弹幕/);
+  const bounds=await page.locator('.dm-setting-row.selected').evaluate(el=>{const r=el.getBoundingClientRect(),p=el.parentNode.getBoundingClientRect();return {top:r.top,bottom:r.bottom,pt:p.top,pb:p.bottom};});
+  assert.ok(bounds.top>=bounds.pt && bounds.bottom<=bounds.pb+1,JSON.stringify(bounds));
+  await page.keyboard.press('Enter');
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.bili_settings).danmakuColor),false);
+  await page.evaluate(()=>window.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',repeat:true,bubbles:true})));
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.bili_settings).danmakuColor),false,'held OK does not toggle again');
+  await page.screenshot({path:output+'/danmaku-settings.png'});
+  await page.keyboard.press('Escape'); await page.locator('.dm-settings').waitFor({state:'detached'});
+  assert.equal(await focused(page),'content-4-0');
+  await page.keyboard.press('ArrowDown');assert.equal(await focused(page),'content-5-0');
+  await page.keyboard.press('ArrowUp');await page.keyboard.press('Enter');
+  assert.match(await page.locator('.dm-setting-row').first().innerText(),/大/);
+  await page.keyboard.press('Escape');
+});
+for(const language of ['zh','en','es']) {
+ await test(`danmaku panel fits large text (${language})`,async({page})=>{
+  await ready(page);await page.keyboard.press('Backspace');await page.keyboard.press('ArrowUp');await page.keyboard.press('ArrowUp');
+  await page.waitForTimeout(300);await page.keyboard.press('ArrowRight');
+  for(let i=0;i<4;i++)await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
+  await page.locator('.dm-settings').waitFor();
+  const sizes=await page.locator('.dm-setting-row').evaluateAll(es=>es.map(e=>({w:e.clientWidth,sw:e.scrollWidth})));
+  assert.ok(sizes.every(e=>e.sw<=e.w),JSON.stringify(sizes));
+  const r=await page.locator('.dm-settings').boundingBox();assert.ok(r.x>=0&&r.y>=0&&r.y+r.height<=1080);
+  await page.screenshot({path:output+'/danmaku-'+language+'-large.png'});
+  await page.keyboard.press('Escape');assert.equal(await focused(page),'content-4-0');
+ },{language,scale:1.25});
+}
 await test('font pickers update their own setting and resume at the same row', async ({ page }) => {
   await ready(page); await page.waitForTimeout(400);
   await page.keyboard.press('Backspace');
   await page.keyboard.press('ArrowUp'); await page.keyboard.press('ArrowUp');
   await page.waitForTimeout(300); await page.keyboard.press('ArrowRight');
   await page.waitForSelector('.config-options .settings-row.focused');
-  for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowDown');
-  for (const [name, key, value] of [['弹幕字号', 'danmakuScale', 1.3], ['字幕字号', 'subtitleScale', 1.2], ['界面字号', 'uiScale', 1.12]]) {
+  for (let i = 0; i < 5; i++) await page.keyboard.press('ArrowDown');
+  for (const [name, key, value] of [ ['字幕字号', 'subtitleScale', 1.2], ['界面字号', 'uiScale', 1.12]]) {
     assert.equal(await page.locator('.settings-row.focused > span').first().innerText(), name);
     await page.keyboard.press('Enter'); await page.locator('.settings-picker').waitFor();
     assert.equal(await page.locator('.settings-picker > div').first().innerText(), name);

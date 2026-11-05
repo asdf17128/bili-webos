@@ -870,3 +870,26 @@ html, body, #root {
   .video-card, .video-card-thumb img, .video-grid, .tv-action, .sidebar-item { transition: none !important; }
   .toast { animation: none; }
 }
+
+.danmaku-fixed { left: 50%; transform: translateX(-50%); animation-name: danmaku-stay; will-change: auto; }
+.danmaku-reverse { animation-name: danmaku-reverse; }
+@keyframes danmaku-stay { from { visibility: visible; } to { visibility: visible; } }
+@keyframes danmaku-reverse { from { transform: translateX(-100%); } to { transform: translateX(1920px); } }
+.dm-settings-backdrop, .dm-choice-backdrop { position: fixed; top:0; right:0; bottom:0; left:0; background: rgba(0,0,0,.8); z-index: 100; display:flex; align-items:center; justify-content:center; }
+.dm-settings { width: 1480px; max-height: 940px; padding: 36px; background: var(--tv-surface); border-radius: 20px; color: var(--tv-text); }
+.dm-settings header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+.dm-settings h2 { margin:0; font-size:calc(32px * var(--ui-scale)); }
+.dm-settings button { font:inherit; color:inherit; cursor:pointer; border:0; }
+.dm-settings header button { background:#343640; border-radius:10px; padding:12px 24px; }
+.dm-settings-body { display:flex; }
+.dm-settings-rows { width:720px; height:680px; overflow-y:auto; padding:6px; }
+.dm-setting-row { display:flex; align-items:center; justify-content:space-between; width:100%; min-height:76px; padding:16px; margin-bottom:6px; background:#272a32; border-radius:10px; font-size:calc(24px * var(--ui-scale)) !important; text-align:left; }
+.dm-setting-row strong { font-size:calc(21px * var(--ui-scale)); margin-left:16px; }
+.dm-settings .selected { background:#f3f4f6; color:#17181b; }
+.dm-settings aside { width:624px; margin-left:34px; }
+.dm-settings aside p { font-size:calc(22px * var(--ui-scale)); line-height:1.6; color:#c6cad2; }
+.dm-preview { width:624px; height:351px; overflow:hidden; border-radius:12px; background:linear-gradient(130deg,#528299,#172632 55%,#69543c); }
+.dm-preview-stage { position:relative; width:1920px; height:1080px; transform:scale(.325); transform-origin:top left; }
+.dm-choice { min-width:480px; padding:24px; background:var(--tv-surface); border-radius:16px; }
+.dm-choice h3 { margin:0 0 20px; font-size:28px; }
+.dm-choice button { display:block; width:100%; padding:18px 30px; background:transparent; text-align:left; font-size:28px; border-radius:8px; }

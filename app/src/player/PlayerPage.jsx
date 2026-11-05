@@ -137,6 +137,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   // starting on (thanks @ponymuch, PR #2).
   const [danmakuEnabled, setDanmakuEnabled] = useState(() => storage.getSettings().danmaku !== false);
   // Danmaku/subtitle font scales (设置 → 弹幕字号/字幕字号). Read once per mount.
+  const [danmakuSettings] = useState(() => storage.getSettings());
   const [danmakuScale] = useState(() => storage.getSettings().danmakuScale || 1);
   const [subtitleScale] = useState(() => storage.getSettings().subtitleScale || 1);
   // CC subtitles (player/v2 → data.subtitle.subtitles). subLan null = off.
@@ -2785,7 +2786,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         </div>
       )}
 
-      <DanmakuLayer danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale} paused={!playing}
+      <DanmakuLayer settings={danmakuSettings} danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale} paused={!playing}
         mtRef={dmMtActive ? dmMtRef : null} />
 
       <SubtitleLayer videoRef={videoRef} cues={subCues} enabled={subLan != null && !showRelated}

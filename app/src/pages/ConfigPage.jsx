@@ -4,6 +4,7 @@ import { getPlaybackMode } from '../player/playbackMode';
 import { useFocusable, setCustomKeyHandler, setFocus } from '../hooks/useFocus';
 import { getLatestVersion } from '../api/client';
 import { APP_VERSION, BUILD_VERSION, compareVersions } from '../version';
+import DanmakuSettings from '../components/DanmakuSettings';
 import DiagPanel from '../components/DiagPanel';
 import { t, getLocale, setLanguage, availableLanguages } from '../i18n';
 
@@ -22,7 +23,7 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
   const checking = useRef(false);
   const settings = storage.getSettings();
   const [gridCols, setGridCols] = useState(() => Math.min(4, Math.max(2, settings.gridCols || 3)));
-  const [danmakuScale, setDanmakuScale] = useState(() => settings.danmakuScale || 1);
+  const [showDanmakuSettings, setShowDanmakuSettings] = useState(false);
   const [cdnRoute, setCdnRoute] = useState(() => settings.cdnRoute || 'auto');
 
   const [nerdInfo, setNerdInfo] = useState(() => settings.nerdInfo === true);
@@ -163,14 +164,9 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
       (v) => { setGridCols(v); storage.setSettings({ ...storage.getSettings(), gridCols: v }); }),
   });
 
-  // 弹幕字号 — list picker (ascending sizes).
-  const DM_SCALES = [
-    { v: 0.8, label: t('小') }, { v: 1, label: t('标准') }, { v: 1.3, label: t('大') }, { v: 1.6, label: t('特大') },
-  ];
   const { props: danmakuScaleProps } = useFocusable({
     id: 'content-4-0', row: 4, col: 0, group: 'content',
-    onSelect: () => openPicker(t('弹幕字号'), DM_SCALES, danmakuScale,
-      (v) => { setDanmakuScale(v); storage.setSettings({ ...storage.getSettings(), danmakuScale: v }); }),
+    onSelect: () => setShowDanmakuSettings(true),
   });
 
   // 字幕字号 — same ladder as danmaku. Takes effect on the next video.
@@ -268,7 +264,6 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
     onSelect: () => window.dispatchEvent(new CustomEvent('account-repair')),
   });
 
-  const dmScaleLabel = (DM_SCALES.find(s => s.v === danmakuScale) || DM_SCALES[0]).label;
   const cdnLabel = (CDN_OPTS.find(o => o.v === cdnRoute) || CDN_OPTS[0]).label;
 
   return (
@@ -303,8 +298,8 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
       </div>
 
       <div className="settings-row" {...danmakuScaleProps}>
-        <span>{t('弹幕字号')}</span>
-        <span className="settings-row-value">{dmScaleLabel}</span>
+        <span>{t('弹幕设置')}</span>
+        <span className="settings-row-value">{t('字号、透明度、显示区域与类型')}</span>
       </div>
 
       <div className="settings-row" {...subtitleScaleProps}>
@@ -342,6 +337,8 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
         </span>
       </div>
 
+
+      {showDanmakuSettings && <DanmakuSettings onClose={() => { setShowDanmakuSettings(false); setFocus('content-4-0'); }} />}
 
       {picker && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)',

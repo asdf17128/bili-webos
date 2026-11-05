@@ -10,6 +10,12 @@ This log collects the release history previously included in the README. For ear
 
 <a id="unreleased"></a>
 
+## 未发布 / Unreleased
+
+- 弹幕设置面板：预览与保存字号、不透明度、粗细、描边、显示区域、密度、速度和类型过滤。
+- 支持顶部／底部固定、反向及普通滚动弹幕；点播和直播共享外观设置，轨道避让和数量上限保护性能。
+- Danmaku customization with preview, common comment types, bounded density and shared live appearance.
+
 ## v2.5.2 — 2026-11-01
 
 - **播放修复**：普通视频使用 WBI 取流，番剧使用 PGC v2，保留账号和会员画质参数。

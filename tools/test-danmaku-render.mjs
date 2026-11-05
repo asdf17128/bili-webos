@@ -71,5 +71,56 @@ await test('font scales, animation cleanup and repeat render do not duplicate',a
  await page.waitForFunction(()=>document.querySelectorAll('.danmaku-item').length===0);
  assert.equal(await page.locator('.danmaku-item').count(),0);
 });
+await test('fixed, reverse and colored types respect filters and area bounds',async()=>{
+ await page.evaluate(()=>window.__draw({fontScale:1.6,mtRef:null,settings:{danmakuArea:.25,danmakuOpacity:.5,danmakuOutline:0,danmakuWeight:700},danmakus:[{time:2,mode:5,text:'top'},{time:2,mode:4,text:'bottom'},{time:2,mode:6,text:'reverse'}],currentTime:2}));
+ assert.equal(await page.locator('.danmaku-fixed').count(),2);
+ const rows=await page.locator('.danmaku-item').evaluateAll(es=>es.map(e=>({top:parseFloat(e.style.top),height:e.offsetHeight,opacity:e.style.opacity,weight:e.style.fontWeight,shadow:e.style.textShadow})));
+ assert.ok(rows.every(r=>r.top+r.height<=255 && r.opacity==='0.5' && r.weight==='700' && r.shadow==='none'),JSON.stringify(rows));
+ await page.evaluate(()=>window.__draw({fontScale:1,settings:{danmakuTop:false,danmakuBottom:false,danmakuColor:false},danmakus:[{time:2,mode:5,text:'top'},{time:2,mode:4,text:'bottom'},{time:2,mode:1,color:'#ff0000',text:'color'},{time:2,mode:6,text:'reverse'},{time:2,mode:7,text:'advanced'}]}));
+ assert.deepEqual(await page.locator('.danmaku-item').allTextContents(),['reverse']);
+ assert.equal(await page.locator('.danmaku-reverse').count(),1);
+});
+await test('density caps and speed are applied; invalid options fall back safely',async()=>{
+ const counts=[];
+ for(const density of [12,24,48]){
+  counts.push(await page.evaluate(async density=>{
+   const list=Array.from({length:300},(_,i)=>({time:i/100,text:'短'}));
+   await window.__draw({settings:{danmakuDensity:density},danmakus:list,currentTime:0});
+   for(let t=.5;t<3;t+=.5){await new Promise(r=>setTimeout(r,500));await window.__draw({currentTime:t});}
+   return document.querySelectorAll('.danmaku-item').length;
+  },density));
+ }
+ assert.deepEqual(counts,[12,24,48]);
+ const durations=[];
+ for(const speed of [.75,1.5]){
+  await page.evaluate(speed=>window.__draw({settings:{danmakuSpeed:speed},danmakus:[{time:1,text:'same'}],currentTime:1}),speed);
+  durations.push(await page.locator('.danmaku-item').evaluate(e=>parseFloat(e.style.animationDuration)));
+ }
+ assert.ok(Math.abs(durations[0]/durations[1]-2)<.001);
+ await page.evaluate(()=>window.__draw({fontScale:Infinity,settings:{danmakuArea:-2,danmakuDensity:99999},danmakus:[{time:1,text:'safe'}],currentTime:1}));
+ assert.equal(await page.locator('.danmaku-item').evaluate(e=>e.style.fontSize),'28px');
+});
+await test('lane spacing uses animation time rather than accelerated media time',async()=>{
+ await page.evaluate(()=>window.__draw({fontScale:1,settings:{danmakuDensity:48},danmakus:[...Array.from({length:15},()=>({time:0,text:'long enough to occupy lane'})),...Array.from({length:15},()=>({time:1,text:'next'}))],currentTime:0}));
+ const first=await page.locator('.danmaku-item').count();assert.equal(first,15);
+ await page.evaluate(()=>window.__draw({currentTime:1}));
+ assert.equal(await page.locator('.danmaku-item').count(),first,'a media-time jump must not free lanes before the text has moved');
+});
+await test('live overlay shares appearance and clears lanes on toggle',async()=>{
+ await page.evaluate(async()=>{
+  const {default:React}=await import('/node_modules/.vite/deps/react.js');
+  const {default:{createRoot}}=await import('/node_modules/.vite/deps/react-dom_client.js');
+  const {default:Live}=await import('/src/player/LiveDanmakuLayer.jsx');
+  const host=document.createElement('div');host.id='live-fixture';document.body.appendChild(host);
+  const root=createRoot(host),ref=React.createRef();
+  window.__liveDraw=async enabled=>{root.render(React.createElement(Live,{ref,enabled,settings:{danmakuScale:1.6,danmakuArea:.25,danmakuOpacity:.25,danmakuDensity:12}}));await new Promise(r=>setTimeout(r,100));};
+  window.__liveRef=ref;await window.__liveDraw(true);
+  for(let i=0;i<100;i++)ref.current.push('live '+i);
+ });
+ const nodes=await page.locator('#live-fixture .danmaku-item').evaluateAll(es=>es.map(e=>({size:e.style.fontSize,opacity:e.style.opacity,top:parseFloat(e.style.top),height:e.offsetHeight})));
+ assert.ok(nodes.length>0 && nodes.length<=12);assert.ok(nodes.every(n=>n.size==='45px'&&n.opacity==='0.25'&&n.top+n.height<=255));
+ await page.evaluate(async()=>{await window.__liveDraw(false);await window.__liveDraw(true);window.__liveRef.current.push('fresh');});
+ assert.deepEqual(await page.locator('#live-fixture .danmaku-item').allTextContents(),['fresh']);
+});
 await writeFile(output+'/results.json',JSON.stringify({cpuThrottle:6,results},null,2));
 await browser.close();if(results.some(x=>x.pass===false))process.exitCode=1;

@@ -21,6 +21,7 @@ export default function LivePlayerPage({ room, onBack }) {
   const [loadError, setLoadError] = useState(false);
   const reconnectRef = useRef(null);
   const [showInfo, setShowInfo] = useState(true);
+  const [danmakuSettings] = useState(() => storage.getSettings());
   const [danmakuEnabled, setDanmakuEnabled] = useState(storage.getSettings().danmaku !== false);
   const infoTimer = useRef(null);
   const dmLayerRef = useRef(null);
@@ -542,7 +543,7 @@ export default function LivePlayerPage({ room, onBack }) {
         width: interactOn ? 1920 - CHAT_W : 1920, height: 1080, overflow: 'hidden' }}>
         <video ref={videoRef} className="player-video" autoPlay
           style={interactOn ? { width: VIDEO_W, height: VIDEO_H, marginTop: 0 } : undefined} />
-        <LiveDanmakuLayer ref={dmLayerRef} enabled={danmakuEnabled} />
+        <LiveDanmakuLayer settings={danmakuSettings} ref={dmLayerRef} enabled={danmakuEnabled} />
         {interactOn && (
           <div style={{
             position: 'absolute', top: VIDEO_H, left: 0, width: VIDEO_W,

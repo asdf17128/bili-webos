@@ -78,6 +78,10 @@ export const storage = {
       gridCols: 3,
       // Danmaku font scale (#11: the danmaku text was a bit small on 42").
       danmakuScale: 1,
+      // 弹幕屏占比 (#66): 1 / 0.75 / 0.5 / 0.25 of the screen height, from the top.
+      danmakuArea: 1,
+      // 弹幕透明度 (#66): 1 / 0.8 / 0.6 / 0.4.
+      danmakuOpacity: 1,
       // CC subtitles default off (B站 web default); the player button persists it.
       subtitle: false,
       subtitleScale: 1,

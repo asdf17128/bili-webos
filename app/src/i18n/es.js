@@ -177,6 +177,8 @@ export default {
   "英语(机翻)": "Inglés (traducido)",
   "西班牙语(机翻)": "Español (traducido)",
   "弹幕字号": "Tamaño de danmaku",
+  "弹幕屏占比": "Área de danmaku",
+  "弹幕透明度": "Opacidad de danmaku",
   "字幕字号": "Tamaño de CC",
   "内容由AI生成": "Contenido generado por IA",
   "当前设备不支持视频播放(浏览器内核过旧)": "Este dispositivo no puede reproducir vídeo (navegador demasiado antiguo)",

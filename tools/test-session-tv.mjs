@@ -96,7 +96,7 @@ try {
     }
     await key('Enter'); await wait("!!document.querySelector('.config-page')");
     for (let n = 0; n < 14; n++) {
-      if (await evaluate(`document.querySelector('[data-focus-id="content-11-0"]')?.classList.contains('focused')`)) break;
+      if (await evaluate(`document.querySelector('[data-focus-id="content-13-0"]')?.classList.contains('focused')`)) break;
       await key('ArrowDown');
     }
     check('remote reaches the real logout row', await evaluate(`document.querySelector('.settings-row-danger')?.classList.contains('focused')`));

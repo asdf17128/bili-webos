@@ -18,7 +18,7 @@ function lowerBound(items, time) {
 
 // Keep original list indices for translation; pending translations may retry
 // within the display window without ever flashing the original Chinese text.
-export default memo(function DanmakuLayer({ danmakus, currentTime, enabled, paused = false, fontScale = 1, areaScale = 1, mtRef = null }) {
+export default memo(function DanmakuLayer({ danmakus, currentTime, enabled, paused = false, fontScale = 1, areaScale = 1, opacity = 1, mtRef = null }) {
   const containerRef = useRef(null);
   const renderedRef = useRef(new Set());
   const trackHeight = Math.round(48 * fontScale);
@@ -77,5 +77,6 @@ export default memo(function DanmakuLayer({ danmakus, currentTime, enabled, paus
 
   if (!enabled) return null;
   return <div ref={containerRef} className={'danmaku-container' + (paused ? ' danmaku-paused' : '')}
+    style={opacity < 1 ? { opacity } : undefined}
     onAnimationEnd={e => { if (e.target.parentNode === e.currentTarget) e.target.remove(); }} />;
 });

@@ -32,8 +32,8 @@ export default function DiagPanel() {
   }, [exportVisible, reportUrl]);
   const [lastPlayback] = useState(getPlaybackReport);
   const { props: exportProps } = useFocusable({
-    id: 'content-10-1', row: 10, col: 1, group: 'content',
-    onNavigate: direction => direction === 'up' ? 'content-10-0' : direction === 'down' ? 'content-11-0' : null,
+    id: 'content-11-1', row: 11, col: 1, group: 'content',
+    onNavigate: direction => direction === 'up' ? 'content-11-0' : direction === 'down' ? 'content-12-0' : null,
     onSelect: () => { if (reportUrl) setExportVisible(v => !v); },
   });
 

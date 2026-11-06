@@ -13,3 +13,11 @@ export function danmakuTrackCount(trackHeight, area = 1) {
   const full = Math.max(6, Math.floor(1000 / trackHeight));
   return Math.max(2, Math.round(full * normalizeDanmakuArea(area)));
 }
+
+// 弹幕透明度 (issue #66): 1 = opaque (the historical look).
+export const DANMAKU_OPACITIES = [1, 0.8, 0.6, 0.4];
+
+export function normalizeDanmakuOpacity(value) {
+  const n = Number(value);
+  return DANMAKU_OPACITIES.includes(n) ? n : 1;
+}

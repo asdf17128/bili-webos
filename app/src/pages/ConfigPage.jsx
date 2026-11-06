@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { storage } from '../utils/storage';
 import { getPlaybackMode } from '../player/playbackMode';
-import { DANMAKU_AREAS, normalizeDanmakuArea } from '../player/danmakuArea';
+import { DANMAKU_AREAS, DANMAKU_OPACITIES, normalizeDanmakuArea, normalizeDanmakuOpacity } from '../player/danmakuArea';
 import { useFocusable, setCustomKeyHandler, setFocus } from '../hooks/useFocus';
 import { getLatestVersion } from '../api/client';
 import { APP_VERSION, BUILD_VERSION, compareVersions } from '../version';
@@ -25,11 +25,12 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
   const [gridCols, setGridCols] = useState(() => Math.min(4, Math.max(2, settings.gridCols || 3)));
   const [danmakuScale, setDanmakuScale] = useState(() => settings.danmakuScale || 1);
   const [danmakuArea, setDanmakuArea] = useState(() => normalizeDanmakuArea(settings.danmakuArea));
+  const [danmakuOpacity, setDanmakuOpacity] = useState(() => normalizeDanmakuOpacity(settings.danmakuOpacity));
   const [cdnRoute, setCdnRoute] = useState(() => settings.cdnRoute || 'auto');
 
   const [nerdInfo, setNerdInfo] = useState(() => settings.nerdInfo === true);
   const { props: nerdProps } = useFocusable({
-    id: `content-${user ? 13 : 12}-0`, row: user ? 13 : 12, col: 0, group: 'content',
+    id: `content-${user ? 14 : 13}-0`, row: user ? 14 : 13, col: 0, group: 'content',
     onSelect: () => {
       const next = !nerdInfo;
       setNerdInfo(next);
@@ -183,14 +184,22 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
       (v) => { setDanmakuArea(v); storage.setSettings({ ...storage.getSettings(), danmakuArea: v }); }),
   });
 
+  // 弹幕透明度 (#66) — list picker; takes effect on the next video.
+  const DM_OPACITIES = DANMAKU_OPACITIES.map(v => ({ v, label: `${Math.round(v * 100)}%` }));
+  const { props: danmakuOpacityProps } = useFocusable({
+    id: 'content-6-0', row: 6, col: 0, group: 'content',
+    onSelect: () => openPicker(t('弹幕透明度'), DM_OPACITIES, danmakuOpacity,
+      (v) => { setDanmakuOpacity(v); storage.setSettings({ ...storage.getSettings(), danmakuOpacity: v }); }),
+  });
+
   // 字幕字号 — same ladder as danmaku. Takes effect on the next video.
   const [subtitleScale, setSubtitleScale] = useState(() => settings.subtitleScale || 1);
   const SUB_SCALES = [
     { v: 0.85, label: t('小') }, { v: 1, label: t('标准') }, { v: 1.2, label: t('大') }, { v: 1.4, label: t('特大') },
   ];
   const { props: subtitleScaleProps } = useFocusable({
-    // Match the visible order: danmaku size -> danmaku area -> subtitle size -> UI size.
-    id: 'content-6-0', row: 6, col: 0, group: 'content',
+    // Match the visible order: danmaku size -> danmaku area -> danmaku opacity -> subtitle size -> UI size.
+    id: 'content-7-0', row: 7, col: 0, group: 'content',
     onSelect: () => openPicker(t('字幕字号'), SUB_SCALES, subtitleScale,
       (v) => { setSubtitleScale(v); storage.setSettings({ ...storage.getSettings(), subtitleScale: v }); }),
   });
@@ -199,7 +208,7 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
   // 所有 font-size 都是 calc(基准 * var(--ui-scale))。只动字号不动布局。
   const [uiScale, setUiScale] = useState(() => storage.getSettings().uiScale || 1);
   const { props: uiScaleProps } = useFocusable({
-    id: 'content-7-0', row: 7, col: 0, group: 'content',
+    id: 'content-8-0', row: 8, col: 0, group: 'content',
     onSelect: () => openPicker(t('界面字号'), UI_SCALES.map(s => ({ v: s.v, label: t(s.label) })), uiScale, (v) => {
       setUiScale(v);
       storage.setSettings({ ...storage.getSettings(), uiScale: v });
@@ -219,13 +228,13 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
     { v: 'hwo1', label: t('华为云 HWO1') },
   ];
   const { props: cdnProps } = useFocusable({
-    id: 'content-8-0', row: 8, col: 0, group: 'content',
+    id: 'content-9-0', row: 9, col: 0, group: 'content',
     onSelect: () => openPicker(t('CDN 线路'), CDN_OPTS, cdnRoute,
       (v) => { setCdnRoute(v); storage.setSettings({ ...storage.getSettings(), cdnRoute: v }); }),
   });
 
   const { props: checkUpdateProps } = useFocusable({
-    id: 'content-9-0', row: 9, col: 0, group: 'content',
+    id: 'content-10-0', row: 10, col: 0, group: 'content',
     onSelect: () => {
       // Once an update is known, OK opens the Homebrew Channel to install it;
       // otherwise re-run the check manually.
@@ -241,10 +250,10 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
     if (typeof window !== 'undefined' && window.__autoOpenDiag) { window.__autoOpenDiag = false; return true; }
     return false;
   });
-  useEffect(() => { if (showDiag) setFocus('content-10-0'); }, []);
+  useEffect(() => { if (showDiag) setFocus('content-11-0'); }, []);
   const { props: diagProps } = useFocusable({
-    id: 'content-10-0', row: 10, col: 0, group: 'content',
-    onNavigate: direction => showDiag && direction === 'down' ? 'content-10-1' : null,
+    id: 'content-11-0', row: 11, col: 0, group: 'content',
+    onNavigate: direction => showDiag && direction === 'down' ? 'content-11-1' : null,
     onSelect: () => setShowDiag(v => !v),
   });
 
@@ -263,18 +272,18 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
     label: (LANG_LABELS[code] || code) + (code === 'auto' ? ` (${LANG_LABELS[getLocale()] || getLocale()})` : ''),
   }));
   const { props: langProps } = useFocusable({
-    id: 'content-11-0', row: 11, col: 0, group: 'content',
-    onNavigate: direction => showDiag && direction === 'up' ? 'content-10-1' : null,
+    id: 'content-12-0', row: 12, col: 0, group: 'content',
+    onNavigate: direction => showDiag && direction === 'up' ? 'content-11-1' : null,
     onSelect: () => openPicker(LANG_ROW_LABEL, LANG_OPTS, langPref,
       (v) => { if (v !== langPref) setLanguage(v); /* persists + reloads */ }),
   });
 
   const { props: logoutProps } = useFocusable({
-    id: user ? 'content-12-0' : 'settings-logout-hidden', row: 12, col: 0, group: 'content',
+    id: user ? 'content-13-0' : 'settings-logout-hidden', row: 13, col: 0, group: 'content',
     onSelect: () => { if (user && !loggingOut) onLogout(); },
   });
   const { props: repairProps } = useFocusable({
-    id: 'content-14-0', row: 14, col: 0, group: 'content',
+    id: 'content-15-0', row: 15, col: 0, group: 'content',
     onSelect: () => window.dispatchEvent(new CustomEvent('account-repair')),
   });
 
@@ -320,6 +329,11 @@ export default function ConfigPage({ onLogout, user, loggingOut = false }) {
       <div className="settings-row" {...danmakuAreaProps}>
         <span>{t('弹幕屏占比')}</span>
         <span className="settings-row-value">{`${Math.round(danmakuArea * 100)}%`}</span>
+      </div>
+
+      <div className="settings-row" {...danmakuOpacityProps}>
+        <span>{t('弹幕透明度')}</span>
+        <span className="settings-row-value">{`${Math.round(danmakuOpacity * 100)}%`}</span>
       </div>
 
       <div className="settings-row" {...subtitleScaleProps}>

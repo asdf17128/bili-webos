@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { danmakuTrackCount, normalizeDanmakuArea } from './danmakuArea.js';
+import { danmakuTrackCount, normalizeDanmakuArea, normalizeDanmakuOpacity, DANMAKU_OPACITIES } from './danmakuArea.js';
 
 test('full area keeps the historical track count', () => {
   for (const scale of [0.8, 1, 1.3, 1.6]) {
@@ -24,4 +24,9 @@ test('a restricted area never drops below two tracks', () => {
 
 test('unknown stored values fall back to full screen', () => {
   for (const bad of [undefined, null, 0, 0.6, 2, 'x']) assert.equal(normalizeDanmakuArea(bad), 1);
+});
+
+test('opacity accepts only the listed steps, anything else is opaque', () => {
+  for (const ok of DANMAKU_OPACITIES) assert.equal(normalizeDanmakuOpacity(ok), ok);
+  for (const bad of [undefined, null, 0, 0.5, 1.5, 'x']) assert.equal(normalizeDanmakuOpacity(bad), 1);
 });

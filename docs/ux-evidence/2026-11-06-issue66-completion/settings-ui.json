@@ -1,0 +1,22 @@
+[
+  {
+    "name": "issue 66 all danmaku option steps save and survive reload",
+    "pass": true
+  },
+  {
+    "name": "danmaku settings remote navigation saves, cancels and restores focus",
+    "pass": true
+  },
+  {
+    "name": "danmaku panel fits large text (zh)",
+    "pass": true
+  },
+  {
+    "name": "danmaku panel fits large text (en)",
+    "pass": true
+  },
+  {
+    "name": "danmaku panel fits large text (es)",
+    "pass": true
+  }
+]

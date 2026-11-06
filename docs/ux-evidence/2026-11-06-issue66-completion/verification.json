@@ -1,0 +1,27 @@
+{
+  "command": "bash tools/verify.sh --no-tv --ux",
+  "exitCode": 0,
+  "localOnly": true,
+  "tvOperated": false,
+  "published": false,
+  "log": "/tmp/bili-66-full.log",
+  "optionalSkip": "all 35 captured fragments satisfy the closed-GOP reduction proof",
+  "suiteSummary": [
+    "20/20 passed; /tmp/bili-service-stability/results.json",
+    "22/22 passed",
+    "21/21 passed",
+    "75/75 passed; evidence: /tmp/bili-tv-ux",
+    "10/10 passed; /tmp/bili-session-proxy",
+    "62/62 passed; evidence: /tmp/bili-recommendation-menu",
+    "26/26 passed; evidence: /tmp/bili-account-repair-ui",
+    "84/84 passed",
+    "42/42 passed; /tmp/bili-player-controls/results.json",
+    "7/7 passed",
+    "5/5 passed",
+    "26/26 passed",
+    "16/16 live loading tests passed",
+    "7/7 passed"
+  ],
+  "productionBuildPassed": true,
+  "productionES2016Passed": true
+}

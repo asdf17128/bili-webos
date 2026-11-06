@@ -1,0 +1,132 @@
+{
+  "cpuThrottle": 6,
+  "results": [
+    {
+      "measurement": "time field reads at 3500s / 100000 comments",
+      "value": 46
+    },
+    {
+      "name": "late-video lookup has bounded work",
+      "pass": true
+    },
+    {
+      "measurement": "peak animated nodes",
+      "value": 24
+    },
+    {
+      "name": "dense comments have a bounded number of animation layers",
+      "pass": true
+    },
+    {
+      "name": "forward seek clears the old screen and backward seek replays",
+      "pass": true
+    },
+    {
+      "name": "paused animations freeze and resume; hidden layer resets",
+      "pass": true
+    },
+    {
+      "name": "translation retries preserve original indices and do not flash Chinese",
+      "pass": true
+    },
+    {
+      "name": "font scales, animation cleanup and repeat render do not duplicate",
+      "pass": true
+    },
+    {
+      "name": "fixed, reverse and colored types respect filters and area bounds",
+      "pass": true
+    },
+    {
+      "name": "density caps and speed are applied; invalid options fall back safely",
+      "pass": true
+    },
+    {
+      "name": "lane spacing uses animation time rather than accelerated media time",
+      "pass": true
+    },
+    {
+      "name": "live overlay shares appearance and clears lanes on toggle",
+      "pass": true
+    },
+    {
+      "name": "segment boundary updates preserve active nodes and stable IDs",
+      "pass": true
+    },
+    {
+      "name": "density adjusts safe lane geometry and measurement cache stays bounded",
+      "pass": true
+    },
+    {
+      "name": "busy lanes retry briefly without duplicating or replaying expired comments",
+      "pass": true
+    },
+    {
+      "appearanceSteps": [
+        {
+          "key": "danmakuScale",
+          "values": [
+            0.8,
+            1,
+            1.3,
+            1.6
+          ],
+          "actual": [
+            "22px",
+            "28px",
+            "36px",
+            "45px"
+          ]
+        },
+        {
+          "key": "danmakuOpacity",
+          "values": [
+            0.25,
+            0.5,
+            0.75,
+            1
+          ],
+          "actual": [
+            "0.25",
+            "0.5",
+            "0.75",
+            "1"
+          ]
+        },
+        {
+          "key": "danmakuWeight",
+          "values": [
+            400,
+            600,
+            700
+          ],
+          "actual": [
+            "400",
+            "600",
+            "700"
+          ]
+        }
+      ],
+      "shadows": [
+        "none",
+        "rgb(0, 0, 0) 1px 1px 1px, rgb(0, 0, 0) -1px -1px 1px, rgb(0, 0, 0) 1px -1px 1px, rgb(0, 0, 0) -1px 1px 1px",
+        "rgb(0, 0, 0) 2px 2px 1px, rgb(0, 0, 0) -2px -2px 1px, rgb(0, 0, 0) 2px -2px 1px, rgb(0, 0, 0) -2px 2px 1px"
+      ],
+      "bottoms": [
+        185,
+        461,
+        668,
+        944
+      ],
+      "durations": [
+        11.1333,
+        8.35,
+        5.56667
+      ]
+    },
+    {
+      "name": "all appearance steps produce distinct rendered styles and area bounds",
+      "pass": true
+    }
+  ]
+}

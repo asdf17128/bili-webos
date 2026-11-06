@@ -680,6 +680,27 @@ await test('settings font rows follow visual order in both directions', async ({
     assert.equal(await label(), order[i], 'Up reverses the same setting order');
   }
 });
+await test('issue 66 all danmaku option steps save and survive reload', async ({page})=>{
+ const open=async()=>{await ready(page);await page.waitForTimeout(400);await page.locator('.sidebar-item').filter({hasText:'设置'}).click();await page.locator('.settings-row').filter({hasText:'弹幕设置'}).click();await page.locator('.dm-settings').waitFor();};
+ await open();
+ const fields=[['弹幕字号','danmakuScale',[.8,1,1.3,1.6]],['弹幕不透明度','danmakuOpacity',[.25,.5,.75,1]],['弹幕粗细','danmakuWeight',[400,600,700]],['弹幕描边','danmakuOutline',[0,1,2]],['弹幕显示区域','danmakuArea',[.25,.5,.75,1]],['弹幕密度','danmakuDensity',[12,24,48]],['弹幕速度','danmakuSpeed',[.75,1,1.5]]];
+ const expected={};
+ for(const [label,key,values] of fields){
+  for(let i=0;i<values.length;i++){
+   await page.locator('.dm-setting-row').filter({hasText:label}).click();await page.locator('.dm-choice button').nth(i).click();
+   assert.equal(await page.evaluate(key=>JSON.parse(localStorage.bili_settings)[key],key),values[i]);
+  }
+  expected[key]=values.at(-1);
+ }
+ for(const [label,key] of [['滚动弹幕','danmakuScroll'],['顶部固定弹幕','danmakuTop'],['底部固定弹幕','danmakuBottom'],['彩色弹幕','danmakuColor']]){
+  for(const value of [false,true]){await page.locator('.dm-setting-row').filter({hasText:label}).click();assert.equal(await page.evaluate(key=>JSON.parse(localStorage.bili_settings)[key],key),value);}
+  expected[key]=true;
+ }
+ await page.reload();await open();
+ const saved=await page.evaluate(()=>JSON.parse(localStorage.bili_settings));for(const [key,value] of Object.entries(expected))assert.equal(saved[key],value);
+ for(const [label,,values] of fields){await page.locator('.dm-setting-row').filter({hasText:label}).click();assert.match(await page.locator('.dm-choice button').nth(values.length-1).innerText(),/✓/);await page.keyboard.press('Escape');}
+ await page.screenshot({path:output+'/issue66-all-options.png'});
+});
 await test('danmaku settings remote navigation saves, cancels and restores focus', async ({ page }) => {
   await ready(page); await page.waitForTimeout(400);
   await page.locator('.sidebar-item').filter({hasText:'设置'}).click();

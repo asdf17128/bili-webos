@@ -1,5 +1,6 @@
 // Spanish dictionary. Keys are the Chinese source strings (see index.js).
 export default {
+  "直播当前支持白色滚动弹幕；这里的外观设置与点播共用。": "El directo admite comentarios blancos en movimiento. Los ajustes de aspecto se comparten con los vídeos grabados.",
   "弹幕设置": "Ajustes de danmaku",
   "弹幕不透明度": "Opacidad",
   "弹幕粗细": "Grosor de letra",

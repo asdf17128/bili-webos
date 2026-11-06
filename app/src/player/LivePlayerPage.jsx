@@ -1,4 +1,5 @@
 import NerdInfo from './NerdInfo';
+import DanmakuSettings from '../components/DanmakuSettings';
 import Icon from '../components/Icon';
 import React, { useState, useEffect, useRef } from 'react';
 import { getLivePlayback, getRoomInit, getDanmuInfo, getBuvid3, getLiveHistory, danmakuSubscribe, danmakuStop, castReportState, castReportProgress, mediaProxyBase } from '../api/client';
@@ -21,7 +22,8 @@ export default function LivePlayerPage({ room, onBack }) {
   const [loadError, setLoadError] = useState(false);
   const reconnectRef = useRef(null);
   const [showInfo, setShowInfo] = useState(true);
-  const [danmakuSettings] = useState(() => storage.getSettings());
+  const [danmakuSettings, setDanmakuSettings] = useState(() => storage.getSettings());
+  const [showDanmakuSettings, setShowDanmakuSettings] = useState(false);
   const [danmakuEnabled, setDanmakuEnabled] = useState(storage.getSettings().danmaku !== false);
   const infoTimer = useRef(null);
   const dmLayerRef = useRef(null);
@@ -32,8 +34,8 @@ export default function LivePlayerPage({ room, onBack }) {
   const qnRef = useRef(curQn);
   const qnLadderRef = useRef([]);   // 解码失败时按这个顺序往下退
   const [showQuality, setShowQuality] = useState(false);
-  // Control bar: 弹幕 · 画质 · 互动 (owner: 直播没有控制台)
-  const CONTROLS = ['danmaku', 'quality', 'interact'];
+  // Keep the existing control order, with shared appearance settings last.
+  const CONTROLS = ['danmaku', 'quality', 'interact', 'danmakuSettings'];
   // 聊天/互动 panel, YouTube-TV style: opt-in, and when open the video is
   // SHRUNK to the left rather than covered — floating cards over the picture
   // are exactly what gets in the way of watching (owner: 影响观看体验的部分
@@ -445,6 +447,7 @@ export default function LivePlayerPage({ room, onBack }) {
   };
 
   useEffect(() => {
+    if (showDanmakuSettings) return;
     const handler = (e) => {
       const bumpInfo = () => {
         setShowInfo(true);
@@ -495,6 +498,7 @@ export default function LivePlayerPage({ room, onBack }) {
           e.preventDefault();
           const btn = CONTROLS[ctrlIdx];
           if (btn === 'danmaku') toggleDanmaku();
+          else if (btn === 'danmakuSettings') setShowDanmakuSettings(true);
           else if (btn === 'interact') toggleInteract();
           else if (btn === 'quality' && qualities.length) setShowQuality(true);
           return true;
@@ -515,7 +519,7 @@ export default function LivePlayerPage({ room, onBack }) {
     };
     setCustomKeyHandler(handler);
     return () => setCustomKeyHandler(null);
-  }, [onBack, showControls, showQuality, ctrlIdx, qualities, curQn, interactOn, danmakuEnabled, loadError]);
+  }, [onBack, showDanmakuSettings, showControls, showQuality, ctrlIdx, qualities, curQn, interactOn, danmakuEnabled, loadError]);
 
   // Magic Remote pointer: moving shows the info bar, clicking toggles danmaku
   // (mirrors up/down and OK on the D-pad).
@@ -531,7 +535,7 @@ export default function LivePlayerPage({ room, onBack }) {
       onClick={(e) => {
         // Clicks on the control bar / quality popup drive their own handlers —
         // only a click on the video area toggles danmaku.
-        if (e.target.closest && e.target.closest('.player-controls, .ctrl-popup')) return;
+        if (showDanmakuSettings || (e.target.closest && e.target.closest('.player-controls, .ctrl-popup, .dm-settings-backdrop'))) return;
         toggleDanmaku();
         showInfoBriefly();
       }}>
@@ -645,12 +649,14 @@ export default function LivePlayerPage({ room, onBack }) {
                 onClick={() => {
                   setCtrlIdx(i);
                   if (btn === 'danmaku') toggleDanmaku();
+                  else if (btn === 'danmakuSettings') setShowDanmakuSettings(true);
                   else if (btn === 'interact') toggleInteract();
                   else if (btn === 'quality' && qualities.length) setShowQuality(true);
                 }}>
-                <Icon name={btn === 'interact' ? 'comments' : btn} size={26} />
+                <Icon name={btn === 'interact' ? 'comments' : btn === 'danmakuSettings' ? 'settings' : btn} size={26} />
                 <span className="player-control-label">{btn === 'danmaku' ? (danmakuEnabled ? t('弹幕 开') : t('弹幕 关'))
                   : btn === 'interact' ? (interactOn ? t('聊天 开') : t('聊天 关'))
+                    : btn === 'danmakuSettings' ? t('弹幕设置')
                     : ((qualities.find(q => q.qn === curQn) || {}).label || t('画质'))}</span>
               </button>
             ))}
@@ -662,6 +668,10 @@ export default function LivePlayerPage({ room, onBack }) {
           </div>
         </div>
       )}
+
+      {showDanmakuSettings && <DanmakuSettings live onChange={setDanmakuSettings} onClose={() => {
+        setShowDanmakuSettings(false); setShowControls(true); setCtrlIdx(CONTROLS.indexOf('danmakuSettings'));
+      }} />}
 
       {/* 画质选择 — anchored above the control bar, rendered at page root */}
       {showQuality && (

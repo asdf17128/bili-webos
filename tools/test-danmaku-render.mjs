@@ -148,5 +148,40 @@ await test('busy lanes retry briefly without duplicating or replaying expired co
  await page.evaluate(()=>window.__draw({currentTime:1.2}));
  assert.equal(await page.locator('.danmaku-item').count(),texts.length);
 });
+await test('all appearance steps produce distinct rendered styles and area bounds',async()=>{
+ await page.evaluate(()=>document.querySelector('#live-fixture')?.remove());
+ const samples=[];
+ for(const [key,values,property,expected] of [
+  ['danmakuScale',[.8,1,1.3,1.6],'fontSize',['22px','28px','36px','45px']],
+  ['danmakuOpacity',[.25,.5,.75,1],'opacity',['0.25','0.5','0.75','1']],
+  ['danmakuWeight',[400,600,700],'fontWeight',['400','600','700']],
+ ]){
+  const actual=[];
+  for(const value of values){
+   await page.evaluate(({key,value})=>window.__draw({fontScale:key==='danmakuScale'?value:1,settings:{[key]:value},danmakus:[{time:1,text:'step',mode:5}],currentTime:1}),{key,value});
+   actual.push(await page.locator('.danmaku-item').first().evaluate((e,p)=>getComputedStyle(e)[p],property));
+  }
+  assert.deepEqual(actual,expected);samples.push({key,values,actual});
+ }
+ const shadows=[];
+ for(const outline of [0,1,2]){
+  await page.evaluate(outline=>window.__draw({settings:{danmakuOutline:outline}}),outline);
+  shadows.push(await page.locator('.danmaku-item').first().evaluate(e=>getComputedStyle(e).textShadow));
+ }
+ assert.equal(shadows[0],'none');assert.notEqual(shadows[1],shadows[2]);
+ const bottoms=[];
+ for(const area of [.25,.5,.75,1]){
+  await page.evaluate(area=>window.__draw({settings:{danmakuArea:area},danmakus:[{time:1,text:'bottom',mode:4}]}),area);
+  const bottom=await page.locator('.danmaku-item').first().evaluate(e=>e.offsetTop+e.offsetHeight);assert.ok(bottom<=1020*area);bottoms.push(bottom);
+ }
+ assert.ok(bottoms.every((v,i)=>!i||v>bottoms[i-1]));
+ const durations=[];
+ for(const speed of [.75,1,1.5]){
+  await page.evaluate(speed=>window.__draw({settings:{danmakuSpeed:speed},danmakus:[{time:1,text:'same',mode:1}]}),speed);
+  durations.push(await page.locator('.danmaku-item').first().evaluate(e=>parseFloat(getComputedStyle(e).animationDuration)));
+ }
+ assert.ok(Math.abs(durations[0]*.75-durations[1])<.01&&Math.abs(durations[2]*1.5-durations[1])<.01);
+ results.push({appearanceSteps:samples,shadows,bottoms,durations});
+});
 await writeFile(output+'/results.json',JSON.stringify({cpuThrottle:6,results},null,2));
 await browser.close();if(results.some(x=>x.pass===false))process.exitCode=1;

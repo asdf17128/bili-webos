@@ -26,8 +26,19 @@ async function test(name,fn,mode='normal') {
  let infoCalls=0;
  await page.route('**/*',async route=>{
   const u=new URL(route.request().url());
-  if(u.origin===new URL(base).origin)return route.continue();
+  if(u.origin===new URL(base).origin){
+   if(mode==='danmaku' && u.pathname==='/src/api/client.js'){
+    const response=await route.fetch(),source=await response.text();
+    const marker='export function danmakuSubscribe(params, onDanmaku, onEvent) {';
+    assert.ok(source.includes(marker));
+    const info='export async function getDanmuInfo(realRoomId) {';
+    assert.ok(source.includes(info));
+    return route.fulfill({response,body:source.replace(marker,marker+' window.__testLiveSubCount=(window.__testLiveSubCount||0)+1; window.__testLivePush=onDanmaku; return () => { delete window.__testLivePush; };').replace(info,info+' return {data:{token:"local-test-only",host_list:[]}};')});
+   }
+   return route.continue();
+  }
   if(u.port==='9528')return route.abort();
+  if(mode==='danmaku' && u.pathname.endsWith('/getDanmuInfo'))return route.fulfill({json:{code:0,data:{token:'local-test-only',host_list:[]}}});
   if(u.pathname.endsWith('/getRoomPlayInfo')) {
    infoCalls++;
    if(mode==='slow')await new Promise(r=>setTimeout(r,800));
@@ -47,6 +58,40 @@ async function test(name,fn,mode='normal') {
 }
 const open=page=>page.evaluate(()=>window.__openLive({roomid:1,title:'直播加载验证'}));
 const loaded=page=>page.waitForFunction(()=>window.__sources.length>0);
+await test('live danmaku settings apply immediately without reconnect and restore remote focus',async(page,calls)=>{
+ await page.evaluate(()=>localStorage.setItem('bili_settings',JSON.stringify({...JSON.parse(localStorage.bili_settings),danmakuTop:false,danmakuBottom:false,danmakuColor:false,danmakuMask:true})));
+ await open(page);await loaded(page);await page.waitForFunction(()=>!!window.__testLivePush);
+ await page.evaluate(()=>document.querySelector('video').dispatchEvent(new Event('playing')));
+ await page.keyboard.press('Enter'); // enable live overlay
+ await page.evaluate(()=>window.__testLivePush('before'));
+ const actual=page.locator('.player-page > div > .danmaku-container .danmaku-item').filter({hasText:'before'});
+ await actual.waitFor();assert.equal(await actual.evaluate(e=>getComputedStyle(e).fontSize),'28px');
+ await page.keyboard.press('ArrowDown');for(let i=0;i<3;i++)await page.keyboard.press('ArrowRight');await page.keyboard.press('Enter');
+ await page.getByRole('dialog',{name:'弹幕设置'}).waitFor();
+ assert.equal(await page.locator('.dm-setting-row').count(),8);
+ assert.equal(await page.getByRole('status').count(),0,'no unsupported mask loading status in live');
+ await page.keyboard.press('Enter');await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.bili_settings).danmakuScale),1.3);
+ await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');await page.keyboard.press('ArrowUp');await page.keyboard.press('Escape');
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.bili_settings).danmakuOpacity),1,'cancel does not save');
+ const saved=await page.evaluate(()=>JSON.parse(localStorage.bili_settings));
+ for(const key of ['danmakuTop','danmakuBottom','danmakuColor'])assert.equal(saved[key],false,'live preserves hidden VOD preference');assert.equal(saved.danmakuMask,true);
+ await page.waitForTimeout(1500);
+ await page.screenshot({path:`${output}/live-danmaku-settings.png`});
+ await page.keyboard.press('Escape');await page.locator('.dm-settings').waitFor({state:'detached'});
+ assert.equal(await page.locator('.player-control.focused').innerText(),'弹幕设置');
+ await page.evaluate(()=>window.__testLivePush('after'));
+ assert.equal(await page.locator('.danmaku-item').filter({hasText:'after'}).evaluate(e=>getComputedStyle(e).fontSize),'36px');
+ assert.equal(calls(),1);assert.equal(await page.evaluate(()=>window.__sources.length),1);
+ assert.equal(await page.evaluate(()=>window.__testLiveSubCount),1,'settings do not restart the chat subscription');
+ await page.keyboard.press('Enter');await page.getByRole('dialog',{name:'弹幕设置'}).waitFor();
+ assert.match(await page.locator('.dm-setting-row').first().innerText(),/大/);
+ // Closing by pointer must not bubble into the video's toggle handler.
+ await page.getByRole('dialog').getByRole('button',{name:'返回',exact:true}).click();
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.bili_settings).danmaku),true);
+ await page.keyboard.press('Escape');await page.keyboard.press('Escape');await page.locator('video').waitFor({state:'detached'});
+ assert.equal(await page.evaluate(()=>!!window.__testLivePush),false);
+},'danmaku');
 await test('one request selects fast HLS without lowering saved quality',async(page,calls)=>{
  await open(page);await loaded(page);await page.waitForTimeout(200);
  assert.equal(calls(),1,'stream and quality ladder must share one response');

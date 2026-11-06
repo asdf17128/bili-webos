@@ -10,11 +10,12 @@ export function useDanmakuMask(containerRef, videoRef, source, enabled, onStatus
     const supports = typeof CSS !== 'undefined' && (CSS.supports('mask-image', 'linear-gradient(white, white)') || CSS.supports('-webkit-mask-image', 'linear-gradient(white, white)'));
     let disposed = false, busy = false, index = null, failed = false, lastKey = '', target = -1;
     const cache = new Map();
-    const stats = { requests: 0, failures: 0, applied: 0, cached: 0, decodedFrames: 0 };
+    const stats = { requests: 0, failures: 0, applied: 0, cached: 0, decodedFrames: 0, frameTime: null, timelineTime: null };
+    let videoFrameId = null, animationId = null, frameGeneration = 0, lastVideoFrameAt = -Infinity;
     const status = value => { if (!disposed) onStatus?.(value); };
     const clear = () => {
       if (element) { element.style.webkitMaskImage = 'none'; element.style.maskImage = 'none'; }
-      lastKey = '';
+      lastKey = ''; stats.frameTime = null; stats.timelineTime = null;
     };
     clear();
     if (!enabled) { status('off'); return; }
@@ -52,10 +53,9 @@ export function useDanmakuMask(containerRef, videoRef, source, enabled, onStatus
       } catch (_) { if (!disposed) { failed = true; stats.failures++; clear(); cache.clear(); status('failed'); } }
       finally { busy = false; }
     }
-    function tick() {
+    function tick(time = video.currentTime * 1000) {
       if (disposed || failed) return;
       if (document.hidden || video.seeking) { clear(); return; }
-      const time = video.currentTime * 1000;
       let n = -1;
       if (index) for (let i = 0; i < index.length && index[i].time <= time; i++) n = i;
       const frame = maskFrame(cache.get(n) || [], time);
@@ -67,7 +67,8 @@ export function useDanmakuMask(containerRef, videoRef, source, enabled, onStatus
         const w = video.videoWidth * fitted * scale, h = video.videoHeight * fitted * scale;
         const x = (vr.left - er.left + (vr.width - w / scale) / 2) * scale;
         const y = (vr.top - er.top + (vr.height - h / scale) / 2) * scale;
-        const key = n + ':' + frame.time + ':' + [width,height,x,y,w,h].join(',');
+        const key = frame.uri + ':' + [width,height,x,y,w,h].join(',');
+        stats.frameTime = frame.time; stats.timelineTime = time;
         if (key !== lastKey) {
           try {
             if (![width,height,x,y,w,h].every(Number.isFinite) || w <= 0 || h <= 0) throw Error('Mask layout');
@@ -86,13 +87,56 @@ export function useDanmakuMask(containerRef, videoRef, source, enabled, onStatus
           } catch (_) { failed = true; stats.failures++; clear(); cache.clear(); status('failed'); }
         }
       }
-      load();
     }
-    const seek = () => { clear(); status('loading'); };
+    // Follow the frame being presented, not a coarse wall-clock poll. Older
+    // webOS engines use rAF; the poll still loads data and handles paused or
+    // native video pipelines which expose rVFC but do not deliver callbacks.
+    const hasVideoFrames = typeof video.requestVideoFrameCallback === 'function' && typeof video.cancelVideoFrameCallback === 'function';
+    function scheduleVideoFrame() {
+      if (disposed || failed || video.seeking) return;
+      const generation = frameGeneration;
+      videoFrameId = video.requestVideoFrameCallback((_, metadata) => {
+        if (disposed || generation !== frameGeneration) return;
+        videoFrameId = null;
+        if (Number.isFinite(metadata.mediaTime)) { lastVideoFrameAt = performance.now(); tick(metadata.mediaTime * 1000); }
+        scheduleVideoFrame();
+      });
+    }
+    function animate() {
+      if (disposed || failed) return;
+      if (!video.paused) tick();
+      animationId = requestAnimationFrame(animate);
+    }
+    const seek = () => {
+      clear(); status('loading'); lastVideoFrameAt = -Infinity;
+      if (hasVideoFrames) {
+        frameGeneration++;
+        if (videoFrameId !== null) video.cancelVideoFrameCallback(videoFrameId);
+        videoFrameId = null;
+      }
+    };
+    const seeked = () => {
+      if (hasVideoFrames) {
+        frameGeneration++;
+        if (videoFrameId !== null) video.cancelVideoFrameCallback(videoFrameId);
+        videoFrameId = null; scheduleVideoFrame();
+      }
+      tick();
+    };
+    video.addEventListener('seeked', seeked);
     video.addEventListener('seeking', seek);
-    const timer = setInterval(tick, 100); tick();
+    const poll = () => {
+      load();
+      if (document.hidden || video.paused || (hasVideoFrames && performance.now() - lastVideoFrameAt > 150)) tick();
+    };
+    if (hasVideoFrames) scheduleVideoFrame();
+    else animationId = requestAnimationFrame(animate);
+    const timer = setInterval(poll, 100); tick(); load();
     return () => {
-      disposed = true; clearInterval(timer); video.removeEventListener('seeking', seek); clear(); cache.clear();
+      disposed = true; frameGeneration++; clearInterval(timer);
+      if (videoFrameId !== null) video.cancelVideoFrameCallback(videoFrameId);
+      if (animationId !== null) cancelAnimationFrame(animationId);
+      video.removeEventListener('seeking', seek); video.removeEventListener('seeked', seeked); clear(); cache.clear();
       if (window.__danmakuMaskStats === diagnostics) delete window.__danmakuMaskStats;
     };
   }, [containerRef, videoRef, source, enabled, onStatus]);

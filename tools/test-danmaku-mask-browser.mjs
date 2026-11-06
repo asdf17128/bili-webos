@@ -136,6 +136,42 @@ if(process.env.MASK_SOAK_SECONDS)await test('local lifecycle and seek soak retai
  results.push({measurement});console.log('SOAK',JSON.stringify(measurement));
  assert.ok(measurement.heapDelta<8*1024*1024);assert.ok(measurement.nodeDelta<100);assert.ok(measurement.listenerDelta<=5);
 });
+await test('presented video frame time wins over playback clock and stale seek callbacks are ignored',async()=>{
+ await page.evaluate(()=>{
+  window.__maskTime=1;window.__frameCallbacks=new Map();window.__frameSerial=0;
+  Object.defineProperty(window.__maskVideo,'paused',{configurable:true,get:()=>false});
+  window.__maskVideo.requestVideoFrameCallback=cb=>{const id=++window.__frameSerial;window.__frameCallbacks.set(id,cb);return id;};
+  window.__maskVideo.cancelVideoFrameCallback=id=>window.__frameCallbacks.delete(id);
+  window.__drawMask({maskSource:{mask_url:'https://a.bilivideo.com/cmaskboss/frameclock.webmask'},settings:{danmakuMask:true}});
+ });await active();await page.waitForFunction(()=>window.__danmakuMaskStats().cached===2);
+ const state=await page.evaluate(()=>{
+  const fire=time=>{const [id,cb]=window.__frameCallbacks.entries().next().value;window.__frameCallbacks.delete(id);cb(performance.now(),{mediaTime:time});};
+  fire(15);const presented=window.__danmakuMaskStats();
+  const stale=window.__frameCallbacks.values().next().value;
+  window.__maskVideo.dispatchEvent(new Event('seeking'));
+  const cleared=window.__danmakuMaskStats().frameTime===null;
+  window.__maskVideo.dispatchEvent(new Event('seeked'));stale(performance.now(),{mediaTime:15});
+  const staleIgnored=cleared&&window.__danmakuMaskStats().frameTime===1000;
+  fire(1);const applied=window.__danmakuMaskStats().applied;fire(1.1);const duplicateAvoided=window.__danmakuMaskStats().applied===applied;
+  window.__staleFrameAfterOff=window.__frameCallbacks.values().next().value;
+  return {presented,staleIgnored,duplicateAvoided,resumed:window.__danmakuMaskStats(),callbacks:window.__frameCallbacks.size};
+ });assert.equal(state.presented.frameTime,15000);assert.equal(state.presented.timelineTime,15000);assert.ok(state.staleIgnored);assert.equal(state.resumed.frameTime,1100);assert.ok(state.duplicateAvoided);assert.equal(state.callbacks,1);
+ await page.evaluate(()=>window.__maskTime=15);await page.waitForFunction(()=>window.__danmakuMaskStats().frameTime===15000);
+ await page.evaluate(()=>window.__drawMask({settings:{danmakuMask:false}}));await page.waitForFunction(()=>!window.__danmakuMaskStats);
+ assert.equal(await page.evaluate(()=>{window.__staleFrameAfterOff(performance.now(),{mediaTime:1});return window.__frameCallbacks.size;}),0);
+ assert.ok(await page.evaluate(()=>!window.__danmakuMaskStats));
+ await page.evaluate(()=>{delete window.__maskVideo.paused;delete window.__maskVideo.requestVideoFrameCallback;delete window.__maskVideo.cancelVideoFrameCallback;});
+});
+await test('older browsers follow playback via animation frames without video-frame callbacks',async()=>{
+ await page.evaluate(()=>{
+  window.__maskTime=1;Object.defineProperty(window.__maskVideo,'paused',{configurable:true,get:()=>false});
+  window.__maskVideo.requestVideoFrameCallback=undefined;window.__maskVideo.cancelVideoFrameCallback=undefined;
+  window.__drawMask({maskSource:{mask_url:'https://a.bilivideo.com/cmaskboss/raf.webmask'},settings:{danmakuMask:true}});
+ });await active();await page.waitForFunction(()=>window.__danmakuMaskStats().cached===2);
+ await page.evaluate(()=>window.__maskTime=15);await page.waitForFunction(()=>window.__danmakuMaskStats().frameTime===15000);
+ await page.evaluate(()=>window.__drawMask({settings:{danmakuMask:false}}));await page.waitForFunction(()=>!window.__danmakuMaskStats);
+ await page.evaluate(()=>{delete window.__maskVideo.paused;delete window.__maskVideo.requestVideoFrameCallback;delete window.__maskVideo.cancelVideoFrameCallback;});
+});
 await test('SVG allowlist rejects executable and external content',async()=>{
  const values=await page.evaluate(async()=>{const {safeMaskImage}=await import('/src/player/danmakuMask.js');return ['<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>','<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"/>','<svg xmlns="http://www.w3.org/2000/svg"><image href="https://evil.test/x"/></svg>','<!DOCTYPE svg [<!ENTITY a "bad">]><svg/>'].map(s=>{try{safeMaskImage('data:image/svg+xml;base64,'+btoa(s));return false}catch{return true}});});assert.ok(values.every(Boolean));
 });

@@ -1,0 +1,452 @@
+{
+  "samples": [
+    {
+      "time": 1,
+      "width": 640,
+      "height": 360,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 2,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 962,
+        "timelineTime": 1000,
+        "state": "active"
+      }
+    },
+    {
+      "time": 3,
+      "width": 640,
+      "height": 360,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 3,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 2962,
+        "timelineTime": 3000,
+        "state": "active"
+      }
+    },
+    {
+      "time": 6,
+      "width": 640,
+      "height": 360,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 4,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 5962,
+        "timelineTime": 6000,
+        "state": "active"
+      }
+    }
+  ],
+  "loopSamples": [
+    {
+      "time": 7.003508,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 24,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 6962,
+        "timelineTime": 7000,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-001.png",
+      "timeAfterScreenshot": 7.190565
+    },
+    {
+      "time": 0.233043,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 43,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 162,
+        "timelineTime": 200,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-002.png",
+      "timeAfterScreenshot": 0.419216
+    },
+    {
+      "time": 1.422426,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 66,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 1362,
+        "timelineTime": 1400,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-003.png",
+      "timeAfterScreenshot": 1.557732
+    },
+    {
+      "time": 2.561332,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 66,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 2522,
+        "timelineTime": 2560,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-004.png",
+      "timeAfterScreenshot": 2.672801
+    },
+    {
+      "time": 3.673643,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 90,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 3602,
+        "timelineTime": 3640,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-005.png",
+      "timeAfterScreenshot": 3.877068
+    },
+    {
+      "time": 4.880551,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 120,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 4802,
+        "timelineTime": 4840,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-006.png",
+      "timeAfterScreenshot": 5.065368
+    },
+    {
+      "time": 6.068448,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 150,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 6002,
+        "timelineTime": 6040,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-007.png",
+      "timeAfterScreenshot": 6.267274
+    },
+    {
+      "time": 7.268659,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 180,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 7202,
+        "timelineTime": 7240,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-008.png",
+      "timeAfterScreenshot": 7.465174
+    },
+    {
+      "time": 0.503851,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 197,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 442,
+        "timelineTime": 480,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-009.png",
+      "timeAfterScreenshot": 0.685853
+    },
+    {
+      "time": 1.686965,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 216,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 1642,
+        "timelineTime": 1680,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-010.png",
+      "timeAfterScreenshot": 1.814243
+    },
+    {
+      "time": 2.815763,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 219,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 2762,
+        "timelineTime": 2800,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-011.png",
+      "timeAfterScreenshot": 3.000006
+    },
+    {
+      "time": 4.003293,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 248,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 3922,
+        "timelineTime": 3960,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-012.png",
+      "timeAfterScreenshot": 4.204264
+    },
+    {
+      "time": 5.208732,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 279,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 5162,
+        "timelineTime": 5200,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-013.png",
+      "timeAfterScreenshot": 5.399213
+    },
+    {
+      "time": 6.401199,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 308,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 6322,
+        "timelineTime": 6360,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-014.png",
+      "timeAfterScreenshot": 6.592168
+    },
+    {
+      "time": 7.595679,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 339,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 7562,
+        "timelineTime": 7600,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-015.png",
+      "timeAfterScreenshot": 7.773718
+    },
+    {
+      "time": 0.814193,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 355,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 762,
+        "timelineTime": 800,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-016.png",
+      "timeAfterScreenshot": 0.995485
+    },
+    {
+      "time": 1.999652,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 366,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 1962,
+        "timelineTime": 2000,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-017.png",
+      "timeAfterScreenshot": 2.132528
+    },
+    {
+      "time": 3.133996,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 377,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 3082,
+        "timelineTime": 3120,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-018.png",
+      "timeAfterScreenshot": 3.319939
+    },
+    {
+      "time": 4.32286,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 407,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 4282,
+        "timelineTime": 4320,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-019.png",
+      "timeAfterScreenshot": 4.517706
+    },
+    {
+      "time": 5.518436,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 436,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 5442,
+        "timelineTime": 5480,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-020.png",
+      "timeAfterScreenshot": 5.70234
+    },
+    {
+      "time": 6.704865,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 466,
+        "cached": 2,
+        "decodedFrames": 499,
+        "frameTime": 6642,
+        "timelineTime": 6680,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-021.png",
+      "timeAfterScreenshot": 6.884291
+    }
+  ],
+  "cpuRate": 6,
+  "errors": []
+}

@@ -1,0 +1,404 @@
+{
+  "samples": [
+    {
+      "time": 1,
+      "width": 640,
+      "height": 360,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 2,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      }
+    },
+    {
+      "time": 3,
+      "width": 640,
+      "height": 360,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 3,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      }
+    },
+    {
+      "time": 6,
+      "width": 640,
+      "height": 360,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 4,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      }
+    }
+  ],
+  "loopSamples": [
+    {
+      "time": 7.000801,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 14,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-001.png",
+      "timeAfterScreenshot": 7.189511
+    },
+    {
+      "time": 0.225309,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 26,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-002.png",
+      "timeAfterScreenshot": 0.409491
+    },
+    {
+      "time": 1.410928,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 38,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-003.png",
+      "timeAfterScreenshot": 1.532117
+    },
+    {
+      "time": 2.533673,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 49,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-004.png",
+      "timeAfterScreenshot": 2.643383
+    },
+    {
+      "time": 3.644008,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 60,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-005.png",
+      "timeAfterScreenshot": 3.847285
+    },
+    {
+      "time": 4.848542,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 72,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-006.png",
+      "timeAfterScreenshot": 5.040017
+    },
+    {
+      "time": 6.04305,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 84,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-007.png",
+      "timeAfterScreenshot": 6.222319
+    },
+    {
+      "time": 7.22447,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 96,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-008.png",
+      "timeAfterScreenshot": 7.409304
+    },
+    {
+      "time": 0.448005,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 108,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-009.png",
+      "timeAfterScreenshot": 0.653539
+    },
+    {
+      "time": 1.65509,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 120,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-010.png",
+      "timeAfterScreenshot": 1.78255
+    },
+    {
+      "time": 2.783053,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 131,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-011.png",
+      "timeAfterScreenshot": 2.965463
+    },
+    {
+      "time": 3.966902,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 143,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-012.png",
+      "timeAfterScreenshot": 4.157453
+    },
+    {
+      "time": 5.158837,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 155,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-013.png",
+      "timeAfterScreenshot": 5.356414
+    },
+    {
+      "time": 6.358556,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 167,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-014.png",
+      "timeAfterScreenshot": 6.539434
+    },
+    {
+      "time": 7.540563,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 179,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-015.png",
+      "timeAfterScreenshot": 7.742738
+    },
+    {
+      "time": 0.783163,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 191,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-016.png",
+      "timeAfterScreenshot": 0.969883
+    },
+    {
+      "time": 1.972489,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 202,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-017.png",
+      "timeAfterScreenshot": 2.095198
+    },
+    {
+      "time": 3.095635,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 214,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-018.png",
+      "timeAfterScreenshot": 3.292082
+    },
+    {
+      "time": 4.294127,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 226,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-019.png",
+      "timeAfterScreenshot": 4.470512
+    },
+    {
+      "time": 5.472536,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 237,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-020.png",
+      "timeAfterScreenshot": 5.671476
+    },
+    {
+      "time": 6.672531,
+      "paused": false,
+      "error": 0,
+      "ready": 4,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 249,
+        "cached": 2,
+        "decodedFrames": 499,
+        "state": "active"
+      },
+      "quality": 0,
+      "screenshot": "playing-021.png",
+      "timeAfterScreenshot": 6.873156
+    }
+  ],
+  "cpuRate": 1,
+  "errors": []
+}

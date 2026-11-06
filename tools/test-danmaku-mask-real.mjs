@@ -36,7 +36,9 @@ await page.evaluate(()=>{
  for(let i=0;i<14;i++){const text=document.createElement('div');text.textContent='智能防挡人物 · 弹幕从人物身后经过 '.repeat(6);text.style.cssText=`position:absolute;top:${i*70}px;left:0;color:white;font-size:42px;white-space:nowrap;text-shadow:2px 2px black`;layer.append(text);}
 });
 const samples=[],loopSamples=[];
-for(const time of [1,3,6]){
+const stillTimes=process.env.MASK_STILL_TIMES?process.env.MASK_STILL_TIMES.split(',').map(Number):[1,3,6];
+assert.ok(stillTimes.length&&stillTimes.every(t=>Number.isFinite(t)&&t>=0&&t<8));
+for(const time of stillTimes){
  await page.evaluate(time=>{window.__realMaskVideo.currentTime=time;},time);
  await page.waitForFunction(time=>!window.__realMaskVideo.seeking&&Math.abs(window.__realMaskVideo.currentTime-time)<.1&&window.__danmakuMaskStats?.().state==='active',time);
  await page.waitForTimeout(150);await page.screenshot({path:out+'/frame-'+time+'.png'});
@@ -50,9 +52,14 @@ if(process.env.MASK_REAL_SOAK_SECONDS){
   await page.waitForTimeout(1000);
   const sample=await page.evaluate(()=>({time:window.__realMaskVideo.currentTime,paused:window.__realMaskVideo.paused,error:window.__realMaskVideo.error?.code||0,ready:window.__realMaskVideo.readyState,mask:window.__danmakuMaskStats(),quality:window.__realMaskVideo.getVideoPlaybackQuality().droppedVideoFrames}));
   assert.equal(sample.error,0);assert.equal(sample.paused,false);assert.equal(sample.mask.failures,0);assert.ok(sample.mask.cached<=2);
+  if(process.env.MASK_SCREENSHOTS==='1'){
+   sample.screenshot=`playing-${String(loopSamples.length+1).padStart(3,'0')}.png`;
+   await page.screenshot({path:out+'/'+sample.screenshot});
+   sample.timeAfterScreenshot=await page.evaluate(()=>window.__realMaskVideo.currentTime);
+  }
   if(prior!==null&&Math.abs(sample.time-prior)>.1)advances++;prior=sample.time;loopSamples.push(sample);
  }
- assert.ok(advances>=seconds*.8);await page.evaluate(()=>window.__realMaskVideo.pause());
+ assert.ok(loopSamples.length>=Math.floor(seconds*.5));assert.ok(advances>=Math.max(1,(loopSamples.length-1)*.9));await page.evaluate(()=>window.__realMaskVideo.pause());
  console.log('PASS real video loop',seconds,'seconds, progress samples',advances);
 }
-assert.deepEqual(errors,[]);assert.ok(samples.every(s=>s.mask.state==='active'&&s.mask.failures===0&&s.width>0));writeFileSync(out+'/results.json',JSON.stringify({samples,loopSamples,cpuRate:Number(process.env.MASK_CPU_RATE||1),errors},null,2));await browser.close();console.log('PASS real decoded video with matching mask at 1, 3 and 6 seconds');
+assert.deepEqual(errors,[]);assert.ok(samples.every(s=>s.mask.state==='active'&&s.mask.failures===0&&s.width>0));writeFileSync(out+'/results.json',JSON.stringify({samples,loopSamples,cpuRate:Number(process.env.MASK_CPU_RATE||1),errors},null,2));await browser.close();console.log('PASS decoded-video runtime checks at',stillTimes.join(', '),'seconds; visual inspection is still required');

@@ -1,0 +1,73 @@
+{
+  "sample": {
+    "bvid": "BV1GJ411x7h7",
+    "cid": 137649199
+  },
+  "original": {
+    "path": "/tmp/bili-mask-original-head.bin",
+    "bytes": 2097152,
+    "format": "Unmodified initial HTTP Range bytes of public MP4",
+    "videoStartMs": 21,
+    "fps": 25,
+    "timeBase": "1/16000"
+  },
+  "oldClip": {
+    "path": "/tmp/bili-mask-clip.mp4",
+    "videoStartMs": 40,
+    "fps": 25,
+    "timeBase": "1/12800"
+  },
+  "sameIndexGrayMeanAbsoluteDifference": 0.3362004466778336,
+  "maskSha256": "1a93185e37cd206126a923d3be7e628de11f816695914a3fd5562eb3cd407d0a",
+  "dmMaskMetadata": {
+    "fps": 25,
+    "time": 0,
+    "plat": 0
+  },
+  "cutPairs": [
+    {
+      "videoMs": 221,
+      "maskMs": 322,
+      "differenceMs": 101
+    },
+    {
+      "videoMs": 821,
+      "maskMs": 922,
+      "differenceMs": 101
+    },
+    {
+      "videoMs": 1101,
+      "maskMs": 1202,
+      "differenceMs": 101
+    },
+    {
+      "videoMs": 2581,
+      "maskMs": 2682,
+      "differenceMs": 101
+    },
+    {
+      "videoMs": 4261,
+      "maskMs": 4362,
+      "differenceMs": 101
+    },
+    {
+      "videoMs": 5421,
+      "maskMs": 5522,
+      "differenceMs": 101
+    },
+    {
+      "videoMs": 7581,
+      "maskMs": 7682,
+      "differenceMs": 101
+    }
+  ],
+  "officialRenderer": {
+    "url": "https://s1.hdslb.com/bfs/static/player/main/widgets/npd.314.04671e64.js",
+    "file": "/tmp/bili-official-314.04671e64.js",
+    "selection": "first frame in [currentTimeMs + floor(1000/fps), currentTimeMs + 3*floor(1000/fps))",
+    "initialFps": 24,
+    "maxFps": "dm_mask.fps",
+    "adaptation": "each continuous slow/fast second adjusts renderer fps by -1/+1, capped by maxFps"
+  },
+  "recommendation": "Follow bounded future window semantics rather than a fixed +100 ms inferred from one sample. Validate both adjacent cached segments near boundary. Source missing person geometry remains a separate limitation."
+}

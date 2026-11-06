@@ -78,10 +78,26 @@ export function safeMaskImage(uri) {
   }
   return 'data:image/svg+xml;base64,' + btoa(new XMLSerializer().serializeToString(doc.documentElement));
 }
-export function maskFrame(frames, time) {
+// The webmask timeline is intended for presentation look-ahead. Bilibili's
+// public player selects the first mask 1–3 render intervals ahead; selecting
+// a previous frame systematically trails motion and scene cuts.
+export function maskFrame(frames, time, fps = 24) {
+  if (!Number.isFinite(time)) return null;
+  const rate = Number.isFinite(Number(fps)) && Number(fps) >= 1 && Number(fps) <= 120 ? Math.min(24, Number(fps)) : 24;
+  const step = Math.min(100, Math.floor(1000 / rate)), earliest = time + step, latest = time + step * 3;
+  let lo = 0, hi = frames.length;
+  while (lo < hi) { const mid = (lo + hi) >>> 1; if (frames[mid].time < earliest) lo = mid + 1; else hi = mid; }
+  if (!frames[lo] || frames[lo].time >= latest) return null;
+  // Duplicate timestamps use the final entry, consistently with segment data.
+  while (lo + 1 < frames.length && frames[lo + 1].time === frames[lo].time) lo++;
+  return frames[lo];
+}
+
+// Used only to avoid an empty future mask dropping existing protection early.
+// This is the mask for the current time, never an indefinitely retained shape.
+export function currentMaskFrame(frames, time) {
   let lo = 0, hi = frames.length;
   while (lo < hi) { const mid = (lo + hi) >>> 1; if (frames[mid].time <= time) lo = mid + 1; else hi = mid; }
   const frame = frames[lo - 1];
-  // Never freeze an old silhouette across a gap or a seek.
-  return frame && time - frame.time <= 250 ? frame : null;
+  return frame && time - frame.time <= 80 ? frame : null;
 }

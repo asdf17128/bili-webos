@@ -1,0 +1,5 @@
+PASS person mask metadata integration failure
+PASS person mask metadata integration missing
+PASS person mask metadata integration mismatch
+PASS in-playback danmaku settings preserve playback and restore remote focus
+4/4 passed; /tmp/bili-player-controls/results.json

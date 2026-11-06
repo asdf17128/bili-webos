@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { gzipSync } from 'node:zlib';
 import { readFileSync } from 'node:fs';
-import { maskUrl, maskHeader, maskIndex, decodeMaskSegment, maskFrame, MASK_LIMITS } from '../app/src/player/danmakuMask.js';
+import { maskUrl, maskHeader, maskIndex, decodeMaskSegment, maskFrame, currentMaskFrame, MASK_LIMITS } from '../app/src/player/danmakuMask.js';
 let passed=0;const test=(name,fn)=>{fn();passed++;console.log('PASS',name);};
 const frame=(time,svg='<svg xmlns="http://www.w3.org/2000/svg"/>')=>{
  const body=Buffer.from('data:image/svg+xml;base64,'+Buffer.from(svg).toString('base64')+'\n');const h=Buffer.alloc(12);h.writeUInt32BE(body.length);h.writeBigUInt64BE(BigInt(time),4);return Buffer.concat([h,body]);
@@ -15,13 +15,17 @@ test('index checks magic, version, lengths, ordering and integer limits',()=>{
  assert.equal(maskHeader(h),48);assert.equal(maskIndex(h).length,2);
  assert.throws(()=>maskIndex(h.subarray(0,40)));h.writeBigUInt64BE(47n,40);assert.throws(()=>maskIndex(h));h[0]=0;assert.throws(()=>maskHeader(h));
 });
-test('gzip frame boundaries, repeated timestamps, exact frame selection and stale expiry',()=>{
- const frames=decodeMaskSegment(gzipSync(Buffer.concat([frame(0),frame(0),frame(100)])),0,10000);
- assert.equal(frames.length,3);assert.equal(maskFrame(frames,0),frames[1]);assert.equal(maskFrame(frames,120),frames[2]);assert.equal(maskFrame(frames,351),null);
+test('gzip frame boundaries, duplicate timestamps and bounded presentation look-ahead',()=>{
+ const frames=decodeMaskSegment(gzipSync(Buffer.concat([frame(0),frame(100),frame(100)])),0,10000);
+ assert.equal(frames.length,3);assert.equal(maskFrame(frames,0),frames[2]);assert.equal(maskFrame(frames,120),null);assert.equal(maskFrame(frames,351),null);
+ assert.equal(maskFrame([{time:1000}],0),null);assert.equal(maskFrame([{time:41},{time:80}],0).time,41);
+ assert.equal(maskFrame([{time:123}],0),null);assert.equal(maskFrame([{time:100}],0,10).time,100);
+ assert.equal(maskFrame([{time:41}],0,NaN).time,41);
  assert.throws(()=>decodeMaskSegment(gzipSync(Buffer.concat([frame(100),frame(0)])),0,10000));
  assert.throws(()=>decodeMaskSegment(gzipSync(frame(10000)),0,10000));
  assert.throws(()=>decodeMaskSegment(new Uint8Array([1,2,3]),0,10000));
 });
+test('transition fallback uses only the current frame and expires within 80 ms',()=>{const frames=[{time:100},{time:200}];assert.equal(currentMaskFrame(frames,100),frames[0]);assert.equal(currentMaskFrame(frames,180),frames[0]);assert.equal(currentMaskFrame(frames,181),null);assert.equal(currentMaskFrame(frames,90),null);assert.equal(currentMaskFrame(frames,200),frames[1]);});
 test('compressed and decompressed payload budgets prevent oversized work',()=>{
  assert.throws(()=>decodeMaskSegment(new Uint8Array(MASK_LIMITS.compressed+1),0,10000));
  assert.throws(()=>decodeMaskSegment(gzipSync(Buffer.alloc(MASK_LIMITS.inflated+1)),0,10000),/inflated limit/);

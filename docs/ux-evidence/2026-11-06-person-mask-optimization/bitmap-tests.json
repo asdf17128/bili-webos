@@ -1,0 +1,180 @@
+{
+  "results": [
+    {
+      "name": "bounded alpha erosion matches a square kernel, including soft alpha and borders",
+      "pass": true
+    },
+    {
+      "name": "small bitmap grows the person hole by 12px at 1080p without erasing viewport borders",
+      "pass": true,
+      "pixels": {
+        "radius": 2,
+        "width": 320,
+        "height": 180,
+        "ratio": 0.07192174913693901,
+        "alpha": [
+          255,
+          255,
+          255,
+          0,
+          0,
+          0,
+          0,
+          255
+        ]
+      }
+    },
+    {
+      "name": "source without a silhouette stays unchanged; large masks are bounded and remote filters remain rejected",
+      "pass": true,
+      "extra": {
+        "opaque": 0,
+        "width": 352,
+        "height": 185,
+        "invalid": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "name": "abort before decode, during decode and after load clears images, handlers and listeners",
+      "pass": true,
+      "cancellation": {
+        "early": "AbortError",
+        "createdBefore": 0,
+        "during": {
+          "name": "AbortError",
+          "elapsed": 0.19999998807907104,
+          "listeners": 0,
+          "sourceCleared": true,
+          "handlersCleared": true
+        },
+        "afterDecode": "AbortError",
+        "afterListeners": 0,
+        "afterCleared": true
+      }
+    },
+    {
+      "name": "returned PNG is decoded and owned until idempotent dispose; old browsers use onload",
+      "pass": true,
+      "ownership": {
+        "decoded": {
+          "same": true,
+          "ready": true,
+          "sourceCleared": true,
+          "calls": 2
+        },
+        "released": true,
+        "legacyReady": true,
+        "legacyReleased": true
+      }
+    },
+    {
+      "name": "output decode cancellation, failure and shared deadline release both images; late completion cannot revive them",
+      "pass": true,
+      "outputCleanup": [
+        {
+          "mode": "abort",
+          "outcome": {
+            "name": "AbortError",
+            "message": "Mask bitmap preparation aborted"
+          },
+          "elapsed": 1.2000000178813934,
+          "sourceCleared": true,
+          "outputCleared": true,
+          "handlersCleared": true
+        },
+        {
+          "mode": "failure",
+          "outcome": {
+            "name": "Error",
+            "message": "Mask bitmap decode failed"
+          },
+          "elapsed": 0.9000000059604645,
+          "sourceCleared": true,
+          "outputCleared": true,
+          "handlersCleared": true
+        },
+        {
+          "mode": "timeout",
+          "outcome": {
+            "name": "Error",
+            "message": "Mask bitmap decode timeout"
+          },
+          "elapsed": 1502.7999999821186,
+          "sourceCleared": true,
+          "outputCleared": true,
+          "handlersCleared": true
+        }
+      ]
+    },
+    {
+      "name": "real SVG preparation under 6x CPU throttle",
+      "pass": true,
+      "durations": [
+        {
+          "ms": 18.400000005960464,
+          "width": 320,
+          "height": 180,
+          "ratio": 0.26062643843498273
+        },
+        {
+          "ms": 11.900000005960464,
+          "width": 320,
+          "height": 180,
+          "ratio": 0.1520605581127733
+        },
+        {
+          "ms": 9,
+          "width": 320,
+          "height": 180,
+          "ratio": 0
+        },
+        {
+          "ms": 9.599999994039536,
+          "width": 320,
+          "height": 180,
+          "ratio": 0.26213679516685845
+        },
+        {
+          "ms": 11.400000005960464,
+          "width": 320,
+          "height": 180,
+          "ratio": 0.2265175489067894
+        },
+        {
+          "ms": 10.900000005960464,
+          "width": 320,
+          "height": 180,
+          "ratio": 0.2116117663981588
+        },
+        {
+          "ms": 7.699999988079071,
+          "width": 320,
+          "height": 180,
+          "ratio": 0.2121871403912543
+        },
+        {
+          "ms": 7.9000000059604645,
+          "width": 320,
+          "height": 180,
+          "ratio": 0.17014887802071346
+        },
+        {
+          "ms": 8.5,
+          "width": 320,
+          "height": 180,
+          "ratio": 0.1731695914844649
+        },
+        {
+          "ms": 8.199999988079071,
+          "width": 320,
+          "height": 180,
+          "ratio": 0.19943901035673187
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

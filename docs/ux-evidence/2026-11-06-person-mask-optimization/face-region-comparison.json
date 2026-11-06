@@ -1,0 +1,20 @@
+{
+  "roi": {
+    "x": 780,
+    "y": 430,
+    "width": 220,
+    "height": 460
+  },
+  "threshold": 40,
+  "description": "Manually selected interior face rectangle at 4.95 s of the same original media; measures changed pixels, not general face detection accuracy.",
+  "before": {
+    "changedPixels": 4481,
+    "totalPixels": 101200,
+    "fraction": 0.04427865612648221
+  },
+  "after": {
+    "changedPixels": 0,
+    "totalPixels": 101200,
+    "fraction": 0.0
+  }
+}

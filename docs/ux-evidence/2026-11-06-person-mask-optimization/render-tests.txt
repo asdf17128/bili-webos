@@ -1,0 +1,13 @@
+PASS late-video lookup has bounded work
+PASS dense comments have a bounded number of animation layers
+PASS forward seek clears the old screen and backward seek replays
+PASS paused animations freeze and resume; hidden layer resets
+PASS translation retries preserve original indices and do not flash Chinese
+PASS font scales, animation cleanup and repeat render do not duplicate
+PASS fixed, reverse and colored types respect filters and area bounds
+PASS density caps and speed are applied; invalid options fall back safely
+PASS lane spacing uses animation time rather than accelerated media time
+PASS live overlay shares appearance and clears lanes on toggle
+PASS segment boundary updates preserve active nodes and stable IDs
+PASS density adjusts safe lane geometry and measurement cache stays bounded
+PASS busy lanes retry briefly without duplicating or replaying expired comments

@@ -1,0 +1,10 @@
+PASS mask URLs are restricted to HTTPS Bilibili mask resources
+PASS index checks magic, version, lengths, ordering and integer limits
+PASS gzip frame boundaries, duplicate timestamps and bounded presentation look-ahead
+PASS transition fallback uses only the current frame and expires within 80 ms
+PASS compressed and decompressed payload budgets prevent oversized work
+segments 22 frames 5308
+PASS real mask file /tmp/bili-mask-rick.webmask
+segments 31 frames 9360
+PASS real mask file /tmp/bili-mask-sample.webmask
+7/7 passed

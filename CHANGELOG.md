@@ -12,8 +12,8 @@ This log collects the release history previously included in the README. For ear
 
 ## 未发布 / Unreleased
 
-- 实验性智能防挡人物：复用视频提供的人像遮罩，按播放时间隐藏人物区域的弹幕；默认关闭，无数据或加载失败时回到普通弹幕。
-- Experimental person-aware danmaku masking with bounded range loading, seek cleanup and ordinary-danmaku fallback; off by default.
+- 实验性智能防挡人物：复用视频提供的人像遮罩，跟随画面选择轮廓、扩大少量边缘留白，优化切镜衔接与图片解码闪烁；默认关闭，源数据缺失或加载失败时保留普通弹幕。
+- Experimental person-aware danmaku masking with frame-aligned selection, small edge padding, cut-transition handling and predecoded masks; off by default, with ordinary-danmaku fallback when source masks are missing or fail.
 
 - 点播控制栏新增弹幕设置：字号、密度、区域、透明度等立即应用于当前视频，关闭后恢复遥控焦点，不打断播放。
 - 弹幕密度联动轨道间距，拥塞项短暂重试；共享有界文字测量缓存，减少重复计算。

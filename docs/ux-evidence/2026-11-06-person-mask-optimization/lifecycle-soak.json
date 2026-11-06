@@ -1,0 +1,112 @@
+{
+  "results": [
+    {
+      "name": "actual CSS pixels hide the silhouette and preserve letterboxes",
+      "pass": true
+    },
+    {
+      "name": "seek clears old mask synchronously and selects the target segment",
+      "pass": true
+    },
+    {
+      "name": "paused time keeps the frame stable and backward seek reloads the correct silhouette",
+      "pass": true
+    },
+    {
+      "name": "presentation look-ahead crosses segment boundaries and never freezes the last mask",
+      "pass": true
+    },
+    {
+      "name": "missing frames clear the silhouette and report a gap instead of endless loading",
+      "pass": true
+    },
+    {
+      "name": "off clears the mask, stops requests, and late results cannot reapply it",
+      "pass": true
+    },
+    {
+      "name": "failure and unavailable metadata fall back without retry loops",
+      "pass": true
+    },
+    {
+      "name": "ignored Range and truncated responses fail closed without retry storms",
+      "pass": true
+    },
+    {
+      "name": "video switch during an in-flight request cannot revive the old source",
+      "pass": true
+    },
+    {
+      "name": "request deadline falls back and a late response cannot restore the mask",
+      "pass": true
+    },
+    {
+      "name": "background visibility suspends masking and fetches, foreground resumes",
+      "pass": true
+    },
+    {
+      "name": "portrait video keeps pillarboxes visible and follows layout changes",
+      "pass": true
+    },
+    {
+      "measurement": {
+        "durationSeconds": 180,
+        "cycles": 207,
+        "seeks": 828,
+        "maxCache": 2,
+        "heapDelta": 446512,
+        "nodeDelta": 0,
+        "listenerDelta": 0
+      }
+    },
+    {
+      "name": "local lifecycle and seek soak retains bounded resources",
+      "pass": true
+    },
+    {
+      "name": "slow bitmap preparation is cancelled on seek, source switch and off",
+      "pass": true
+    },
+    {
+      "name": "source without a silhouette reports no protection and does not reuse an old hole",
+      "pass": true
+    },
+    {
+      "name": "empty future mask keeps the current silhouette only until the source transition",
+      "pass": true
+    },
+    {
+      "name": "slow preparation expires the old silhouette by presentation time, not its future source time",
+      "pass": true
+    },
+    {
+      "name": "presented video frame time wins over playback clock and stale seek callbacks are ignored",
+      "pass": true
+    },
+    {
+      "name": "older browsers follow playback via animation frames without video-frame callbacks",
+      "pass": true
+    },
+    {
+      "name": "SVG allowlist rejects executable and external content",
+      "pass": true
+    },
+    {
+      "name": "Luna binary transport forwards Range and decodes bounded base64",
+      "pass": true
+    },
+    {
+      "measurement": {
+        "frames": 366,
+        "decodeMs": 53,
+        "sanitizeMs": 70
+      }
+    },
+    {
+      "name": "real public mask SVGs decode and sanitize under CPU throttle",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "requestCount": 1190
+}

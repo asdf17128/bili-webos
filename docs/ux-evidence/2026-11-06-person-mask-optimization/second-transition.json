@@ -1,0 +1,50 @@
+{
+  "samples": [
+    {
+      "time": 17.9,
+      "width": 640,
+      "height": 360,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 2,
+        "cached": 2,
+        "decodedFrames": 600,
+        "frameTime": 17900,
+        "timelineTime": 17900,
+        "sourceProtectedRatio": 0.2925956559263521,
+        "prepareMs": 3,
+        "selection": "current-transition",
+        "prepared": 4,
+        "preparing": false,
+        "state": "active"
+      },
+      "maskStatus": "active"
+    },
+    {
+      "time": 18.02,
+      "width": 640,
+      "height": 360,
+      "mask": {
+        "requests": 4,
+        "failures": 0,
+        "applied": 3,
+        "cached": 2,
+        "decodedFrames": 600,
+        "frameTime": 18067,
+        "timelineTime": 18020,
+        "sourceProtectedRatio": 0,
+        "prepareMs": 3,
+        "selection": "future",
+        "prepared": 4,
+        "preparing": false,
+        "state": "unprotected"
+      },
+      "maskStatus": "gap"
+    }
+  ],
+  "loopSamples": [],
+  "performanceComparison": [],
+  "cpuRate": 1,
+  "errors": []
+}

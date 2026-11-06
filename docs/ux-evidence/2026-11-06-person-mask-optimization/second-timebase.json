@@ -1,0 +1,42 @@
+{
+  "bvid": "BV1Fg411D7Jy",
+  "aid": 515345690,
+  "cid": 825851971,
+  "plat": 0,
+  "fps": 30,
+  "dmMaskTime": 0,
+  "originalMedia": "/tmp/bili-second-original-head.bin",
+  "originalMediaBytes": 4194304,
+  "originalMediaSha256": "9d718bc0a3e6b05bb38a3df17e3e9f0cb1a4e664aa24c9c124899fd1e19e45fd",
+  "videoFirstPtsMs": 46,
+  "maskFile": "/tmp/bili-mask-sample.webmask",
+  "maskSha256": "dec59e33e89ce196c6d01b0aa37975d67a5b7a68ecd62fc707f62fbbc0c0ff66",
+  "freshPublicMaskIdentical": true,
+  "cutPairs": [
+    {
+      "videoMs": 11946,
+      "maskMs": 11900,
+      "differenceMs": -46
+    },
+    {
+      "videoMs": 18013,
+      "maskMs": 17967,
+      "differenceMs": -46
+    },
+    {
+      "videoMs": 26346,
+      "maskMs": 26300,
+      "differenceMs": -46
+    }
+  ],
+  "visualRegression": {
+    "timeSeconds": 17.9,
+    "oldPastFrameMs": 17900,
+    "futureFrameMs": 17967,
+    "actualNextCutSeconds": 18.013,
+    "observation": "Future window selects a source mask without silhouette before the current person leaves the image; past still protects most of the person. Face partly covered by original-video sticker, so this proves body/forehead protection regression, not an unobstructed face benchmark.",
+    "pastScreenshot": "/tmp/bili-second-cut-boundary/past-17.9.png",
+    "futureScreenshot": "/tmp/bili-second-cut-boundary/future-17.9.png"
+  },
+  "noApplicationEdits": true
+}

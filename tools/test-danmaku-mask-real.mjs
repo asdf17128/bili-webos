@@ -7,6 +7,7 @@ const video=readFileSync(process.env.MASK_VIDEO||'/tmp/bili-mask-clip.mp4');
 const mask=readFileSync(process.env.MASK_FILE||'/tmp/bili-mask-rick.webmask');
 const out=process.env.MASK_REAL_OUTPUT||'/tmp/bili-mask-real';mkdirSync(out,{recursive:true});
 const browser=await chromium.launch();const page=await browser.newPage({viewport:{width:1920,height:1080}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+if(process.env.MASK_CPU_RATE){const rate=Number(process.env.MASK_CPU_RATE);assert.ok(rate>=1&&rate<=20);const cdp=await page.context().newCDPSession(page);await cdp.send('Emulation.setCPUThrottlingRate',{rate});}
 await page.routeWebSocket('**/*',s=>s.close());
 await page.route('**/*',async route=>{
  const u=new URL(route.request().url());
@@ -34,11 +35,24 @@ await page.evaluate(()=>{
  const layer=[...document.querySelectorAll('.danmaku-container')].at(-1);
  for(let i=0;i<14;i++){const text=document.createElement('div');text.textContent='智能防挡人物 · 弹幕从人物身后经过 '.repeat(6);text.style.cssText=`position:absolute;top:${i*70}px;left:0;color:white;font-size:42px;white-space:nowrap;text-shadow:2px 2px black`;layer.append(text);}
 });
-const samples=[];
+const samples=[],loopSamples=[];
 for(const time of [1,3,6]){
  await page.evaluate(time=>{window.__realMaskVideo.currentTime=time;},time);
  await page.waitForFunction(time=>!window.__realMaskVideo.seeking&&Math.abs(window.__realMaskVideo.currentTime-time)<.1&&window.__danmakuMaskStats?.().state==='active',time);
  await page.waitForTimeout(150);await page.screenshot({path:out+'/frame-'+time+'.png'});
  samples.push(await page.evaluate(()=>({time:window.__realMaskVideo.currentTime,width:window.__realMaskVideo.videoWidth,height:window.__realMaskVideo.videoHeight,mask:window.__danmakuMaskStats()})));
 }
-assert.deepEqual(errors,[]);assert.ok(samples.every(s=>s.mask.state==='active'&&s.mask.failures===0&&s.width>0));writeFileSync(out+'/results.json',JSON.stringify({samples,errors},null,2));await browser.close();console.log('PASS real decoded video with matching mask at 1, 3 and 6 seconds');
+if(process.env.MASK_REAL_SOAK_SECONDS){
+ const seconds=Number(process.env.MASK_REAL_SOAK_SECONDS);assert.ok(seconds>0&&seconds<=3600);
+ await page.evaluate(()=>{window.__realMaskVideo.loop=true;return window.__realMaskVideo.play();});
+ const end=Date.now()+seconds*1000;let prior=null,advances=0;
+ while(Date.now()<end){
+  await page.waitForTimeout(1000);
+  const sample=await page.evaluate(()=>({time:window.__realMaskVideo.currentTime,paused:window.__realMaskVideo.paused,error:window.__realMaskVideo.error?.code||0,ready:window.__realMaskVideo.readyState,mask:window.__danmakuMaskStats(),quality:window.__realMaskVideo.getVideoPlaybackQuality().droppedVideoFrames}));
+  assert.equal(sample.error,0);assert.equal(sample.paused,false);assert.equal(sample.mask.failures,0);assert.ok(sample.mask.cached<=2);
+  if(prior!==null&&Math.abs(sample.time-prior)>.1)advances++;prior=sample.time;loopSamples.push(sample);
+ }
+ assert.ok(advances>=seconds*.8);await page.evaluate(()=>window.__realMaskVideo.pause());
+ console.log('PASS real video loop',seconds,'seconds, progress samples',advances);
+}
+assert.deepEqual(errors,[]);assert.ok(samples.every(s=>s.mask.state==='active'&&s.mask.failures===0&&s.width>0));writeFileSync(out+'/results.json',JSON.stringify({samples,loopSamples,cpuRate:Number(process.env.MASK_CPU_RATE||1),errors},null,2));await browser.close();console.log('PASS real decoded video with matching mask at 1, 3 and 6 seconds');

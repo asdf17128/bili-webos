@@ -44,13 +44,15 @@ button, input { font-family: inherit; }
 .sidebar-item.active::before { content: ''; position: absolute; left: -20px; top: 13px; bottom: 13px; width: 4px; border-radius: 0 4px 4px 0; background: var(--tv-accent); }
 .sidebar-item.focused { background: var(--tv-focus); color: #191a1e; box-shadow: none; }
 .sidebar-divider { margin: 10px 28px; background: #303139; }
-.sidebar-user { position: relative; min-height: 66px; padding: 16px 34px 0; border-color: #303139; display: flex; align-items: center; }
+.sidebar-user { position: relative; min-height: 66px; padding: 16px 34px 0; border-color: #303139; display: flex; flex-wrap: wrap; align-items: center; }
 .sidebar-user-avatar { width: 42px; height: 42px; border: 1px solid #5c5e69; background: #303139; flex: none; margin: 0; display: flex; align-items: center; justify-content: center; }
 .sidebar-user-name, .sidebar-user-login { opacity: 0; margin-left: 16px; white-space: nowrap; color: var(--tv-secondary); font-size: calc(18px * var(--ui-scale)); }
 .sidebar[data-expanded="true"] .sidebar-user-name, .sidebar[data-expanded="true"] .sidebar-user-login { opacity: 1; }
 .sidebar-help { display: none; }
-.sidebar[data-expanded="true"] .sidebar-help { display: block; position: absolute; bottom: 80px; left: 34px; width: calc(100% - 68px); padding: 14px 0; background: var(--tv-rail); border-top: 1px solid var(--tv-line); pointer-events: none; }
-.sidebar[data-expanded="true"] .sidebar-nav { margin-bottom: 94px; }
+/* The hint sits in the normal flow above the account row, so the nav above it
+   shrinks to whatever is left. It used to be absolutely positioned over a fixed
+   94px margin, which covered the last item (设置) once 界面字号 made it taller. */
+.sidebar[data-expanded="true"] .sidebar-help { display: block; flex: 0 0 100%; padding: 14px 0; margin-bottom: 8px; border-top: 1px solid var(--tv-line); pointer-events: none; }
 
 /* A quiet page header establishes location without competing with thumbnails. */
 .browse-header { padding: 26px 56px 0; align-items: center; }

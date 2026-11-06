@@ -27,6 +27,7 @@ import { mark, markAfterPaint } from '../utils/perf';
 import { holdPrefetch } from '../utils/perfFlags';
 const perfNow = () => ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now());
 import DanmakuLayer from './DanmakuLayer';
+import { normalizeDanmakuArea } from './danmakuArea';
 import SubtitleLayer from './SubtitleLayer';
 import { parseSubtitleBody, pickCueIndex, isAiLan, subtitleLanName, mtLanName, findZhTrack, matchTrackByLan, AI_LEAD } from './subtitles';
 import { translateCues } from './subTranslate';
@@ -138,6 +139,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   const [danmakuEnabled, setDanmakuEnabled] = useState(() => storage.getSettings().danmaku !== false);
   // Danmaku/subtitle font scales (设置 → 弹幕字号/字幕字号). Read once per mount.
   const [danmakuScale] = useState(() => storage.getSettings().danmakuScale || 1);
+  const [danmakuArea] = useState(() => normalizeDanmakuArea(storage.getSettings().danmakuArea));
   const [subtitleScale] = useState(() => storage.getSettings().subtitleScale || 1);
   // CC subtitles (player/v2 → data.subtitle.subtitles). subLan null = off.
   // settings.subtitle persists only the on/off preference; the concrete track
@@ -2785,7 +2787,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         </div>
       )}
 
-      <DanmakuLayer danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale} paused={!playing}
+      <DanmakuLayer danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale} areaScale={danmakuArea} paused={!playing}
         mtRef={dmMtActive ? dmMtRef : null} />
 
       <SubtitleLayer videoRef={videoRef} cues={subCues} enabled={subLan != null && !showRelated}

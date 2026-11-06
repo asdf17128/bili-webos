@@ -80,7 +80,7 @@ const openSettings = async page => {
 
 await run('account repair is remote reachable and opening it preserves login', {}, async ({f,page})=>{
   await openSettings(page);
-  await page.locator('[data-focus-id="content-10-0"]').hover();
+  await page.locator('[data-focus-id="content-11-0"]').hover();
   await page.keyboard.press('ArrowDown');await page.keyboard.press('ArrowDown');await page.keyboard.press('ArrowDown');
   assert.match(await page.locator('.settings-row.focused').innerText(),/账号修复/);
   await page.keyboard.press('Enter');

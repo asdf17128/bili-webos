@@ -78,7 +78,7 @@ async function choose(page, label) {
 async function close(page) {
   await page.keyboard.press('Escape');
   await dialog(page).waitFor({ state: 'detached' });
-  await poll(async () => await page.evaluate(() => window.__focusState?.().current) === 'content-13-0', 'focus returns to the real account repair entry');
+  await poll(async () => await page.evaluate(() => window.__focusState?.().current) === 'content-14-0', 'focus returns to the real account repair entry');
   assert.equal(await page.locator('[data-focus-id].focused').count(), 1, 'one actual focus target after closing');
 }
 async function settings(f) {
@@ -88,7 +88,7 @@ async function settings(f) {
 }
 async function open(f) {
   await settings(f);
-  const entry = f.page.locator('[data-focus-id="content-13-0"]');
+  const entry = f.page.locator('[data-focus-id="content-14-0"]');
   await entry.waitFor();
   await entry.hover(); await f.page.keyboard.press('Enter');
   await dialog(f.page).waitFor();
@@ -268,7 +268,7 @@ await test('feature presence: settings remote navigation reaches account repair'
   await settings(f);
   await f.page.locator('[data-focus-id="content-0-0"]').hover();
   for (let i = 0; i < 13; i++) await f.page.keyboard.press('ArrowDown');
-  assert.equal(await f.page.evaluate(() => window.__focusState().current), 'content-13-0');
+  assert.equal(await f.page.evaluate(() => window.__focusState().current), 'content-14-0');
   await f.page.keyboard.press('Enter'); await dialog(f.page).waitFor();
   for (const key of ['check', 'refresh', 'device', 'qr', 'close']) await action(f.page, f.labels[key]).waitFor();
   assert.equal(f.calls.status.length, 0); assert.equal(f.calls.repair.length, 0);
@@ -277,14 +277,14 @@ await test('feature presence: settings remote navigation reaches account repair'
 
 await test('opening is inert and Back restores a usable settings focus', async f => {
   await settings(f); const before = await snapshot(f.page), nav = f.calls.nav;
-  await f.page.locator('[data-focus-id="content-13-0"]').click(); await dialog(f.page).waitFor();
+  await f.page.locator('[data-focus-id="content-14-0"]').click(); await dialog(f.page).waitFor();
   await paint(f.page); assert.equal(f.calls.nav, nav); assert.equal(f.calls.status.length, 0); assert.equal(f.calls.repair.length, 0);
   await preserved(f, before); await safePanel(f.page); await close(f.page);
-  await f.page.keyboard.press('ArrowUp'); assert.notEqual(await f.page.evaluate(() => window.__focusState().current), 'content-13-0');
+  await f.page.keyboard.press('ArrowUp'); assert.notEqual(await f.page.evaluate(() => window.__focusState().current), 'content-14-0');
 });
 
 await test('mouse opening accepts the first deliberate Enter check', async f => {
-  await settings(f); await f.page.locator('[data-focus-id="content-13-0"]').click(); await dialog(f.page).waitFor();
+  await settings(f); await f.page.locator('[data-focus-id="content-14-0"]').click(); await dialog(f.page).waitFor();
   // The opener's pointer can land over a different action when the modal mounts.
   // Select the intended action explicitly before testing the first remote press.
   await action(f.page, f.labels.check).hover();

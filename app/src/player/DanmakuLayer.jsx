@@ -1,4 +1,5 @@
 import React, { memo, useRef, useEffect } from 'react';
+import { danmakuTrackCount } from './danmakuArea';
 
 const MAX_VISIBLE = 24;
 const MAX_WINDOW_ITEMS = 128;
@@ -17,11 +18,11 @@ function lowerBound(items, time) {
 
 // Keep original list indices for translation; pending translations may retry
 // within the display window without ever flashing the original Chinese text.
-export default memo(function DanmakuLayer({ danmakus, currentTime, enabled, paused = false, fontScale = 1, mtRef = null }) {
+export default memo(function DanmakuLayer({ danmakus, currentTime, enabled, paused = false, fontScale = 1, areaScale = 1, mtRef = null }) {
   const containerRef = useRef(null);
   const renderedRef = useRef(new Set());
   const trackHeight = Math.round(48 * fontScale);
-  const trackCount = Math.max(6, Math.floor(1000 / trackHeight));
+  const trackCount = danmakuTrackCount(trackHeight, areaScale);
   const trackRef = useRef([]);
   const lastTimeRef = useRef(null);
 

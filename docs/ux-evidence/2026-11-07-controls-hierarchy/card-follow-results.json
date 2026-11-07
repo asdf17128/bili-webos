@@ -1,0 +1,22 @@
+[
+  {
+    "name": "creator follow completes after menu closes",
+    "pass": true
+  },
+  {
+    "name": "creator follow menu: success",
+    "pass": true
+  },
+  {
+    "name": "creator follow menu: failure",
+    "pass": true
+  },
+  {
+    "name": "creator follow menu: read-failure",
+    "pass": true
+  },
+  {
+    "name": "creator follow menu: guest",
+    "pass": true
+  }
+]

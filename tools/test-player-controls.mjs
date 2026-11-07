@@ -13,7 +13,7 @@ const baseline = process.argv.includes('--baseline');
 const output = process.env.CONTROLS_OUTPUT || '/tmp/bili-player-controls';
 await mkdir(output, { recursive: true });
 const reports = [];
-const sourcePaths = ['app/src/player/PlayerPage.jsx', 'app/src/player/SubtitleLayer.jsx', 'app/src/player/playerControls.css', 'app/src/styles.css', 'app/src/tv-design.css', 'app/src/hooks/useAuthorFollowers.js', 'app/src/utils/authorFollowers.js'];
+const sourcePaths = ['app/src/player/PlayerPage.jsx', 'app/src/player/SubtitleLayer.jsx', 'app/src/player/playerControls.css', 'app/src/player/PlayerMoreControls.jsx', 'app/src/player/playerMoreControls.css', 'app/src/components/Icon.jsx', 'app/src/i18n/en.js', 'app/src/i18n/es.js', 'app/src/styles.css', 'app/src/tv-design.css', 'app/src/hooks/useAuthorFollowers.js', 'app/src/utils/authorFollowers.js'];
 const hashSources = () => Promise.all(sourcePaths.map(async path => [path, createHash('sha256').update(await readFile(path)).digest('hex')])).then(Object.fromEntries);
 const sources = await hashSources();
 if (process.env.CONTROLS_ANALYZE_ONLY) {
@@ -51,17 +51,18 @@ const items = Array.from({ length: 12 }, (_, i) => ({ aid: 300 + i, bvid: 'BVCon
 // Local vector test footage, deliberately rich in detail beneath the entire
 // control deck. It contains no fetched image, real person, or real media.
 function sceneSvg(name) {
-  if (name === 'window') return `<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080"><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#c9e8f2"/><stop offset="1" stop-color="#f6dfad"/></linearGradient><pattern id="panes" width="240" height="1080" patternUnits="userSpaceOnUse"><rect width="232" height="1080" fill="none"/><rect width="22" height="1080" fill="#264853"/><rect x="22" width="8" height="1080" fill="#f6efce"/></pattern></defs><rect width="1920" height="1080" fill="url(#sky)"/><circle cx="420" cy="220" r="100" fill="#fff7d8"/><path d="M0 620L230 420L410 610L680 350L920 650L1230 440L1500 610L1770 390L1920 550V1080H0" fill="#5b9293"/><path d="M0 800Q320 640 670 810T1250 740T1920 840V1080H0" fill="#8cbbb0"/><path d="M0 960Q400 780 840 960T1920 920V1080H0" fill="#d8c795"/><rect width="1920" height="1080" fill="url(#panes)"/><rect y="360" width="1920" height="22" fill="#264853"/><rect y="670" width="1920" height="22" fill="#264853"/></svg>`;
+  if (name === 'window') return `<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080"><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#c9e8f2"/><stop offset="1" stop-color="#f6dfad"/></linearGradient><pattern id="panes" width="240" height="1080" patternUnits="userSpaceOnUse"><rect width="232" height="1080" fill="none"/><rect width="22" height="1080" fill="#264853"/><rect x="22" width="8" height="1080" fill="#f6efce"/></pattern></defs><rect width="1920" height="1080" fill="url(#sky)"/><circle cx="420" cy="220" r="100" fill="#fff7d8"/><path d="M0 620L230 420L410 610L680 350L920 650L1230 440L1500 610L1770 390L1920 550V1080H0" fill="#5b9293"/><path d="M0 800Q320 640 670 810T1250 740T1920 840V1080H0" fill="#8cbbb0"/><path d="M0 960Q400 780 840 960T1920 920V1080H0" fill="#d8c795"/><rect y="360" width="1920" height="22" fill="#264853"/><rect y="670" width="1920" height="22" fill="#264853"/><rect width="1920" height="1080" fill="url(#panes)"/></svg>`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080"><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#a6cbd7"/><stop offset="1" stop-color="#ebdfba"/></linearGradient><linearGradient id="sea" x2="0" y2="1"><stop stop-color="#588f9e"/><stop offset="1" stop-color="#b2d4c9"/></linearGradient><pattern id="water" width="210" height="76" patternUnits="userSpaceOnUse"><path d="M0 16H90M130 48H205" stroke="#e5e9c8" stroke-width="12" opacity=".8"/><path d="M20 46H100M120 14H185M50 65H155" stroke="#315d70" stroke-width="7" opacity=".75"/></pattern></defs><rect width="1920" height="1080" fill="url(#sky)"/><circle cx="1480" cy="185" r="95" fill="#f8ecc0"/><path d="M0 530L270 280L500 530L750 350L1080 600H0" fill="#365b69"/><path d="M0 580L390 450L650 640L980 470L1330 650H0" fill="#6c9796"/><rect y="580" width="1920" height="500" fill="url(#sea)"/><rect y="580" width="1920" height="500" fill="url(#water)"/><path d="M0 860Q380 650 630 850T1090 1040L1140 1080H0" fill="#d5ba88"/><path d="M0 837Q380 627 630 827T1090 1017" fill="none" stroke="#f1e4bf" stroke-width="14"/></svg>`;
 }
 
 // Measure spatial texture in the actual pixels, not the CSS background string.
-// The quiet right-side ROI avoids title glyphs, controls, time and subtitles in
+// The quiet 70–80% ROI is between viewing tools and the More group; it
+// avoids title glyphs, controls, time and subtitles in
 // these fixed 1080p scenes. Low-variance rows cannot support a meaningful fit.
 function analyzeScenePixels(referenceBytes, controlsBytes, geometry) {
   const reference = PNG.sync.read(referenceBytes), shown = PNG.sync.read(controlsBytes);
   assert.equal(reference.width, shown.width); assert.equal(reference.height, shown.height);
-  const x0 = Math.round(reference.width * .70), x1 = Math.round(reference.width * .87);
+  const x0 = Math.round(reference.width * .70), x1 = Math.round(reference.width * .80);
   const luminance = (png, x, y) => { const i = 4 * (y * png.width + x); return .2126 * png.data[i] + .7152 * png.data[i + 1] + .0722 * png.data[i + 2]; };
   const row = y => {
     let n = 0, sx = 0, sy = 0, sxx = 0, syy = 0, sxy = 0;
@@ -104,13 +105,13 @@ function assertSceneTransparency(pixels, scene) {
 
 async function fixture(options = {}) {
   const context = await browser.newContext({ viewport: { width: options.width || 1920, height: options.height || 1080 }, serviceWorkers: 'block' });
-  const calls = { related: 0, followers: 0, interceptedHttp: 0, interceptedSockets: 0, unexpectedWrites: [], knownMockWrites: [], documents: 0, contractErrors: [] };
+  const calls = { related: 0, followers: 0, interceptedHttp: 0, interceptedSockets: 0, unexpectedWrites: [], knownMockWrites: [], mockWriteDetails: [], documents: 0, contractErrors: [] };
   const pending = [];
   await context.addInitScript(options => {
     delete window.webOS; delete window.PalmServiceBridge;
     localStorage.clear();
     localStorage.setItem('bili_proxyUrl', JSON.stringify('http://127.0.0.1:9527'));
-    localStorage.setItem('bili_settings', JSON.stringify({ language: options.language || 'zh', uiScale: options.scale || 1, gridCols: 3, quality: 80, qualityMode: 'manual', subtitle: true, danmaku: !!options.mask, danmakuMask: !!options.mask, playbackMode: 'stop' }));
+    localStorage.setItem('bili_settings', JSON.stringify({ language: options.language || 'zh', uiScale: options.scale || 1, gridCols: 3, quality: 80, qualityMode: 'manual', subtitle: !options.subtitleOff, danmaku: !!options.mask, danmakuMask: !!options.mask, playbackMode: 'stop' }));
     localStorage.setItem('bili_perfopt', JSON.stringify({ prefetchPage: false, warmPlayer: false }));
     // These credentials exist only in this new browser context. Every outgoing
     // HTTP/WS call outside Vite is intercepted before it reaches the network.
@@ -149,8 +150,9 @@ async function fixture(options = {}) {
     }
     if (url.port === '9528') return route.abort();
     if (request.method() !== 'GET') {
-      const known = /\/heartbeat$|\/archive\/like$|\/archive\/like\/triple$/.test(url.pathname);
-      if (known) calls.knownMockWrites.push(url.pathname);
+      const known = /\/heartbeat$|\/archive\/like$|\/archive\/like\/triple$/.test(url.pathname)
+        || (options.moreActions && /\/coin\/add$|\/fav\/resource\/deal$|\/toview\/(add|del)$/.test(url.pathname));
+      if (known) { calls.knownMockWrites.push(url.pathname); calls.mockWriteDetails.push({path:url.pathname,body:request.postData()}); }
       else if (url.pathname.endsWith('/translate_a/t')) return fulfill(new URLSearchParams(request.postData() || '').getAll('q'));
       else calls.unexpectedWrites.push(url.pathname);
       return fulfill({ code: 0, data: {} });
@@ -160,7 +162,8 @@ async function fixture(options = {}) {
     if (url.pathname.includes('/top/feed/rcmd')) data = { item: [] };
     if (url.pathname.endsWith('/history/cursor')) data = { list: [] };
     if (url.pathname.endsWith('/x/relation')) data = { attribute: 0 };
-    if (url.pathname.endsWith('/view')) data = { aid: 100, bvid: 'BVControlsFixture', cid: 2, title: '山海之间，寻找生活的另一种可能 · 播放器控制栏测试', pages: [{ cid: 2 }], owner: { mid: 1, name: options.longName ? '一个名字非常长的合成测试创作者｜山海生活摄影记录者' : '合成测试 UP' }, pubdate: 1790323200, stat: { like: 5678, coin: 123, favorite: 890 } };
+    if (url.pathname.endsWith('/fav/folder/created/list-all') && options.moreActions) data = { list: [{ id: 456, title: '合成收藏夹', fav_state: 0 }] };
+    if (url.pathname.endsWith('/view')) data = { aid: 100, bvid: 'BVControlsFixture', cid: 2, title: '山海之间，寻找生活的另一种可能 · 播放器控制栏测试', pages: [{ cid: 2 }], owner: { mid: 1, name: options.longName ? '一个名字非常长的合成测试创作者｜山海生活摄影记录者' : '合成测试 UP' }, pubdate: 1790323200, stat: { like: 5678, coin: 123, favorite: 890, reply: options.commentCount || 0 } };
     if (url.pathname.endsWith('/relation/stat')) {
       calls.followers++;
       if (url.searchParams.get('vmid') !== '1') calls.contractErrors.push('follower request must use video author 1, not current account 123');
@@ -168,7 +171,7 @@ async function fixture(options = {}) {
       data = options.followers === 'unknown' ? {} : { follower: options.followers ?? 125678 };
     }
     if (url.pathname.endsWith('/playurl')) data = { quality: 80, accept_quality: [80, 64, 32, 16], dash: { duration: 600, video: [{ id: 80, bandwidth: 1000, baseUrl: 'https://media.fixture.invalid/video', codecs: 'avc1.640028', width: 1920, height: 1080, frameRate: '30', SegmentBase: { Initialization: '0-51', indexRange: '52-70' } }], audio: [] } };
-    if (url.pathname.endsWith('/v2')) data = { last_play_cid: 2, last_play_time: 0, subtitle: { subtitles: [{ lan: 'zh-CN', lan_doc: '中文', subtitle_url: 'https://fixture.invalid/controls-subtitle.json' }] } };
+    if (url.pathname.endsWith('/v2')) data = { last_play_cid: 2, last_play_time: 0, subtitle: { subtitles: options.subtitles === false ? [] : [{ lan: 'zh-CN', lan_doc: '中文', subtitle_url: 'https://fixture.invalid/controls-subtitle.json' }] } };
     if (url.pathname.endsWith('/v2') && options.mask && options.mask !== 'missing') data.dm_mask = {cid:options.mask === 'mismatch'?999:2,mask_url:'https://a.bilivideo.com/cmaskboss/test.webmask'};
     if (url.pathname.endsWith('/test.webmask')) { (calls.maskRanges ||= []).push(request.headers().range); return route.fulfill({status:503,body:'unavailable',headers:{'access-control-allow-origin':'*'}}); }
     if (url.pathname.endsWith('/controls-subtitle.json')) return fulfill({ body: [{ from: 0, to: 600, content: '字幕保持可读，不应被控制栏遮挡' }] });
@@ -179,7 +182,7 @@ async function fixture(options = {}) {
       if (options.related === 'failure') return route.abort();
       data = options.related === 'empty' ? [] : items;
     }
-    if (url.pathname.endsWith('/x/v2/reply')) data = { page: { count: 0 }, replies: [] };
+    if (url.pathname.endsWith('/x/v2/reply')) data = { page: { count: options.commentCount || 0 }, replies: [] };
     return fulfill({ code: 0, data });
   });
   const page = await context.newPage(); page.setDefaultTimeout(6000);
@@ -189,7 +192,7 @@ async function fixture(options = {}) {
   await page.waitForFunction(() => !!window.__openVideo);
   await page.evaluate(() => window.__openVideo({ bvid: 'BVControlsFixture', resumeMode: 'none' }));
   await page.waitForFunction(() => window.__controlsProbe.loads === 1 && document.querySelector('video')?.readyState === 4);
-  await page.waitForFunction(() => document.querySelector('.player-control-label')?.textContent === '暂停');
+  await page.waitForFunction(() => ['暂停','Pause','Pausa'].includes(document.querySelector('.player-control-label')?.textContent));
   await page.waitForFunction(() => document.querySelector('.player-time')?.textContent.includes('/ 10:00'));
   const scene = options.scene ? `url("data:image/svg+xml;base64,${Buffer.from(sceneSvg(options.scene)).toString('base64')}") center / 100% 100% no-repeat` : options.background === 'dark' ? 'linear-gradient(125deg,#08161b,#132937 40%,#060b13)' : 'linear-gradient(125deg,#fffce4,#edf6fa 40%,#ffffff)';
   await page.addStyleTag({ content: `video { background: ${scene} !important; }` });
@@ -204,6 +207,18 @@ async function state(page) {
   });
 }
 async function openControls(page) { await page.keyboard.press('ArrowUp'); await page.waitForFunction(() => !document.querySelector('.player-controls').classList.contains('hidden')); await page.waitForTimeout(350); }
+async function openMore(page, id) {
+  if (!await page.locator('.player-more-panel').count()) {
+    for (let i = 0; i < 9 && await page.locator('.player-control.focused').getAttribute('data-control') !== 'more'; i++) await page.keyboard.press('ArrowRight');
+    assert.equal(await page.locator('.player-control.focused').getAttribute('data-control'), 'more');
+    await page.keyboard.press('Enter'); await page.locator('.player-more-panel').waitFor();
+  }
+  if (id) {
+    for (let i = 0; i < 8; i++) await page.keyboard.press('ArrowUp');
+    for (let i = 0; i < 8 && await page.locator('.player-more-action.focused').getAttribute('data-control') !== id; i++) await page.keyboard.press('ArrowDown');
+    assert.equal(await page.locator('.player-more-action.focused').getAttribute('data-control'), id);
+  }
+}
 async function focusedCard(page, index) {
   await page.waitForFunction(index => {
     const focused = [...document.querySelectorAll('.related-card')].map((el, i) => el.classList.contains('focused') ? i : -1).filter(i => i >= 0);
@@ -235,7 +250,7 @@ async function run(name, options, fn) {
 
 for(const mask of ['failure','missing','mismatch']) await run('person mask metadata integration '+mask, {mask}, async f=>{
  await openControls(f.page);
- await f.page.locator('.player-btn').filter({hasText:'弹幕设置'}).click();
+ await openMore(f.page,'danmakuSettings');await f.page.keyboard.press('Enter');
  const text=mask==='failure'?'人物遮罩加载失败，已使用普通弹幕':'当前视频未提供人物遮罩';
  await f.page.getByRole('status').filter({hasText:text}).waitFor();
  assert.equal((f.calls.maskRanges||[]).length,mask==='failure'?1:0);
@@ -248,11 +263,12 @@ for(const mask of ['failure','missing','mismatch']) await run('person mask metad
 await run('in-playback danmaku settings preserve playback and restore remote focus', {}, async f => {
  const page=f.page;await openControls(page);
  await page.route('**/list.so?**',route=>route.fulfill({contentType:'text/xml',body:'<i><d p="120,1,28,16777215,0,0,hash,99">即时样式测试</d></i>'}));
- await page.locator('.player-btn').filter({hasText:'弹幕 关'}).click();
+ await page.locator('.player-control[data-control="danmaku"]').click();
  const actual=page.locator('.player-page-vod > .danmaku-container .danmaku-item');
  await actual.first().waitFor();assert.equal(await actual.first().evaluate(e=>e.style.fontSize),'28px');
  const before=await state(page);
- await page.locator('.player-btn').filter({hasText:'弹幕设置'}).click();
+ await openMore(page,'danmakuSettings');
+ await page.keyboard.press('Enter');
  await page.getByRole('dialog',{name:'弹幕设置'}).waitFor();
  await page.keyboard.press('Enter');await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('bili_settings')).danmakuScale),1.3);
@@ -265,8 +281,99 @@ await run('in-playback danmaku settings preserve playback and restore remote foc
  await shot(f,'in-playback-danmaku-applied');
  await page.keyboard.press('Enter');await page.getByRole('dialog',{name:'弹幕设置'}).waitFor();
  assert.ok((await page.locator('.dm-setting-row').first().innerText()).includes('大'));
- await page.keyboard.press('Escape');await page.keyboard.press('ArrowLeft');
- assert.ok((await state(page)).focused.startsWith('弹幕 '));
+ await page.keyboard.press('Escape');await page.keyboard.press('Escape');
+ assert.equal((await state(page)).focused,'更多');
+ for(let i=0;i<8 && (await page.locator('.player-control.focused').getAttribute('data-control'))!=='danmaku';i++)await page.keyboard.press('ArrowLeft');
+ assert.equal(await page.locator('.player-control.focused').getAttribute('data-control'),'danmaku');
+});
+
+for(const options of [{}, {width:1280,height:720,scale:1.4}, {auth:false,subtitles:false}, {language:'en',width:1280,height:720,scale:1.4,subtitleOff:true}]) await run('grouped primary tools and More hierarchy '+JSON.stringify(options), options, async f => {
+ const page=f.page;await page.waitForTimeout(700);await openControls(page);
+ const buttons=await page.locator('.player-control').evaluateAll(nodes=>nodes.map(e=>{const r=e.getBoundingClientRect();return {id:e.dataset.control,x:r.x,y:r.y,centerY:(r.y+r.bottom)/2,right:r.right,bottom:r.bottom}}));
+ assert.deepEqual(buttons.map(b=>b.id),['play','danmaku',...(options.subtitles===false?[]:['subtitle']),'speed','quality','more','comments']);
+ assert.ok(buttons.every(b=>Math.abs(b.centerY-buttons[0].centerY)<1&&b.x>=0&&b.right<=(options.width||1920)),'primary actions stay on one visible row');
+ const stateBadges=await page.locator('.player-control-state').evaluateAll(nodes=>nodes.map(e=>{const r=e.getBoundingClientRect(),b=e.closest('button').getBoundingClientRect();return {id:e.closest('button').dataset.control,text:e.textContent,visible:r.width>0&&r.left>=b.left&&r.right<=b.right&&r.top>=b.top&&r.bottom<=b.bottom&&e.scrollWidth<=e.clientWidth+1,font:parseFloat(getComputedStyle(e).fontSize)};}));
+ assert.equal(stateBadges.length,options.subtitles===false?1:2);
+ for(const badge of stateBadges){assert.ok(badge.visible,'state is visible without truncation: '+badge.id);assert.ok(badge.font>=18*(options.scale||1)-.01,'state respects text size');}
+ assert.equal(stateBadges.find(b=>b.id==='danmaku').text,options.language==='en'?'Off':'关');
+ if(options.subtitleOff)assert.equal(stateBadges.find(b=>b.id==='subtitle').text,'Off');
+ assert.equal(await page.locator('.player-btns .player-time').count(),0);
+ assert.equal(await page.locator('.player-timeline-meta .player-time').count(),1);
+ assert.equal(await page.locator('.player-more-panel').count(),0);
+ const before=await state(page);await openMore(page);
+ const rows=await page.locator('.player-more-action').evaluateAll(nodes=>nodes.map(e=>e.dataset.control));
+ for(const key of ['like','coin','fav','later'])assert.equal(rows.includes(key),options.auth!==false);
+ assert.ok(rows.includes('danmakuSettings'));
+ for(let n=0;n<rows.length;n++){
+  const focused=page.locator('.player-more-action.focused');const box=await focused.boundingBox();
+  assert.ok(box.y>=0&&box.y+box.height<=(options.height||1080),'every More action is visible through remote navigation');
+  await page.keyboard.press('ArrowDown');
+ }
+ await shot(f,'after-more-'+(options.language||'zh')+'-'+(options.height||1080)+'-'+(options.auth===false?'guest':'account'));
+ await page.waitForTimeout(5200);assert.equal((await state(page)).visibleControls,true,'More prevents auto-hide');
+ await page.keyboard.press('Escape');assert.equal(await page.locator('.player-more-panel').count(),0);
+ assert.equal(await page.locator('.player-control.focused').getAttribute('data-control'),'more');
+ const after=await state(page);assert.equal(after.probe.loads,before.probe.loads);assert.deepEqual(after.probe.seeks,before.probe.seeks);assert.equal(after.media.paused,before.media.paused);
+ assert.equal(f.calls.knownMockWrites.length,0,'navigating through actions performs no account writes');
+});
+await run('More like tap is single and navigation or Back cancels an unfinished hold',{},async f=>{
+ const page=f.page;await openControls(page);await openMore(page,'like');
+ await page.keyboard.press('Enter');await page.waitForTimeout(200);
+ assert.equal(f.calls.knownMockWrites.filter(p=>p.endsWith('/archive/like')).length,1,'quick press likes once');
+ await page.keyboard.down('Enter');await page.waitForTimeout(400);await page.keyboard.press('ArrowDown');await page.keyboard.up('Enter');
+ assert.equal(f.calls.knownMockWrites.length,1,'moving focus cancels the held action');
+ await page.keyboard.press('ArrowUp');await page.keyboard.down('Enter');await page.waitForTimeout(400);await page.keyboard.press('Escape');await page.keyboard.up('Enter');
+ assert.equal(f.calls.knownMockWrites.length,1,'Back cancels the held action');
+ assert.equal(await page.locator('.player-control.focused').getAttribute('data-control'),'more');
+ await page.keyboard.press('Enter');await page.locator('.player-more-panel').waitFor();
+ await page.getByRole('button',{name:'点赞',exact:true}).click();await page.waitForTimeout(200);
+ assert.equal(f.calls.knownMockWrites.filter(p=>p.endsWith('/archive/like')).length,2,'pointer click likes once without a second synthetic click');
+});
+
+await run('More preserves separate coin favorite and watch later actions',{moreActions:true},async f=>{
+ const page=f.page;await openControls(page);await openMore(page,'coin');
+ await page.keyboard.press('Enter');
+ await page.waitForFunction(()=>document.querySelector('[data-control="coin"] .player-more-value')?.textContent==='124');
+ await openMore(page,'fav');await page.keyboard.press('Enter');
+ await page.waitForFunction(()=>document.querySelector('[data-control="fav"]')?.getAttribute('aria-pressed')==='true');
+ assert.equal(await page.locator('[data-control="fav"] .player-more-value').textContent(),'891');
+ await openMore(page,'later');await page.keyboard.press('Enter');
+ await page.getByRole('button',{name:'已稍后再看',exact:true}).waitFor();
+ await page.keyboard.press('Enter');await page.getByRole('button',{name:'稍后再看',exact:true}).waitFor();
+ const writes=f.calls.mockWriteDetails.map(w=>({path:w.path,form:new URLSearchParams(w.body)}));
+ assert.deepEqual(writes.map(w=>w.path),['/proxy/api.bilibili.com/x/web-interface/coin/add','/proxy/api.bilibili.com/x/v3/fav/resource/deal','/proxy/api.bilibili.com/x/v2/history/toview/add','/proxy/api.bilibili.com/x/v2/history/toview/del']);
+ assert.equal(writes[0].form.get('aid'),'100');assert.equal(writes[0].form.get('multiply'),'1');
+ assert.equal(writes[1].form.get('rid'),'100');assert.equal(writes[1].form.get('add_media_ids'),'456');
+ for(const write of writes.slice(2))assert.equal(write.form.get('aid'),'100');
+ assert.equal((await state(page)).probe.loads,1);
+});
+
+for(const terminal of ['ended','error']) await run('More closes and cancels account hold when playback '+terminal,{},async f=>{
+ const page=f.page;await openControls(page);await openMore(page,'like');
+ await page.keyboard.down('Enter');await page.waitForTimeout(400);
+ await page.evaluate(terminal=>{
+  if(terminal==='ended')document.querySelector('video').dispatchEvent(new Event('ended'));
+  else window.__shakaPlayer.events.error({detail:{category:3,code:3016,severity:2}});
+ },terminal);
+ await page.waitForFunction(()=>!document.querySelector('.player-more-panel'));
+ await page.keyboard.up('Enter');await page.waitForTimeout(1800);
+ assert.equal(f.calls.knownMockWrites.length,0,'terminal transition cancels the pending account write');
+ if(terminal==='error')await page.locator('.player-error').waitFor();
+ else assert.equal(await page.locator('.related-card.focused').count(),1);
+});
+
+for(const language of ['zh','en']) await run('comment count remains visible before opening and within narrow rail '+language,{language,width:1280,height:720,scale:1.4,commentCount:125678},async f=>{
+ const page=f.page;await openControls(page);
+ assert.ok((await page.locator('.player-control[data-control="comments"]').textContent()).includes(language==='zh'?'12.6万':'125.7K'),'existing comment total remains visible before opening');
+ await page.keyboard.press('ArrowLeft');await page.keyboard.press('Enter');
+ await page.locator('.comment-rail-body').waitFor();await page.waitForTimeout(350);
+ const geometry=await page.evaluate(()=>{
+  const rail=document.querySelector('.comment-rail-body').parentElement.getBoundingClientRect();
+  return [...document.querySelectorAll('.player-control')].map(e=>{const b=e.getBoundingClientRect(),label=e.querySelector('.player-control-label'),state=e.querySelector('.player-control-state');return{id:e.dataset.control,right:b.right,edge:rail.left,center:(b.y+b.bottom)/2,labelClipped:label.scrollWidth>label.clientWidth+1,stateClipped:state&&state.scrollWidth>state.clientWidth+1};});
+ });
+ for(const b of geometry){assert.ok(b.right<=b.edge,'button stays left of comment rail: '+b.id);assert.ok(!b.labelClipped&&!b.stateClipped,'label and status remain readable: '+b.id);assert.ok(Math.abs(b.center-geometry[0].center)<1,'one row with consistent alignment');}
+ await shot(f,'after-comments-count-'+language+'-720-large');
+ await page.keyboard.press('Escape');assert.equal(await page.locator('.player-control.focused').getAttribute('data-control'),'comments');
 });
 
 for (const scene of ['coast', 'window']) await run('scene transparency ' + scene, { scene, width: 1920, height: 1080 }, async f => {
@@ -551,7 +658,7 @@ if (!baseline) {
     assert.equal((await state(f.page)).visibleControls, true, 'subtitle choice suspends auto-hide');
     await f.page.keyboard.press('Escape');
     assert.match((await state(f.page)).focused, /字幕/);
-    for (let i = 0; i < 20 && await f.page.locator('.player-btn.focused').getAttribute('aria-label') !== '点赞'; i++) await f.page.keyboard.press('ArrowLeft');
+    await openMore(f.page,'like');
     assert.equal(await f.page.locator('.player-btn.focused').getAttribute('aria-label'),'点赞');
     await f.page.keyboard.down('Enter'); await f.page.waitForTimeout(500);
     await f.page.locator('.like-ring').waitFor(); await shot(f, 'after-like-hold');
@@ -559,6 +666,7 @@ if (!baseline) {
     assert.equal(f.calls.knownMockWrites.length, 0, 'aborted like hold does not submit a like or triple');
     await f.page.keyboard.down('Enter'); await f.page.waitForTimeout(2200); await f.page.keyboard.up('Enter');
     assert.equal(f.calls.knownMockWrites.filter(path => path.endsWith('/archive/like/triple')).length, 1, 'full two-second hold submits one synthetic triple');
+    await f.page.keyboard.press('Escape');
     await f.page.keyboard.press('ArrowDown'); await f.page.keyboard.press('ArrowDown');
     await f.page.keyboard.down('Enter'); await f.page.waitForTimeout(900); await f.page.keyboard.up('Enter');
     await f.page.locator('.cardmenu').waitFor();

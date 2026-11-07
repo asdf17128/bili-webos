@@ -521,13 +521,20 @@ await run('repeated fatal runtime errors exhaust bounded remount budget','runtim
  await page.clock.fastForward(120000);assert.equal(await page.evaluate(()=>window.__probe.loads),3);
  await page.keyboard.press('Enter');await page.waitForFunction(()=>window.__probe.loads===4);
 });
-await run('creator follow from player control bar','follow',async(page,calls)=>{
+await run('creator follow from player more menu','follow',async(page,calls)=>{
  await open(page);await page.waitForFunction(()=>window.__probe.loads===1);await page.waitForTimeout(200);
  assert.equal(calls.follow||0,0);
  await page.keyboard.press('ArrowUp');
- await page.getByText('关注 UP 主',{exact:true}).click();
- await page.getByText('取消关注 UP 主',{exact:true}).waitFor();
+ for(let i=0;i<8 && !await page.locator('.player-btns [data-control="more"].focused').count();i++)await page.keyboard.press('ArrowRight');
+ assert.equal(await page.locator('.player-btns [data-control="more"].focused').count(),1,'More is reachable from the primary row');
+ await page.keyboard.press('Enter');await page.locator('.player-more-panel').waitFor();
+ for(let i=0;i<6 && !await page.locator('.player-more-panel [data-control="follow"].focused').count();i++)await page.keyboard.press('ArrowDown');
+ assert.equal(await page.locator('.player-more-panel [data-control="follow"].focused').count(),1,'Follow is reachable in the vertical More menu');
+ await page.keyboard.press('Enter');
+ await page.locator('.player-more-panel').getByText('取消关注 UP 主',{exact:true}).waitFor();
  assert.equal(calls.follow,1);
+ await page.keyboard.press('Escape');await page.locator('.player-more-panel').waitFor({state:'detached'});
+ assert.equal(await page.locator('.player-btns [data-control="more"].focused').count(),1,'Back returns to More in the primary row');
 });
 await run('outage recovery: permanent outage has a finite retry budget','network',async(page,calls)=>{
  await page.clock.install();await open(page);

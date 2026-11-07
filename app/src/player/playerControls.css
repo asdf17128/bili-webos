@@ -20,7 +20,7 @@
   z-index: 42;
   max-height: none;
   overflow: visible;
-  padding: 48px 64px 0;
+  padding: 40px 64px 0;
   background: linear-gradient(to bottom,
     rgba(0, 0, 0, 0) 0,
     rgba(0, 0, 0, .10) 18%,
@@ -109,41 +109,77 @@
 .player-controls-vod .player-control-deck > .player-progress-bar {
   display: block;
   height: 6px;
-  margin-top: 16px;
+  margin-top: 8px;
   margin-bottom: 12px;
   background: rgba(255, 255, 255, .38);
 }
 
 .player-controls-vod .player-btns {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 0; /* Reset global spacing; margins also work on older webOS. */
 }
 
 .player-controls-vod .player-control {
+  /* Let translated labels use the available row instead of clipping them
+     inside fixed-width buttons. The automatic minimum preserves whole words
+     and the separate On/Off indicator when the comment rail is open. */
   flex: 0 1 auto;
-  min-width: 76px;
-  min-height: 80px;
-  max-width: 200px;
-  margin: 4px 12px 0 0;
+  min-width: auto;
+  min-height: 76px;
+  max-width: none;
+  justify-content: flex-start;
+  margin: 0 10px 0 0;
   padding: 10px 12px;
   background: transparent;
   color: #fff;
   text-shadow: inherit;
 }
 
+.player-controls-vod .player-control[data-control="play"] {
+  flex-basis: 88px;
+  background: rgba(255, 255, 255, .12);
+}
+.player-controls-vod .player-control[data-control="more"] { margin-left: auto; }
+.player-controls-vod .player-control:last-child { margin-right: 0; }
+
 .player-controls-vod .player-control-label {
   margin-top: 7px;
   font-size: calc(18px * var(--ui-scale));
   font-weight: 600;
   line-height: 1.25;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
 }
 
-.player-controls-vod .player-control > svg {
+.player-controls-vod .player-control-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  height: calc(22.5px * var(--ui-scale));
+  min-height: 28px;
+  white-space: nowrap;
+}
+
+.player-controls-vod .player-control-icon > svg { flex: none; }
+
+.player-controls-vod .player-control-state {
+  flex: none;
+  margin-left: 8px;
+  font-size: calc(18px * var(--ui-scale));
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.player-controls-vod .player-control-icon > svg {
   filter: drop-shadow(0 1px 1px #000) drop-shadow(0 0 2px rgba(0, 0, 0, .9));
 }
 
-.player-controls-vod .player-control.focused > svg {
+.player-controls-vod .player-control.focused .player-control-icon > svg {
   filter: none;
 }
 
@@ -159,14 +195,24 @@
   transform: scale(1.04);
 }
 
+.player-controls-vod .player-timeline-meta {
+  display: flex;
+  align-items: baseline;
+  margin-top: 10px;
+  min-width: 0;
+}
+
 .player-controls-vod .player-time {
   min-width: 0;
   max-width: 100%;
-  margin-top: 8px;
+  margin: 0;
   color: #fff;
   font-size: calc(18px * var(--ui-scale));
   font-weight: 600;
   line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* A real, cropped first row invites Down without creating a second grid. */
@@ -269,10 +315,10 @@
   .player-controls-vod .player-author-followers { margin-left: 8px; }
   .player-controls-vod .player-publish-meta,
   .player-controls-vod .player-disclaimer { margin-right: 12px; }
-  .player-controls-vod .player-control-deck > .player-progress-bar { margin-top: 10px; margin-bottom: 8px; }
-  .player-controls-vod .player-control { min-width: 64px; min-height: 68px; max-width: 156px; margin: 4px 6px 0 0; padding: 6px 9px; }
+  .player-controls-vod .player-timeline-meta { margin-top: 6px; }
+  .player-controls-vod .player-control-deck > .player-progress-bar { margin-top: 6px; margin-bottom: 10px; }
+  .player-controls-vod .player-control { min-height: 68px; margin: 0 4px 0 0; padding: 6px 8px; }
   .player-controls-vod .player-control-label { margin-top: 5px; }
-  .player-controls-vod .player-time { margin-top: 6px; }
   .player-controls-vod .player-recommendation-hint { min-height: 32px; margin-bottom: 0; }
   .player-controls-vod .player-related-panel { margin-top: 4px; }
   .player-controls-vod .panel-tab-row { margin-bottom: 4px; }

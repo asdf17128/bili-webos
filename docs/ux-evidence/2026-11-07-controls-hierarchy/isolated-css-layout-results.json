@@ -1,0 +1,1937 @@
+[
+  {
+    "lang": "en",
+    "width": 1920,
+    "height": 1080,
+    "scale": 1,
+    "rail": 0,
+    "violations": [],
+    "row": {
+      "x": 64,
+      "y": 974.5,
+      "width": 1792,
+      "height": 77.5,
+      "right": 1856,
+      "bottom": 1052
+    },
+    "buttons": [
+      {
+        "id": "play",
+        "box": {
+          "x": 62.2400016784668,
+          "y": 972.9500122070312,
+          "width": 91.51998901367188,
+          "height": 80.60003662109375,
+          "right": 153.75999069213867,
+          "bottom": 1053.550048828125
+        },
+        "label": {
+          "x": 80.84625244140625,
+          "y": 1019.75,
+          "width": 54.3074951171875,
+          "height": 23.4000244140625,
+          "right": 135.15374755859375,
+          "bottom": 1043.1500244140625,
+          "text": "Pause",
+          "client": 52,
+          "scroll": 52,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "danmaku",
+        "box": {
+          "x": 162,
+          "y": 974.5,
+          "width": 104.359375,
+          "height": 77.5,
+          "right": 266.359375,
+          "bottom": 1052
+        },
+        "label": {
+          "x": 174,
+          "y": 1019.5,
+          "width": 80.359375,
+          "height": 22.5,
+          "right": 254.359375,
+          "bottom": 1042,
+          "text": "Danmaku",
+          "client": 80,
+          "scroll": 80,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": {
+          "x": 218.953125,
+          "y": 987.25,
+          "width": 26.4375,
+          "height": 22.5,
+          "right": 245.390625,
+          "bottom": 1009.75,
+          "client": 26,
+          "scroll": 26,
+          "text": "Off",
+          "font": "18px"
+        }
+      },
+      {
+        "id": "subtitle",
+        "box": {
+          "x": 276.359375,
+          "y": 974.5,
+          "width": 86.4375,
+          "height": 77.5,
+          "right": 362.796875,
+          "bottom": 1052
+        },
+        "label": {
+          "x": 306.390625,
+          "y": 1019.5,
+          "width": 26.359375,
+          "height": 22.5,
+          "right": 332.75,
+          "bottom": 1042,
+          "text": "CC",
+          "client": 26,
+          "scroll": 26,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": {
+          "x": 324.359375,
+          "y": 987.25,
+          "width": 26.4375,
+          "height": 22.5,
+          "right": 350.796875,
+          "bottom": 1009.75,
+          "client": 26,
+          "scroll": 26,
+          "text": "Off",
+          "font": "18px"
+        }
+      },
+      {
+        "id": "speed",
+        "box": {
+          "x": 372.796875,
+          "y": 974.5,
+          "width": 77.8125,
+          "height": 77.5,
+          "right": 450.609375,
+          "bottom": 1052
+        },
+        "label": {
+          "x": 384.796875,
+          "y": 1019.5,
+          "width": 53.8125,
+          "height": 22.5,
+          "right": 438.609375,
+          "bottom": 1042,
+          "text": "Speed",
+          "client": 54,
+          "scroll": 54,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "quality",
+        "box": {
+          "x": 460.609375,
+          "y": 974.5,
+          "width": 131.109375,
+          "height": 77.5,
+          "right": 591.71875,
+          "bottom": 1052
+        },
+        "label": {
+          "x": 472.609375,
+          "y": 1019.5,
+          "width": 107.109375,
+          "height": 22.5,
+          "right": 579.71875,
+          "bottom": 1042,
+          "text": "Dolby Vision",
+          "client": 107,
+          "scroll": 107,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "more",
+        "box": {
+          "x": 1583,
+          "y": 974.5,
+          "width": 68,
+          "height": 77.5,
+          "right": 1651,
+          "bottom": 1052
+        },
+        "label": {
+          "x": 1595,
+          "y": 1019.5,
+          "width": 44,
+          "height": 22.5,
+          "right": 1639,
+          "bottom": 1042,
+          "text": "More",
+          "client": 44,
+          "scroll": 44,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "comments",
+        "box": {
+          "x": 1661,
+          "y": 974.5,
+          "width": 195,
+          "height": 77.5,
+          "right": 1856,
+          "bottom": 1052
+        },
+        "label": {
+          "x": 1673,
+          "y": 1019.5,
+          "width": 171,
+          "height": 22.5,
+          "right": 1844,
+          "bottom": 1042,
+          "text": "Comments · 126.0K",
+          "client": 171,
+          "scroll": 171,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": null
+      }
+    ]
+  },
+  {
+    "lang": "zh",
+    "width": 1920,
+    "height": 1080,
+    "scale": 1,
+    "rail": 0,
+    "violations": [],
+    "row": {
+      "x": 64,
+      "y": 974.5,
+      "width": 1792,
+      "height": 77.5,
+      "right": 1856,
+      "bottom": 1052
+    },
+    "buttons": [
+      {
+        "id": "play",
+        "box": {
+          "x": 62.2400016784668,
+          "y": 972.9500122070312,
+          "width": 91.51998901367188,
+          "height": 80.60003662109375,
+          "right": 153.75999069213867,
+          "bottom": 1053.550048828125
+        },
+        "label": {
+          "x": 89.27999877929688,
+          "y": 1019.75,
+          "width": 37.44000244140625,
+          "height": 23.4000244140625,
+          "right": 126.72000122070312,
+          "bottom": 1043.1500244140625,
+          "text": "暂停",
+          "client": 36,
+          "scroll": 36,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "danmaku",
+        "box": {
+          "x": 162,
+          "y": 974.5,
+          "width": 78,
+          "height": 77.5,
+          "right": 240,
+          "bottom": 1052
+        },
+        "label": {
+          "x": 183,
+          "y": 1019.5,
+          "width": 36,
+          "height": 22.5,
+          "right": 219,
+          "bottom": 1042,
+          "text": "弹幕",
+          "client": 36,
+          "scroll": 36,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": {
+          "x": 210,
+          "y": 987.25,
+          "width": 18,
+          "height": 22.5,
+          "right": 228,
+          "bottom": 1009.75,
+          "client": 18,
+          "scroll": 18,
+          "text": "关",
+          "font": "18px"
+        }
+      },
+      {
+        "id": "subtitle",
+        "box": {
+          "x": 250,
+          "y": 974.5,
+          "width": 78,
+          "height": 77.5,
+          "right": 328,
+          "bottom": 1052
+        },
+        "label": {
+          "x": 271,
+          "y": 1019.5,
+          "width": 36,
+          "height": 22.5,
+          "right": 307,
+          "bottom": 1042,
+          "text": "字幕",
+          "client": 36,
+          "scroll": 36,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": {
+          "x": 298,
+          "y": 987.25,
+          "width": 18,
+          "height": 22.5,
+          "right": 316,
+          "bottom": 1009.75,
+          "client": 18,
+          "scroll": 18,
+          "text": "关",
+          "font": "18px"
+        }
+      },
+      {
+        "id": "speed",
+        "box": {
+          "x": 338,
+          "y": 974.5,
+          "width": 60,
+          "height": 77.5,
+          "right": 398,
+          "bottom": 1052
+        },
+        "label": {
+          "x": 350,
+          "y": 1019.5,
+          "width": 36,
+          "height": 22.5,
+          "right": 386,
+          "bottom": 1042,
+          "text": "倍速",
+          "client": 36,
+          "scroll": 36,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "quality",
+        "box": {
+          "x": 408,
+          "y": 974.5,
+          "width": 131.109375,
+          "height": 77.5,
+          "right": 539.109375,
+          "bottom": 1052
+        },
+        "label": {
+          "x": 420,
+          "y": 1019.5,
+          "width": 107.109375,
+          "height": 22.5,
+          "right": 527.109375,
+          "bottom": 1042,
+          "text": "Dolby Vision",
+          "client": 107,
+          "scroll": 107,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "more",
+        "box": {
+          "x": 1653.078125,
+          "y": 974.5,
+          "width": 60,
+          "height": 77.5,
+          "right": 1713.078125,
+          "bottom": 1052
+        },
+        "label": {
+          "x": 1665.078125,
+          "y": 1019.5,
+          "width": 36,
+          "height": 22.5,
+          "right": 1701.078125,
+          "bottom": 1042,
+          "text": "更多",
+          "client": 36,
+          "scroll": 36,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "comments",
+        "box": {
+          "x": 1723.078125,
+          "y": 974.5,
+          "width": 132.921875,
+          "height": 77.5,
+          "right": 1856,
+          "bottom": 1052
+        },
+        "label": {
+          "x": 1735.078125,
+          "y": 1019.5,
+          "width": 108.921875,
+          "height": 22.5,
+          "right": 1844,
+          "bottom": 1042,
+          "text": "评论 · 12.6万",
+          "client": 109,
+          "scroll": 109,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": null
+      }
+    ]
+  },
+  {
+    "lang": "es",
+    "width": 1920,
+    "height": 1080,
+    "scale": 1,
+    "rail": 0,
+    "violations": [],
+    "row": {
+      "x": 64,
+      "y": 974.5,
+      "width": 1792,
+      "height": 77.5,
+      "right": 1856,
+      "bottom": 1052
+    },
+    "buttons": [
+      {
+        "id": "play",
+        "box": {
+          "x": 62.2400016784668,
+          "y": 972.9500122070312,
+          "width": 91.51998901367188,
+          "height": 80.60003662109375,
+          "right": 153.75999069213867,
+          "bottom": 1053.550048828125
+        },
+        "label": {
+          "x": 80.79750061035156,
+          "y": 1019.75,
+          "width": 54.404998779296875,
+          "height": 23.4000244140625,
+          "right": 135.20249938964844,
+          "bottom": 1043.1500244140625,
+          "text": "Pausa",
+          "client": 52,
+          "scroll": 52,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "danmaku",
+        "box": {
+          "x": 162,
+          "y": 974.5,
+          "width": 104.359375,
+          "height": 77.5,
+          "right": 266.359375,
+          "bottom": 1052
+        },
+        "label": {
+          "x": 174,
+          "y": 1019.5,
+          "width": 80.359375,
+          "height": 22.5,
+          "right": 254.359375,
+          "bottom": 1042,
+          "text": "Danmaku",
+          "client": 80,
+          "scroll": 80,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": {
+          "x": 220.1875,
+          "y": 987.25,
+          "width": 23.984375,
+          "height": 22.5,
+          "right": 244.171875,
+          "bottom": 1009.75,
+          "client": 24,
+          "scroll": 24,
+          "text": "No",
+          "font": "18px"
+        }
+      },
+      {
+        "id": "subtitle",
+        "box": {
+          "x": 276.359375,
+          "y": 974.5,
+          "width": 83.984375,
+          "height": 77.5,
+          "right": 360.34375,
+          "bottom": 1052
+        },
+        "label": {
+          "x": 305.171875,
+          "y": 1019.5,
+          "width": 26.359375,
+          "height": 22.5,
+          "right": 331.53125,
+          "bottom": 1042,
+          "text": "CC",
+          "client": 26,
+          "scroll": 26,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": {
+          "x": 324.359375,
+          "y": 987.25,
+          "width": 23.984375,
+          "height": 22.5,
+          "right": 348.34375,
+          "bottom": 1009.75,
+          "client": 24,
+          "scroll": 24,
+          "text": "No",
+          "font": "18px"
+        }
+      },
+      {
+        "id": "speed",
+        "box": {
+          "x": 370.34375,
+          "y": 974.5,
+          "width": 108.46875,
+          "height": 77.5,
+          "right": 478.8125,
+          "bottom": 1052
+        },
+        "label": {
+          "x": 382.34375,
+          "y": 1019.5,
+          "width": 84.46875,
+          "height": 22.5,
+          "right": 466.8125,
+          "bottom": 1042,
+          "text": "Velocidad",
+          "client": 84,
+          "scroll": 84,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "quality",
+        "box": {
+          "x": 488.8125,
+          "y": 974.5,
+          "width": 131.109375,
+          "height": 77.5,
+          "right": 619.921875,
+          "bottom": 1052
+        },
+        "label": {
+          "x": 500.8125,
+          "y": 1019.5,
+          "width": 107.109375,
+          "height": 22.5,
+          "right": 607.921875,
+          "bottom": 1042,
+          "text": "Dolby Vision",
+          "client": 107,
+          "scroll": 107,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "more",
+        "box": {
+          "x": 1574.125,
+          "y": 974.5,
+          "width": 60,
+          "height": 77.5,
+          "right": 1634.125,
+          "bottom": 1052
+        },
+        "label": {
+          "x": 1586.125,
+          "y": 1019.5,
+          "width": 36,
+          "height": 22.5,
+          "right": 1622.125,
+          "bottom": 1042,
+          "text": "Más",
+          "client": 36,
+          "scroll": 36,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "comments",
+        "box": {
+          "x": 1644.125,
+          "y": 974.5,
+          "width": 211.875,
+          "height": 77.5,
+          "right": 1856,
+          "bottom": 1052
+        },
+        "label": {
+          "x": 1656.125,
+          "y": 1019.5,
+          "width": 187.875,
+          "height": 22.5,
+          "right": 1844,
+          "bottom": 1042,
+          "text": "Comentarios · 126.0K",
+          "client": 188,
+          "scroll": 188,
+          "font": "18px",
+          "lineHeight": "22.5px"
+        },
+        "state": null
+      }
+    ]
+  },
+  {
+    "lang": "en",
+    "width": 1280,
+    "height": 720,
+    "scale": 1.4,
+    "rail": 0,
+    "violations": [],
+    "row": {
+      "x": 36,
+      "y": 612,
+      "width": 1208,
+      "height": 80,
+      "right": 1244,
+      "bottom": 692
+    },
+    "buttons": [
+      {
+        "id": "play",
+        "box": {
+          "x": 34.21781539916992,
+          "y": 610.4000244140625,
+          "width": 92.67373657226562,
+          "height": 83.199951171875,
+          "right": 126.89155197143555,
+          "bottom": 693.5999755859375
+        },
+        "label": {
+          "x": 42.53781509399414,
+          "y": 654.5999755859375,
+          "width": 76.03375244140625,
+          "height": 32.760009765625,
+          "right": 118.57156753540039,
+          "bottom": 687.3599853515625,
+          "text": "Pause",
+          "client": 73,
+          "scroll": 73,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "danmaku",
+        "box": {
+          "x": 129.109375,
+          "y": 612,
+          "width": 128.5,
+          "height": 80,
+          "right": 257.609375,
+          "bottom": 692
+        },
+        "label": {
+          "x": 137.109375,
+          "y": 654.5,
+          "width": 112.5,
+          "height": 31.5,
+          "right": 249.609375,
+          "bottom": 686,
+          "text": "Danmaku",
+          "client": 113,
+          "scroll": 113,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": {
+          "x": 192.859375,
+          "y": 618,
+          "width": 37,
+          "height": 31.5,
+          "right": 229.859375,
+          "bottom": 649.5,
+          "client": 37,
+          "scroll": 37,
+          "text": "Off",
+          "font": "25.2px"
+        }
+      },
+      {
+        "id": "subtitle",
+        "box": {
+          "x": 261.609375,
+          "y": 612,
+          "width": 89,
+          "height": 80,
+          "right": 350.609375,
+          "bottom": 692
+        },
+        "label": {
+          "x": 287.65625,
+          "y": 654.5,
+          "width": 36.90625,
+          "height": 31.5,
+          "right": 324.5625,
+          "bottom": 686,
+          "text": "CC",
+          "client": 37,
+          "scroll": 37,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": {
+          "x": 305.609375,
+          "y": 618,
+          "width": 37,
+          "height": 31.5,
+          "right": 342.609375,
+          "bottom": 649.5,
+          "client": 37,
+          "scroll": 37,
+          "text": "Off",
+          "font": "25.2px"
+        }
+      },
+      {
+        "id": "speed",
+        "box": {
+          "x": 354.609375,
+          "y": 612,
+          "width": 91.328125,
+          "height": 80,
+          "right": 445.9375,
+          "bottom": 692
+        },
+        "label": {
+          "x": 362.609375,
+          "y": 654.5,
+          "width": 75.328125,
+          "height": 31.5,
+          "right": 437.9375,
+          "bottom": 686,
+          "text": "Speed",
+          "client": 75,
+          "scroll": 75,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "quality",
+        "box": {
+          "x": 449.9375,
+          "y": 612,
+          "width": 165.953125,
+          "height": 80,
+          "right": 615.890625,
+          "bottom": 692
+        },
+        "label": {
+          "x": 457.9375,
+          "y": 654.5,
+          "width": 149.953125,
+          "height": 31.5,
+          "right": 607.890625,
+          "bottom": 686,
+          "text": "Dolby Vision",
+          "client": 150,
+          "scroll": 150,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "more",
+        "box": {
+          "x": 907,
+          "y": 612,
+          "width": 77.59375,
+          "height": 80,
+          "right": 984.59375,
+          "bottom": 692
+        },
+        "label": {
+          "x": 915,
+          "y": 654.5,
+          "width": 61.59375,
+          "height": 31.5,
+          "right": 976.59375,
+          "bottom": 686,
+          "text": "More",
+          "client": 62,
+          "scroll": 62,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "comments",
+        "box": {
+          "x": 988.59375,
+          "y": 612,
+          "width": 255.40625,
+          "height": 80,
+          "right": 1244,
+          "bottom": 692
+        },
+        "label": {
+          "x": 996.59375,
+          "y": 654.5,
+          "width": 239.40625,
+          "height": 31.5,
+          "right": 1236,
+          "bottom": 686,
+          "text": "Comments · 126.0K",
+          "client": 239,
+          "scroll": 239,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      }
+    ]
+  },
+  {
+    "lang": "zh",
+    "width": 1280,
+    "height": 720,
+    "scale": 1.4,
+    "rail": 0,
+    "violations": [],
+    "row": {
+      "x": 36,
+      "y": 612,
+      "width": 1208,
+      "height": 80,
+      "right": 1244,
+      "bottom": 692
+    },
+    "buttons": [
+      {
+        "id": "play",
+        "box": {
+          "x": 34.2400016784668,
+          "y": 610.4000244140625,
+          "width": 91.51998901367188,
+          "height": 83.199951171875,
+          "right": 125.75999069213867,
+          "bottom": 693.5999755859375
+        },
+        "label": {
+          "x": 53.78874969482422,
+          "y": 654.5999755859375,
+          "width": 52.42249298095703,
+          "height": 32.760009765625,
+          "right": 106.21124267578125,
+          "bottom": 687.3599853515625,
+          "text": "暂停",
+          "client": 50,
+          "scroll": 50,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "danmaku",
+        "box": {
+          "x": 128,
+          "y": 612,
+          "width": 77.203125,
+          "height": 80,
+          "right": 205.203125,
+          "bottom": 692
+        },
+        "label": {
+          "x": 141.390625,
+          "y": 654.5,
+          "width": 50.40625,
+          "height": 31.5,
+          "right": 191.796875,
+          "bottom": 686,
+          "text": "弹幕",
+          "client": 50,
+          "scroll": 50,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": {
+          "x": 172,
+          "y": 618,
+          "width": 25.203125,
+          "height": 31.5,
+          "right": 197.203125,
+          "bottom": 649.5,
+          "client": 25,
+          "scroll": 25,
+          "text": "关",
+          "font": "25.2px"
+        }
+      },
+      {
+        "id": "subtitle",
+        "box": {
+          "x": 209.203125,
+          "y": 612,
+          "width": 77.203125,
+          "height": 80,
+          "right": 286.40625,
+          "bottom": 692
+        },
+        "label": {
+          "x": 222.59375,
+          "y": 654.5,
+          "width": 50.40625,
+          "height": 31.5,
+          "right": 273,
+          "bottom": 686,
+          "text": "字幕",
+          "client": 50,
+          "scroll": 50,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": {
+          "x": 253.203125,
+          "y": 618,
+          "width": 25.203125,
+          "height": 31.5,
+          "right": 278.40625,
+          "bottom": 649.5,
+          "client": 25,
+          "scroll": 25,
+          "text": "关",
+          "font": "25.2px"
+        }
+      },
+      {
+        "id": "speed",
+        "box": {
+          "x": 290.40625,
+          "y": 612,
+          "width": 66.40625,
+          "height": 80,
+          "right": 356.8125,
+          "bottom": 692
+        },
+        "label": {
+          "x": 298.40625,
+          "y": 654.5,
+          "width": 50.40625,
+          "height": 31.5,
+          "right": 348.8125,
+          "bottom": 686,
+          "text": "倍速",
+          "client": 50,
+          "scroll": 50,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "quality",
+        "box": {
+          "x": 360.8125,
+          "y": 612,
+          "width": 165.953125,
+          "height": 80,
+          "right": 526.765625,
+          "bottom": 692
+        },
+        "label": {
+          "x": 368.8125,
+          "y": 654.5,
+          "width": 149.953125,
+          "height": 31.5,
+          "right": 518.765625,
+          "bottom": 686,
+          "text": "Dolby Vision",
+          "client": 150,
+          "scroll": 150,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "more",
+        "box": {
+          "x": 1005.09375,
+          "y": 612,
+          "width": 66.40625,
+          "height": 80,
+          "right": 1071.5,
+          "bottom": 692
+        },
+        "label": {
+          "x": 1013.09375,
+          "y": 654.5,
+          "width": 50.40625,
+          "height": 31.5,
+          "right": 1063.5,
+          "bottom": 686,
+          "text": "更多",
+          "client": 50,
+          "scroll": 50,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "comments",
+        "box": {
+          "x": 1075.5,
+          "y": 612,
+          "width": 168.5,
+          "height": 80,
+          "right": 1244,
+          "bottom": 692
+        },
+        "label": {
+          "x": 1083.5,
+          "y": 654.5,
+          "width": 152.5,
+          "height": 31.5,
+          "right": 1236,
+          "bottom": 686,
+          "text": "评论 · 12.6万",
+          "client": 153,
+          "scroll": 153,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      }
+    ]
+  },
+  {
+    "lang": "es",
+    "width": 1280,
+    "height": 720,
+    "scale": 1.4,
+    "rail": 0,
+    "violations": [],
+    "row": {
+      "x": 36,
+      "y": 612,
+      "width": 1208,
+      "height": 80,
+      "right": 1244,
+      "bottom": 692
+    },
+    "buttons": [
+      {
+        "id": "play",
+        "box": {
+          "x": 34.21531295776367,
+          "y": 610.4000244140625,
+          "width": 92.80374145507812,
+          "height": 83.199951171875,
+          "right": 127.0190544128418,
+          "bottom": 693.5999755859375
+        },
+        "label": {
+          "x": 42.53531265258789,
+          "y": 654.5999755859375,
+          "width": 76.16375732421875,
+          "height": 32.760009765625,
+          "right": 118.69906997680664,
+          "bottom": 687.3599853515625,
+          "text": "Pausa",
+          "client": 73,
+          "scroll": 73,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "danmaku",
+        "box": {
+          "x": 129.234375,
+          "y": 612,
+          "width": 128.5,
+          "height": 80,
+          "right": 257.734375,
+          "bottom": 692
+        },
+        "label": {
+          "x": 137.234375,
+          "y": 654.5,
+          "width": 112.5,
+          "height": 31.5,
+          "right": 249.734375,
+          "bottom": 686,
+          "text": "Danmaku",
+          "client": 113,
+          "scroll": 113,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": {
+          "x": 194.6875,
+          "y": 618,
+          "width": 33.578125,
+          "height": 31.5,
+          "right": 228.265625,
+          "bottom": 649.5,
+          "client": 34,
+          "scroll": 34,
+          "text": "No",
+          "font": "25.2px"
+        }
+      },
+      {
+        "id": "subtitle",
+        "box": {
+          "x": 261.734375,
+          "y": 612,
+          "width": 85.578125,
+          "height": 80,
+          "right": 347.3125,
+          "bottom": 692
+        },
+        "label": {
+          "x": 286.0625,
+          "y": 654.5,
+          "width": 36.90625,
+          "height": 31.5,
+          "right": 322.96875,
+          "bottom": 686,
+          "text": "CC",
+          "client": 37,
+          "scroll": 37,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": {
+          "x": 305.734375,
+          "y": 618,
+          "width": 33.578125,
+          "height": 31.5,
+          "right": 339.3125,
+          "bottom": 649.5,
+          "client": 34,
+          "scroll": 34,
+          "text": "No",
+          "font": "25.2px"
+        }
+      },
+      {
+        "id": "speed",
+        "box": {
+          "x": 351.3125,
+          "y": 612,
+          "width": 134.25,
+          "height": 80,
+          "right": 485.5625,
+          "bottom": 692
+        },
+        "label": {
+          "x": 359.3125,
+          "y": 654.5,
+          "width": 118.25,
+          "height": 31.5,
+          "right": 477.5625,
+          "bottom": 686,
+          "text": "Velocidad",
+          "client": 118,
+          "scroll": 118,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "quality",
+        "box": {
+          "x": 489.5625,
+          "y": 612,
+          "width": 165.953125,
+          "height": 80,
+          "right": 655.515625,
+          "bottom": 692
+        },
+        "label": {
+          "x": 497.5625,
+          "y": 654.5,
+          "width": 149.953125,
+          "height": 31.5,
+          "right": 647.515625,
+          "bottom": 686,
+          "text": "Dolby Vision",
+          "client": 150,
+          "scroll": 150,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "more",
+        "box": {
+          "x": 894.578125,
+          "y": 612,
+          "width": 66.40625,
+          "height": 80,
+          "right": 960.984375,
+          "bottom": 692
+        },
+        "label": {
+          "x": 902.578125,
+          "y": 654.5,
+          "width": 50.40625,
+          "height": 31.5,
+          "right": 952.984375,
+          "bottom": 686,
+          "text": "Más",
+          "client": 50,
+          "scroll": 50,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "comments",
+        "box": {
+          "x": 964.984375,
+          "y": 612,
+          "width": 279.015625,
+          "height": 80,
+          "right": 1244,
+          "bottom": 692
+        },
+        "label": {
+          "x": 972.984375,
+          "y": 654.5,
+          "width": 263.015625,
+          "height": 31.5,
+          "right": 1236,
+          "bottom": 686,
+          "text": "Comentarios · 126.0K",
+          "client": 263,
+          "scroll": 263,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      }
+    ]
+  },
+  {
+    "lang": "en",
+    "width": 1280,
+    "height": 720,
+    "scale": 1.4,
+    "rail": 420,
+    "violations": [],
+    "row": {
+      "x": 36,
+      "y": 580.5,
+      "width": 788,
+      "height": 111.5,
+      "right": 824,
+      "bottom": 692
+    },
+    "buttons": [
+      {
+        "id": "play",
+        "box": {
+          "x": 34.21781539916992,
+          "y": 578.27001953125,
+          "width": 92.67373657226562,
+          "height": 115.9599609375,
+          "right": 126.89155197143555,
+          "bottom": 694.22998046875
+        },
+        "label": {
+          "x": 42.53781509399414,
+          "y": 622.469970703125,
+          "width": 76.03375244140625,
+          "height": 32.760009765625,
+          "right": 118.57156753540039,
+          "bottom": 655.22998046875,
+          "text": "Pause",
+          "client": 73,
+          "scroll": 73,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "danmaku",
+        "box": {
+          "x": 129.109375,
+          "y": 580.5,
+          "width": 128.5,
+          "height": 111.5,
+          "right": 257.609375,
+          "bottom": 692
+        },
+        "label": {
+          "x": 137.109375,
+          "y": 623,
+          "width": 112.5,
+          "height": 31.5,
+          "right": 249.609375,
+          "bottom": 654.5,
+          "text": "Danmaku",
+          "client": 113,
+          "scroll": 113,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": {
+          "x": 192.859375,
+          "y": 586.5,
+          "width": 37,
+          "height": 31.5,
+          "right": 229.859375,
+          "bottom": 618,
+          "client": 37,
+          "scroll": 37,
+          "text": "Off",
+          "font": "25.2px"
+        }
+      },
+      {
+        "id": "subtitle",
+        "box": {
+          "x": 261.609375,
+          "y": 580.5,
+          "width": 89,
+          "height": 111.5,
+          "right": 350.609375,
+          "bottom": 692
+        },
+        "label": {
+          "x": 287.65625,
+          "y": 623,
+          "width": 36.90625,
+          "height": 31.5,
+          "right": 324.5625,
+          "bottom": 654.5,
+          "text": "CC",
+          "client": 37,
+          "scroll": 37,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": {
+          "x": 305.609375,
+          "y": 586.5,
+          "width": 37,
+          "height": 31.5,
+          "right": 342.609375,
+          "bottom": 618,
+          "client": 37,
+          "scroll": 37,
+          "text": "Off",
+          "font": "25.2px"
+        }
+      },
+      {
+        "id": "speed",
+        "box": {
+          "x": 354.609375,
+          "y": 580.5,
+          "width": 91.328125,
+          "height": 111.5,
+          "right": 445.9375,
+          "bottom": 692
+        },
+        "label": {
+          "x": 362.609375,
+          "y": 623,
+          "width": 75.328125,
+          "height": 31.5,
+          "right": 437.9375,
+          "bottom": 654.5,
+          "text": "Speed",
+          "client": 75,
+          "scroll": 75,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "quality",
+        "box": {
+          "x": 449.9375,
+          "y": 580.5,
+          "width": 114.765625,
+          "height": 111.5,
+          "right": 564.703125,
+          "bottom": 692
+        },
+        "label": {
+          "x": 457.9375,
+          "y": 623,
+          "width": 98.765625,
+          "height": 63,
+          "right": 556.703125,
+          "bottom": 686,
+          "text": "Dolby Vision",
+          "client": 99,
+          "scroll": 99,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "more",
+        "box": {
+          "x": 568.703125,
+          "y": 580.5,
+          "width": 77.59375,
+          "height": 111.5,
+          "right": 646.296875,
+          "bottom": 692
+        },
+        "label": {
+          "x": 576.703125,
+          "y": 623,
+          "width": 61.59375,
+          "height": 31.5,
+          "right": 638.296875,
+          "bottom": 654.5,
+          "text": "More",
+          "client": 62,
+          "scroll": 62,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "comments",
+        "box": {
+          "x": 650.296875,
+          "y": 580.5,
+          "width": 173.703125,
+          "height": 111.5,
+          "right": 824,
+          "bottom": 692
+        },
+        "label": {
+          "x": 658.296875,
+          "y": 623,
+          "width": 157.703125,
+          "height": 63,
+          "right": 816,
+          "bottom": 686,
+          "text": "Comments · 126.0K",
+          "client": 158,
+          "scroll": 158,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      }
+    ]
+  },
+  {
+    "lang": "zh",
+    "width": 1280,
+    "height": 720,
+    "scale": 1.4,
+    "rail": 420,
+    "violations": [],
+    "row": {
+      "x": 36,
+      "y": 612,
+      "width": 788,
+      "height": 80,
+      "right": 824,
+      "bottom": 692
+    },
+    "buttons": [
+      {
+        "id": "play",
+        "box": {
+          "x": 34.2400016784668,
+          "y": 610.4000244140625,
+          "width": 91.51998901367188,
+          "height": 83.199951171875,
+          "right": 125.75999069213867,
+          "bottom": 693.5999755859375
+        },
+        "label": {
+          "x": 53.78874969482422,
+          "y": 654.5999755859375,
+          "width": 52.42249298095703,
+          "height": 32.760009765625,
+          "right": 106.21124267578125,
+          "bottom": 687.3599853515625,
+          "text": "暂停",
+          "client": 50,
+          "scroll": 50,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "danmaku",
+        "box": {
+          "x": 128,
+          "y": 612,
+          "width": 77.203125,
+          "height": 80,
+          "right": 205.203125,
+          "bottom": 692
+        },
+        "label": {
+          "x": 141.390625,
+          "y": 654.5,
+          "width": 50.40625,
+          "height": 31.5,
+          "right": 191.796875,
+          "bottom": 686,
+          "text": "弹幕",
+          "client": 50,
+          "scroll": 50,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": {
+          "x": 172,
+          "y": 618,
+          "width": 25.203125,
+          "height": 31.5,
+          "right": 197.203125,
+          "bottom": 649.5,
+          "client": 25,
+          "scroll": 25,
+          "text": "关",
+          "font": "25.2px"
+        }
+      },
+      {
+        "id": "subtitle",
+        "box": {
+          "x": 209.203125,
+          "y": 612,
+          "width": 77.203125,
+          "height": 80,
+          "right": 286.40625,
+          "bottom": 692
+        },
+        "label": {
+          "x": 222.59375,
+          "y": 654.5,
+          "width": 50.40625,
+          "height": 31.5,
+          "right": 273,
+          "bottom": 686,
+          "text": "字幕",
+          "client": 50,
+          "scroll": 50,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": {
+          "x": 253.203125,
+          "y": 618,
+          "width": 25.203125,
+          "height": 31.5,
+          "right": 278.40625,
+          "bottom": 649.5,
+          "client": 25,
+          "scroll": 25,
+          "text": "关",
+          "font": "25.2px"
+        }
+      },
+      {
+        "id": "speed",
+        "box": {
+          "x": 290.40625,
+          "y": 612,
+          "width": 66.40625,
+          "height": 80,
+          "right": 356.8125,
+          "bottom": 692
+        },
+        "label": {
+          "x": 298.40625,
+          "y": 654.5,
+          "width": 50.40625,
+          "height": 31.5,
+          "right": 348.8125,
+          "bottom": 686,
+          "text": "倍速",
+          "client": 50,
+          "scroll": 50,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "quality",
+        "box": {
+          "x": 360.8125,
+          "y": 612,
+          "width": 165.953125,
+          "height": 80,
+          "right": 526.765625,
+          "bottom": 692
+        },
+        "label": {
+          "x": 368.8125,
+          "y": 654.5,
+          "width": 149.953125,
+          "height": 31.5,
+          "right": 518.765625,
+          "bottom": 686,
+          "text": "Dolby Vision",
+          "client": 150,
+          "scroll": 150,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "more",
+        "box": {
+          "x": 585.09375,
+          "y": 612,
+          "width": 66.40625,
+          "height": 80,
+          "right": 651.5,
+          "bottom": 692
+        },
+        "label": {
+          "x": 593.09375,
+          "y": 654.5,
+          "width": 50.40625,
+          "height": 31.5,
+          "right": 643.5,
+          "bottom": 686,
+          "text": "更多",
+          "client": 50,
+          "scroll": 50,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "comments",
+        "box": {
+          "x": 655.5,
+          "y": 612,
+          "width": 168.5,
+          "height": 80,
+          "right": 824,
+          "bottom": 692
+        },
+        "label": {
+          "x": 663.5,
+          "y": 654.5,
+          "width": 152.5,
+          "height": 31.5,
+          "right": 816,
+          "bottom": 686,
+          "text": "评论 · 12.6万",
+          "client": 153,
+          "scroll": 153,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      }
+    ]
+  },
+  {
+    "lang": "es",
+    "width": 1280,
+    "height": 720,
+    "scale": 1.4,
+    "rail": 420,
+    "violations": [],
+    "row": {
+      "x": 36,
+      "y": 580.5,
+      "width": 788,
+      "height": 111.5,
+      "right": 824,
+      "bottom": 692
+    },
+    "buttons": [
+      {
+        "id": "play",
+        "box": {
+          "x": 34.21531295776367,
+          "y": 578.27001953125,
+          "width": 92.80374145507812,
+          "height": 115.9599609375,
+          "right": 127.0190544128418,
+          "bottom": 694.22998046875
+        },
+        "label": {
+          "x": 42.53531265258789,
+          "y": 622.469970703125,
+          "width": 76.16375732421875,
+          "height": 32.760009765625,
+          "right": 118.69906997680664,
+          "bottom": 655.22998046875,
+          "text": "Pausa",
+          "client": 73,
+          "scroll": 73,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "danmaku",
+        "box": {
+          "x": 129.234375,
+          "y": 580.5,
+          "width": 128.5,
+          "height": 111.5,
+          "right": 257.734375,
+          "bottom": 692
+        },
+        "label": {
+          "x": 137.234375,
+          "y": 623,
+          "width": 112.5,
+          "height": 31.5,
+          "right": 249.734375,
+          "bottom": 654.5,
+          "text": "Danmaku",
+          "client": 113,
+          "scroll": 113,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": {
+          "x": 194.6875,
+          "y": 586.5,
+          "width": 33.578125,
+          "height": 31.5,
+          "right": 228.265625,
+          "bottom": 618,
+          "client": 34,
+          "scroll": 34,
+          "text": "No",
+          "font": "25.2px"
+        }
+      },
+      {
+        "id": "subtitle",
+        "box": {
+          "x": 261.734375,
+          "y": 580.5,
+          "width": 85.578125,
+          "height": 111.5,
+          "right": 347.3125,
+          "bottom": 692
+        },
+        "label": {
+          "x": 286.0625,
+          "y": 623,
+          "width": 36.90625,
+          "height": 31.5,
+          "right": 322.96875,
+          "bottom": 654.5,
+          "text": "CC",
+          "client": 37,
+          "scroll": 37,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": {
+          "x": 305.734375,
+          "y": 586.5,
+          "width": 33.578125,
+          "height": 31.5,
+          "right": 339.3125,
+          "bottom": 618,
+          "client": 34,
+          "scroll": 34,
+          "text": "No",
+          "font": "25.2px"
+        }
+      },
+      {
+        "id": "speed",
+        "box": {
+          "x": 351.3125,
+          "y": 580.5,
+          "width": 134.25,
+          "height": 111.5,
+          "right": 485.5625,
+          "bottom": 692
+        },
+        "label": {
+          "x": 359.3125,
+          "y": 623,
+          "width": 118.25,
+          "height": 31.5,
+          "right": 477.5625,
+          "bottom": 654.5,
+          "text": "Velocidad",
+          "client": 118,
+          "scroll": 118,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "quality",
+        "box": {
+          "x": 489.5625,
+          "y": 580.5,
+          "width": 91.015625,
+          "height": 111.5,
+          "right": 580.578125,
+          "bottom": 692
+        },
+        "label": {
+          "x": 497.5625,
+          "y": 623,
+          "width": 75.015625,
+          "height": 63,
+          "right": 572.578125,
+          "bottom": 686,
+          "text": "Dolby Vision",
+          "client": 75,
+          "scroll": 75,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "more",
+        "box": {
+          "x": 584.578125,
+          "y": 580.5,
+          "width": 66.40625,
+          "height": 111.5,
+          "right": 650.984375,
+          "bottom": 692
+        },
+        "label": {
+          "x": 592.578125,
+          "y": 623,
+          "width": 50.40625,
+          "height": 31.5,
+          "right": 642.984375,
+          "bottom": 654.5,
+          "text": "Más",
+          "client": 50,
+          "scroll": 50,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      },
+      {
+        "id": "comments",
+        "box": {
+          "x": 654.984375,
+          "y": 580.5,
+          "width": 169.015625,
+          "height": 111.5,
+          "right": 824,
+          "bottom": 692
+        },
+        "label": {
+          "x": 662.984375,
+          "y": 623,
+          "width": 153.015625,
+          "height": 63,
+          "right": 816,
+          "bottom": 686,
+          "text": "Comentarios · 126.0K",
+          "client": 153,
+          "scroll": 153,
+          "font": "25.2px",
+          "lineHeight": "31.5px"
+        },
+        "state": null
+      }
+    ]
+  }
+]

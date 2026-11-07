@@ -1,0 +1,14 @@
+[
+  {
+    "name": "creator follow from player more menu",
+    "pass": true
+  },
+  {
+    "name": "Back dismissal ignores pointer jitter until deliberate wheel or D-pad input",
+    "pass": true
+  },
+  {
+    "name": "remote media keys support play pause toggle and ignore held repeats",
+    "pass": true
+  }
+]

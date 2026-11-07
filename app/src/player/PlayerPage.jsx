@@ -1,4 +1,5 @@
 import DanmakuSettings from '../components/DanmakuSettings';
+import PlayerMoreControls from './PlayerMoreControls';
 import { createDanmakuSegments } from './danmakuSegments';
 import { mediaKeyAction } from './mediaKeys';
 import NerdInfo from './NerdInfo';
@@ -148,6 +149,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   }, [currentTime, duration, danmakuEnabled]);
   // Initialize appearance from storage; in-player danmaku changes apply live.
   const [showDanmakuSettings, setShowDanmakuSettings] = useState(false);
+  const [showMoreControls, setShowMoreControls] = useState(false);
+  const moreFocusRef = useRef('like');
   const [danmakuSettings, setDanmakuSettings] = useState(() => storage.getSettings());
   const danmakuScale = danmakuSettings.danmakuScale || 1;
   const [subtitleScale] = useState(() => storage.getSettings().subtitleScale || 1);
@@ -305,21 +308,13 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     pendingSeekRef.current = null;
   }, []);
 
-  // Control bar. 点赞/投币/收藏 only when logged in (B站 app style: three
-  // separate buttons with live counts; LONG-PRESS 点赞 = 一键三连). CC only
-  // when this part has subtitle tracks.
-  // Order: play · [赞·币·藏] · danmaku · [字幕] · 倍速 · 画质.
+  // Keep viewing tools in one stable row. Engagement and appearance details
+  // live one level below it; their independent actions and counts are retained.
   const loggedIn = !!storage.getAuth()?.SESSDATA;
-  const CONTROLS = [
-    'play',
-    ...(loggedIn ? ['like', 'coin', 'fav', 'later'] : []),
-    'danmaku', 'danmakuSettings',
-    ...(subTracks.length > 0 ? ['subtitle'] : []),
-    'speed',
-    'quality',
-    ...(follow.available ? ['follow'] : []),
-    'comments',
-  ];
+  const CONTROLS = ['play', 'danmaku', ...(subTracks.length > 0 ? ['subtitle'] : []), 'speed', 'quality', 'more', 'comments'];
+  const MORE_CONTROLS = [...(loggedIn ? ['like', 'coin', 'fav', 'later'] : []), ...(follow.available ? ['follow'] : []), 'danmakuSettings'];
+  const moreControlsRef = useRef(MORE_CONTROLS);
+  moreControlsRef.current = MORE_CONTROLS;
   const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2];
   const controlsRef = useRef(CONTROLS);
   controlsRef.current = CONTROLS;
@@ -1809,6 +1804,21 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   }, [endLikeHold, endRelHold]);
   useEffect(() => () => { if (holdRef.current.timer) clearTimeout(holdRef.current.timer); }, []);
 
+  // Terminal playback UI owns input. Do not leave an action sheet in front
+  // while the remote is already controlling recovery or the end screen.
+  useLayoutEffect(() => {
+    if (!ended && !loadError) return;
+    endLikeHold(true);
+    setShowMoreControls(false); setShowDanmakuSettings(false);
+  }, [ended, loadError, endLikeHold]);
+
+  const closeMoreControls = useCallback(() => {
+    endLikeHold(true);
+    setShowMoreControls(false); setShowControls(true); setFocusArea('controls');
+    setFocusIdx(Math.max(0, controlsRef.current.indexOf('more')));
+    hideControlsLater();
+  }, [endLikeHold, hideControlsLater]);
+
   // One entry for a control-bar action — shared by D-pad OK and pointer click
   // (the Magic Remote pointer must drive every button the D-pad can).
   const pressControl = useCallback((btn) => {
@@ -1828,7 +1838,14 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         storage.setSettings({ ...storage.getSettings(), danmaku: next });
         return next;
       });
+    } else if (btn === 'more') {
+      setEndNextIn(null);
+      setShowMoreControls(true); setFocusArea('more');
+      setFocusIdx(Math.max(0, moreControlsRef.current.indexOf(moreFocusRef.current)));
+      if (controlsTimer.current) clearTimeout(controlsTimer.current);
+      return;
     } else if (btn === 'danmakuSettings') {
+      setShowMoreControls(false);
       setShowDanmakuSettings(true);
       if (controlsTimer.current) clearTimeout(controlsTimer.current);
       return;
@@ -2275,6 +2292,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
           clearScrub();
           setShowControls(false);
           setFocusArea('none');
+        } else if (showMoreControls) {
+          closeMoreControls();
         } else if (ended) {
           // End screen: back exits player
           onBack();
@@ -2350,6 +2369,21 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
           clearScrub();
           openControls();
           return true;
+        }
+        return true;
+      }
+
+      // A separate vertical action list never changes the primary row order.
+      if (showMoreControls) {
+        e.preventDefault(); e.stopPropagation();
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+          endLikeHold(true);
+          const delta = e.key === 'ArrowUp' ? -1 : 1;
+          setFocusIdx(prev => Math.max(0, Math.min(moreControlsRef.current.length - 1, prev + delta)));
+        } else if (e.key === 'Enter') {
+          const action = moreControlsRef.current[focusIdx];
+          if (action === 'like') { if (!e.repeat) startLikeHold(); }
+          else if (!e.repeat && action) pressControl(action);
         }
         return true;
       }
@@ -2594,13 +2628,14 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
 
     setCustomKeyHandler(handler);
     return () => setCustomKeyHandler(null);
-  }, [showDanmakuSettings, focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, showSpeedPanel, applySpeed, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, comments, loadUpVideos, loadComments, onBack, onPlayNext, openControls, hideControlsLater, openRelatedPanel, closeRelatedPanel, endRelHold, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody, pressControl, startLikeHold, pressComment, showCommentRail, recoverable, errorAction, retryPlayback]);
+  }, [showMoreControls, closeMoreControls, endLikeHold, showDanmakuSettings, focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, showSpeedPanel, applySpeed, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, comments, loadUpVideos, loadComments, onBack, onPlayNext, openControls, hideControlsLater, openRelatedPanel, closeRelatedPanel, endRelHold, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody, pressControl, startLikeHold, pressComment, showCommentRail, recoverable, errorAction, retryPlayback]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
   const previewVideos = panelTab === 'parts' ? partsList : panelTab === 'up' ? upVideos : relatedVideos;
-  controlsPinnedRef.current = showDanmakuSettings || ended || showRelated || showQuality || showSubPanel || showSpeedPanel
+  controlsPinnedRef.current = showMoreControls || showDanmakuSettings || ended || showRelated || showQuality || showSubPanel || showSpeedPanel
     || showCommentRail || focusArea === 'scrub';
   if (focusArea === 'controls' && CONTROLS[focusIdx]) lastControlRef.current = CONTROLS[focusIdx];
+  if (focusArea === 'more' && MORE_CONTROLS[focusIdx]) moreFocusRef.current = MORE_CONTROLS[focusIdx];
   // Size the viewport from full-sized shared cards, never compress the cards
   // to fit the old deck. Layout measurements run only on content/size changes;
   // the expand animation itself remains transform-only.
@@ -2652,7 +2687,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     const el = controlsElRef.current;
     if (!el) return;
     const wheel = event => {
-      if (showDanmakuSettings || !showControls || showQuality || showSubPanel || showSpeedPanel || !event.deltaY) return;
+      if (showMoreControls || showDanmakuSettings || !showControls || showQuality || showSubPanel || showSpeedPanel || !event.deltaY) return;
       if (Date.now() < shelfGestureUntilRef.current) { event.preventDefault(); return; }
       const list = el.querySelector('.player-related-scroll');
       if (!showRelated && event.deltaY > 0) {
@@ -2690,7 +2725,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     };
     el.addEventListener('wheel', wheel, { passive: false });
     return () => el.removeEventListener('wheel', wheel);
-  }, [showDanmakuSettings, showControls, showRelated, showQuality, showSubPanel, showSpeedPanel, openRelatedPanel, closeRelatedPanel, panelTab, loadUpVideos, loadMoreRelated]);
+  }, [showMoreControls, showDanmakuSettings, showControls, showRelated, showQuality, showSubPanel, showSpeedPanel, openRelatedPanel, closeRelatedPanel, panelTab, loadUpVideos, loadMoreRelated]);
 
   // Magic Remote: waving the pointer must summon the controls bar (the D-pad
   // path was the only way in). Throttled; ignored while a panel/end screen has
@@ -2816,9 +2851,26 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         </div>
       )}
 
+      {showMoreControls && <PlayerMoreControls
+        items={MORE_CONTROLS.map(id => ({ id,
+          label: id === 'like' ? t('点赞') : id === 'coin' ? t('投币') : id === 'fav' ? t('收藏')
+            : id === 'later' ? t(inToView ? '已稍后再看' : '稍后再看') : id === 'follow' ? follow.label : t('弹幕设置'),
+          value: id === 'like' ? formatCount(stat.like) : id === 'coin' ? formatCount(stat.coin) : id === 'fav' ? formatCount(stat.favorite) : undefined,
+          icon: id === 'fav' ? 'star' : id === 'danmakuSettings' ? 'settings' : id,
+          active: id === 'like' ? rel.liked : id === 'coin' ? rel.coined > 0 : id === 'fav' ? rel.faved : id === 'later' ? inToView : undefined,
+        }))}
+        focusedId={focusArea === 'more' ? MORE_CONTROLS[focusIdx] : null}
+        onFocus={id => {
+          if (moreFocusRef.current !== id) endLikeHold(true);
+          setFocusArea('more'); setFocusIdx(MORE_CONTROLS.indexOf(id));
+        }}
+        onAction={pressControl} onClose={closeMoreControls}
+        onLikeStart={startLikeHold} onLikeEnd={endLikeHold}
+        buttonRef={(id, el) => { btnRefs.current[id] = el; }} likeRing={likeRing} triplePop={triplePop}
+      />}
       {showDanmakuSettings && <DanmakuSettings maskStatus={maskStatus} onChange={setDanmakuSettings} onClose={() => {
-        setShowDanmakuSettings(false); setShowControls(true); setFocusArea('controls');
-        setFocusIdx(CONTROLS.indexOf('danmakuSettings')); hideControlsLater();
+        setShowDanmakuSettings(false); setShowControls(true); setShowMoreControls(true); setFocusArea('more');
+        setFocusIdx(Math.max(0, MORE_CONTROLS.indexOf('danmakuSettings')));
       }} />}
       <DanmakuLayer preserveOnAppend videoRef={videoRef} maskSource={maskSource} onMaskStatus={setMaskStatus} settings={danmakuSettings} danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale} paused={!playing}
         mtRef={dmMtActive ? dmMtRef : null} />
@@ -3001,6 +3053,15 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
             {aigcMsg && <span className="player-disclaimer">{titleMT(aigcMsg)}</span>}
           </div>
         )}
+        <div className="player-timeline-meta">
+          <span className="player-time">
+            {formatDuration(currentTime)} / {formatDuration(duration)}
+            {(() => {
+              const ch = chapters.find(c => currentTime >= c.from && currentTime < c.to);
+              return ch ? <span style={{ color: '#7ecbff', marginLeft: 10 }}>· {titleMT(ch.content)}</span> : null;
+            })()}
+          </span>
+        </div>
         <div ref={progressElRef} className="player-progress-bar" style={{ cursor: 'pointer' }}
           onClick={(e) => {
             // Pointer click-to-seek: generous target courtesy of the row itself.
@@ -3028,61 +3089,32 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         </div>
         <div className="player-btns">
           {CONTROLS.map((btn, i) => {
-            const isStatBtn = btn === 'like' || btn === 'coin' || btn === 'fav';
-            const lit = (btn === 'like' && rel.liked) || (btn === 'coin' && rel.coined > 0) || (btn === 'fav' && rel.faved);
-            const label =
-              btn === 'play' ? (ended ? t('重播') : playing ? t('暂停') : t('播放')) :
-                btn === 'like' ? formatCount(stat.like) :
-                  // B站同款金币(金圆盘+B字)——emoji 的 🪙 像块石头(owner)。
-                  btn === 'coin' ? formatCount(stat.coin) :
-                    btn === 'fav' ? formatCount(stat.favorite) :
-                      btn === 'follow' ? follow.label :
-                      btn === 'later' ? (inToView ? t('已稍后再看') : t('稍后再看')) :
-                      btn === 'danmakuSettings' ? t('弹幕设置') :
-                      btn === 'danmaku' ? (danmakuEnabled ? t('弹幕 开') : t('弹幕 关')) :
-                        btn === 'subtitle' ? (subLan == null ? t('字幕 关')
-                          // Known lan codes get a localized name (t over our enum,
-                          // see subtitles.js); unknown codes show lan_doc verbatim.
-                          : `${t('字幕')} ${t(subLan === 'x-mt' ? mtLanName(getLocale())
-                            : subtitleLanName(subLan, (subTracks.find(s => s.lan === subLan) || {}).lan_doc)).slice(0, 22)}`) :
-                          btn === 'comments' ? (commentCount ? t('评论 · {n}', { n: formatCount(commentCount) }) : t('评论')) :
-                            btn === 'speed' ? (currentSpeed === 1 ? t('倍速') : `${currentSpeed}x`) :
-                            streamFormat.video || QUALITY_MAP[currentQuality] || `${currentQuality}`;
-            // 点赞 gets press/release handlers (long-press = 三连); the rest click.
-            const handlers = btn === 'like'
-              ? {
-                onMouseDown: () => startLikeHold(),
-                onMouseUp: () => endLikeHold(false),
-                onMouseLeave: () => endLikeHold(true),
-              }
-              : { onClick: () => pressControl(btn) };
-            return (
-              <button key={btn}
-                ref={el => { btnRefs.current[btn] = el; }}
-                aria-label={btn === 'like' ? t('点赞') : btn === 'coin' ? t('投币') : btn === 'fav' ? t('收藏') : undefined}
-                className={`player-btn player-control ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''} ${lit ? 'lit' : ''} ${isStatBtn && triplePop ? 'triple-pop' : ''}`}
-                onMouseMove={() => { setFocusArea('controls'); setFocusIdx(i); hideControlsLater(); }}
-                {...handlers}>
-                {btn === 'coin' ? <CoinIcon /> : <Icon size={26} name={btn === 'play' ? (ended ? 'refresh' : playing ? 'pause' : 'play') : btn === 'fav' ? 'star' : btn === 'danmakuSettings' ? 'settings' : btn} />}
-                <span className="player-control-label">{label}</span>
-                {btn === 'like'  && likeRing && (
-                  <svg className="like-ring" width={likeRing.w + 8} height={likeRing.h + 8}
-                    style={{ left: -7, top: -7 }}>
-                    <rect className="like-ring-track" x="4" y="4" width={likeRing.w} height={likeRing.h} rx={likeRing.rx} />
-                    <rect className="like-ring-fill" x="4" y="4" width={likeRing.w} height={likeRing.h} rx={likeRing.rx}
-                      style={{ strokeDasharray: likeRing.perim, strokeDashoffset: likeRing.perim }} />
-                  </svg>
-                )}
-              </button>
-            );
+            const label = btn === 'play' ? (ended ? t('重播') : playing ? t('暂停') : t('播放'))
+              : btn === 'danmaku' ? t('弹幕')
+              : btn === 'subtitle' ? t('字幕')
+              : btn === 'speed' ? (currentSpeed === 1 ? t('倍速') : `${currentSpeed}x`)
+              : btn === 'more' ? t('更多')
+              : btn === 'comments' ? (commentCount ? t('评论 · {n}', { n: formatCount(commentCount) }) : t('评论'))
+              : streamFormat.video || QUALITY_MAP[currentQuality] || `${currentQuality}`;
+            const stateLabel = btn === 'danmaku' ? t(danmakuEnabled ? '开' : '关')
+              : btn === 'subtitle' ? t(subLan == null ? '关' : '开') : null;
+            return <button key={btn} data-control={btn}
+              ref={el => { btnRefs.current[btn] = el; }}
+              aria-label={btn === 'more' ? t('更多操作') : stateLabel ? `${label} ${stateLabel}` : label}
+              aria-pressed={btn === 'danmaku' ? danmakuEnabled : undefined}
+              aria-haspopup={['more', 'quality', 'speed', 'subtitle'].includes(btn) ? 'dialog' : undefined}
+              aria-expanded={btn === 'more' ? showMoreControls : undefined}
+              className={`player-btn player-control ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''}`}
+              onMouseMove={() => { setFocusArea('controls'); setFocusIdx(i); hideControlsLater(); }}
+              onClick={() => pressControl(btn)}>
+              <span className="player-control-icon">
+                <Icon size={28} name={btn === 'play' ? (ended ? 'refresh' : playing ? 'pause' : 'play') : btn} />
+                {stateLabel && <span className="player-control-state">{stateLabel}</span>}
+              </span>
+              <span className="player-control-label">{label}</span>
+            </button>;
           })}
-          <span className="player-time">
-            {formatDuration(currentTime)} / {formatDuration(duration)}
-            {(() => {
-              const ch = chapters.find(c => currentTime >= c.from && currentTime < c.to);
-              return ch ? <span style={{ color: '#7ecbff', marginLeft: 10 }}>· {titleMT(ch.content)}</span> : null;
-            })()}
-          </span>
+
         </div>
         </div>
 

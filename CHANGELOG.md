@@ -12,10 +12,14 @@ This log collects the release history previously included in the README. For ear
 
 ## 未发布 / Unreleased
 
+- 点播主控制条由最多 13 项收为最多 7 项：播放／暂停、弹幕、字幕（有轨时）、倍速、画质、更多、评论。时间与章节归入进度区，弹幕／字幕开关状态独立显示。
+- 「更多」保留独立点赞／投币／收藏及计数、长按三连、稍后再看、关注和弹幕设置；关闭弹幕设置回到菜单原条目，关闭菜单回到主层「更多」。播放结束或致命错误会关闭菜单并取消未完成长按，避免迟到的账号操作；推荐卡片两排与展开结构保持。
+- VOD primary controls are reduced from up to 13 to up to 7, with time and chapters beside the timeline and separate danmaku/subtitle state labels. More keeps individual engagement actions and counts, hold-to-triple, Watch Later, Follow and danmaku settings, with layered focus restoration and pending-hold cancellation on playback end or fatal error.
+
 - 实验性智能防挡人物：复用视频提供的人像遮罩，跟随画面选择轮廓并优化切镜衔接；改为直接更新矢量遮罩，修复连续播放时图片准备跟不上造成的弹幕闪烁。默认关闭，源数据缺失或加载失败时保留普通弹幕。
 - Experimental person-aware danmaku masking with frame-aligned selection and cut-transition handling. Stable vector masks fix flicker caused by per-frame image preparation during playback; off by default, with ordinary-danmaku fallback when source masks are missing or fail.
 
-- 点播控制栏新增弹幕设置：字号、密度、区域、透明度等立即应用于当前视频，关闭后恢复遥控焦点，不打断播放。
+- 点播「更多」菜单提供弹幕设置：字号、密度、区域、透明度等立即应用于当前视频，关闭后恢复菜单条目焦点，不打断播放。
 - 直播控制栏新增弹幕设置：支持播放中即时调整外观、速度、区域、密度及滚动开关，与点播共用偏好；面板仅展示适用于直播的选项。
 - 弹幕密度联动轨道间距，拥塞项短暂重试；共享有界文字测量缓存，减少重复计算。
 - In-playback danmaku controls, density-aware safe lane spacing, bounded admission retries and text measurement caching.

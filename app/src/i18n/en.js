@@ -2,6 +2,8 @@
 // ADDING A LANGUAGE: copy this file to <code>.js, translate values, register
 // it in index.js DICTS. That's all.
 export default {
+  '更多': 'More',
+  '更多操作': 'More actions',
   "直播当前支持白色滚动弹幕；这里的外观设置与点播共用。": "Live currently supports white scrolling comments. Appearance settings are shared with recorded videos.",
   "弹幕设置": "Danmaku settings",
   "弹幕不透明度": "Opacity",

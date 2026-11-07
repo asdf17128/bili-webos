@@ -3,6 +3,7 @@ import React from 'react';
 // One stroke, one optical size. Inline vectors stay crisp on every TV and avoid
 // platform-dependent emoji glyphs or an icon font download during startup.
 const paths = {
+  more: 'M5 11a1 1 0 1 0 0 2a1 1 0 1 0 0-2M12 11a1 1 0 1 0 0 2a1 1 0 1 0 0-2M19 11a1 1 0 1 0 0 2a1 1 0 1 0 0-2',
   search: 'M21 21l-5-5M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0',
   home: 'M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z',
   hot: 'M12 2c2 5 7 6 7 12a7 7 0 0 1-14 0c0-3 2-5 3-7 0 4 2 5 3 5 2-3 2-6 1-10Z',

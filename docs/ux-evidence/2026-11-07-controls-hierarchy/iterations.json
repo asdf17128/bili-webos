@@ -1,0 +1,75 @@
+[
+  {
+    "run": "initial-full",
+    "passed": 39,
+    "total": 47,
+    "sourcesStable": true,
+    "failures": [
+      {
+        "name": "person mask metadata integration failure",
+        "error": "locator.click: Timeout 6000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.player-btn').filter({ hasText: '弹幕设置' })\u001b[22m\n"
+      },
+      {
+        "name": "person mask metadata integration missing",
+        "error": "locator.click: Timeout 6000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.player-btn').filter({ hasText: '弹幕设置' })\u001b[22m\n"
+      },
+      {
+        "name": "person mask metadata integration mismatch",
+        "error": "locator.click: Timeout 6000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.player-btn').filter({ hasText: '弹幕设置' })\u001b[22m\n"
+      },
+      {
+        "name": "grouped primary tools and More hierarchy {}",
+        "error": "primary actions stay on one visible row"
+      },
+      {
+        "name": "grouped primary tools and More hierarchy {\"width\":1280,\"height\":720,\"scale\":1.4}",
+        "error": "primary actions stay on one visible row"
+      },
+      {
+        "name": "grouped primary tools and More hierarchy {\"auth\":false,\"subtitles\":false}",
+        "error": "primary actions stay on one visible row"
+      },
+      {
+        "name": "grouped primary tools and More hierarchy {\"language\":\"en\",\"width\":1280,\"height\":720,\"scale\":1.25}",
+        "error": "primary actions stay on one visible row"
+      },
+      {
+        "name": "scene transparency window",
+        "error": "continuous window bars measure the full gradient entry"
+      }
+    ]
+  },
+  {
+    "run": "css-changing",
+    "passed": 5,
+    "total": 5,
+    "sourcesStable": false,
+    "failures": []
+  },
+  {
+    "run": "first-clean-full",
+    "passed": 50,
+    "total": 50,
+    "sourcesStable": true,
+    "failures": []
+  },
+  {
+    "run": "comment-count-localization",
+    "passed": 1,
+    "total": 2,
+    "sourcesStable": true,
+    "failures": [
+      {
+        "name": "comment count remains visible before opening and within narrow rail en",
+        "error": "existing comment total remains visible before opening"
+      }
+    ]
+  },
+  {
+    "run": "comment-count-corrected",
+    "passed": 2,
+    "total": 2,
+    "sourcesStable": true,
+    "failures": []
+  }
+]

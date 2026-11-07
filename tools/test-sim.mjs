@@ -102,6 +102,16 @@ async function main() {
 
   const key = (k) => page.keyboard.press(k);
   const focusedBtn = () => page.evaluate(() => (document.querySelector('.player-btn.focused') || {}).textContent || '');
+  const focusedMoreBtn = () => page.evaluate(() => document.querySelector('.player-more-panel .player-btn.focused')?.textContent || '');
+  const openMoreControls = async () => {
+    if (!await page.locator('.player-btns .player-btn.focused').count()) await key('ArrowUp');
+    await page.locator('.player-btns .player-btn.focused').waitFor();
+    const more = page.locator('.player-btns [data-control="more"].focused');
+    for (let i = 0; i < 10 && !await more.count(); i++) { await key('ArrowRight'); await sleep(220); }
+    if (!await more.count()) throw new Error('More is not reachable from the primary player controls');
+    await key('Enter');
+    await page.locator('.player-more-panel').waitFor();
+  };
   const cardRect = () => page.evaluate(() => {
     const f = document.querySelector('.video-card.focused');
     if (!f) return null;
@@ -227,11 +237,15 @@ async function main() {
     const nav = await serviceJson('https://api.bilibili.com/x/web-interface/nav');
     const loggedIn = nav.code === 0 && nav.data?.isLogin === true;
     if (storedAuth) {
-      check('Stored login: 赞/币/藏 present in the control bar',
-        await page.locator('.player-btn[aria-label="点赞"]').count() === 1 &&
-        await page.locator('.player-btn[aria-label="投币"]').count() === 1 &&
-        await page.locator('.player-btn[aria-label="收藏"]').count() === 1,
+      await openMoreControls();
+      check('Stored login: 赞/币/藏 present in the More menu',
+        await page.locator('.player-more-panel [data-control="like"][aria-label="点赞"]').count() === 1 &&
+        await page.locator('.player-more-panel [data-control="coin"][aria-label="投币"]').count() === 1 &&
+        await page.locator('.player-more-panel [data-control="fav"][aria-label="收藏"]').count() === 1,
         'named like / coin / favorite controls');
+      await key('Escape');
+      await page.locator('.player-more-panel').waitFor({ state: 'detached' });
+      check('Back from More restores the primary More button', await page.locator('.player-btns [data-control="more"].focused').count() === 1);
     } else {
       warn('Not logged in', 'like/coin/fav surface skipped — start tools/dev-service.mjs to seed cookies');
     }
@@ -456,11 +470,12 @@ async function main() {
       await page.evaluate((bv) => window.__openVideo({ bvid: bv }), FIXTURE);
       await sleep(8000);
       for (let a = 0; a < 4; a++) { await key('ArrowUp'); await sleep(600); if (await focusedBtn()) break; }
-      const laterBtns = await page.evaluate(() => [...document.querySelectorAll('.player-btn')].map(b => b.textContent.trim()));
-      check('Player has a 稍后再看 button', laterBtns.some(c => c.includes('稍后再看')), laterBtns.join(' | '));
-      // 走到那个按钮上按 OK
-      let hops = 0, cur = await focusedBtn();
-      while (hops < 10 && !cur.includes('稍后再看')) { await key('ArrowRight'); await sleep(250); cur = await focusedBtn(); hops++; }
+      await openMoreControls();
+      const laterBtns = await page.locator('.player-more-panel [data-control]').allTextContents();
+      check('Player More menu has a 稍后再看 button', laterBtns.some(c => c.includes('稍后再看')), laterBtns.join(' | '));
+      // 更多菜单内纵向选到稍后再看，再按 OK。
+      let hops = 0, cur = await focusedMoreBtn();
+      while (hops < 6 && !cur.includes('稍后再看')) { await key('ArrowDown'); await sleep(250); cur = await focusedMoreBtn(); hops++; }
       let added = false;
       if (cur.includes('稍后再看')) {
         await key('Enter');
@@ -468,7 +483,7 @@ async function main() {
         let after = '';
         for (let w = 0; w < 10; w++) {
           await sleep(500);
-          after = await focusedBtn();
+          after = await focusedMoreBtn();
           if (after.includes('已稍后再看')) break;
         }
         added = after.includes('已稍后再看');

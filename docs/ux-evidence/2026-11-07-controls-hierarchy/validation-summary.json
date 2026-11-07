@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-07",
+  "controls": {
+    "passed": 52,
+    "total": 52,
+    "sourcesStable": true
+  },
+  "loadingFocused": {
+    "passed": 3,
+    "total": 3
+  },
+  "cardFollowFocused": {
+    "passed": 5,
+    "total": 5
+  },
+  "productionBuild": "pass",
+  "es2016ParsedAssets": 7,
+  "boundary": "Local Chromium, real React with controlled decoder/media state and intercepted synthetic APIs. No TV, real account actions, real decoding, installation, push or release."
+}

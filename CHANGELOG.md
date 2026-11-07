@@ -27,6 +27,8 @@ This log collects the release history previously included in the README. For ear
 - Larger circular playback icons use a high-contrast focus outline and a focused-action caption. Play/Pause remains the default focus; the hold-to-triple ring follows the icon while counts stay in place.
 - 赞／币／收藏增加明确操作反馈：等待时显示进度，成功后轻弹并保留点亮状态、勾或已投枚数；取消和失败显示对应结果。防止等待期间重复提交，并避免迟到的关系查询覆盖刚完成的操作。
 - Like / Coin / Favorite show pending progress, confirmed success feedback and persistent state badges. Cancellation and failure have explicit results; pending actions block duplicate submissions, and stale relation reads cannot undo a later action.
+- 播放器推荐卡片在封面加载失败时显示统一占位，避免裂图；兼容 `cover` 封面字段，并在图片恢复后清除失败状态。
+- Player recommendations show an unavailable-cover placeholder for failed images, support the `cover` field, and clear the fallback when an image recovers.
 
 - 实验性智能防挡人物：复用视频提供的人像遮罩，跟随画面选择轮廓并优化切镜衔接；改为直接更新矢量遮罩，修复连续播放时图片准备跟不上造成的弹幕闪烁。默认关闭，源数据缺失或加载失败时保留普通弹幕。
 - Experimental person-aware danmaku masking with frame-aligned selection and cut-transition handling. Stable vector masks fix flicker caused by per-frame image preparation during playback; off by default, with ordinary-danmaku fallback when source masks are missing or fail.

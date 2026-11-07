@@ -1,0 +1,41 @@
+{
+  "boundary": "Real React/API/controller with controlled Shaka and media events; every non-Vite HTTP request and every WebSocket is intercepted. New contexts use only synthetic account/video data. No real media decoding, television, desktop foreground, or phone interaction.",
+  "sources": {
+    "app/src/player/PlayerPage.jsx": "de6d0e743c753fcf2ef0b0b3e6f92301623ce2bed3c538a35d5116ab03e04dc6",
+    "app/src/player/adjacentVideo.js": "65f09d2f6fff51af43616f73eeaadf6e77f60bab8933f200dcf7b1a60b299a70",
+    "app/src/player/SubtitleLayer.jsx": "130b03b27e3bad26493978ccc298afe98f5c8b508e955ec427fc68ddf63119f5",
+    "app/src/player/playerControls.css": "31bd45848a72035a5333ab8b9d6c3a23c0dfa851ac905df1cf788c42726d3802",
+    "app/src/player/PlayerMoreControls.jsx": "868946a2c0c1160b6036718ab8a1a296b5bff1291cf1f6f320dd13daf131816e",
+    "app/src/player/playerMoreControls.css": "3e5e4c8e436168342e77dcc40cb260b162741607c4212ae5a32baba43cb9a91f",
+    "app/src/components/Icon.jsx": "e6ed7ef4fdd9f26b4cd161c0e66589fa72deff376c102008a3a24b2e08deb2d4",
+    "app/src/i18n/en.js": "482ee0dee241459f6dcbc974597fb21590a6061619339f434bf649d6d0e8b644",
+    "app/src/i18n/es.js": "2f149247a12579444072db34faa322019c1e489a54357b11ef4a837e75daa462",
+    "app/src/styles.css": "af2e9f38471c0f69626b4bfa779c4a0d729faa52ec6a9680042562987401b785",
+    "app/src/tv-design.css": "e627de8ab6c756b9eb9e3f267e74f1b5bfa635c8148559d223ddfea671753cc1",
+    "app/src/hooks/useAuthorFollowers.js": "3fc6805b08055604da1259cab330c34ac4344cd05e652f4c80b702eedd6e482b",
+    "app/src/utils/authorFollowers.js": "aed07affbf7392fc6e3fbbc99fdee2af39982b241be98295db7b8ea376c203f3"
+  },
+  "sourcesEnd": {
+    "app/src/player/PlayerPage.jsx": "de6d0e743c753fcf2ef0b0b3e6f92301623ce2bed3c538a35d5116ab03e04dc6",
+    "app/src/player/adjacentVideo.js": "65f09d2f6fff51af43616f73eeaadf6e77f60bab8933f200dcf7b1a60b299a70",
+    "app/src/player/SubtitleLayer.jsx": "130b03b27e3bad26493978ccc298afe98f5c8b508e955ec427fc68ddf63119f5",
+    "app/src/player/playerControls.css": "31bd45848a72035a5333ab8b9d6c3a23c0dfa851ac905df1cf788c42726d3802",
+    "app/src/player/PlayerMoreControls.jsx": "868946a2c0c1160b6036718ab8a1a296b5bff1291cf1f6f320dd13daf131816e",
+    "app/src/player/playerMoreControls.css": "3e5e4c8e436168342e77dcc40cb260b162741607c4212ae5a32baba43cb9a91f",
+    "app/src/components/Icon.jsx": "e6ed7ef4fdd9f26b4cd161c0e66589fa72deff376c102008a3a24b2e08deb2d4",
+    "app/src/i18n/en.js": "482ee0dee241459f6dcbc974597fb21590a6061619339f434bf649d6d0e8b644",
+    "app/src/i18n/es.js": "2f149247a12579444072db34faa322019c1e489a54357b11ef4a837e75daa462",
+    "app/src/styles.css": "af2e9f38471c0f69626b4bfa779c4a0d729faa52ec6a9680042562987401b785",
+    "app/src/tv-design.css": "e627de8ab6c756b9eb9e3f267e74f1b5bfa635c8148559d223ddfea671753cc1",
+    "app/src/hooks/useAuthorFollowers.js": "3fc6805b08055604da1259cab330c34ac4344cd05e652f4c80b702eedd6e482b",
+    "app/src/utils/authorFollowers.js": "aed07affbf7392fc6e3fbbc99fdee2af39982b241be98295db7b8ea376c203f3"
+  },
+  "sourcesStable": true,
+  "results": [
+    {
+      "name": "recommendation covers show a fallback for failed or absent sources and load cover aliases",
+      "pass": true,
+      "durationMs": 1814
+    }
+  ]
+}

@@ -164,6 +164,7 @@ async function fixture(options = {}) {
     if (request.method() === 'OPTIONS') return fulfill({});
     if (url.pathname.includes('controls-cover-')) {
       const n = Number(url.pathname.match(/controls-cover-(\d+)/)?.[1] || 0);
+      if (options.relatedCovers && n === 0) return route.fulfill({ status: 503, contentType: 'text/plain', body: 'Synthetic cover unavailable' });
       return route.fulfill({ contentType: 'image/svg+xml', body: `<svg xmlns="http://www.w3.org/2000/svg" width="672" height="378"><rect width="672" height="378" fill="${['#37646b','#93684a','#526d4c','#605f89'][n % 4]}"/><circle cx="500" cy="95" r="55" fill="#e6d4b1"/><path d="M0 340L220 120L420 350L550 180L672 300V378H0" fill="#14222a" opacity=".75"/></svg>` });
     }
     if (url.port === '9528') return route.abort();
@@ -209,7 +210,7 @@ async function fixture(options = {}) {
       calls.related++;
       if (options.related === 'loading') await new Promise(resolve => pending.push(resolve));
       if (options.related === 'failure') return route.abort();
-      data = options.related === 'empty' ? [] : items;
+      data = options.related === 'empty' ? [] : options.relatedCovers ? items.map((item, i) => i === 1 ? { ...item, pic: '' } : i === 2 ? { ...item, pic: '', cover: item.pic } : item) : items;
     }
     if (url.pathname.endsWith('/x/v2/reply')) data = { page: { count: options.commentCount || 0 }, replies: [] };
     if (options.pgc && url.pathname.endsWith('/playurl')) {
@@ -731,6 +732,43 @@ for (const options of [
 });
 
 if (!baseline) {
+  await run('recommendation covers show a fallback for failed or absent sources and load cover aliases', { relatedCovers: true }, async f => {
+    await openControls(f.page); await f.page.keyboard.press('ArrowDown');
+    await f.page.waitForFunction(() => document.querySelector('.player-controls-vod')?.classList.contains('recommendations-open'));
+    await f.page.waitForFunction(() => {
+      const cards = document.querySelectorAll('.related-card');
+      const failed = cards[0]?.querySelector('img'), normal = cards[3]?.querySelector('img');
+      return failed?.complete && failed.naturalWidth === 0 && normal?.complete && normal.naturalWidth > 0;
+    });
+    await f.page.waitForTimeout(450);
+    const covers = await f.page.locator('.related-card').evaluateAll(cards => cards.slice(0, 4).map(card => {
+      const holder = card.querySelector('.video-card-thumb'), image = holder.querySelector('img');
+      const placeholder = holder.querySelector('.video-card-placeholder'), missing = holder.querySelector('.video-card-missing');
+      const rect = holder.getBoundingClientRect();
+      return { width: rect.width, height: rect.height, image: image ? { loaded: image.complete && image.naturalWidth > 0, visibility: getComputedStyle(image).visibility, opacity: Number(getComputedStyle(image).opacity) } : null,
+        placeholderVisible: !!placeholder && getComputedStyle(placeholder).visibility === 'visible',
+        missingVisible: !!missing && getComputedStyle(missing).visibility === 'visible' };
+    }));
+    await shot(f, 'recommendation-cover-fallback');
+    f.checkpoints.coverStates = covers;
+    assert.equal(covers[0].image?.visibility, 'hidden', 'broken image is hidden instead of showing the browser broken-image icon');
+    assert.equal(covers[0].placeholderVisible, true, 'failed request displays the shared unavailable-cover placeholder');
+    assert.equal(covers[1].image, null, 'absent URL does not create a failing request');
+    assert.equal(covers[1].missingVisible, true, 'absent URL has an explicit fallback');
+    for (const index of [2, 3]) {
+      assert.ok(covers[index].image?.loaded && covers[index].image.opacity === 1, 'cover alias and normal pic load and become visible');
+      assert.equal(covers[index].placeholderVisible, false, 'successful cover does not expose the failure label');
+    }
+    assert.ok(covers.every(cover => Math.abs(cover.width / cover.height - 16 / 9) < .01), 'failed and successful cards retain the same 16:9 cover geometry');
+    // Keep the same DOM node to exercise recovery after a failed source.
+    await f.page.locator('.related-card img').first().evaluate(image => { image.src = image.src.replace('controls-cover-0', 'controls-cover-3'); });
+    await f.page.waitForFunction(() => {
+      const holder = document.querySelector('.related-card .video-card-thumb'), image = holder.querySelector('img');
+      return image.complete && image.naturalWidth > 0 && getComputedStyle(image).visibility === 'visible' && getComputedStyle(image).opacity === '1' && !holder.classList.contains('image-failed');
+    });
+    assert.equal(await f.page.locator('.related-card .video-card-placeholder').first().evaluate(element => getComputedStyle(element).visibility), 'hidden', 'recovered cover hides the old failure placeholder');
+  });
+
   await run('recommendation cards share listing appearance and extend the panel upward', {}, async f => {
     await openControls(f.page);
     const before = await state(f.page);

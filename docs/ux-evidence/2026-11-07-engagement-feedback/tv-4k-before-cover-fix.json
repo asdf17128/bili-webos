@@ -1,0 +1,183 @@
+{
+  "samples": [
+    {
+      "time": 1.125,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": 0,
+      "decoded": 171,
+      "dropped": 0,
+      "controls": [
+        "like",
+        "coin",
+        "fav",
+        "later",
+        "prev",
+        "play",
+        "next",
+        "comments",
+        "settings"
+      ]
+    },
+    {
+      "time": 6.208333,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": 0,
+      "decoded": 293,
+      "dropped": 0,
+      "controls": [
+        "like",
+        "coin",
+        "fav",
+        "later",
+        "prev",
+        "play",
+        "next",
+        "comments",
+        "settings"
+      ]
+    },
+    {
+      "time": 11.291666,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": 0,
+      "decoded": 413,
+      "dropped": 0,
+      "controls": [
+        "like",
+        "coin",
+        "fav",
+        "later",
+        "prev",
+        "play",
+        "next",
+        "comments",
+        "settings"
+      ]
+    },
+    {
+      "time": 16.375,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": 0,
+      "decoded": 535,
+      "dropped": 0,
+      "controls": [
+        "like",
+        "coin",
+        "fav",
+        "later",
+        "prev",
+        "play",
+        "next",
+        "comments",
+        "settings"
+      ]
+    },
+    {
+      "time": 21.458333,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": 0,
+      "decoded": 657,
+      "dropped": 0,
+      "controls": [
+        "like",
+        "coin",
+        "fav",
+        "later",
+        "prev",
+        "play",
+        "next",
+        "comments",
+        "settings"
+      ]
+    },
+    {
+      "time": 26.583333,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": 0,
+      "decoded": 779,
+      "dropped": 0,
+      "controls": [
+        "like",
+        "coin",
+        "fav",
+        "later",
+        "prev",
+        "play",
+        "next",
+        "comments",
+        "settings"
+      ]
+    },
+    {
+      "time": 31.625,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": 0,
+      "decoded": 904,
+      "dropped": 0,
+      "controls": [
+        "like",
+        "coin",
+        "fav",
+        "later",
+        "prev",
+        "play",
+        "next",
+        "comments",
+        "settings"
+      ]
+    }
+  ],
+  "pass": true,
+  "last": {
+    "time": 32.916666,
+    "paused": false,
+    "ready": 4,
+    "width": 3996,
+    "height": 2160,
+    "error": 0,
+    "decoded": 934,
+    "dropped": 0,
+    "controls": [
+      "like",
+      "coin",
+      "fav",
+      "later",
+      "prev",
+      "play",
+      "next",
+      "comments",
+      "settings"
+    ],
+    "focus": "play"
+  },
+  "errors": [],
+  "network": {
+    "active": 0,
+    "media": 0,
+    "startedMedia": 31,
+    "completedMedia": 31,
+    "failedMedia": 0
+  },
+  "returnedHome": true
+}

@@ -3274,7 +3274,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
               return (
                 <div className="related-grid video-grid cols-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 24 }}>
                   {list.map((rv, i) => {
-                    const thumb = thumbUrl(rv.pic, 4);
+                    const thumb = thumbUrl(rv.pic || rv.cover || '', 4);
                     const nowPlaying = panelTab === 'parts' && rv.cid === cidRef.current;
                     const focused = focusArea === 'related' && focusIdx === i;
                     return (
@@ -3285,7 +3285,10 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
                           if (controlsTimer.current) clearTimeout(controlsTimer.current);
                         }}>
                         <div className="video-card-thumb">
-                          {thumb && <img className="image-ready" src={thumb} alt="" decoding="async" loading={i < 8 ? 'eager' : 'lazy'} />}
+                          {thumb && <span className="video-card-placeholder" aria-hidden="true">{t('封面暂不可用')}</span>}
+                          {thumb && <img src={thumb} alt="" decoding="async" loading={i < 8 ? 'eager' : 'lazy'}
+                            onLoad={e => { e.currentTarget.classList.add('image-ready'); e.currentTarget.style.visibility = ''; e.currentTarget.parentElement?.classList.remove('image-failed'); }}
+                            onError={e => { e.currentTarget.style.visibility = 'hidden'; e.currentTarget.parentElement?.classList.add('image-failed'); }} />}
                           {!thumb && <span className="video-card-missing">{t('封面暂不可用')}</span>}
                           {nowPlaying && <div className="video-card-live">{t('▶ 播放中')}</div>}
                           {rv.duration != null && <span className="video-card-duration">

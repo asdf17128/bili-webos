@@ -1,0 +1,158 @@
+{
+  "samples": [
+    {
+      "time": 1.083333,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": 0,
+      "decoded": 171,
+      "dropped": 0,
+      "controls": [
+        "like",
+        "coin",
+        "fav",
+        "later",
+        "prev",
+        "play",
+        "next",
+        "comments",
+        "settings"
+      ]
+    },
+    {
+      "time": 6.166666,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": 0,
+      "decoded": 289,
+      "dropped": 0,
+      "controls": [
+        "like",
+        "coin",
+        "fav",
+        "later",
+        "prev",
+        "play",
+        "next",
+        "comments",
+        "settings"
+      ]
+    },
+    {
+      "time": 11.25,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": 0,
+      "decoded": 413,
+      "dropped": 0,
+      "controls": [
+        "like",
+        "coin",
+        "fav",
+        "later",
+        "prev",
+        "play",
+        "next",
+        "comments",
+        "settings"
+      ]
+    },
+    {
+      "time": 16.333333,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": 0,
+      "decoded": 535,
+      "dropped": 0,
+      "controls": [
+        "like",
+        "coin",
+        "fav",
+        "later",
+        "prev",
+        "play",
+        "next",
+        "comments",
+        "settings"
+      ]
+    },
+    {
+      "time": 21.375,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": 0,
+      "decoded": 657,
+      "dropped": 0,
+      "controls": [
+        "like",
+        "coin",
+        "fav",
+        "later",
+        "prev",
+        "play",
+        "next",
+        "comments",
+        "settings"
+      ]
+    },
+    {
+      "time": 26.5,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": 0,
+      "decoded": 779,
+      "dropped": 0,
+      "controls": [
+        "like",
+        "coin",
+        "fav",
+        "later",
+        "prev",
+        "play",
+        "next",
+        "comments",
+        "settings"
+      ]
+    },
+    {
+      "time": 31.583333,
+      "paused": false,
+      "ready": 4,
+      "width": 3996,
+      "height": 2160,
+      "error": 0,
+      "decoded": 902,
+      "dropped": 0,
+      "controls": [
+        "like",
+        "coin",
+        "fav",
+        "later",
+        "prev",
+        "play",
+        "next",
+        "comments",
+        "settings"
+      ]
+    }
+  ],
+  "pass": false,
+  "error": "TV state wait expired",
+  "returnedHome": true,
+  "review": {
+    "classification": "test-navigation-assumption",
+    "reason": "The controls had auto-hidden during sampling; an unconditional Back exited playback before the subsequent visibility wait. Preserve this failed test run; correct the navigation precondition before rerun."
+  }
+}

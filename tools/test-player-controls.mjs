@@ -279,6 +279,20 @@ const engagementWrites = f => f.calls.mockWriteDetails.filter(write => /\/archiv
 async function engagementState(page, id) {
   return engagementButton(page,id).evaluate(button => ({ pressed: button.getAttribute('aria-pressed'), count: button.querySelector('.player-control-value')?.textContent.trim() }));
 }
+async function activeEngagementAppearance(page, id) {
+  const appearance = await engagementButton(page,id).evaluate(button => {
+    const focused=button.classList.contains('focused'), root=getComputedStyle(document.documentElement);
+    const tokenColor=name=>{const probe=document.createElement('span');probe.style.color=root.getPropertyValue(name).trim();document.body.appendChild(probe);const color=getComputedStyle(probe).color;probe.remove();return color;};
+    const icon=getComputedStyle(button.querySelector('.player-control-icon'));
+    return {lit:button.classList.contains('lit'),background:icon.backgroundColor,color:icon.color,
+      expectedBackground:tokenColor(focused?'--tv-accent':'--tv-card'),expectedColor:tokenColor(focused?'--tv-rail':'--tv-accent'),
+      statusCount:button.querySelectorAll('.player-control-status').length};
+  });
+  assert.ok(appearance.lit, 'confirmed interaction stays visibly lit');
+  assert.equal(appearance.background,appearance.expectedBackground,'confirmed surface uses the existing theme colors');
+  assert.equal(appearance.color,appearance.expectedColor,'confirmed icon uses the existing theme colors');
+  if(id!=='coin')assert.equal(appearance.statusCount,0,'like and favorite use color without an extra success check');
+}
 async function engagementFeedback(page, id, feedback) {
   await page.waitForFunction(({id,feedback}) => document.querySelector(`.player-control[data-control="${id}"]`)?.dataset.feedback === feedback, {id,feedback});
   const button = engagementButton(page,id);
@@ -432,11 +446,11 @@ for(const id of ['like','fav']) await run('engagement feedback successful toggle
  release();await engagementFeedback(page,id,'success');
  assert.equal((await engagementState(page,id)).pressed,'true');
  assert.notEqual((await engagementState(page,id)).count,before.count);
- await engagementButton(page,id).locator('.player-control-status').waitFor({state:'visible'});
+ await activeEngagementAppearance(page,id);
  await shot(f,'after-engagement-'+id+'-success');
  await page.waitForFunction(id=>document.querySelector(`[data-control="${id}"]`)?.dataset.feedback!=='success',id);
  assert.equal((await engagementState(page,id)).pressed,'true','active state outlasts transient success feedback');
- await engagementButton(page,id).locator('.player-control-status').waitFor({state:'visible'});
+ await activeEngagementAppearance(page,id);
  await page.keyboard.press('Enter');const cancel=await f.takeInteraction(id);
  await engagementFeedback(page,id,'pending');cancel();await engagementFeedback(page,id,'success');
  assert.deepEqual(await engagementState(page,id),before,'successful cancellation restores count and inactive state');
@@ -455,6 +469,7 @@ for(const id of ['like','coin','fav']) await run('engagement feedback rejection 
  await page.keyboard.press('Enter');const reject=await f.takeInteraction(id);
  await engagementFeedback(page,id,'pending');reject();await engagementFeedback(page,id,'error');
  assert.deepEqual(await engagementState(page,id),before,'rejected write cannot light the button or increment counts');
+ assert.equal(await engagementButton(page,id).locator('.player-control-status').textContent(),'!','failure retains its explicit error marker');
  await shot(f,'after-engagement-'+id+'-error');
  await page.keyboard.press('Enter');const retry=await f.takeInteraction(id);
  await engagementFeedback(page,id,'pending');retry();await engagementFeedback(page,id,'success');
@@ -525,12 +540,12 @@ await run('engagement feedback single and triple share one pending gate',
  triple();await engagementFeedback(page,'like','success');
  for(const id of ['like','coin','fav']){
   assert.equal((await engagementState(page,id)).pressed,'true');
-  await engagementButton(page,id).locator('.player-control-status').waitFor({state:'visible'});
+  await activeEngagementAppearance(page,id);
  }
  assert.match(await engagementButton(page,'coin').locator('.player-control-status').textContent(),/2/);
 });
 
-await run('engagement feedback active markers remain visible with focused narrow large text',
+await run('engagement feedback active color and coin count remain clear with focused narrow large text',
  {width:1280,height:720,scale:1.4,commentCount:100,interactions:{initial:{like:true,coin:2,favorite:true}}},async f=>{
  const page=f.page;
  await page.waitForFunction(()=>['like','coin','fav'].every(id=>document.querySelector(`[data-control="${id}"]`)?.getAttribute('aria-pressed')==='true'));
@@ -538,6 +553,8 @@ await run('engagement feedback active markers remain visible with focused narrow
  await page.locator('.comment-rail-body').waitFor();await page.keyboard.press('ArrowLeft');
  for(const id of ['like','coin','fav']){
   await focusPrimary(page,id);
+  await activeEngagementAppearance(page,id);
+  if(id!=='coin'){await shot(f,'after-engagement-active-'+id+'-narrow-large');continue;}
   const marker=engagementButton(page,id).locator('.player-control-status');await marker.waitFor({state:'visible'});
   const geometry=await marker.evaluate(element=>{
    const box=element.getBoundingClientRect(),style=getComputedStyle(element),deck=element.closest('.player-controls').getBoundingClientRect();
@@ -574,7 +591,7 @@ await run('engagement feedback late initial relation does not undo a successful 
  const accepted=await engagementState(page,'like');assert.equal(accepted.pressed,'true');
  await settleRelation(f,oldRelation);
  assert.deepEqual(await engagementState(page,'like'),accepted,'stale initial inactive relation cannot overwrite the confirmed write');
- await engagementButton(page,'like').locator('.player-control-status').waitFor({state:'visible'});
+ await activeEngagementAppearance(page,'like');
 });
 
 await run('engagement feedback unknown relation must resolve before an explicit write',

@@ -1,0 +1,352 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-07T06:52:29.446452+00:00",
+  "scope": "Final manual Previous/Next behavior after the first implementation was found to prioritize a collection neighbor over the actual previously watched video.",
+  "boundary": [
+    "Browser cases exercise the real React App and PlayerPage using trusted Playwright keyboard/pointer input.",
+    "API responses and media decoding are controlled fixtures. All non-development-server HTTP and WebSocket requests are intercepted.",
+    "This file documents local checks only; it does not claim television playback, real stream decoding or actual network quality.",
+    "Known previous and forward session entries take priority over multipart, collection and episode neighbors. Native order applies when that direction has no recorded session neighbor.",
+    "Explicit playlists retain authority over their ordering, boundaries and invalid indices.",
+    "Manual switching starts at zero. Session history is bounded to 50 items and resets on a new entry or player exit.",
+    "Account data, network addresses, video identifiers and titles are omitted."
+  ],
+  "summary": {
+    "collectionRegressionBefore": {
+      "passed": 0,
+      "total": 1
+    },
+    "afterPure": {
+      "passed": 27,
+      "total": 27
+    },
+    "afterBrowserFullRun": {
+      "passed": 20,
+      "total": 20
+    },
+    "afterCombined": {
+      "passed": 47,
+      "total": 47
+    }
+  },
+  "collectionRegressionBefore": {
+    "script": "tools/test-player-adjacent.mjs",
+    "passed": 0,
+    "total": 1,
+    "sourcesStable": true,
+    "sourceSha256Before": {
+      "app/src/App.jsx": "95830ffcd9e246bed79befccb9c766bd4339dc2d9430dde1c714bd8242b96612",
+      "app/src/player/PlayerPage.jsx": "d2c4a7e884c254b812e0b487da194ff4fba30b3492202ab0f59c83681240f42c",
+      "app/src/player/adjacentVideo.js": "b79219f1aeb4e39c95496a91e8bbb2c4816f874c3bf7f4b3d92c26d562d69292",
+      "app/src/player/playIntent.js": "2a2c4cac679e9a9cab3bb4ad4a30f4adee44f215e5b8fdde37d174dd9beec74c",
+      "app/src/utils/library.js": "14ace595c759a585b5ddf9918a5ded32e3a04132741d1192d1345e23b101dcc5"
+    },
+    "sourceSha256After": {
+      "app/src/App.jsx": "95830ffcd9e246bed79befccb9c766bd4339dc2d9430dde1c714bd8242b96612",
+      "app/src/player/PlayerPage.jsx": "d2c4a7e884c254b812e0b487da194ff4fba30b3492202ab0f59c83681240f42c",
+      "app/src/player/adjacentVideo.js": "b79219f1aeb4e39c95496a91e8bbb2c4816f874c3bf7f4b3d92c26d562d69292",
+      "app/src/player/playIntent.js": "2a2c4cac679e9a9cab3bb4ad4a30f4adee44f215e5b8fdde37d174dd9beec74c",
+      "app/src/utils/library.js": "14ace595c759a585b5ddf9918a5ded32e3a04132741d1192d1345e23b101dcc5"
+    },
+    "results": [
+      {
+        "case": "Next into a different collection returns to the actual previous video",
+        "passed": false,
+        "loadCount": 3,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0,
+        "failure": "After Next entered a different collection, Previous loaded the preceding collection item instead of the video actually watched immediately before it."
+      }
+    ]
+  },
+  "afterPure": {
+    "script": "tools/test-adjacent-video.mjs",
+    "passed": 27,
+    "total": 27,
+    "sourceSha256": "f86a1fdfc7df91ce7bc524887d0030460c9d479e72cb5d96fd596be7edbe7475",
+    "scriptSha256": "5528371bf67709433a05df7d328f647f2c24fb5fcf20708a6306854a7ba316aa",
+    "results": [
+      {
+        "case": "playlist boundaries do not wrap",
+        "passed": true
+      },
+      {
+        "case": "previous skips unavailable entries and keeps playlist context",
+        "passed": true
+      },
+      {
+        "case": "loaded next does not fetch and skips unavailable slots",
+        "passed": true
+      },
+      {
+        "case": "playlist wins over parts and recommendations",
+        "passed": true
+      },
+      {
+        "case": "invalid explicit playlist position cannot fall back to another queue",
+        "passed": true
+      },
+      {
+        "case": "known next page is available without fetching during render",
+        "passed": true
+      },
+      {
+        "case": "paged next reuses dedupe and retains watch-later context",
+        "passed": true
+      },
+      {
+        "case": "empty next page stops instead of replaying or falling back",
+        "passed": true
+      },
+      {
+        "case": "pagination failure reaches caller error handling",
+        "passed": true
+      },
+      {
+        "case": "multi-P uses resolved CID rather than original card CID",
+        "passed": true
+      },
+      {
+        "case": "UGC collection matches video identity as well as CID",
+        "passed": true
+      },
+      {
+        "case": "ordered parts do not leak into recommendations at either end",
+        "passed": true
+      },
+      {
+        "case": "unresolved sequence identity disables both directions",
+        "passed": true
+      },
+      {
+        "case": "Bangumi related list is ordered episode navigation",
+        "passed": true
+      },
+      {
+        "case": "season-only Bangumi entry locates episode by resolved CID",
+        "passed": true
+      },
+      {
+        "case": "single video next filters the same BV even when a different CID is present",
+        "passed": true
+      },
+      {
+        "case": "aid-only current video is not replayed by related fallback",
+        "passed": true
+      },
+      {
+        "case": "missing or self-only recommendations disable next",
+        "passed": true
+      },
+      {
+        "case": "returned target is a copy and caller owns fresh playback intent",
+        "passed": true
+      },
+      {
+        "case": "unknown direction and empty context are inert",
+        "passed": true
+      },
+      {
+        "case": "standalone Next Previous Next retraces actual playback when recommendations change",
+        "passed": true
+      },
+      {
+        "case": "manual history retraces the middle part and outside entry before native part order",
+        "passed": true
+      },
+      {
+        "case": "visited collection history wins over native neighbors in both directions",
+        "passed": true
+      },
+      {
+        "case": "unresolved native sequence cannot disable a known visited neighbor",
+        "passed": true
+      },
+      {
+        "case": "explicit playlists never escape their boundaries through the session trail",
+        "passed": true
+      },
+      {
+        "case": "session snapshots retain resolved CID and newly fetched playlist context immutably",
+        "passed": true
+      },
+      {
+        "case": "session trail remains bounded and replaces the future only when branching",
+        "passed": true
+      }
+    ]
+  },
+  "afterBrowserFullRun": {
+    "script": "tools/test-player-adjacent.mjs",
+    "passed": 20,
+    "total": 20,
+    "sourcesStable": true,
+    "sourceSha256Before": {
+      "app/src/App.jsx": "95830ffcd9e246bed79befccb9c766bd4339dc2d9430dde1c714bd8242b96612",
+      "app/src/player/PlayerPage.jsx": "d2c4a7e884c254b812e0b487da194ff4fba30b3492202ab0f59c83681240f42c",
+      "app/src/player/adjacentVideo.js": "f86a1fdfc7df91ce7bc524887d0030460c9d479e72cb5d96fd596be7edbe7475",
+      "app/src/player/playIntent.js": "2a2c4cac679e9a9cab3bb4ad4a30f4adee44f215e5b8fdde37d174dd9beec74c",
+      "app/src/utils/library.js": "14ace595c759a585b5ddf9918a5ded32e3a04132741d1192d1345e23b101dcc5"
+    },
+    "sourceSha256After": {
+      "app/src/App.jsx": "95830ffcd9e246bed79befccb9c766bd4339dc2d9430dde1c714bd8242b96612",
+      "app/src/player/PlayerPage.jsx": "d2c4a7e884c254b812e0b487da194ff4fba30b3492202ab0f59c83681240f42c",
+      "app/src/player/adjacentVideo.js": "f86a1fdfc7df91ce7bc524887d0030460c9d479e72cb5d96fd596be7edbe7475",
+      "app/src/player/playIntent.js": "2a2c4cac679e9a9cab3bb4ad4a30f4adee44f215e5b8fdde37d174dd9beec74c",
+      "app/src/utils/library.js": "14ace595c759a585b5ddf9918a5ded32e3a04132741d1192d1345e23b101dcc5"
+    },
+    "results": [
+      {
+        "case": "single video Next Previous Next retraces playback despite changed recommendations",
+        "passed": true,
+        "loadCount": 5,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "middle-part manual history returns to the actual previous video before native order",
+        "passed": true,
+        "loadCount": 9,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "Next into a different collection returns to the actual previous video",
+        "passed": true,
+        "loadCount": 4,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "visited collection history wins over conflicting native neighbors in both directions",
+        "passed": true,
+        "loadCount": 5,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "opening another video replaces the navigation session in the same App",
+        "passed": true,
+        "loadCount": 3,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "playlist previous and next preserve order and start from zero without wrapping",
+        "passed": true,
+        "loadCount": 4,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "multi-part transport follows resolved resumed part rather than original card",
+        "passed": true,
+        "loadCount": 4,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "UGC collection transport follows its ordered episode list",
+        "passed": true,
+        "loadCount": 3,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "PGC episode transport navigates both directions from zero",
+        "passed": true,
+        "loadCount": 3,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "pending next page cannot submit duplicate requests and preserves previous context",
+        "passed": true,
+        "loadCount": 3,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "failed next page leaves current video and permits explicit retry",
+        "passed": true,
+        "loadCount": 2,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "empty next page disables the action instead of looping or refetching",
+        "passed": true,
+        "loadCount": 1,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "leaving during a next-page request never starts a late video",
+        "passed": true,
+        "loadCount": 1,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "late next-page completion cannot replace a new playback entry",
+        "passed": true,
+        "loadCount": 2,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "late next-page callback cannot replace a same-video new entry without unmounting",
+        "passed": true,
+        "loadCount": 2,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "guest with no neighbors skips disabled actions without changing video",
+        "passed": true,
+        "loadCount": 1,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "manual pending Next owns EOS instead of next",
+        "passed": true,
+        "loadCount": 2,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "manual pending Next owns EOS instead of repeat",
+        "passed": true,
+        "loadCount": 2,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "automatic EOS owns pagination before manual previous or next",
+        "passed": true,
+        "loadCount": 2,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "manual pending EOS failure releases lock for retry without autoplay",
+        "passed": true,
+        "loadCount": 2,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      }
+    ]
+  },
+  "browserScriptSha256": "cbea88ae337190880cb67378c51767751a8d7bed752d28e868c900d1b3d99bdb",
+  "rawEvidenceLocations": [
+    "/tmp/bili-previous-collection-before/results.json",
+    "/tmp/bili-previous-collection-final/results.json"
+  ],
+  "notes": [
+    "navigation-local.json preserves the earlier implementation evidence. Its native-first multipart expectation was superseded after television testing exposed the collection-entry gap.",
+    "The collection reproduction failed before the final helper change and passed afterward. Its stable source hashes are retained for both runs.",
+    "All 20 final browser cases ran together against unchanged production source hashes; the separate 27-case pure suite also passed on the same final navigation helper.",
+    "Final browser coverage includes outside-collection entry, nonadjacent same-collection history, forward history overriding a conflicting native next item, multipart return chains, explicit playlist boundaries, paging failures, duplicate-request locks, exit/re-entry isolation, same-key stale callbacks and end-of-stream races."
+  ]
+}

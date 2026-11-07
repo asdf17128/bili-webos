@@ -1,0 +1,131 @@
+{
+  "boundary": "Real React/API/controller with controlled Shaka and media events; every non-Vite HTTP request and every WebSocket is intercepted. New contexts use only synthetic account/video data. No real media decoding, television, desktop foreground, or phone interaction.",
+  "sources": {
+    "app/src/player/PlayerPage.jsx": "db58ced2bee29789c86be4b63850ff21024c59d84842af6929375b9d47a56201",
+    "app/src/player/adjacentVideo.js": "65f09d2f6fff51af43616f73eeaadf6e77f60bab8933f200dcf7b1a60b299a70",
+    "app/src/player/SubtitleLayer.jsx": "130b03b27e3bad26493978ccc298afe98f5c8b508e955ec427fc68ddf63119f5",
+    "app/src/player/playerControls.css": "5b16f38866093736363706db05fc70991141b0216321363a6ce4e0e4438793cc",
+    "app/src/player/PlayerMoreControls.jsx": "868946a2c0c1160b6036718ab8a1a296b5bff1291cf1f6f320dd13daf131816e",
+    "app/src/player/playerMoreControls.css": "cee32c7ef0624ccb97d4b8123e2ce75f8e0c49a72eb7e0d78fe92ccd0491ac9f",
+    "app/src/components/Icon.jsx": "e6ed7ef4fdd9f26b4cd161c0e66589fa72deff376c102008a3a24b2e08deb2d4",
+    "app/src/i18n/en.js": "482ee0dee241459f6dcbc974597fb21590a6061619339f434bf649d6d0e8b644",
+    "app/src/i18n/es.js": "2f149247a12579444072db34faa322019c1e489a54357b11ef4a837e75daa462",
+    "app/src/styles.css": "af2e9f38471c0f69626b4bfa779c4a0d729faa52ec6a9680042562987401b785",
+    "app/src/tv-design.css": "e627de8ab6c756b9eb9e3f267e74f1b5bfa635c8148559d223ddfea671753cc1",
+    "app/src/hooks/useAuthorFollowers.js": "3fc6805b08055604da1259cab330c34ac4344cd05e652f4c80b702eedd6e482b",
+    "app/src/utils/authorFollowers.js": "aed07affbf7392fc6e3fbbc99fdee2af39982b241be98295db7b8ea376c203f3"
+  },
+  "sourcesEnd": {
+    "app/src/player/PlayerPage.jsx": "db58ced2bee29789c86be4b63850ff21024c59d84842af6929375b9d47a56201",
+    "app/src/player/adjacentVideo.js": "65f09d2f6fff51af43616f73eeaadf6e77f60bab8933f200dcf7b1a60b299a70",
+    "app/src/player/SubtitleLayer.jsx": "130b03b27e3bad26493978ccc298afe98f5c8b508e955ec427fc68ddf63119f5",
+    "app/src/player/playerControls.css": "5b16f38866093736363706db05fc70991141b0216321363a6ce4e0e4438793cc",
+    "app/src/player/PlayerMoreControls.jsx": "868946a2c0c1160b6036718ab8a1a296b5bff1291cf1f6f320dd13daf131816e",
+    "app/src/player/playerMoreControls.css": "cee32c7ef0624ccb97d4b8123e2ce75f8e0c49a72eb7e0d78fe92ccd0491ac9f",
+    "app/src/components/Icon.jsx": "e6ed7ef4fdd9f26b4cd161c0e66589fa72deff376c102008a3a24b2e08deb2d4",
+    "app/src/i18n/en.js": "482ee0dee241459f6dcbc974597fb21590a6061619339f434bf649d6d0e8b644",
+    "app/src/i18n/es.js": "2f149247a12579444072db34faa322019c1e489a54357b11ef4a837e75daa462",
+    "app/src/styles.css": "af2e9f38471c0f69626b4bfa779c4a0d729faa52ec6a9680042562987401b785",
+    "app/src/tv-design.css": "e627de8ab6c756b9eb9e3f267e74f1b5bfa635c8148559d223ddfea671753cc1",
+    "app/src/hooks/useAuthorFollowers.js": "3fc6805b08055604da1259cab330c34ac4344cd05e652f4c80b702eedd6e482b",
+    "app/src/utils/authorFollowers.js": "aed07affbf7392fc6e3fbbc99fdee2af39982b241be98295db7b8ea376c203f3"
+  },
+  "sourcesStable": true,
+  "results": [
+    {
+      "name": "three primary groups and nested settings {\"language\":\"en\",\"width\":1280,\"height\":720,\"scale\":1.4,\"subtitleOff\":true}",
+      "pass": true,
+      "durationMs": 7651
+    },
+    {
+      "name": "engagement feedback successful toggle and cancellation like",
+      "pass": true,
+      "durationMs": 3723
+    },
+    {
+      "name": "engagement feedback successful toggle and cancellation fav",
+      "pass": true,
+      "durationMs": 3518
+    },
+    {
+      "name": "engagement feedback rejection preserves state and retry works like",
+      "pass": true,
+      "durationMs": 1306
+    },
+    {
+      "name": "engagement feedback rejection preserves state and retry works coin",
+      "pass": true,
+      "durationMs": 1280
+    },
+    {
+      "name": "engagement feedback rejection preserves state and retry works fav",
+      "pass": true,
+      "durationMs": 1297
+    },
+    {
+      "name": "engagement feedback coin count reaches two without extra writes",
+      "pass": true,
+      "durationMs": 1139
+    },
+    {
+      "name": "engagement feedback coin server limit synchronizes status without claiming a new coin",
+      "pass": true,
+      "durationMs": 1071
+    },
+    {
+      "name": "engagement feedback favorite folder rejection never submits a favorite write",
+      "pass": true,
+      "durationMs": 1146
+    },
+    {
+      "name": "engagement feedback single and triple share one pending gate",
+      "pass": true,
+      "durationMs": 5573
+    },
+    {
+      "name": "engagement feedback active color and coin count remain clear with focused narrow large text",
+      "pass": true,
+      "durationMs": 1260
+    },
+    {
+      "name": "engagement feedback late initial relation does not undo a successful like",
+      "pass": true,
+      "durationMs": 1109
+    },
+    {
+      "name": "engagement feedback unknown relation must resolve before an explicit write",
+      "pass": true,
+      "durationMs": 1131
+    },
+    {
+      "name": "engagement feedback late triple reconciliation does not undo a later cancellation",
+      "pass": true,
+      "durationMs": 3313
+    },
+    {
+      "name": "engagement feedback late response after exit adds no new UI",
+      "pass": true,
+      "durationMs": 1280
+    },
+    {
+      "name": "engagement feedback PGC with a valid episode aid still supports liking",
+      "pass": true,
+      "durationMs": 1064
+    },
+    {
+      "name": "visual 1920x1080 light scale=1",
+      "pass": true,
+      "durationMs": 1902
+    },
+    {
+      "name": "visual 1280x720 dark scale=1",
+      "pass": true,
+      "durationMs": 1846
+    },
+    {
+      "name": "visual 1920x1080 light scale=1.4",
+      "pass": true,
+      "durationMs": 1897
+    }
+  ]
+}

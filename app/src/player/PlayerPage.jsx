@@ -115,7 +115,7 @@ const engagementRelation = data => ({
   faved: !!data.favorite,
 });
 
-function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
+function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   useTitlesMT(); // re-render when list-title translations land (no-op on zh)
   const videoRef = useRef(null);
   const pointerDismissedRef = useRef(false);
@@ -326,7 +326,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   const settingsControlsRef = useRef(SETTINGS_CONTROLS);
   settingsControlsRef.current = SETTINGS_CONTROLS;
   const focusedSettingId = SETTINGS_CONTROLS.includes(settingsFocusId) ? settingsFocusId : 'quality';
-  const adjacent = adjacentAvailability({ video, cid: cidRef.current || video.cid, parts: partsList, related: relatedVideos });
+  const adjacent = adjacentAvailability({ video, navigation, cid: cidRef.current || video.cid, parts: partsList, related: relatedVideos });
   const disabledControls = new Set([
     ...(!loggedIn ? ['like', 'coin', 'fav', 'later'] : []),
     ...(!onPlayNext || !adjacent.previous || adjacentBusy ? ['prev'] : []),
@@ -1899,10 +1899,15 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     endLikeHold(true); clearScrub(); setEndNextIn(null);
     try {
       const target = await resolveAdjacentVideo(direction, {
-        video, cid: cidRef.current || video.cid, parts: partsList, related: relatedVideos,
+        video, navigation, cid: cidRef.current || video.cid, parts: partsList, related: relatedVideos,
       }, getLibraryPage);
       if (!mountedRef.current) return;
-      if (target) onPlayNext(playAdvance(target));
+      if (target) {
+        const cid = cidRef.current || video.cid;
+        const resolvedPart = [...partsList, ...(video.isBangumi || video.epid || video.seasonId ? relatedVideos : [])]
+          .find(item => item.cid != null && String(item.cid) === String(cid));
+        onPlayNext(playAdvance(target), { direction, current: { ...video, ...resolvedPart, cid, aid: videoAidRef.current || video.aid } });
+      }
       else if (direction === 'next') setAdjacentExhausted(true);
     } catch {
       if (mountedRef.current) showPlayerToast(t('连播列表加载失败，请返回列表重试'));
@@ -1910,7 +1915,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       adjacentBusyRef.current = false;
       if (mountedRef.current) setAdjacentBusy(false);
     }
-  }, [video, partsList, relatedVideos, onPlayNext, endLikeHold, clearScrub, showPlayerToast]);
+  }, [video, navigation, partsList, relatedVideos, onPlayNext, endLikeHold, clearScrub, showPlayerToast]);
 
   // One entry for a control-bar action — shared by D-pad OK and pointer click
   // (the Magic Remote pointer must drive every button the D-pad can).
@@ -3215,8 +3220,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
                   <span className="player-control-icon">{btn === 'coin' ? <CoinIcon /> : <Icon size={28}
                     name={btn === 'play' ? (ended ? 'refresh' : playing ? 'pause' : 'play') : btn === 'fav' ? 'star' : btn} />}
                   {feedback === 'pending' && <span className="player-control-spinner" aria-hidden="true" />}
-                  {engagement && (active || feedback === 'error') && <span className="player-control-status" aria-hidden="true">
-                    {feedback === 'error' ? '!' : btn === 'coin' ? rel.coined : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l4 4 10-10" /></svg>}
+                  {engagement && ((btn === 'coin' && active) || feedback === 'error') && <span className="player-control-status" aria-hidden="true">
+                    {feedback === 'error' ? '!' : rel.coined}
                   </span>}
                   {btn === 'like' && likeRing && <svg className="like-ring" aria-hidden="true" width={likeRing.w + 8} height={likeRing.h + 8} style={{ left: -10, top: -10 }}>
                     <rect className="like-ring-track" x="4" y="4" width={likeRing.w} height={likeRing.h} rx={likeRing.rx} />

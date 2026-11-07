@@ -1,0 +1,134 @@
+{
+  "startedAt": "2026-11-07T06:48:16.539Z",
+  "boundary": "Real TV view API, playback and trusted remote navigation. Identities stay in page memory; report contains comparisons only. Account POSTs are blocked except ordinary playback heartbeats. Screenshots remain private.",
+  "checks": [
+    {
+      "name": "entry is foreground browse without active playback",
+      "pass": true
+    },
+    {
+      "name": "initial-A starts near the beginning with decoded dimensions",
+      "pass": true,
+      "detail": {
+        "time": 0.4,
+        "paused": false,
+        "ready": 4,
+        "width": 1920,
+        "height": 1080,
+        "error": 0,
+        "sequence": 1
+      }
+    },
+    {
+      "name": "initial-A advances real media time",
+      "pass": true,
+      "detail": {
+        "advance": 0.7000000000000001,
+        "width": 1920,
+        "height": 1080,
+        "error": 0
+      }
+    },
+    {
+      "name": "fresh standalone entry has Previous disabled",
+      "pass": true
+    },
+    {
+      "name": "next-B starts near the beginning with decoded dimensions",
+      "pass": true,
+      "detail": {
+        "time": 0.433312,
+        "paused": false,
+        "ready": 4,
+        "width": 1920,
+        "height": 1080,
+        "error": 0,
+        "sequence": 2
+      }
+    },
+    {
+      "name": "next-B advances real media time",
+      "pass": true,
+      "detail": {
+        "advance": 0.7333750000000001,
+        "width": 1920,
+        "height": 1080,
+        "error": 0
+      }
+    },
+    {
+      "name": "Next changes to a different real video",
+      "pass": true
+    },
+    {
+      "name": "back-A starts near the beginning with decoded dimensions",
+      "pass": true,
+      "detail": {
+        "time": 0.333312,
+        "paused": false,
+        "ready": 4,
+        "width": 1920,
+        "height": 1080,
+        "error": 0,
+        "sequence": 3
+      }
+    },
+    {
+      "name": "back-A advances real media time",
+      "pass": true,
+      "detail": {
+        "advance": 0.8,
+        "width": 1920,
+        "height": 1080,
+        "error": 0
+      }
+    },
+    {
+      "name": "Previous returns to the original video",
+      "pass": false
+    }
+  ],
+  "pass": false,
+  "error": "Previous returns to the original video",
+  "failureState": {
+    "time": 3.233312,
+    "paused": false,
+    "ready": 4,
+    "width": 1920,
+    "height": 1080,
+    "error": 0,
+    "sequence": 3,
+    "focus": "play"
+  },
+  "guard": {
+    "viewRequests": 3,
+    "viewReplies": 3,
+    "lastViewCode": 0,
+    "blocked": 0,
+    "heartbeatWrites": 3
+  },
+  "cleanup": {
+    "noPlayer": true,
+    "guardRemoved": true,
+    "visible": true
+  },
+  "pageErrors": [],
+  "network": {
+    "active": 0,
+    "media": 0,
+    "startedMedia": 55,
+    "completedMedia": 54,
+    "failedMedia": 1
+  },
+  "finishedAt": "2026-11-07T06:48:37.789Z",
+  "interpretation": "Real A→Next B→Previous selected a different video, despite all three real media loads advancing. Screenshots reviewed privately. Follow-up read-only metadata shows the first related item is at the end of a 30-video collection; native-first precedence can select its collection predecessor over A. The same mechanism was reproduced locally.",
+  "followUpReadOnlyMetadata": {
+    "recordedAt": "2026-11-07T06:51:10.657Z",
+    "relatedCode": 0,
+    "viewCode": 0,
+    "pageCount": 1,
+    "collectionEpisodes": 30,
+    "collectionCurrentIndex": 29,
+    "boundary": "Separate read-only API probe of the current first related item; does not retroactively populate missing first-attempt telemetry. Screenshots show the returned item belongs to the same creator/series as B."
+  }
+}

@@ -1,0 +1,253 @@
+{
+  "recordedAt": "2026-11-07T06:47:06.958Z",
+  "boundary": "Real React App and trusted browser input; API/media decoder are controlled. Production build and installed-file verification are recorded separately.",
+  "sourceChanges": {
+    "app/src/App.jsx": "95830ffcd9e246bed79befccb9c766bd4339dc2d9430dde1c714bd8242b96612",
+    "app/src/player/PlayerPage.jsx": "d2c4a7e884c254b812e0b487da194ff4fba30b3492202ab0f59c83681240f42c",
+    "app/src/player/adjacentVideo.js": "b79219f1aeb4e39c95496a91e8bbb2c4816f874c3bf7f4b3d92c26d562d69292",
+    "app/src/player/playerControls.css": "5b16f38866093736363706db05fc70991141b0216321363a6ce4e0e4438793cc",
+    "app/src/player/playerMoreControls.css": "cee32c7ef0624ccb97d4b8123e2ce75f8e0c49a72eb7e0d78fe92ccd0491ac9f"
+  },
+  "controls": {
+    "sources": {
+      "app/src/player/PlayerPage.jsx": "d2c4a7e884c254b812e0b487da194ff4fba30b3492202ab0f59c83681240f42c",
+      "app/src/player/adjacentVideo.js": "b79219f1aeb4e39c95496a91e8bbb2c4816f874c3bf7f4b3d92c26d562d69292",
+      "app/src/player/SubtitleLayer.jsx": "130b03b27e3bad26493978ccc298afe98f5c8b508e955ec427fc68ddf63119f5",
+      "app/src/player/playerControls.css": "5b16f38866093736363706db05fc70991141b0216321363a6ce4e0e4438793cc",
+      "app/src/player/PlayerMoreControls.jsx": "868946a2c0c1160b6036718ab8a1a296b5bff1291cf1f6f320dd13daf131816e",
+      "app/src/player/playerMoreControls.css": "cee32c7ef0624ccb97d4b8123e2ce75f8e0c49a72eb7e0d78fe92ccd0491ac9f",
+      "app/src/components/Icon.jsx": "e6ed7ef4fdd9f26b4cd161c0e66589fa72deff376c102008a3a24b2e08deb2d4",
+      "app/src/i18n/en.js": "482ee0dee241459f6dcbc974597fb21590a6061619339f434bf649d6d0e8b644",
+      "app/src/i18n/es.js": "2f149247a12579444072db34faa322019c1e489a54357b11ef4a837e75daa462",
+      "app/src/styles.css": "af2e9f38471c0f69626b4bfa779c4a0d729faa52ec6a9680042562987401b785",
+      "app/src/tv-design.css": "e627de8ab6c756b9eb9e3f267e74f1b5bfa635c8148559d223ddfea671753cc1",
+      "app/src/hooks/useAuthorFollowers.js": "3fc6805b08055604da1259cab330c34ac4344cd05e652f4c80b702eedd6e482b",
+      "app/src/utils/authorFollowers.js": "aed07affbf7392fc6e3fbbc99fdee2af39982b241be98295db7b8ea376c203f3"
+    },
+    "sourcesEnd": {
+      "app/src/player/PlayerPage.jsx": "d2c4a7e884c254b812e0b487da194ff4fba30b3492202ab0f59c83681240f42c",
+      "app/src/player/adjacentVideo.js": "b79219f1aeb4e39c95496a91e8bbb2c4816f874c3bf7f4b3d92c26d562d69292",
+      "app/src/player/SubtitleLayer.jsx": "130b03b27e3bad26493978ccc298afe98f5c8b508e955ec427fc68ddf63119f5",
+      "app/src/player/playerControls.css": "5b16f38866093736363706db05fc70991141b0216321363a6ce4e0e4438793cc",
+      "app/src/player/PlayerMoreControls.jsx": "868946a2c0c1160b6036718ab8a1a296b5bff1291cf1f6f320dd13daf131816e",
+      "app/src/player/playerMoreControls.css": "cee32c7ef0624ccb97d4b8123e2ce75f8e0c49a72eb7e0d78fe92ccd0491ac9f",
+      "app/src/components/Icon.jsx": "e6ed7ef4fdd9f26b4cd161c0e66589fa72deff376c102008a3a24b2e08deb2d4",
+      "app/src/i18n/en.js": "482ee0dee241459f6dcbc974597fb21590a6061619339f434bf649d6d0e8b644",
+      "app/src/i18n/es.js": "2f149247a12579444072db34faa322019c1e489a54357b11ef4a837e75daa462",
+      "app/src/styles.css": "af2e9f38471c0f69626b4bfa779c4a0d729faa52ec6a9680042562987401b785",
+      "app/src/tv-design.css": "e627de8ab6c756b9eb9e3f267e74f1b5bfa635c8148559d223ddfea671753cc1",
+      "app/src/hooks/useAuthorFollowers.js": "3fc6805b08055604da1259cab330c34ac4344cd05e652f4c80b702eedd6e482b",
+      "app/src/utils/authorFollowers.js": "aed07affbf7392fc6e3fbbc99fdee2af39982b241be98295db7b8ea376c203f3"
+    },
+    "sourcesStable": true,
+    "passed": 19,
+    "total": 19,
+    "results": [
+      {
+        "name": "three primary groups and nested settings {\"language\":\"en\",\"width\":1280,\"height\":720,\"scale\":1.4,\"subtitleOff\":true}",
+        "pass": true,
+        "durationMs": 7286
+      },
+      {
+        "name": "engagement feedback successful toggle and cancellation like",
+        "pass": true,
+        "durationMs": 3705
+      },
+      {
+        "name": "engagement feedback successful toggle and cancellation fav",
+        "pass": true,
+        "durationMs": 3521
+      },
+      {
+        "name": "engagement feedback rejection preserves state and retry works like",
+        "pass": true,
+        "durationMs": 1334
+      },
+      {
+        "name": "engagement feedback rejection preserves state and retry works coin",
+        "pass": true,
+        "durationMs": 1308
+      },
+      {
+        "name": "engagement feedback rejection preserves state and retry works fav",
+        "pass": true,
+        "durationMs": 1313
+      },
+      {
+        "name": "engagement feedback coin count reaches two without extra writes",
+        "pass": true,
+        "durationMs": 1156
+      },
+      {
+        "name": "engagement feedback coin server limit synchronizes status without claiming a new coin",
+        "pass": true,
+        "durationMs": 1107
+      },
+      {
+        "name": "engagement feedback favorite folder rejection never submits a favorite write",
+        "pass": true,
+        "durationMs": 1127
+      },
+      {
+        "name": "engagement feedback single and triple share one pending gate",
+        "pass": true,
+        "durationMs": 5609
+      },
+      {
+        "name": "engagement feedback active color and coin count remain clear with focused narrow large text",
+        "pass": true,
+        "durationMs": 1290
+      },
+      {
+        "name": "engagement feedback late initial relation does not undo a successful like",
+        "pass": true,
+        "durationMs": 1129
+      },
+      {
+        "name": "engagement feedback unknown relation must resolve before an explicit write",
+        "pass": true,
+        "durationMs": 1148
+      },
+      {
+        "name": "engagement feedback late triple reconciliation does not undo a later cancellation",
+        "pass": true,
+        "durationMs": 3345
+      },
+      {
+        "name": "engagement feedback late response after exit adds no new UI",
+        "pass": true,
+        "durationMs": 1313
+      },
+      {
+        "name": "engagement feedback PGC with a valid episode aid still supports liking",
+        "pass": true,
+        "durationMs": 1082
+      },
+      {
+        "name": "visual 1920x1080 light scale=1",
+        "pass": true,
+        "durationMs": 1909
+      },
+      {
+        "name": "visual 1280x720 dark scale=1",
+        "pass": true,
+        "durationMs": 1851
+      },
+      {
+        "name": "visual 1920x1080 light scale=1.4",
+        "pass": true,
+        "durationMs": 1912
+      }
+    ]
+  },
+  "playbackEnd": {
+    "passed": 26,
+    "total": 26,
+    "results": [
+      {
+        "name": "legacy off stops home",
+        "pass": true
+      },
+      {
+        "name": "repeat stays on current home",
+        "pass": true
+      },
+      {
+        "name": "legacy off stops playlist",
+        "pass": true
+      },
+      {
+        "name": "repeat stays on current playlist",
+        "pass": true
+      },
+      {
+        "name": "legacy off stops watchlater",
+        "pass": true
+      },
+      {
+        "name": "repeat stays on current watchlater",
+        "pass": true
+      },
+      {
+        "name": "legacy off stops parts",
+        "pass": true
+      },
+      {
+        "name": "repeat stays on current parts",
+        "pass": true
+      },
+      {
+        "name": "legacy off stops season",
+        "pass": true
+      },
+      {
+        "name": "repeat stays on current season",
+        "pass": true
+      },
+      {
+        "name": "legacy off stops paged",
+        "pass": true
+      },
+      {
+        "name": "repeat stays on current paged",
+        "pass": true
+      },
+      {
+        "name": "next advances playlist",
+        "pass": true
+      },
+      {
+        "name": "next advances watchlater",
+        "pass": true
+      },
+      {
+        "name": "next advances parts",
+        "pass": true
+      },
+      {
+        "name": "next advances season",
+        "pass": true
+      },
+      {
+        "name": "next advances paged",
+        "pass": true
+      },
+      {
+        "name": "next keeps related countdown",
+        "pass": true
+      },
+      {
+        "name": "explicit stop overrides legacy on",
+        "pass": true
+      },
+      {
+        "name": "repeat rejection stops with replay controls",
+        "pass": true
+      },
+      {
+        "name": "watch later removal still occurs once while repeating",
+        "pass": true
+      },
+      {
+        "name": "pending playlist respects leave",
+        "pass": true
+      },
+      {
+        "name": "pending playlist respects stop",
+        "pass": true
+      },
+      {
+        "name": "playlist request failure stops without related countdown",
+        "pass": true
+      },
+      {
+        "name": "stop does not skip an unavailable playlist video",
+        "pass": true
+      },
+      {
+        "name": "settings picker persists modes and cancels with Back",
+        "pass": true
+      }
+    ]
+  }
+}

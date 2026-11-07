@@ -113,11 +113,11 @@
 }
 
 .player-more-panel .player-more-action:last-child { margin-bottom: 0; }
-.player-more-panel .player-more-action.lit { color: #ffb1ca; }
+.player-more-panel .player-more-action.lit { color: var(--tv-accent); }
 .player-more-panel .player-more-action.focused,
 .player-more-panel .player-more-action.focused.lit {
-  background: #f7f7f9;
-  color: #191a1e;
+  background: var(--tv-focus);
+  color: var(--tv-rail);
   transform: none;
   outline: none;
 }

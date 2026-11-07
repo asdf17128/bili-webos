@@ -17,16 +17,18 @@ This log collects the release history previously included in the README. For ear
 
 - 点播主控制条固定分为三组，组间留白：左侧点赞／投币／收藏／稍后再看，中间上一个／播放或暂停／下一个，右侧评论／设置。打开时焦点落在播放／暂停；点赞短按、长按三连和互动计数保留在主层，时间与章节归入进度区。
 - 播放设置集中画质、倍速、字幕（有轨时）、弹幕开关、弹幕设置和关注 UP 主；子面板选择或返回后恢复设置原条目，再返回回到主控制条的设置按钮。播放结束或致命错误会关闭面板并取消未完成长按；两排推荐卡片与展开结构保持。
-- 上一个／下一个按所在播放列表、分 P、合集或番剧顺序切换，手动切换从头播放，不首尾环绕；普通视频的上一个不可用，下一个使用相关推荐。未登录互动及不可用的切换按钮由遥控方向键跳过。
+- 上一个／下一个保留本次手动切换路径，点下一条后可返回刚才的视频，再向前仍沿同一路径；没有对应记录时按分 P、合集或番剧顺序切换。显式播放列表保留自己的顺序与首尾边界，手动切换从头播放。未登录互动及不可用的切换按钮由遥控方向键跳过。
 - VOD controls use three spaced groups: Like / Coin / Favorite / Watch Later on the left, Previous / Play or Pause / Next in the center, and Comments / Settings on the right. Focus starts on Play/Pause; engagement counts and hold-to-triple remain in the main row, with time and chapters beside the timeline.
 - Playback Settings contains quality, speed, subtitles when available, danmaku toggle and appearance, and creator follow. Nested panels restore focus to their setting; Back then returns to the main Settings button. Playback end or fatal error closes panels and cancels pending holds; the two-row recommendation shelf remains.
-- Previous/Next follows the current playlist, multi-part video, collection or series without wrapping; manual changes start from zero. Standalone videos disable Previous and use related videos for Next. Remote navigation skips unavailable actions and signed-out engagement controls.
+- Previous/Next remembers the manual playback path, so Previous returns to the video just left and Next follows the same recorded path. Without a recorded neighbor, navigation follows the multi-part video, collection or series. Explicit playlists retain their own order and boundaries; manual changes start from zero. Remote navigation skips unavailable actions and signed-out engagement controls.
 - 修复字幕信息晚到时设置焦点跳项；手动切换与片尾自动连播共用切换状态，避免重复请求和跳转。
 - Settings focus stays on the same action when subtitles arrive late. Manual navigation and end-of-video autoplay share a switch gate to prevent duplicate page requests and transitions.
 - 主控制栏改用大图标与圆形按钮，聚焦时显示白底、清晰轮廓和功能名称；播放键保持默认焦点，长按三连进度环贴合圆形图标，互动计数保持稳定。
 - Larger circular playback icons use a high-contrast focus outline and a focused-action caption. Play/Pause remains the default focus; the hold-to-triple ring follows the icon while counts stay in place.
-- 赞／币／收藏增加明确操作反馈：等待时显示进度，成功后轻弹并保留点亮状态、勾或已投枚数；取消和失败显示对应结果。防止等待期间重复提交，并避免迟到的关系查询覆盖刚完成的操作。
-- Like / Coin / Favorite show pending progress, confirmed success feedback and persistent state badges. Cancellation and failure have explicit results; pending actions block duplicate submissions, and stale relation reads cannot undo a later action.
+- 赞／币／收藏增加明确操作反馈：等待时显示进度，成功后轻弹并保留点亮状态，投币显示已投枚数；取消和失败显示对应结果。防止等待期间重复提交，并避免迟到的关系查询覆盖刚完成的操作。
+- Like / Coin / Favorite show pending progress, confirmed success feedback and persistent active colors; Coin retains a contributed-count badge. Cancellation and failure have explicit results; pending actions block duplicate submissions, and stale relation reads cannot undo a later action.
+- 控制栏复用全局品牌粉与黑白焦点配色，去掉额外浅蓝描边、浅粉／深红色阶，以及点赞、收藏的重复对勾。
+- Controls reuse the app's brand accent and monochrome focus palette, removing extra blue/pink shades and redundant Like/Favorite checkmarks.
 - 播放器推荐卡片在封面加载失败时显示统一占位，避免裂图；兼容 `cover` 封面字段，并在图片恢复后清除失败状态。
 - Player recommendations show an unavailable-cover placeholder for failed images, support the `cover` field, and clear the fallback when an image recovers.
 

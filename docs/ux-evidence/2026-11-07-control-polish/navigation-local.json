@@ -1,0 +1,355 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-07T06:45:54.878331+00:00",
+  "scope": "Manual Previous/Next navigation, session isolation, native sequence order and asynchronous completion guards.",
+  "boundary": [
+    "Browser tests exercise the real React App and PlayerPage with trusted Playwright remote/pointer input.",
+    "Media decoding and API responses are controlled fixtures. All non-development-server HTTP and WebSocket requests are intercepted.",
+    "No television, real account interaction, real stream decoding or actual playback-network quality is claimed by this evidence.",
+    "Manual transport starts from zero. Explicit selection and automatic episode advance retain their existing entry semantics.",
+    "Only test case labels, counts and source hashes are retained. Account data, network addresses and video titles are omitted."
+  ],
+  "summary": {
+    "baselineBrowser": {
+      "passed": 0,
+      "total": 1
+    },
+    "afterPure": {
+      "passed": 25,
+      "total": 25
+    },
+    "afterBrowserFullRun": {
+      "passed": 17,
+      "total": 17
+    },
+    "afterBrowserAdditionalGuard": {
+      "passed": 1,
+      "total": 1
+    },
+    "afterCombined": {
+      "passed": 43,
+      "total": 43
+    }
+  },
+  "before": {
+    "script": "tools/test-player-adjacent.mjs",
+    "passed": 0,
+    "total": 1,
+    "sourcesStable": true,
+    "sourceSha256Before": {
+      "app/src/App.jsx": "23aa125a39868a7a9000f0f4a6ef6cf3144cc1701db10541993c0ce868cce1db",
+      "app/src/player/PlayerPage.jsx": "db58ced2bee29789c86be4b63850ff21024c59d84842af6929375b9d47a56201",
+      "app/src/player/adjacentVideo.js": "65f09d2f6fff51af43616f73eeaadf6e77f60bab8933f200dcf7b1a60b299a70",
+      "app/src/player/playIntent.js": "2a2c4cac679e9a9cab3bb4ad4a30f4adee44f215e5b8fdde37d174dd9beec74c",
+      "app/src/utils/library.js": "14ace595c759a585b5ddf9918a5ded32e3a04132741d1192d1345e23b101dcc5"
+    },
+    "sourceSha256After": {
+      "app/src/App.jsx": "23aa125a39868a7a9000f0f4a6ef6cf3144cc1701db10541993c0ce868cce1db",
+      "app/src/player/PlayerPage.jsx": "db58ced2bee29789c86be4b63850ff21024c59d84842af6929375b9d47a56201",
+      "app/src/player/adjacentVideo.js": "65f09d2f6fff51af43616f73eeaadf6e77f60bab8933f200dcf7b1a60b299a70",
+      "app/src/player/playIntent.js": "2a2c4cac679e9a9cab3bb4ad4a30f4adee44f215e5b8fdde37d174dd9beec74c",
+      "app/src/utils/library.js": "14ace595c759a585b5ddf9918a5ded32e3a04132741d1192d1345e23b101dcc5"
+    },
+    "results": [
+      {
+        "case": "single video Next Previous Next retraces playback despite changed recommendations",
+        "passed": false,
+        "failure": "Previous remained disabled after Next; waiting for the control to become enabled timed out.",
+        "loadCount": 2,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      }
+    ]
+  },
+  "afterPure": {
+    "script": "tools/test-adjacent-video.mjs",
+    "passed": 25,
+    "total": 25,
+    "sourceSha256": "b79219f1aeb4e39c95496a91e8bbb2c4816f874c3bf7f4b3d92c26d562d69292",
+    "scriptSha256": "1ed3a0e3f30b7748f40dda4356a772cc0d223753fbcd6f41dc4c480637a866dd",
+    "results": [
+      {
+        "case": "playlist boundaries do not wrap",
+        "passed": true
+      },
+      {
+        "case": "previous skips unavailable entries and keeps playlist context",
+        "passed": true
+      },
+      {
+        "case": "loaded next does not fetch and skips unavailable slots",
+        "passed": true
+      },
+      {
+        "case": "playlist wins over parts and recommendations",
+        "passed": true
+      },
+      {
+        "case": "invalid explicit playlist position cannot fall back to another queue",
+        "passed": true
+      },
+      {
+        "case": "known next page is available without fetching during render",
+        "passed": true
+      },
+      {
+        "case": "paged next reuses dedupe and retains watch-later context",
+        "passed": true
+      },
+      {
+        "case": "empty next page stops instead of replaying or falling back",
+        "passed": true
+      },
+      {
+        "case": "pagination failure reaches caller error handling",
+        "passed": true
+      },
+      {
+        "case": "multi-P uses resolved CID rather than original card CID",
+        "passed": true
+      },
+      {
+        "case": "UGC collection matches video identity as well as CID",
+        "passed": true
+      },
+      {
+        "case": "ordered parts do not leak into recommendations at either end",
+        "passed": true
+      },
+      {
+        "case": "unresolved sequence identity disables both directions",
+        "passed": true
+      },
+      {
+        "case": "Bangumi related list is ordered episode navigation",
+        "passed": true
+      },
+      {
+        "case": "season-only Bangumi entry locates episode by resolved CID",
+        "passed": true
+      },
+      {
+        "case": "single video next filters the same BV even when a different CID is present",
+        "passed": true
+      },
+      {
+        "case": "aid-only current video is not replayed by related fallback",
+        "passed": true
+      },
+      {
+        "case": "missing or self-only recommendations disable next",
+        "passed": true
+      },
+      {
+        "case": "returned target is a copy and caller owns fresh playback intent",
+        "passed": true
+      },
+      {
+        "case": "unknown direction and empty context are inert",
+        "passed": true
+      },
+      {
+        "case": "standalone Next Previous Next retraces actual playback when recommendations change",
+        "passed": true
+      },
+      {
+        "case": "native Previous inserted before a middle part preserves the outside entry without wrapping",
+        "passed": true
+      },
+      {
+        "case": "explicit playlists never escape their boundaries through the session trail",
+        "passed": true
+      },
+      {
+        "case": "session snapshots retain resolved CID and newly fetched playlist context immutably",
+        "passed": true
+      },
+      {
+        "case": "session trail remains bounded and replaces the future only when branching",
+        "passed": true
+      }
+    ]
+  },
+  "afterBrowserFullRun": {
+    "script": "tools/test-player-adjacent.mjs",
+    "passed": 17,
+    "total": 17,
+    "sourcesStable": true,
+    "sourceSha256Before": {
+      "app/src/App.jsx": "95830ffcd9e246bed79befccb9c766bd4339dc2d9430dde1c714bd8242b96612",
+      "app/src/player/PlayerPage.jsx": "d2c4a7e884c254b812e0b487da194ff4fba30b3492202ab0f59c83681240f42c",
+      "app/src/player/adjacentVideo.js": "b79219f1aeb4e39c95496a91e8bbb2c4816f874c3bf7f4b3d92c26d562d69292",
+      "app/src/player/playIntent.js": "2a2c4cac679e9a9cab3bb4ad4a30f4adee44f215e5b8fdde37d174dd9beec74c",
+      "app/src/utils/library.js": "14ace595c759a585b5ddf9918a5ded32e3a04132741d1192d1345e23b101dcc5"
+    },
+    "sourceSha256After": {
+      "app/src/App.jsx": "95830ffcd9e246bed79befccb9c766bd4339dc2d9430dde1c714bd8242b96612",
+      "app/src/player/PlayerPage.jsx": "d2c4a7e884c254b812e0b487da194ff4fba30b3492202ab0f59c83681240f42c",
+      "app/src/player/adjacentVideo.js": "b79219f1aeb4e39c95496a91e8bbb2c4816f874c3bf7f4b3d92c26d562d69292",
+      "app/src/player/playIntent.js": "2a2c4cac679e9a9cab3bb4ad4a30f4adee44f215e5b8fdde37d174dd9beec74c",
+      "app/src/utils/library.js": "14ace595c759a585b5ddf9918a5ded32e3a04132741d1192d1345e23b101dcc5"
+    },
+    "results": [
+      {
+        "case": "single video Next Previous Next retraces playback despite changed recommendations",
+        "passed": true,
+        "loadCount": 5,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "related entry into a middle part preserves native order and the previous outside video",
+        "passed": true,
+        "loadCount": 7,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "opening another video replaces the navigation session while the player remains mounted",
+        "passed": true,
+        "loadCount": 3,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "playlist previous and next preserve order and start from zero without wrapping",
+        "passed": true,
+        "loadCount": 4,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "multi-part transport follows resolved resumed part rather than original card",
+        "passed": true,
+        "loadCount": 4,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "UGC collection transport follows its ordered episode list",
+        "passed": true,
+        "loadCount": 3,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "PGC episode transport navigates both directions from zero",
+        "passed": true,
+        "loadCount": 3,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "pending next page cannot submit duplicate requests and preserves previous context",
+        "passed": true,
+        "loadCount": 3,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "failed next page leaves current video and permits explicit retry",
+        "passed": true,
+        "loadCount": 2,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "empty next page disables the action instead of looping or refetching",
+        "passed": true,
+        "loadCount": 1,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "leaving during a next-page request never starts a late video",
+        "passed": true,
+        "loadCount": 1,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "late next-page completion cannot replace a new playback entry",
+        "passed": true,
+        "loadCount": 2,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "guest with no neighbors skips disabled actions without changing video",
+        "passed": true,
+        "loadCount": 1,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "manual pending Next owns EOS instead of next",
+        "passed": true,
+        "loadCount": 2,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "manual pending Next owns EOS instead of repeat",
+        "passed": true,
+        "loadCount": 2,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "automatic EOS owns pagination before manual previous or next",
+        "passed": true,
+        "loadCount": 2,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      },
+      {
+        "case": "manual pending EOS failure releases lock for retry without autoplay",
+        "passed": true,
+        "loadCount": 2,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      }
+    ]
+  },
+  "afterBrowserAdditionalGuard": {
+    "script": "tools/test-player-adjacent.mjs",
+    "passed": 1,
+    "total": 1,
+    "sourcesStable": true,
+    "sourceSha256Before": {
+      "app/src/App.jsx": "95830ffcd9e246bed79befccb9c766bd4339dc2d9430dde1c714bd8242b96612",
+      "app/src/player/PlayerPage.jsx": "d2c4a7e884c254b812e0b487da194ff4fba30b3492202ab0f59c83681240f42c",
+      "app/src/player/adjacentVideo.js": "b79219f1aeb4e39c95496a91e8bbb2c4816f874c3bf7f4b3d92c26d562d69292",
+      "app/src/player/playIntent.js": "2a2c4cac679e9a9cab3bb4ad4a30f4adee44f215e5b8fdde37d174dd9beec74c",
+      "app/src/utils/library.js": "14ace595c759a585b5ddf9918a5ded32e3a04132741d1192d1345e23b101dcc5"
+    },
+    "sourceSha256After": {
+      "app/src/App.jsx": "95830ffcd9e246bed79befccb9c766bd4339dc2d9430dde1c714bd8242b96612",
+      "app/src/player/PlayerPage.jsx": "d2c4a7e884c254b812e0b487da194ff4fba30b3492202ab0f59c83681240f42c",
+      "app/src/player/adjacentVideo.js": "b79219f1aeb4e39c95496a91e8bbb2c4816f874c3bf7f4b3d92c26d562d69292",
+      "app/src/player/playIntent.js": "2a2c4cac679e9a9cab3bb4ad4a30f4adee44f215e5b8fdde37d174dd9beec74c",
+      "app/src/utils/library.js": "14ace595c759a585b5ddf9918a5ded32e3a04132741d1192d1345e23b101dcc5"
+    },
+    "results": [
+      {
+        "case": "late next-page callback cannot replace a same-video new entry without unmounting",
+        "passed": true,
+        "loadCount": 2,
+        "untrustedInputCount": 0,
+        "unexpectedWriteCount": 0
+      }
+    ]
+  },
+  "rawEvidenceLocations": [
+    "/tmp/bili-previous-before/results.json",
+    "/tmp/bili-previous-final/results.json",
+    "/tmp/bili-previous-source-guard/results.json",
+    "/tmp/bili-previous-unit-final.log"
+  ],
+  "notes": [
+    "The baseline contains one intentionally reproduced failing regression; it is not included in the 43 passing post-fix cases.",
+    "Browser total 18 consists of a complete 17-case run plus one separately run same-video re-entry callback guard case, not a single 18-case run.",
+    "The full-run label about the player remaining mounted refers to the same App instance; different video keys remount PlayerPage. The separate same-video guard case specifically retains the PlayerPage key.",
+    "Source hashes were unchanged within both browser runs, and both post-fix browser runs used identical production hashes."
+  ]
+}

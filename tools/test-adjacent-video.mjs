@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { adjacentAvailability, resolveAdjacentVideo } from '../app/src/player/adjacentVideo.js';
+import { adjacentAvailability, resolveAdjacentVideo, createPlaybackNavigation, recordAdjacentTransition } from '../app/src/player/adjacentVideo.js';
 
 const A = { bvid: 'BVA', cid: 11 }, B = { bvid: 'BVB', cid: 22 }, C = { bvid: 'BVC', cid: 33 };
 let passed = 0;
@@ -146,6 +146,102 @@ await test('unknown direction and empty context are inert', async () => {
   assert.deepEqual(adjacentAvailability(), { previous: false, next: false });
   assert.equal(await resolveAdjacentVideo('next'), null);
   assert.equal(await resolve('invalid', A, { related: [B] }), null);
+});
+
+await test('standalone Next Previous Next retraces actual playback when recommendations change', async () => {
+  let navigation = createPlaybackNavigation(A);
+  navigation = recordAdjacentTransition(navigation, A, B, 'next');
+  assert.deepEqual(adjacentAvailability({ video: B, navigation, related: [C] }), { previous: true, next: true });
+  assert.equal((await resolve('previous', B, { navigation, related: [C] })).bvid, A.bvid);
+  navigation = recordAdjacentTransition(navigation, B, A, 'previous');
+  assert.deepEqual(adjacentAvailability({ video: A, navigation, related: [C] }), { previous: false, next: true });
+  assert.equal((await resolve('next', A, { navigation, related: [C] })).bvid, B.bvid);
+  assert.equal(createPlaybackNavigation(null), null);
+  assert.deepEqual(adjacentAvailability({ video: C, navigation: createPlaybackNavigation(C) }), { previous: false, next: false });
+});
+
+await test('manual history retraces the middle part and outside entry before native part order', async () => {
+  const parts = [21, 22, 23].map(cid => ({ ...B, cid }));
+  let navigation = recordAdjacentTransition(createPlaybackNavigation(A), A, parts[1], 'next');
+  assert.equal((await resolve('previous', parts[1], { navigation, parts })).bvid, A.bvid);
+  assert.equal((await resolve('next', parts[1], { navigation, parts })).cid, 23);
+  navigation = recordAdjacentTransition(navigation, parts[1], parts[2], 'next');
+  assert.equal(await resolve('next', parts[2], { navigation, parts }), null);
+  assert.equal((await resolve('previous', parts[2], { navigation, parts })).cid, 22);
+  navigation = recordAdjacentTransition(navigation, parts[2], parts[1], 'previous');
+  assert.equal((await resolve('previous', parts[1], { navigation, parts })).bvid, A.bvid);
+  navigation = recordAdjacentTransition(navigation, parts[1], A, 'previous');
+  assert.equal((await resolve('next', A, { navigation, related: [C] })).cid, 22);
+  navigation = recordAdjacentTransition(navigation, A, parts[1], 'next');
+  assert.equal((await resolve('next', parts[1], { navigation, parts })).cid, 23);
+
+  assert.equal((await resolve('previous', parts[1], { navigation: createPlaybackNavigation(parts[1]), parts })).cid, 21);
+  const middleEntry = recordAdjacentTransition(createPlaybackNavigation(parts[1]), parts[1], parts[0], 'previous');
+  assert.equal(await resolve('previous', parts[0], { navigation: middleEntry, parts }), null);
+  assert.equal((await resolve('next', parts[0], { navigation: middleEntry, parts })).cid, 22);
+});
+
+await test('visited collection history wins over native neighbors in both directions', async () => {
+  for (const parts of [[C, B], [A, C, B]]) {
+    let navigation = recordAdjacentTransition(createPlaybackNavigation(A), A, B, 'next');
+    assert.equal((await resolve('previous', B, { navigation, parts })).bvid, A.bvid);
+    navigation = recordAdjacentTransition(navigation, B, A, 'previous');
+    assert.equal((await resolve('next', A, { navigation, parts: [A, C] })).bvid, B.bvid);
+  }
+});
+
+await test('unresolved native sequence cannot disable a known visited neighbor', async () => {
+  let navigation = recordAdjacentTransition(createPlaybackNavigation(A), A, B, 'next');
+  assert.deepEqual(adjacentAvailability({ video: B, navigation, parts: [C] }), { previous: true, next: false });
+  assert.equal((await resolve('previous', B, { navigation, parts: [C] })).bvid, A.bvid);
+  navigation = recordAdjacentTransition(navigation, B, A, 'previous');
+  assert.deepEqual(adjacentAvailability({ video: A, navigation, parts: [C] }), { previous: false, next: true });
+  assert.equal((await resolve('next', A, { navigation, parts: [C] })).bvid, B.bvid);
+});
+
+await test('explicit playlists never escape their boundaries through the session trail', async () => {
+  const navigation = { entries: [A, B, C], index: 1 };
+  for (const playlistIndex of [0, -1, undefined]) {
+    const video = { ...B, playlist: [B], playlistIndex };
+    assert.deepEqual(adjacentAvailability({ video, navigation, related: [C] }), { previous: false, next: false });
+    assert.equal(await resolve('previous', video, { navigation }), null);
+    assert.equal(await resolve('next', video, { navigation }), null);
+  }
+});
+
+await test('session snapshots retain resolved CID and newly fetched playlist context immutably', async () => {
+  const initial = createPlaybackNavigation(A), before = JSON.stringify(initial);
+  const navigation = recordAdjacentTransition(initial, { ...A, cid: 12 }, B, 'next');
+  assert.equal(navigation.entries[0].cid, 12);
+  assert.equal(JSON.stringify(initial), before);
+  const updated = { ...A, cid: 12, playlist: [A, B], playlistIndex: 0, playlistSource: { nextPage: 3 } };
+  const back = recordAdjacentTransition(navigation, B, updated, 'previous');
+  assert.equal(back.entries.length, 2);
+  assert.equal(back.entries[0].playlistSource.nextPage, 3);
+  assert.notEqual(back.entries[0], updated);
+});
+
+await test('session trail remains bounded and replaces the future only when branching', async () => {
+  let navigation = createPlaybackNavigation(A), current = A;
+  for (let n = 0; n < 100; n++) {
+    const target = { bvid: `BVSession${n}`, cid: 1000 + n };
+    navigation = recordAdjacentTransition(navigation, current, target, 'next');
+    current = target;
+    assert.ok(navigation.entries.length <= 50);
+    assert.equal(navigation.index, navigation.entries.length - 1);
+  }
+  for (let n = 0; n < 20; n++) {
+    const previous = navigation.entries[navigation.index - 1];
+    navigation = recordAdjacentTransition(navigation, current, previous, 'previous');
+    navigation = recordAdjacentTransition(navigation, previous, current, 'next');
+    assert.equal(navigation.entries.length, 50);
+  }
+  const previous = navigation.entries[navigation.index - 1];
+  navigation = recordAdjacentTransition(navigation, current, previous, 'previous');
+  navigation = recordAdjacentTransition(navigation, previous, C, 'next');
+  assert.equal(navigation.entries.at(-1).bvid, C.bvid);
+  assert.ok(!navigation.entries.some(item => item.bvid === current.bvid));
+  assert.ok(navigation.entries.every(item => !('navigation' in item) && !('history' in item)));
 });
 
 console.log(`${passed}/${passed} passed`);

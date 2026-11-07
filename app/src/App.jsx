@@ -5,6 +5,7 @@ import { initKeyboardNav, setFocus, onFocusChange, getCurrentFocusId, focusFirst
 import { castAck, castSubscribe, castGetStatus, getNavInfo, pingVersionAsset, logout } from './api/client';
 import { thumbUrl } from './utils/thumb';
 import { normalizePlay, playAt } from './player/playIntent';
+import { createPlaybackNavigation, recordAdjacentTransition } from './player/adjacentVideo';
 import { storage } from './utils/storage';
 import { markAfterPaint } from './utils/perf';
 import { perfFlag, canPrefetch } from './utils/perfFlags';
@@ -160,7 +161,26 @@ export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const logoutBusy = useRef(false);
-  const [playerVideo, setPlayerVideo] = useState(null);
+  const [playerVideo, setPlayerVideoState] = useState(null);
+  const playbackNavigationRef = useRef(null);
+  const playbackSourceRef = useRef(null);
+  // All ordinary entries/exits (including cast and logout) start a fresh trail.
+  const setPlayerVideo = useCallback(next => {
+    playbackNavigationRef.current = createPlaybackNavigation(next);
+    playbackSourceRef.current = next;
+    setPlayerVideoState(next);
+  }, []);
+  const playNextVideo = useCallback((source, video, transition) => {
+    // An old player's delayed callback cannot reopen playback after exit or
+    // replace a newer browse/cast entry in the same App instance.
+    if (playbackSourceRef.current !== source) return;
+    const next = normalizePlay(video);
+    if (transition?.current && ['previous', 'next'].includes(transition.direction)) {
+      playbackNavigationRef.current = recordAdjacentTransition(playbackNavigationRef.current, transition.current, next, transition.direction);
+      playbackSourceRef.current = next;
+      setPlayerVideoState(next);
+    } else setPlayerVideo(next);
+  }, [setPlayerVideo]);
   const [liveRoom, setLiveRoom] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
   const [toast, setToast] = useState('');
@@ -355,6 +375,7 @@ export default function App() {
   const handlePlayVideo = useCallback((video) => {
     video = normalizePlay(video); // 续播 policy lives in playIntent.js
     if (video?.isLive && video?.roomid) {
+      setPlayerVideo(null);
       setLiveRoom(video);
       return;
     }
@@ -389,7 +410,7 @@ export default function App() {
     window.__openVideo = (v) => handlePlayVideo(v);
     // Live rooms take a different entry (they aren't videos) — same idea:
     // __openLive({roomid, title, owner}) drops straight into LivePlayerPage.
-    window.__openLive = (r) => setLiveRoom(r);
+    window.__openLive = (r) => { setPlayerVideo(null); setLiveRoom(r); };
     return () => { delete window.__openVideo; delete window.__openLive; };
   }, [handlePlayVideo]);
 
@@ -522,7 +543,7 @@ export default function App() {
       {(playerVideo || liveRoom) && (
         <PlayerBoundary title={(playerVideo || liveRoom).title} onBack={closePlayer}>
         <Suspense fallback={<PlayerPlaceholder title={(playerVideo || liveRoom).title} onBack={closePlayer} />}>
-          {playerVideo && <PlayerPage key={`${playerVideo.bvid || playerVideo.epid || playerVideo.aid || ''}-${playerVideo.cid || playerVideo.epid || ''}`} video={playerVideo} onBack={() => setPlayerVideo(null)} onPlayNext={(v) => setPlayerVideo(normalizePlay(v))} />}
+          {playerVideo && <PlayerPage key={`${playerVideo.bvid || playerVideo.epid || playerVideo.aid || ''}-${playerVideo.cid || playerVideo.epid || ''}`} video={playerVideo} navigation={playbackNavigationRef.current} onBack={() => setPlayerVideo(null)} onPlayNext={(v, transition) => playNextVideo(playerVideo, v, transition)} />}
           {liveRoom && <LivePlayerPage key={liveRoom.roomid} room={liveRoom} onBack={() => setLiveRoom(null)} />}
         </Suspense>
         </PlayerBoundary>

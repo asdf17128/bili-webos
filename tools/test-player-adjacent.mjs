@@ -9,7 +9,7 @@ const baseURL = process.env.ADJACENT_URL || 'http://127.0.0.1:5173';
 assert.equal(new URL(baseURL).hostname, '127.0.0.1');
 const output = process.env.ADJACENT_OUTPUT || '/tmp/bili-player-adjacent';
 await mkdir(output, { recursive: true });
-const sourcePaths = ['app/src/player/PlayerPage.jsx', 'app/src/player/adjacentVideo.js', 'app/src/player/playIntent.js', 'app/src/utils/library.js'];
+const sourcePaths = ['app/src/App.jsx', 'app/src/player/PlayerPage.jsx', 'app/src/player/adjacentVideo.js', 'app/src/player/playIntent.js', 'app/src/utils/library.js'];
 const hashSources = async () => Object.fromEntries(await Promise.all(sourcePaths.map(async path => [path, createHash('sha256').update(await readFile(path)).digest('hex')])));
 const sources = await hashSources();
 const browser = await chromium.launch();
@@ -82,16 +82,19 @@ async function fixture(config = {}) {
   if(url.pathname.endsWith('/view')){
    const item=[A,B,C].find(item=>item.bvid===url.searchParams.get('bvid'))||A;calls.views.push(item.bvid);
    data={...item,pages:config.kind==='parts'?[{cid:11,part:'P1',page:1},{cid:12,part:'P2',page:2},{cid:13,part:'P3',page:3}]:[{cid:item.cid}],owner:{mid:70,name:'Synthetic UP'},stat:{}};
+   if(config.kind==='mixed-parts'&&item.bvid===B.bvid)data.pages=[{cid:21,part:'B1',page:1},{cid:22,part:'B2',page:2},{cid:23,part:'B3',page:3}];
    if(config.kind==='collection')data.ugc_season={sections:[{episodes:[A,B,C]}]};
+   if(config.kind==='mixed-collection'&&item.bvid===B.bvid)data.ugc_season={sections:[{episodes:config.sameCollection?[A,C,B]:[C,B]}]};
+   if(config.returnedCollection&&item.bvid===A.bvid&&calls.views.filter(id=>id===A.bvid).length>1)data.ugc_season={sections:[{episodes:[A,C]}]};
   }
   if(url.pathname.endsWith('/v2'))data={last_play_cid:config.kind==='parts'?12:Number(url.searchParams.get('cid')),last_play_time:47000,subtitle:{subtitles:[]}};
   if(url.pathname.endsWith('/playurl')){
-   const cid=Number(url.searchParams.get('cid'));assert.ok([11,12,13,22,33,100,200,300].includes(cid),'only fixture CIDs may load');calls.streams.push(cid);
+   const cid=Number(url.searchParams.get('cid'));assert.ok([11,12,13,21,22,23,33,100,200,300].includes(cid),'only fixture CIDs may load');calls.streams.push(cid);
    data={quality:80,accept_quality:[80],dash:{duration:100,video:[{id:80,bandwidth:1000,baseUrl:`https://media.fixture.invalid/video-${cid}`,codecs:'avc1.640028',width:1920,height:1080,frameRate:'30',SegmentBase:{Initialization:'0-51',indexRange:'52-70'}}],audio:[]}};
    if(url.pathname.includes('/pgc/'))return fulfill({code:0,result:{video_info:data}});
   }
   if(url.pathname.endsWith('/season'))return fulfill({code:0,result:{season_id:1,episodes}});
-  if(url.pathname.endsWith('/archive/related'))data=config.emptyRelated?[]:[A,B,C];
+  if(url.pathname.endsWith('/archive/related'))data=config.emptyRelated?[]:config.changingRelated&&calls.views.filter(id=>id===A.bvid).length>1?[A,C]:[A,B,C];
   if(url.pathname.endsWith('/resource/list')){
    calls.pages++;calls.pageArguments.push({pn:Number(url.searchParams.get('pn')),mediaId:url.searchParams.get('media_id')});
    if(['pending','pending-retry'].includes(config.kind)&&calls.pages===1)await pageGate;
@@ -106,8 +109,9 @@ async function fixture(config = {}) {
  const page=await context.newPage();page.setDefaultTimeout(7000);page.on('pageerror',error=>errors.push(error.message));
  await page.goto(baseURL);await page.waitForFunction(()=>!!window.__openVideo);
  const open=async item=>{
+  const before=await page.evaluate(()=>window.__adjacentProbe.loads.length);
   await page.evaluate(item=>window.__openVideo(item),item||A);
-  await waitLoad(page,1);await showControls(page);
+  await waitLoad(page,before+1);await showControls(page);
   assert.equal(await focused(page),'play','new controls start at central playback action');
  };
  const close=async()=>{for(let n=0;n<4&&await page.locator('.player-page').count();n++)await page.keyboard.press('Escape');await page.locator('.player-page').waitFor({state:'detached'});};
@@ -147,13 +151,54 @@ async function run(name,config,fn){
  finally{if(f){f.releasePage();await f.context.close();}}
 }
 
-await run('single video skips disabled previous and chooses first different recommendation',{},async f=>{
+await run('single video Next Previous Next retraces playback despite changed recommendations',{changingRelated:true},async f=>{
  await f.open({...A,resumeMode:'at',progress:47});
  assert.equal(await f.page.locator('[data-control="prev"]').isDisabled(),true);
  await f.page.keyboard.press('ArrowLeft');assert.equal(await focused(f.page),'later');
  await f.page.keyboard.press('ArrowRight');assert.equal(await focused(f.page),'play');
  await inertPointer(f.page,'prev');assert.equal(await f.page.evaluate(()=>window.__adjacentProbe.loads.length),1);
  await activate(f.page,'next');await waitLoad(f.page,2,22);
+ await activate(f.page,'prev');await waitLoad(f.page,3,11);
+ await showControls(f.page);assert.equal(await f.page.locator('[data-control="prev"]').isDisabled(),true,'the first video has no earlier session item');
+ await activate(f.page,'next');await waitLoad(f.page,4,22);
+ await f.close();await f.open(C);
+ assert.equal(await f.page.locator('[data-control="prev"]').isDisabled(),true,'leaving playback clears the navigation session');
+});
+await run('middle-part manual history returns to the actual previous video before native order',{kind:'mixed-parts'},async f=>{
+ await f.open({...A,resumeMode:'at',progress:47});
+ await activate(f.page,'next');await waitLoad(f.page,2,22);
+ await activate(f.page,'prev');await waitLoad(f.page,3,11);
+ await showControls(f.page);assert.equal(await f.page.locator('[data-control="prev"]').isDisabled(),true);
+ await activate(f.page,'next');await waitLoad(f.page,4,22);
+ await activate(f.page,'next');await waitLoad(f.page,5,23);
+ await showControls(f.page);assert.equal(await f.page.locator('[data-control="next"]').isDisabled(),true,'native final part never wraps to an earlier visited part');
+ await activate(f.page,'prev');await waitLoad(f.page,6,22);
+ await activate(f.page,'prev');await waitLoad(f.page,7,11);
+ await activate(f.page,'next');await waitLoad(f.page,8,22);
+ await activate(f.page,'next');await waitLoad(f.page,9,23);
+});
+await run('Next into a different collection returns to the actual previous video',{kind:'mixed-collection',changingRelated:true},async f=>{
+ await f.open({...A,resumeMode:'at',progress:47});
+ await activate(f.page,'next');await waitLoad(f.page,2,22);
+ await activate(f.page,'prev');await waitLoad(f.page,3,11);
+ await showControls(f.page);assert.equal(await f.page.locator('[data-control="prev"]').isDisabled(),true);
+ await activate(f.page,'next');await waitLoad(f.page,4,22);
+ await showControls(f.page);assert.equal(await f.page.locator('[data-control="next"]').isDisabled(),true,'the native final collection item still does not wrap');
+});
+await run('visited collection history wins over conflicting native neighbors in both directions',{kind:'mixed-collection',sameCollection:true,returnedCollection:true},async f=>{
+ await f.open({...A,resumeMode:'at',progress:47});
+ await activate(f.page,'next');await waitLoad(f.page,2,22);
+ await activate(f.page,'prev');await waitLoad(f.page,3,11);
+ // B's native previous and A's new native next both point at C. Actual
+ // manual history must still retrace A -> B without visiting C.
+ await activate(f.page,'next');await waitLoad(f.page,4,22);
+ await activate(f.page,'prev');await waitLoad(f.page,5,11);
+ assert.ok(!f.calls.streams.includes(33));
+});
+await run('opening another video replaces the navigation session in the same App',{},async f=>{
+ await f.open(A);await activate(f.page,'next');await waitLoad(f.page,2,22);
+ await f.open(C);
+ assert.equal(await f.page.locator('[data-control="prev"]').isDisabled(),true,'a new browse entry does not inherit previous session videos');
 });
 await run('playlist previous and next preserve order and start from zero without wrapping',{},async f=>{
  const playlist=[{...A,progress:68},{...B,progress:70},{...C,progress:75}];
@@ -168,6 +213,8 @@ await run('multi-part transport follows resolved resumed part rather than origin
  await f.open({...A,resumeMode:'auto'});await waitLoad(f.page,1,12,47);
  await activate(f.page,'next');await waitLoad(f.page,2,13);
  await activate(f.page,'prev');await waitLoad(f.page,3,12);
+ await activate(f.page,'prev');await waitLoad(f.page,4,11);
+ await showControls(f.page);assert.equal(await f.page.locator('[data-control="prev"]').isDisabled(),true);
 });
 await run('UGC collection transport follows its ordered episode list', {kind:'collection'},async f=>{
  await f.open({...B,resumeMode:'at',progress:47});
@@ -202,6 +249,21 @@ await run('leaving during a next-page request never starts a late video',{kind:'
  await f.open(paged());await activate(f.page,'next');await f.page.waitForTimeout(150);assert.equal(f.calls.pages,1);
  await f.close();f.releasePage();await f.page.waitForTimeout(300);
  assert.equal(await f.page.locator('.player-page').count(),0);assert.equal(await f.page.evaluate(()=>window.__adjacentProbe.loads.length),1);
+});
+await run('late next-page completion cannot replace a new playback entry',{kind:'pending'},async f=>{
+ await f.open(paged());await activate(f.page,'next');await waitPage(f,1);
+ await f.close();await f.open(C);f.releasePage();await f.page.waitForTimeout(350);
+ await waitLoad(f.page,2);
+ assert.equal(await f.page.evaluate(()=>window.__adjacentProbe.loads.at(-1).cid),33);
+ assert.equal(await f.page.locator('[data-control="prev"]').isDisabled(),true);
+});
+await run('late next-page callback cannot replace a same-video new entry without unmounting',{kind:'pending'},async f=>{
+ await f.open(paged());await activate(f.page,'next');await waitPage(f,1);
+ // Same BV/CID keeps React's player key. Its mounted guard alone cannot
+ // reject the old callback: the App must recognize a different entry source.
+ await f.open({...A,resumeMode:'none'});f.releasePage();await f.page.waitForTimeout(350);
+ await waitLoad(f.page,2,11);
+ assert.equal(await f.page.locator('[data-control="prev"]').isDisabled(),true);
 });
 await run('guest with no neighbors skips disabled actions without changing video',{guest:true,emptyRelated:true},async f=>{
  await f.open({...A,resumeMode:'at',progress:47});

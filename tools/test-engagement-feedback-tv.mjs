@@ -51,6 +51,15 @@ async function count(id) { return tv.evaluate(`window.__engagementTv.calls[${JSO
 async function release(id) { await tv.evaluate(`window.__engagementTv.release(${JSON.stringify(id)})`); }
 async function pressPending(id) { await focus(id); await tv.key('Enter',60); await phase(id,'pending'); }
 const button = (s,id) => s.controls.find(b=>b.id===id);
+const activeWithoutCheck = id => tv.evaluate(`(()=>{
+  const button=document.querySelector('[data-control="'+${JSON.stringify(id)}+'"]'),icon=button?.querySelector('.player-control-icon');
+  if(!button||!icon||button.getAttribute('aria-pressed')!=='true'||!button.classList.contains('lit')||button.querySelector('.player-control-status'))return false;
+  const root=getComputedStyle(document.documentElement),focused=button.classList.contains('focused');
+  const tokenColor=name=>{const probe=document.createElement('span');probe.style.color=root.getPropertyValue(name).trim();document.body.appendChild(probe);const color=getComputedStyle(probe).color;probe.remove();return color;};
+  const style=getComputedStyle(icon);
+  return style.backgroundColor===tokenColor(focused?'--tv-accent':'--tv-card')&&style.color===tokenColor(focused?'--tv-rail':'--tv-accent');
+})()`);
+
 
 try {
   tv=await connectTv();
@@ -156,7 +165,7 @@ try {
   check('pending does not claim a successful like',button(before,'like').pressed==='false');
   await focus('like');await release('like');await phase('like','success');
   s=await state();check('like success lights the focused button',button(s,'like').pressed==='true'&&/已点赞/.test(s.caption));await shot('like-success');
-  await sleep(2350);check('like badge persists after temporary feedback',await tv.evaluate("!!document.querySelector('[data-control=like][aria-pressed=true] .player-control-status')"));
+  await sleep(2350);check('like stays lit without an extra check after temporary feedback',await activeWithoutCheck('like'));
   await pressPending('like');await release('like');await phase('like','success');s=await state();check('like cancellation is explicit',button(s,'like').pressed==='false'&&/取消/.test(s.caption));
   const initialLikeCount=button(s,'like').count;
   await tv.evaluate("window.__engagementTv.rejectNext.like=true");await pressPending('like');await release('like');await phase('like','error');s=await state();
@@ -164,7 +173,7 @@ try {
   await pressPending('like');await release('like');await phase('like','success');check('explicit retry succeeds',button(await state(),'like').pressed==='true');
 
   await pressPending('fav');await tv.key('Enter',30);check('pending favorite submits once',(await count('fav'))===1);await release('fav');await phase('fav','success');
-  s=await state();check('favorite success shows a persistent check',button(s,'fav').pressed==='true'&&await tv.evaluate("!!document.querySelector('[data-control=fav] .player-control-status svg')"));await shot('favorite-success');
+  s=await state();check('favorite success stays lit without an extra check',button(s,'fav').pressed==='true'&&await activeWithoutCheck('fav'));await shot('favorite-success');
   await pressPending('fav');await release('fav');await phase('fav','success');check('favorite cancellation is explicit',button(await state(),'fav').pressed==='false'&&/取消/.test((await state()).caption));
 
   for(const n of [1,2]){
@@ -177,7 +186,7 @@ try {
   await tv.call('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});await phase('like','pending');
   await focus('fav');await tv.key('Enter',30);check('pending triple blocks separate actions',(await count('triple'))===1&&(await count('fav'))===2);
   await focus('like');await release('triple');await phase('like','success');
-  s=await state();check('triple success preserves all three active markers',['like','coin','fav'].every(id=>button(s,id).pressed==='true'));await shot('triple-success');
+  s=await state();check('triple success preserves active states without extra checks',['like','coin','fav'].every(id=>button(s,id).pressed==='true')&&button(s,'coin').badge==='2'&&await tv.evaluate("!document.querySelector('[data-control=like] .player-control-status, [data-control=fav] .player-control-status')"));await shot('triple-success');
   report.guard=await tv.evaluate("({calls:window.__engagementTv.calls,blocked:window.__engagementTv.blocked,heartbeatWrites:window.__engagementTv.heartbeatWrites,violations:window.__engagementTv.violations,pending:Object.keys(window.__engagementTv.pending).length})");
   check('isolated engagement contract had no unexpected writes',report.guard.blocked===0&&report.guard.violations===0&&report.guard.pending===0,report.guard);
   check('no uncaught page exceptions',tv.errors.length===0,{count:tv.errors.length});

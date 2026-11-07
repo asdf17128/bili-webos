@@ -282,6 +282,65 @@
   transform: scale(1.06);
 }
 
+/* Keep account state visible even while the same button owns remote focus. */
+.player-controls-vod .player-control-group-engagement .player-control.lit .player-control-icon {
+  background: #591d37;
+  color: #ffc1d8;
+  box-shadow: inset 0 0 0 2px #f28aac;
+}
+.player-controls-vod .player-control-group-engagement .player-control.focused.lit .player-control-icon {
+  background: #ffd4e4;
+  color: #761334;
+  box-shadow: 0 0 0 3px #72d5ff, 0 0 0 5px rgba(0, 0, 0, .82);
+}
+.player-controls-vod .player-control.lit[data-control="like"] .tv-icon path,
+.player-controls-vod .player-control.lit[data-control="fav"] .tv-icon path {
+  fill: currentColor;
+  fill-opacity: .4;
+}
+.player-controls-vod .player-control-status {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #25131b;
+  border-radius: 50%;
+  background: #ff9fc0;
+  color: #441327;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  text-shadow: none;
+}
+.player-controls-vod .player-control-status > svg { width: 20px; height: 20px; }
+.player-controls-vod .player-control[data-feedback="error"] .player-control-status {
+  background: #ff7e86;
+  color: #390b10;
+}
+.player-controls-vod .player-control-spinner {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  bottom: -6px;
+  left: -6px;
+  border: 3px solid rgba(114, 213, 255, .3);
+  border-top-color: #72d5ff;
+  border-right-color: #72d5ff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .8);
+  pointer-events: none;
+  animation: player-control-pending-spin .85s linear infinite;
+}
+@keyframes player-control-pending-spin { to { transform: rotate(360deg); } }
+.player-controls-vod .player-control[data-feedback="pending"] .player-control-icon { transform: scale(.96); }
+.player-controls-vod .player-control-caption.feedback-success { color: #ffc1d8; }
+.player-controls-vod .player-control-caption.feedback-error { color: #ffd5d7; }
+.player-page-vod .player-toast.engagement-toast { top: 36px; bottom: auto; }
+
 .player-controls-vod .player-control.triple-pop { animation: none; }
 .player-controls-vod .player-control.triple-pop .player-control-icon {
   animation: player-control-icon-pop .32s ease-out;
@@ -391,6 +450,7 @@
   .player-controls.player-controls-vod { transition: opacity .3s; }
   .player-controls-vod .player-control-icon { transition: none; }
   .player-controls-vod .player-control.triple-pop .player-control-icon { animation: none; }
+  .player-controls-vod .player-control-spinner { animation: none; }
   .player-controls-vod .player-related-scroll { scroll-behavior: auto; }
 }
 
@@ -446,4 +506,7 @@
     --control-rest-scale: 1.04;
     transform: scale(1.04);
   }
+  .player-controls-vod.with-comment-rail .player-control[data-feedback="pending"] .player-control-icon { transform: scale(.96); }
+  .player-controls-vod.with-comment-rail .player-control-status { width: 24px; height: 24px; font-size: 16px; }
+  .player-controls-vod.with-comment-rail .player-control-status > svg { width: 18px; height: 18px; }
 }

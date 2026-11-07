@@ -38,7 +38,7 @@ const stub = `class Player {
  configure(){} addEventListener(name,fn){(this.events||(this.events={}))[name]=fn}
  getNetworkingEngine(){return this.net||(this.net={registerRequestFilter(){},registerResponseFilter(){},addEventListener(){}})}
  getVariantTracks(){return []} getStats(){return {}} retryStreaming(){return true}
- async load(url,position,mime){window.__controlsProbe.loads++;window.__controlsProbe.mimes.push(mime);await(await fetch(url)).text();const v=this.video;v.__fixture.ready=4;if(position)v.currentTime=position;v.dispatchEvent(new Event('loadedmetadata'));v.dispatchEvent(new Event('loadeddata'));v.dispatchEvent(new Event('canplay'));}
+ async load(url,position,mime){window.__controlsProbe.loads++;window.__controlsProbe.mimes.push(mime);await(await fetch(url)).text();const v=this.video;void v.readyState;v.__fixture.ready=4;if(position)v.currentTime=position;v.dispatchEvent(new Event('loadedmetadata'));v.dispatchEvent(new Event('loadeddata'));v.dispatchEvent(new Event('canplay'));}
  async unload(){if(this.video)this.video.__fixture.ready=0}
  async destroy(){window.__controlsProbe.destroyed++}
 }
@@ -105,8 +105,10 @@ function assertSceneTransparency(pixels, scene) {
 
 async function fixture(options = {}) {
   const context = await browser.newContext({ viewport: { width: options.width || 1920, height: options.height || 1080 }, serviceWorkers: 'block' });
-  const calls = { related: 0, followers: 0, interceptedHttp: 0, interceptedSockets: 0, unexpectedWrites: [], knownMockWrites: [], mockWriteDetails: [], documents: 0, contractErrors: [] };
+  const calls = { related: 0, followers: 0, interceptedHttp: 0, interceptedSockets: 0, unexpectedWrites: [], knownMockWrites: [], mockWriteDetails: [], documents: 0, contractErrors: [], interactions: {} };
   const pending = [];
+  const heldInteractions = [];
+  const serverRelation = { like: false, coin: 0, favorite: false, ...options.interactions?.initial };
   await context.addInitScript(options => {
     delete window.webOS; delete window.PalmServiceBridge;
     localStorage.clear();
@@ -143,6 +145,22 @@ async function fixture(options = {}) {
     }
     calls.interceptedHttp++;
     const fulfill = data => route.fulfill({ json: data, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' } });
+    const interactionReply = async (kind, data, commit) => {
+      const index = calls.interactions[kind] || 0;
+      calls.interactions[kind] = index + 1;
+      let reply = options.interactions?.responses?.[kind]?.[index] || {};
+      if (reply.hold) {
+        const override = await new Promise(resolve => {
+          heldInteractions.push({ kind, resolve });
+          pending.push(resolve);
+        });
+        if (override) reply = { ...reply, ...override };
+      }
+      if (reply.abort) return route.abort();
+      const code = reply.code ?? 0;
+      if (code === 0) commit?.();
+      return fulfill({ code, data: reply.data ?? data, ...(reply.message ? { message: reply.message } : {}) });
+    };
     if (request.method() === 'OPTIONS') return fulfill({});
     if (url.pathname.includes('controls-cover-')) {
       const n = Number(url.pathname.match(/controls-cover-(\d+)/)?.[1] || 0);
@@ -151,10 +169,19 @@ async function fixture(options = {}) {
     if (url.port === '9528') return route.abort();
     if (request.method() !== 'GET') {
       const known = /\/heartbeat$|\/archive\/like$|\/archive\/like\/triple$/.test(url.pathname)
-        || (options.moreActions && /\/coin\/add$|\/fav\/resource\/deal$|\/toview\/(add|del)$/.test(url.pathname));
+        || ((options.moreActions || options.interactions) && /\/coin\/add$|\/fav\/resource\/deal$|\/toview\/(add|del)$/.test(url.pathname));
       if (known) { calls.knownMockWrites.push(url.pathname); calls.mockWriteDetails.push({path:url.pathname,body:request.postData()}); }
       else if (url.pathname.endsWith('/translate_a/t')) return fulfill(new URLSearchParams(request.postData() || '').getAll('q'));
       else calls.unexpectedWrites.push(url.pathname);
+      if (options.interactions) {
+        const form = new URLSearchParams(request.postData() || '');
+        if (url.pathname.endsWith('/archive/like')) return interactionReply('like', {}, () => { serverRelation.like = form.get('like') === '1'; });
+        if (url.pathname.endsWith('/coin/add')) return interactionReply('coin', {}, () => { serverRelation.coin = Math.min(2, serverRelation.coin + Number(form.get('multiply'))); });
+        if (url.pathname.endsWith('/fav/resource/deal')) return interactionReply('fav', {}, () => { serverRelation.favorite = !!form.get('add_media_ids'); });
+        if (url.pathname.endsWith('/archive/like/triple')) return interactionReply('triple', {
+          like: !serverRelation.like, coin: serverRelation.coin < 2, fav: !serverRelation.favorite, multiply: 2 - serverRelation.coin,
+        }, () => { serverRelation.like = true; serverRelation.coin = 2; serverRelation.favorite = true; });
+      }
       return fulfill({ code: 0, data: {} });
     }
     let data = {};
@@ -162,6 +189,8 @@ async function fixture(options = {}) {
     if (url.pathname.includes('/top/feed/rcmd')) data = { item: [] };
     if (url.pathname.endsWith('/history/cursor')) data = { list: [] };
     if (url.pathname.endsWith('/x/relation')) data = { attribute: 0 };
+    if (url.pathname.endsWith('/archive/relation') && options.interactions) return interactionReply('relation', { ...serverRelation });
+    if (url.pathname.endsWith('/fav/folder/created/list-all') && options.interactions) return interactionReply('folders', { list: [{ id: 456, title: '合成收藏夹', fav_state: serverRelation.favorite ? 1 : 0 }] });
     if (url.pathname.endsWith('/fav/folder/created/list-all') && options.moreActions) data = { list: [{ id: 456, title: '合成收藏夹', fav_state: 0 }] };
     if (url.pathname.endsWith('/view')) data = { aid: 100, bvid: 'BVControlsFixture', cid: 2, title: '山海之间，寻找生活的另一种可能 · 播放器控制栏测试', pages: [{ cid: 2 }], owner: { mid: 1, name: options.longName ? '一个名字非常长的合成测试创作者｜山海生活摄影记录者' : '合成测试 UP' }, pubdate: 1790323200, stat: { like: 5678, coin: 123, favorite: 890, reply: options.commentCount || 0 } };
     if (url.pathname.endsWith('/relation/stat')) {
@@ -183,6 +212,11 @@ async function fixture(options = {}) {
       data = options.related === 'empty' ? [] : items;
     }
     if (url.pathname.endsWith('/x/v2/reply')) data = { page: { count: options.commentCount || 0 }, replies: [] };
+    if (options.pgc && url.pathname.endsWith('/playurl')) {
+      if (!url.pathname.endsWith('/pgc/player/web/v2/playurl')) calls.contractErrors.push('PGC fixture must use the v2 playurl endpoint');
+      calls.pgcPlayurl = (calls.pgcPlayurl || 0) + 1;
+      return fulfill({ code: 0, result: { video_info: data } });
+    }
     return fulfill({ code: 0, data });
   });
   const page = await context.newPage(); page.setDefaultTimeout(6000);
@@ -190,13 +224,24 @@ async function fixture(options = {}) {
   page.on('framenavigated', frame => { if (frame === page.mainFrame()) calls.documents++; });
   await page.goto(baseUrl);
   await page.waitForFunction(() => !!window.__openVideo);
-  await page.evaluate(() => window.__openVideo({ bvid: 'BVControlsFixture', resumeMode: 'none' }));
+  await page.evaluate(pgc => window.__openVideo(pgc
+    ? { isBangumi: true, epid: 123, cid: 456, aid: 700, title: '合成番剧互动测试', resumeMode: 'none' }
+    : { bvid: 'BVControlsFixture', resumeMode: 'none' }), !!options.pgc);
   await page.waitForFunction(() => window.__controlsProbe.loads === 1 && document.querySelector('video')?.readyState === 4);
   await page.waitForFunction(() => ['暂停','Pause','Pausa'].includes(document.querySelector('[data-control=play] .player-control-label')?.textContent));
   await page.waitForFunction(() => document.querySelector('.player-time')?.textContent.includes('/ 10:00'));
   const scene = options.scene ? `url("data:image/svg+xml;base64,${Buffer.from(sceneSvg(options.scene)).toString('base64')}") center / 100% 100% no-repeat` : options.background === 'dark' ? 'linear-gradient(125deg,#08161b,#132937 40%,#060b13)' : 'linear-gradient(125deg,#fffce4,#edf6fa 40%,#ffffff)';
   await page.addStyleTag({ content: `video { background: ${scene} !important; }` });
-  return { context, page, calls, errors, options, release: () => pending.splice(0).forEach(resolve => resolve()) };
+  return { context, page, calls, errors, options,
+    takeInteraction: async kind => {
+      const deadline = Date.now() + 5000;
+      while (!heldInteractions.some(item => item.kind === kind) && Date.now() < deadline) await page.waitForTimeout(20);
+      const index = heldInteractions.findIndex(item => item.kind === kind);
+      assert.ok(index >= 0, `mock ${kind} request is held before release`);
+      return heldInteractions.splice(index, 1)[0].resolve;
+    },
+    release: () => pending.splice(0).forEach(resolve => resolve()),
+  };
 }
 
 async function state(page) {
@@ -227,6 +272,25 @@ async function focusedCard(page, index) {
     const focused = [...document.querySelectorAll('.related-card')].map((el, i) => el.classList.contains('focused') ? i : -1).filter(i => i >= 0);
     return focused.length === 1 && focused[0] === index;
   }, index);
+}
+const engagementButton = (page, id) => page.locator(`.player-control[data-control="${id}"]`);
+const engagementWrites = f => f.calls.mockWriteDetails.filter(write => /\/archive\/like(?:\/triple)?$|\/coin\/add$|\/fav\/resource\/deal$/.test(write.path));
+async function engagementState(page, id) {
+  return engagementButton(page,id).evaluate(button => ({ pressed: button.getAttribute('aria-pressed'), count: button.querySelector('.player-control-value')?.textContent.trim() }));
+}
+async function engagementFeedback(page, id, feedback) {
+  await page.waitForFunction(({id,feedback}) => document.querySelector(`.player-control[data-control="${id}"]`)?.dataset.feedback === feedback, {id,feedback});
+  const button = engagementButton(page,id);
+  assert.equal(await button.isDisabled(),false,'feedback does not disable or remove the focused action');
+  assert.equal(await page.locator('.player-control.focused').getAttribute('data-control'),id,'request feedback preserves remote focus');
+  assert.equal(await button.getAttribute('aria-busy')==='true',feedback==='pending');
+  const caption = await page.locator('.player-control-caption').textContent();
+  assert.match(caption,feedback==='pending'?/正在|处理中/:feedback==='error'?/失败|拒绝/:/成功|已点赞|已收藏|已取消|已投/,'focused caption explains the action result');
+}
+async function settleRelation(f, release) {
+  const response = f.page.waitForResponse(response => new URL(response.url()).pathname.endsWith('/archive/relation'));
+  release(); await (await response).finished();
+  await f.page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
 }
 async function shot(f, name) { await f.page.screenshot({ path: `${output}/${name}.png` }); (f.checkpoints ||= {})[name] = await state(f.page); }
 async function run(name, options, fn) {
@@ -352,6 +416,218 @@ await run('primary row preserves separate coin favorite and watch later actions'
  assert.equal(writes[1].form.get('rid'),'100');assert.equal(writes[1].form.get('add_media_ids'),'456');
  for(const write of writes.slice(2))assert.equal(write.form.get('aid'),'100');
  assert.equal((await state(page)).probe.loads,1);
+});
+
+for(const id of ['like','fav']) await run('engagement feedback successful toggle and cancellation '+id,
+ {interactions:{responses:{[id]:[{hold:true},{hold:true}]}}},async f=>{
+ const page=f.page;await openControls(page);await focusPrimary(page,id);
+ const before=await engagementState(page,id);
+ await page.keyboard.press('Enter');const release=await f.takeInteraction(id);
+ await engagementFeedback(page,id,'pending');
+ if(id==='like')await shot(f,'after-engagement-like-pending');
+ for(let i=0;i<3;i++)await page.keyboard.press('Enter');
+ assert.equal(engagementWrites(f).length,1,'repeated OK while pending submits one write');
+ assert.deepEqual(await engagementState(page,id),before,'pending is not a false success');
+ release();await engagementFeedback(page,id,'success');
+ assert.equal((await engagementState(page,id)).pressed,'true');
+ assert.notEqual((await engagementState(page,id)).count,before.count);
+ await engagementButton(page,id).locator('.player-control-status').waitFor({state:'visible'});
+ await shot(f,'after-engagement-'+id+'-success');
+ await page.waitForFunction(id=>document.querySelector(`[data-control="${id}"]`)?.dataset.feedback!=='success',id);
+ assert.equal((await engagementState(page,id)).pressed,'true','active state outlasts transient success feedback');
+ await engagementButton(page,id).locator('.player-control-status').waitFor({state:'visible'});
+ await page.keyboard.press('Enter');const cancel=await f.takeInteraction(id);
+ await engagementFeedback(page,id,'pending');cancel();await engagementFeedback(page,id,'success');
+ assert.deepEqual(await engagementState(page,id),before,'successful cancellation restores count and inactive state');
+ assert.match(await page.locator('.player-control-caption').textContent(),/取消/,'cancelling is explicitly acknowledged');
+ await shot(f,'after-engagement-'+id+'-cancelled');
+ assert.equal(engagementWrites(f).length,2);
+ const form=new URLSearchParams(engagementWrites(f)[1].body);
+ if(id==='like')assert.equal(form.get('like'),'2');
+ else {assert.equal(form.get('del_media_ids'),'456');assert.equal(form.get('add_media_ids'),'');}
+});
+
+for(const id of ['like','coin','fav']) await run('engagement feedback rejection preserves state and retry works '+id,
+ {interactions:{responses:{[id]:[{hold:true,code:-400,message:'合成接口拒绝'},{hold:true}]}}},async f=>{
+ const page=f.page;await openControls(page);await focusPrimary(page,id);
+ const before=await engagementState(page,id);
+ await page.keyboard.press('Enter');const reject=await f.takeInteraction(id);
+ await engagementFeedback(page,id,'pending');reject();await engagementFeedback(page,id,'error');
+ assert.deepEqual(await engagementState(page,id),before,'rejected write cannot light the button or increment counts');
+ await shot(f,'after-engagement-'+id+'-error');
+ await page.keyboard.press('Enter');const retry=await f.takeInteraction(id);
+ await engagementFeedback(page,id,'pending');retry();await engagementFeedback(page,id,'success');
+ assert.equal((await engagementState(page,id)).pressed,'true');
+ assert.notEqual((await engagementState(page,id)).count,before.count);
+ assert.equal(engagementWrites(f).length,2,'retry is one explicit new request');
+});
+
+await run('engagement feedback coin count reaches two without extra writes',
+ {interactions:{responses:{coin:[{hold:true},{hold:true}]}}},async f=>{
+ const page=f.page;await openControls(page);await focusPrimary(page,'coin');
+ for(const count of [1,2]){
+  await page.keyboard.press('Enter');const release=await f.takeInteraction('coin');
+  await engagementFeedback(page,'coin','pending');await page.keyboard.press('Enter');
+  assert.equal(f.calls.interactions.coin,count);
+  release();await engagementFeedback(page,'coin','success');
+  assert.equal((await engagementState(page,'coin')).pressed,'true');
+  assert.equal((await engagementState(page,'coin')).count,String(123+count));
+  assert.match(await engagementButton(page,'coin').locator('.player-control-status').textContent(),new RegExp(String(count)));
+ }
+ for(let i=0;i<3;i++)await page.keyboard.press('Enter');
+ assert.equal(f.calls.interactions.coin,2,'two-coin limit blocks all additional writes');
+ assert.match(await page.locator('.player-control-caption').textContent(),/两枚|已投满/);
+ assert.equal(await page.locator('.player-control.focused').getAttribute('data-control'),'coin');
+});
+
+await run('engagement feedback coin server limit synchronizes status without claiming a new coin',
+ {interactions:{responses:{coin:[{hold:true,code:34005,message:'两枚硬币已投满'}]}}},async f=>{
+ const page=f.page;await openControls(page);await focusPrimary(page,'coin');
+ const before=await engagementState(page,'coin');
+ await page.keyboard.press('Enter');const release=await f.takeInteraction('coin');
+ await engagementFeedback(page,'coin','pending');release();
+ await page.waitForFunction(()=>document.querySelector('[data-control="coin"]')?.getAttribute('aria-pressed')==='true');
+ assert.equal((await engagementState(page,'coin')).count,before.count,'34005 does not increment the public count');
+ assert.match(await engagementButton(page,'coin').locator('.player-control-status').textContent(),/2/);
+ assert.notEqual(await engagementButton(page,'coin').getAttribute('data-feedback'),'success');
+ assert.match(await page.locator('.player-control-caption').textContent(),/两枚|已投满/);
+ await page.keyboard.press('Enter');assert.equal(f.calls.interactions.coin,1);
+});
+
+await run('engagement feedback favorite folder rejection never submits a favorite write',
+ {interactions:{responses:{folders:[{hold:true,code:-500,data:{},message:'合成读取失败'},{}],fav:[{hold:true}]}}},async f=>{
+ const page=f.page;await openControls(page);await focusPrimary(page,'fav');
+ const before=await engagementState(page,'fav');
+ await page.keyboard.press('Enter');const reject=await f.takeInteraction('folders');
+ await engagementFeedback(page,'fav','pending');await page.keyboard.press('Enter');
+ assert.equal(f.calls.interactions.folders,1,'repeated OK cannot duplicate the prerequisite read');
+ reject();await engagementFeedback(page,'fav','error');
+ assert.deepEqual(await engagementState(page,'fav'),before);assert.equal(engagementWrites(f).length,0);
+ await page.keyboard.press('Enter');const release=await f.takeInteraction('fav');
+ await engagementFeedback(page,'fav','pending');release();await engagementFeedback(page,'fav','success');
+ assert.equal(f.calls.interactions.folders,2);assert.equal(engagementWrites(f).length,1);
+});
+
+await run('engagement feedback single and triple share one pending gate',
+ {interactions:{responses:{like:[{hold:true}],triple:[{hold:true}]}}},async f=>{
+ const page=f.page;await openControls(page);await focusPrimary(page,'like');
+ await page.keyboard.press('Enter');const single=await f.takeInteraction('like');
+ await engagementFeedback(page,'like','pending');
+ await page.keyboard.down('Enter');await page.waitForTimeout(2200);await page.keyboard.up('Enter');
+ for(const id of ['coin','fav']){await focusPrimary(page,id);await page.keyboard.press('Enter');}
+ assert.equal(engagementWrites(f).length,1,'pending single blocks triple and other engagement writes');
+ await focusPrimary(page,'like');single();await engagementFeedback(page,'like','success');
+ await page.keyboard.down('Enter');await page.waitForTimeout(2200);await page.keyboard.up('Enter');
+ const triple=await f.takeInteraction('triple');await engagementFeedback(page,'like','pending');
+ for(const id of ['coin','fav','like']){await focusPrimary(page,id);await page.keyboard.press('Enter');}
+ assert.equal(engagementWrites(f).length,2,'pending triple blocks every separate engagement write');
+ triple();await engagementFeedback(page,'like','success');
+ for(const id of ['like','coin','fav']){
+  assert.equal((await engagementState(page,id)).pressed,'true');
+  await engagementButton(page,id).locator('.player-control-status').waitFor({state:'visible'});
+ }
+ assert.match(await engagementButton(page,'coin').locator('.player-control-status').textContent(),/2/);
+});
+
+await run('engagement feedback active markers remain visible with focused narrow large text',
+ {width:1280,height:720,scale:1.4,commentCount:100,interactions:{initial:{like:true,coin:2,favorite:true}}},async f=>{
+ const page=f.page;
+ await page.waitForFunction(()=>['like','coin','fav'].every(id=>document.querySelector(`[data-control="${id}"]`)?.getAttribute('aria-pressed')==='true'));
+ await openControls(page);await focusPrimary(page,'comments');await page.keyboard.press('Enter');
+ await page.locator('.comment-rail-body').waitFor();await page.keyboard.press('ArrowLeft');
+ for(const id of ['like','coin','fav']){
+  await focusPrimary(page,id);
+  const marker=engagementButton(page,id).locator('.player-control-status');await marker.waitFor({state:'visible'});
+  const geometry=await marker.evaluate(element=>{
+   const box=element.getBoundingClientRect(),style=getComputedStyle(element),deck=element.closest('.player-controls').getBoundingClientRect();
+   const clips=[];
+   for(let parent=element.parentElement;parent;parent=parent.parentElement){
+    const rect=parent.getBoundingClientRect(),css=getComputedStyle(parent);
+    if(/hidden|clip|auto|scroll/.test(css.overflowX)&&(box.left<rect.left-1||box.right>rect.right+1))clips.push('x:'+parent.className);
+    if(/hidden|clip|auto|scroll/.test(css.overflowY)&&(box.top<rect.top-1||box.bottom>rect.bottom+1))clips.push('y:'+parent.className);
+   }
+   const overlaps=[...document.querySelectorAll('.player-control-icon')].filter(icon=>{
+    if(icon.contains(element))return false;
+    const rect=icon.getBoundingClientRect();
+    return box.left<rect.right&&box.right>rect.left&&box.top<rect.bottom&&box.bottom>rect.top;
+   }).map(icon=>icon.closest('button').dataset.control);
+   return {width:box.width,height:box.height,left:box.left,right:box.right,top:box.top,bottom:box.bottom,edge:Math.min(innerWidth,deck.right),screenBottom:innerHeight,opacity:style.opacity,clips,overlaps};
+  });
+  assert.ok(geometry.width>=10&&geometry.height>=10&&Number(geometry.opacity)>0,'active status has a visible footprint');
+  assert.ok(geometry.left>=0&&geometry.right<=geometry.edge&&geometry.top>=0&&geometry.bottom<=geometry.screenBottom,'focused active status remains in the video viewport: '+JSON.stringify(geometry));
+  assert.deepEqual(geometry.clips,[],'the corner status remains visible through every clipping ancestor');
+  assert.deepEqual(geometry.overlaps,[],'the active status does not overlap adjacent control icons');
+  assert.equal((await engagementState(page,id)).pressed,'true');
+  if(id==='coin')assert.match(await marker.textContent(),/2/);
+  await shot(f,'after-engagement-active-'+id+'-narrow-large');
+ }
+ assert.equal(engagementWrites(f).length,0,'rendering initial active state has no account writes');
+});
+
+await run('engagement feedback late initial relation does not undo a successful like',
+ {interactions:{responses:{relation:[{hold:true}],like:[{hold:true}]}}},async f=>{
+ const page=f.page;const oldRelation=await f.takeInteraction('relation');
+ await openControls(page);await focusPrimary(page,'like');
+ await page.keyboard.press('Enter');const release=await f.takeInteraction('like');
+ release();await engagementFeedback(page,'like','success');
+ const accepted=await engagementState(page,'like');assert.equal(accepted.pressed,'true');
+ await settleRelation(f,oldRelation);
+ assert.deepEqual(await engagementState(page,'like'),accepted,'stale initial inactive relation cannot overwrite the confirmed write');
+ await engagementButton(page,'like').locator('.player-control-status').waitFor({state:'visible'});
+});
+
+await run('engagement feedback unknown relation must resolve before an explicit write',
+ {interactions:{responses:{relation:[{hold:true},{code:-500,data:null},{}],coin:[{hold:true}]}}},async f=>{
+ const page=f.page;const oldRelation=await f.takeInteraction('relation');
+ await openControls(page);await focusPrimary(page,'coin');
+ const before=await engagementState(page,'coin');
+ await page.keyboard.press('Enter');await engagementFeedback(page,'coin','error');
+ assert.deepEqual(await engagementState(page,'coin'),before);
+ assert.equal(engagementWrites(f).length,0,'a failed prerequisite relation read cannot submit a write');
+ await settleRelation(f,oldRelation);
+ await page.keyboard.press('Enter');const release=await f.takeInteraction('coin');
+ await engagementFeedback(page,'coin','pending');
+ assert.equal(f.calls.interactions.relation,3,'explicit retry fetches a valid relation instead of trusting the stale initial response');
+ release();await engagementFeedback(page,'coin','success');
+ assert.equal(engagementWrites(f).length,1);
+ assert.equal((await engagementState(page,'coin')).pressed,'true');
+});
+
+await run('engagement feedback late triple reconciliation does not undo a later cancellation',
+ {interactions:{responses:{relation:[{},{hold:true}],like:[{hold:true}]}}},async f=>{
+ const page=f.page;await openControls(page);await focusPrimary(page,'like');
+ await page.keyboard.down('Enter');await page.waitForTimeout(2200);await page.keyboard.up('Enter');
+ await engagementFeedback(page,'like','success');const oldRelation=await f.takeInteraction('relation');
+ await page.keyboard.press('Enter');const cancel=await f.takeInteraction('like');
+ cancel();await engagementFeedback(page,'like','success');
+ const cancelled=await engagementState(page,'like');assert.equal(cancelled.pressed,'false');
+ await settleRelation(f,oldRelation);
+ assert.deepEqual(await engagementState(page,'like'),cancelled,'stale active relation cannot relight a cancelled like');
+});
+
+await run('engagement feedback late response after exit adds no new UI',
+ {interactions:{responses:{fav:[{hold:true}]}}},async f=>{
+ const page=f.page;await openControls(page);await focusPrimary(page,'fav');
+ await page.keyboard.press('Enter');const release=await f.takeInteraction('fav');
+ await engagementFeedback(page,'fav','pending');
+ for(let i=0;i<4&&await page.locator('.player-page').count();i++)await page.keyboard.press('Escape');
+ await page.locator('.player-page').waitFor({state:'detached'});
+ const response=page.waitForResponse(response=>new URL(response.url()).pathname.endsWith('/fav/resource/deal'));
+ release();await (await response).finished();await page.waitForTimeout(200);
+ assert.equal(await page.locator('.player-page,.player-toast,.player-control-status').count(),0,'late completion cannot recreate player feedback after exit');
+ assert.equal(engagementWrites(f).length,1);
+});
+
+await run('engagement feedback PGC with a valid episode aid still supports liking',
+ {pgc:true,interactions:{responses:{like:[{hold:true}]}}},async f=>{
+ const page=f.page;await openControls(page);await focusPrimary(page,'like');
+ await page.keyboard.press('Enter');const release=await f.takeInteraction('like');
+ await engagementFeedback(page,'like','pending');
+ assert.equal(f.calls.pgcPlayurl,1,'PGC playback reached the real v2 envelope normalizer');
+ assert.equal(new URLSearchParams(engagementWrites(f)[0].body).get('aid'),'700','interaction uses the valid episode aid, not an unrelated UGC fixture');
+ release();await engagementFeedback(page,'like','success');
+ assert.equal((await engagementState(page,'like')).pressed,'true');
+ assert.equal(engagementWrites(f).length,1);
 });
 
 for(const terminal of ['ended','error']) await run('terminal transition cancels primary account hold when playback '+terminal,{},async f=>{

@@ -1,0 +1,2 @@
+PASS en.js: covers all 391 source keys (+119 dynamic/extra)
+PASS es.js: covers all 391 source keys (+119 dynamic/extra)

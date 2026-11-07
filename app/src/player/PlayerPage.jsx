@@ -109,6 +109,11 @@ export default function RecoverablePlayer(props) {
 }
 
 const PRIMARY_CONTROLS = ['like', 'coin', 'fav', 'later', 'prev', 'play', 'next', 'comments', 'settings'];
+const engagementRelation = data => ({
+  liked: !!(data.like || data.attitude > 0),
+  coined: Math.max(0, Math.min(2, Number(data.coin) || 0)),
+  faved: !!data.favorite,
+});
 
 function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   useTitlesMT(); // re-render when list-title translations land (no-op on zh)
@@ -410,19 +415,31 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   // 稍后再看只有本地态:B站没有"这个视频在不在队列里"的查询接口。
   const [inToView, setInToView] = useState(false);
   const relRef = useRef(rel);
-  useEffect(() => { relRef.current = rel; }, [rel]);
-  const triplingRef = useRef(false);
+  const relationKnownRef = useRef(false);
+  const engagementRevisionRef = useRef(0);
+  const engagementPendingRef = useRef(false);
+  const [engagementFeedback, setEngagementFeedback] = useState(null);
+  const engagementTimerRef = useRef(null);
+  const commitRelation = useCallback(next => {
+    relRef.current = next;
+    setRel(next);
+  }, []);
   const holdRef = useRef({ active: false, fired: false, timer: null });
   // Long-press progress OUTLINE: traces the like button's own rounded-rect
   // border (owner: 方块按钮配圆圈丑). {w,h,perim} measured at hold start.
   const [likeRing, setLikeRing] = useState(null);
-  const [triplePop, setTriplePop] = useState(false); // post-triple bounce
   const [playerToast, setPlayerToast] = useState('');
   const toastTimerRef = useRef(null);
   const showPlayerToast = useCallback((msg) => {
+    if (!mountedRef.current) return;
     setPlayerToast(msg);
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     toastTimerRef.current = setTimeout(() => setPlayerToast(''), 2200);
+  }, []);
+  useEffect(() => () => {
+    engagementRevisionRef.current++;
+    clearTimeout(engagementTimerRef.current);
+    clearTimeout(toastTimerRef.current);
   }, []);
 
   // 倍速 native mode: webOS's MSE pipeline hard-ignores playbackRate ("TV app
@@ -754,6 +771,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       let ownerName = video.owner?.name || '';
 
       if (isBangumi) {
+        let episodeAid = video.aid || null;
         // Bangumi (PGC): resolve the episode's cid (and a concrete epid) from
         // the season listing when the history/feed item didn't carry them.
         if (!cid || !epid) {
@@ -763,12 +781,13 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
             const eps = result.episodes || [];
             let ep = epid ? eps.find(e => String(e.id) === String(epid)) : null;
             if (!ep) ep = eps[0];
-            if (ep) { epid = ep.id || epid; cid = cid || ep.cid; }
+            if (ep) { epid = ep.id || epid; cid = cid || ep.cid; episodeAid = ep.aid || episodeAid; }
             if (!video.title && result.season_title) setVideoTitle(result.season_title);
             seasonId = seasonId || result.season_id;
           } catch (e) { console.warn('[bangumi] season info failed:', e?.message || e); }
         }
         if (!epid && !cid) throw new Error('No bangumi epid/cid');
+        videoAidRef.current = episodeAid;
       }
       // UGC: always fetch the view so we have the 分P page list + aid (needed
       // for 选集 and 续播), the title and the owner.
@@ -788,32 +807,29 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         }
         ugcPages = d.pages || [];
         ugcSeason = d.ugc_season || null; // UGC 合集 (multi-video series)
-        videoAidRef.current = d.aid || null;
+        videoAidRef.current = d.aid || video.aid || null;
         // 点赞/投币/收藏 counts + my own state on this video (button回显).
         setStat({
           like: (d.stat && d.stat.like) || 0,
           coin: (d.stat && d.stat.coin) || 0,
           favorite: (d.stat && d.stat.favorite) || 0,
         });
-        setRel({ liked: false, coined: 0, faved: false });
+        commitRelation({ liked: false, coined: 0, faved: false });
+        relationKnownRef.current = false;
         // 换视频要清掉稍后再看的本地态 —— 它是"这次会话里我按过没有",
         // 不是服务端回显(B站没有单视频查询接口),跟着视频走才不会串。
         setInToView(false);
         if (d.aid && storage.getAuth()?.SESSDATA) {
-          // One retry: if this silently fails, the 已三连 guard can't see the
-          // truth and a long-press re-fires triple (harmless server-side — B站
-          // caps coins at 2/video — but the toast then lies "成功").
-          const fetchRel = (attempt) => isActive() && getVideoRelation(d.aid).then(r => {
-            if (!isActive()) return;
-            const rd = r?.data;
-            if (rd) {
-              setRel({
-                liked: !!(rd.like || rd.attitude > 0),
-                coined: rd.coin || 0,
-                faved: !!rd.favorite,
-              });
-            }
-          }).catch(() => { if (attempt < 1) setTimeout(() => fetchRel(attempt + 1), 1500); });
+          // Capture before scheduling: a late first-frame task or retry must
+          // not overwrite an explicit action performed in the meantime.
+          const revision = engagementRevisionRef.current;
+          const current = () => isActive() && revision === engagementRevisionRef.current && !engagementPendingRef.current;
+          const fetchRel = attempt => current() && getVideoRelation(d.aid).then(r => {
+            if (!current()) return;
+            if (r?.code !== 0 || !r.data) throw new Error('relation unavailable');
+            commitRelation(engagementRelation(r.data));
+            relationKnownRef.current = true;
+          }).catch(() => { if (current() && attempt < 1) setTimeout(() => fetchRel(attempt + 1), 1500); });
           afterFirstFrame(() => fetchRel(0));
         }
         if (d.title) setVideoTitle(d.title);
@@ -1664,65 +1680,98 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   }, [hideControlsLater]);
 
   // ===== 点赞 / 投币 / 收藏 / 长按三连 =====
-  // 点赞: toggleable (like=1 赞, like=2 取消) — B站 app behavior.
-  const doLike = useCallback(async () => {
-    const aid = videoAidRef.current || video?.aid;
-    if (!aid) return;
-    const was = relRef.current.liked;
+  // One transaction across the three buttons and triple: a second OK must
+  // never spend another coin or use a stale toggle state while a write waits.
+  const performEngagement = useCallback(async (ids, action) => {
+    if (!mountedRef.current) return;
+    if (engagementPendingRef.current) { showPlayerToast(t('处理中…')); return; }
+    const aid = videoAidRef.current;
+    if (!aid) { showPlayerToast(t('视频信息加载中，请稍后重试')); return; }
+    const revision = ++engagementRevisionRef.current;
+    const isActive = () => mountedRef.current && engagementRevisionRef.current === revision;
+    engagementPendingRef.current = true;
+    clearTimeout(engagementTimerRef.current);
+    clearTimeout(toastTimerRef.current);
+    setPlayerToast('');
+    setEngagementFeedback({ ids, state: 'pending', message: t('处理中…') });
+    const finish = result => {
+      if (!isActive()) return;
+      setEngagementFeedback({ ids, state: result.state || 'success', message: result.message });
+      showPlayerToast(result.message);
+      engagementTimerRef.current = setTimeout(() => {
+        if (isActive()) setEngagementFeedback(null);
+      }, 2200);
+    };
     try {
-      const res = await likeVideo(aid, was ? 2 : 1);
-      if (res && res.code === 0) {
-        setRel(p => ({ ...p, liked: !was }));
-        setStat(p => ({ ...p, like: Math.max(0, p.like + (was ? -1 : 1)) }));
-        showPlayerToast(was ? t('已取消点赞') : t('已点赞 👍(长按=一键三连)'));
-      } else {
-        showPlayerToast((res && res.message) || t('操作失败,请重试'));
+      // A missing/failed relation read is unknown, not an unliked video.
+      if (!relationKnownRef.current) {
+        const relation = await getVideoRelation(aid);
+        if (!isActive()) return;
+        if (relation?.code !== 0 || !relation.data) throw new Error('relation unavailable');
+        commitRelation(engagementRelation(relation.data));
+        relationKnownRef.current = true;
       }
-    } catch (e) { showPlayerToast(t('操作失败,请重试')); }
-  }, [video, showPlayerToast]);
+      const result = await action(aid, relRef.current, isActive);
+      if (!isActive() || !result) return;
+      if (result.rel) commitRelation(result.rel);
+      if (result.updateStat) setStat(result.updateStat);
+      finish(result);
+      if (result.calibrate) {
+        // A subsequent cancel/toggle invalidates even this upward-only merge.
+        getVideoRelation(aid).then(response => {
+          if (isActive() && response?.code === 0 && response.data) {
+            const merged = mergeServerRel(relRef.current, response.data);
+            commitRelation({ ...merged, coined: Math.min(2, merged.coined) });
+          }
+        }).catch(() => {});
+      }
+    } catch {
+      finish({ state: 'error', message: t('操作失败,请重试') });
+    } finally {
+      if (isActive()) {
+        engagementPendingRef.current = false;
+        hideControlsLater();
+      }
+    }
+  }, [commitRelation, showPlayerToast, hideControlsLater]);
+
+  // 点赞: toggleable (like=1 赞, like=2 取消) — B站 app behavior.
+  const doLike = useCallback(() => performEngagement(['like'], async (aid, current) => {
+    const was = current.liked;
+    const res = await likeVideo(aid, was ? 2 : 1);
+    if (res?.code !== 0) return { state: 'error', message: res?.message || t('操作失败,请重试') };
+    return { rel: { ...current, liked: !was },
+      updateStat: p => ({ ...p, like: Math.max(0, p.like + (was ? -1 : 1)) }),
+      message: was ? t('已取消点赞') : t('已点赞') };
+  }), [performEngagement]);
 
   // 投币: one coin per press, hard max 2 per video, NOT cancelable (B站 rule).
-  const doCoin = useCallback(async () => {
-    const aid = videoAidRef.current || video?.aid;
-    if (!aid) return;
-    if (relRef.current.coined >= 2) { showPlayerToast(<>{t('两枚硬币已投满')} <CoinIcon /></>); return; }
-    try {
-      const res = await coinVideo(aid, 1);
-      if (res && res.code === 0) {
-        setRel(p => ({ ...p, coined: p.coined + 1 }));
-        setStat(p => ({ ...p, coin: p.coin + 1 }));
-        showPlayerToast(<>{t('投币成功')} <CoinIcon /></>);
-      } else if (res && res.code === 34005) {
-        setRel(p => ({ ...p, coined: 2 }));
-        showPlayerToast(<>{t('两枚硬币已投满')} <CoinIcon /></>);
-      } else {
-        showPlayerToast((res && res.message) || t('操作失败,请重试'));
-      }
-    } catch (e) { showPlayerToast(t('操作失败,请重试')); }
-  }, [video, showPlayerToast]);
+  const doCoin = useCallback(() => performEngagement(['coin'], async (aid, current) => {
+    if (current.coined >= 2) return { state: 'notice', message: t('两枚硬币已投满') };
+    const res = await coinVideo(aid, 1);
+    if (res?.code === 34005) return { state: 'notice', rel: { ...current, coined: 2 }, message: t('两枚硬币已投满') };
+    if (res?.code !== 0) return { state: 'error', message: res?.message || t('操作失败,请重试') };
+    const coined = Math.min(2, current.coined + 1);
+    return { rel: { ...current, coined }, updateStat: p => ({ ...p, coin: p.coin + 1 }),
+      message: t('投币成功 · 已投 {n} 枚', { n: coined }) };
+  }), [performEngagement]);
 
   // 收藏: toggle against the user's folders (add → 默认收藏夹; remove → every
   // folder currently holding it, so the toggle really clears the state).
-  const doFav = useCallback(async () => {
-    const aid = videoAidRef.current || video?.aid;
-    if (!aid) return;
-    const was = relRef.current.faved;
-    try {
-      const folders = await getFavFoldersFor(aid);
-      const list = (folders?.data?.list) || [];
-      if (list.length === 0) { showPlayerToast(t('操作失败,请重试')); return; }
-      const res = was
-        ? await favVideo(aid, '', list.filter(f => f.fav_state).map(f => f.id).join(',') || String(list[0].id))
-        : await favVideo(aid, String(list[0].id), '');
-      if (res && res.code === 0) {
-        setRel(p => ({ ...p, faved: !was }));
-        setStat(p => ({ ...p, favorite: Math.max(0, p.favorite + (was ? -1 : 1)) }));
-        showPlayerToast(was ? t('已取消收藏') : t('已收藏 ⭐'));
-      } else {
-        showPlayerToast((res && res.message) || t('操作失败,请重试'));
-      }
-    } catch (e) { showPlayerToast(t('操作失败,请重试')); }
-  }, [video, showPlayerToast]);
+  const doFav = useCallback(() => performEngagement(['fav'], async (aid, current, isActive) => {
+    const folders = await getFavFoldersFor(aid);
+    if (!isActive()) return null;
+    const list = folders?.code === 0 && Array.isArray(folders.data?.list) ? folders.data.list : [];
+    if (!list.length) return { state: 'error', message: t('操作失败,请重试') };
+    const was = current.faved;
+    const res = was
+      ? await favVideo(aid, '', list.filter(f => f.fav_state).map(f => f.id).join(',') || String(list[0].id))
+      : await favVideo(aid, String(list[0].id), '');
+    if (res?.code !== 0) return { state: 'error', message: res?.message || t('操作失败,请重试') };
+    return { rel: { ...current, faved: !was },
+      updateStat: p => ({ ...p, favorite: Math.max(0, p.favorite + (was ? -1 : 1)) }),
+      message: was ? t('已取消收藏') : t('已收藏') };
+  }), [performEngagement]);
 
   // 稍后再看:一个与收藏夹平行的队列(上限 100)。B站没有"查询单个视频是否在
   // 队列里"的接口,所以按钮不做回显,只在本地记住这次会话里加过/移除过,
@@ -1743,36 +1792,13 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   }, [video, inToView, showPlayerToast]);
 
   // 一键三连 (LONG-PRESS 点赞): like + coin×2 + favorite in one request.
-  const doTriple = useCallback(async () => {
-    if (triplingRef.current) return;
-    const aid = videoAidRef.current || video?.aid;
-    if (!aid) return;
-    const r0 = relRef.current;
-    if (r0.liked && r0.coined >= 2 && r0.faved) { showPlayerToast(t('已经三连过啦 ✅')); return; }
-    triplingRef.current = true;
-    try {
-      const res = await tripleVideo(aid);
-      if (res && res.code === 0) {
-        const d = res.data || {};
-        // 计数只加"这次真做了的";点亮状态则是"三项最终都成立" —— 两者语义不同,
-        // 混为一谈就会出现「只有收藏变色」(见 tripleState.js 的注释)。
-        setStat(p => tripleNextStat(p, r0, d));
-        setRel(p => tripleNextRel(p, d));
-        setTriplePop(true);
-        setTimeout(() => setTriplePop(false), 700);
-        showPlayerToast(<>{t('三连成功')} 👍<CoinIcon />⭐</>);
-        // True-up from the server — the local increments above are best-effort
-        // (e.g. a triple fired past a failed relation fetch adds nothing new).
-        // 校准只能往上合并:直接覆盖会把刚写成功的状态按回去。
-        getVideoRelation(aid).then(r => {
-          if (r?.data) setRel(p => mergeServerRel(p, r.data));
-        }).catch(() => {});
-      } else {
-        showPlayerToast((res && res.message) || t('操作失败,请重试'));
-      }
-    } catch (e) { showPlayerToast(t('操作失败,请重试')); }
-    triplingRef.current = false;
-  }, [video, showPlayerToast]);
+  const doTriple = useCallback(() => performEngagement(['like', 'coin', 'fav'], async (aid, current) => {
+    if (current.liked && current.coined >= 2 && current.faved) return { state: 'notice', message: t('已经三连过啦 ✅') };
+    const res = await tripleVideo(aid);
+    if (res?.code !== 0) return { state: 'error', message: res?.message || t('操作失败,请重试') };
+    return { rel: tripleNextRel(current, res.data), updateStat: p => tripleNextStat(p, current, res.data),
+      message: t('三连成功'), calibrate: true };
+  }), [performEngagement]);
 
   // Long-press machinery (D-pad OK hold + pointer hold share it), matching
   // B站 PC-web semantics (owner):
@@ -1782,6 +1808,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   const TAP_MS = 300;
   const HOLD_MS = 2000;
   const startLikeHold = useCallback(() => {
+    if (engagementPendingRef.current) { showPlayerToast(t('处理中…')); return; }
     if (holdRef.current.active) return;
     holdRef.current = {
       active: true, fired: false, start: Date.now(),
@@ -1799,7 +1826,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       setLikeRing({ w, h, rx, perim });
     }
     if (controlsTimer.current) clearTimeout(controlsTimer.current); // no auto-hide mid-hold
-  }, [doTriple]);
+  }, [doTriple, showPlayerToast]);
 
   // 相关推荐长按的计时器(短按播放 / 长按弹菜单)
   const relHoldRef = useRef({ timer: null, fired: false });
@@ -2695,7 +2722,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
   const previewVideos = panelTab === 'parts' ? partsList : panelTab === 'up' ? upVideos : relatedVideos;
-  controlsPinnedRef.current = adjacentBusy || showPlayerSettings || showDanmakuSettings || ended || showRelated || showQuality || showSubPanel || showSpeedPanel
+  controlsPinnedRef.current = engagementFeedback?.state === 'pending' || adjacentBusy || showPlayerSettings || showDanmakuSettings || ended || showRelated || showQuality || showSubPanel || showSpeedPanel
     || showCommentRail || focusArea === 'scrub';
   if (focusArea === 'controls' && CONTROLS[focusIdx]) lastControlRef.current = CONTROLS[focusIdx];
   // Size the viewport from full-sized shared cards, never compress the cards
@@ -2809,6 +2836,13 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     : btn === 'comments' ? t('评论') : t('设置');
   const controlValue = btn => btn === 'like' ? formatCount(stat.like) : btn === 'coin' ? formatCount(stat.coin)
     : btn === 'fav' ? formatCount(stat.favorite) : btn === 'comments' && commentCount ? formatCount(commentCount) : null;
+  const controlStatus = btn => btn === 'like' && rel.liked ? t('已点赞')
+    : btn === 'fav' && rel.faved ? t('已收藏')
+    : btn === 'coin' && rel.coined > 0 ? t('已投 {n} 枚硬币', { n: rel.coined }) : null;
+  const focusedControl = focusArea === 'controls' ? CONTROLS[focusIdx] : null;
+  const focusedFeedback = focusedControl && engagementFeedback?.ids.includes(focusedControl) ? engagementFeedback : null;
+  const controlCaption = focusedFeedback ? focusedFeedback.message : focusedControl
+    ? `${controlStatus(focusedControl) || controlLabel(focusedControl)} ${controlValue(focusedControl) || ''}` : '\u00a0';
   const settingsOpen = showPlayerSettings || showQuality || showSubPanel || showSpeedPanel || showDanmakuSettings;
 
   return (
@@ -3162,6 +3196,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
                 const i = CONTROLS.indexOf(btn), label = controlLabel(btn);
                 const value = controlValue(btn);
                 const active = btn === 'like' ? rel.liked : btn === 'coin' ? rel.coined > 0 : btn === 'fav' ? rel.faved : btn === 'later' ? inToView : undefined;
+                const engagement = ['like', 'coin', 'fav'].includes(btn);
+                const feedback = engagementFeedback?.ids.includes(btn) ? engagementFeedback.state : null;
                 const handlers = btn === 'like' ? {
                   onMouseDown: event => { if (event.button === 0 && !disabledControlsRef.current.has('like')) startLikeHold(); },
                   onMouseUp: event => { if (event.button === 0) endLikeHold(false); },
@@ -3170,13 +3206,18 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
                 return <button key={btn} type="button" data-control={btn}
                   ref={el => { btnRefs.current[btn] = el; }} disabled={disabledControls.has(btn)} aria-disabled={disabledControls.has(btn)}
                   aria-label={btn === 'later' && inToView ? t('已稍后再看') : label} aria-pressed={active}
+                  aria-busy={engagement ? feedback === 'pending' : undefined} data-feedback={feedback || undefined}
                   aria-haspopup={btn === 'settings' ? 'dialog' : undefined}
                   aria-expanded={btn === 'settings' ? settingsOpen : undefined}
-                  className={`player-btn player-control ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''} ${active ? 'lit' : ''} ${['like', 'coin', 'fav'].includes(btn) && triplePop ? 'triple-pop' : ''}`}
+                  className={`player-btn player-control ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''} ${active ? 'lit' : ''} ${feedback === 'success' ? 'triple-pop' : ''}`}
                   onMouseMove={() => { if (focusArea !== 'controls' || focusIdx !== i) endLikeHold(true); setFocusArea('controls'); setFocusIdx(i); hideControlsLater(); }}
                   {...handlers}>
                   <span className="player-control-icon">{btn === 'coin' ? <CoinIcon /> : <Icon size={28}
                     name={btn === 'play' ? (ended ? 'refresh' : playing ? 'pause' : 'play') : btn === 'fav' ? 'star' : btn} />}
+                  {feedback === 'pending' && <span className="player-control-spinner" aria-hidden="true" />}
+                  {engagement && (active || feedback === 'error') && <span className="player-control-status" aria-hidden="true">
+                    {feedback === 'error' ? '!' : btn === 'coin' ? rel.coined : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l4 4 10-10" /></svg>}
+                  </span>}
                   {btn === 'like' && likeRing && <svg className="like-ring" aria-hidden="true" width={likeRing.w + 8} height={likeRing.h + 8} style={{ left: -10, top: -10 }}>
                     <rect className="like-ring-track" x="4" y="4" width={likeRing.w} height={likeRing.h} rx={likeRing.rx} />
                     <rect className="like-ring-fill" x="4" y="4" width={likeRing.w} height={likeRing.h} rx={likeRing.rx}
@@ -3190,7 +3231,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
             </div>
           ))}
         </div>
-        <div className="player-control-caption" aria-hidden="true">{focusArea === 'controls' ? `${controlLabel(CONTROLS[focusIdx])} ${controlValue(CONTROLS[focusIdx]) || ''}` : '\u00a0'}</div>
+        <div className={`player-control-caption ${focusedFeedback ? 'feedback-' + focusedFeedback.state : ''}`} role="status" aria-live="polite">{controlCaption}</div>
         </div>
 
         {/* Keep one grid mounted: a cropped preview grows into the shelf,
@@ -3291,7 +3332,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         onFocus={id => { setFocusArea('speed'); setFocusIdx(SPEED_OPTIONS.indexOf(Number(id))); }}
         onAction={id => applySpeed(Number(id))} onClose={() => returnToSettings('speed')} />}
 
-      {playerToast && <div className="player-toast">{playerToast}</div>}
+      {playerToast && (!focusedFeedback || playerToast !== focusedFeedback.message) &&
+        <div className={`player-toast ${playerToast === engagementFeedback?.message ? 'engagement-toast' : ''}`}>{playerToast}</div>}
 
       {/* End screen */}
     </div>

@@ -1,0 +1,306 @@
+{
+  "boundary": "Real React/API/controller with controlled Shaka and media events; every non-Vite HTTP request and every WebSocket is intercepted. New contexts use only synthetic account/video data. No real media decoding, television, desktop foreground, or phone interaction.",
+  "sources": {
+    "app/src/player/PlayerPage.jsx": "2a874f8629c24c558c6f8fde79477062c6713494ce45ddb75c218d4571278482",
+    "app/src/player/adjacentVideo.js": "65f09d2f6fff51af43616f73eeaadf6e77f60bab8933f200dcf7b1a60b299a70",
+    "app/src/player/SubtitleLayer.jsx": "130b03b27e3bad26493978ccc298afe98f5c8b508e955ec427fc68ddf63119f5",
+    "app/src/player/playerControls.css": "31bd45848a72035a5333ab8b9d6c3a23c0dfa851ac905df1cf788c42726d3802",
+    "app/src/player/PlayerMoreControls.jsx": "868946a2c0c1160b6036718ab8a1a296b5bff1291cf1f6f320dd13daf131816e",
+    "app/src/player/playerMoreControls.css": "3e5e4c8e436168342e77dcc40cb260b162741607c4212ae5a32baba43cb9a91f",
+    "app/src/components/Icon.jsx": "e6ed7ef4fdd9f26b4cd161c0e66589fa72deff376c102008a3a24b2e08deb2d4",
+    "app/src/i18n/en.js": "482ee0dee241459f6dcbc974597fb21590a6061619339f434bf649d6d0e8b644",
+    "app/src/i18n/es.js": "2f149247a12579444072db34faa322019c1e489a54357b11ef4a837e75daa462",
+    "app/src/styles.css": "af2e9f38471c0f69626b4bfa779c4a0d729faa52ec6a9680042562987401b785",
+    "app/src/tv-design.css": "e627de8ab6c756b9eb9e3f267e74f1b5bfa635c8148559d223ddfea671753cc1",
+    "app/src/hooks/useAuthorFollowers.js": "3fc6805b08055604da1259cab330c34ac4344cd05e652f4c80b702eedd6e482b",
+    "app/src/utils/authorFollowers.js": "aed07affbf7392fc6e3fbbc99fdee2af39982b241be98295db7b8ea376c203f3"
+  },
+  "sourcesEnd": {
+    "app/src/player/PlayerPage.jsx": "2a874f8629c24c558c6f8fde79477062c6713494ce45ddb75c218d4571278482",
+    "app/src/player/adjacentVideo.js": "65f09d2f6fff51af43616f73eeaadf6e77f60bab8933f200dcf7b1a60b299a70",
+    "app/src/player/SubtitleLayer.jsx": "130b03b27e3bad26493978ccc298afe98f5c8b508e955ec427fc68ddf63119f5",
+    "app/src/player/playerControls.css": "31bd45848a72035a5333ab8b9d6c3a23c0dfa851ac905df1cf788c42726d3802",
+    "app/src/player/PlayerMoreControls.jsx": "868946a2c0c1160b6036718ab8a1a296b5bff1291cf1f6f320dd13daf131816e",
+    "app/src/player/playerMoreControls.css": "3e5e4c8e436168342e77dcc40cb260b162741607c4212ae5a32baba43cb9a91f",
+    "app/src/components/Icon.jsx": "e6ed7ef4fdd9f26b4cd161c0e66589fa72deff376c102008a3a24b2e08deb2d4",
+    "app/src/i18n/en.js": "482ee0dee241459f6dcbc974597fb21590a6061619339f434bf649d6d0e8b644",
+    "app/src/i18n/es.js": "2f149247a12579444072db34faa322019c1e489a54357b11ef4a837e75daa462",
+    "app/src/styles.css": "af2e9f38471c0f69626b4bfa779c4a0d729faa52ec6a9680042562987401b785",
+    "app/src/tv-design.css": "e627de8ab6c756b9eb9e3f267e74f1b5bfa635c8148559d223ddfea671753cc1",
+    "app/src/hooks/useAuthorFollowers.js": "3fc6805b08055604da1259cab330c34ac4344cd05e652f4c80b702eedd6e482b",
+    "app/src/utils/authorFollowers.js": "aed07affbf7392fc6e3fbbc99fdee2af39982b241be98295db7b8ea376c203f3"
+  },
+  "sourcesStable": true,
+  "results": [
+    {
+      "name": "person mask metadata integration failure",
+      "pass": true,
+      "durationMs": 1164
+    },
+    {
+      "name": "person mask metadata integration missing",
+      "pass": true,
+      "durationMs": 1099
+    },
+    {
+      "name": "person mask metadata integration mismatch",
+      "pass": true,
+      "durationMs": 1109
+    },
+    {
+      "name": "in-playback danmaku settings preserve playback and restore remote focus",
+      "pass": true,
+      "durationMs": 1418
+    },
+    {
+      "name": "three primary groups and nested settings {}",
+      "pass": true,
+      "durationMs": 7284
+    },
+    {
+      "name": "three primary groups and nested settings {\"width\":1280,\"height\":720,\"scale\":1.4}",
+      "pass": true,
+      "durationMs": 7217
+    },
+    {
+      "name": "three primary groups and nested settings {\"auth\":false,\"subtitles\":false}",
+      "pass": true,
+      "durationMs": 7320
+    },
+    {
+      "name": "three primary groups and nested settings {\"language\":\"en\",\"width\":1280,\"height\":720,\"scale\":1.4,\"subtitleOff\":true}",
+      "pass": true,
+      "durationMs": 7158
+    },
+    {
+      "name": "primary like tap is single and leaving focus cancels an unfinished hold",
+      "pass": true,
+      "durationMs": 2820
+    },
+    {
+      "name": "primary row preserves separate coin favorite and watch later actions",
+      "pass": true,
+      "durationMs": 1174
+    },
+    {
+      "name": "terminal transition cancels primary account hold when playback ended",
+      "pass": true,
+      "durationMs": 3264
+    },
+    {
+      "name": "terminal transition cancels primary account hold when playback error",
+      "pass": true,
+      "durationMs": 3277
+    },
+    {
+      "name": "terminal transition closes nested playback settings ended",
+      "pass": true,
+      "durationMs": 1128
+    },
+    {
+      "name": "terminal transition closes nested playback settings error",
+      "pass": true,
+      "durationMs": 1097
+    },
+    {
+      "name": "comment count remains visible before opening and within narrow rail zh",
+      "pass": true,
+      "durationMs": 1508
+    },
+    {
+      "name": "comment count remains visible before opening and within narrow rail en",
+      "pass": true,
+      "durationMs": 1508
+    },
+    {
+      "name": "scene transparency coast",
+      "pass": true,
+      "durationMs": 1903
+    },
+    {
+      "name": "scene transparency window",
+      "pass": true,
+      "durationMs": 1866
+    },
+    {
+      "name": "visual 1920x1080 dark scale=1",
+      "pass": true,
+      "durationMs": 1974
+    },
+    {
+      "name": "visual 1920x1080 light scale=1",
+      "pass": true,
+      "durationMs": 1925
+    },
+    {
+      "name": "visual 1280x720 dark scale=1",
+      "pass": true,
+      "durationMs": 1878
+    },
+    {
+      "name": "visual 1280x720 light scale=1",
+      "pass": true,
+      "durationMs": 1840
+    },
+    {
+      "name": "visual 1920x1080 light scale=1.4",
+      "pass": true,
+      "durationMs": 1906
+    },
+    {
+      "name": "visual 1280x720 light scale=1.25",
+      "pass": true,
+      "durationMs": 1834
+    },
+    {
+      "name": "recommendation cards share listing appearance and extend the panel upward",
+      "pass": true,
+      "durationMs": 1606
+    },
+    {
+      "name": "reopening a scrolled shelf restores a visible remote focus",
+      "pass": true,
+      "durationMs": 3311
+    },
+    {
+      "name": "small wheel deltas accumulate without skipping multiple rows",
+      "pass": true,
+      "durationMs": 2819
+    },
+    {
+      "name": "recommendation row scrolling animates remote",
+      "pass": true,
+      "durationMs": 2300
+    },
+    {
+      "name": "recommendation row scrolling animates wheel",
+      "pass": true,
+      "durationMs": 2341
+    },
+    {
+      "name": "expanded shelf shows two full rows without per-frame layout resizing 1080",
+      "pass": true,
+      "durationMs": 1502
+    },
+    {
+      "name": "expanded shelf shows two full rows without per-frame layout resizing 720",
+      "pass": true,
+      "durationMs": 1498
+    },
+    {
+      "name": "shelf animation under six-fold CPU slowdown",
+      "pass": true,
+      "durationMs": 2478
+    },
+    {
+      "name": "recommendation cards remain continuous while opening and closing",
+      "pass": true,
+      "durationMs": 1993
+    },
+    {
+      "name": "smooth shelf expansion wheel",
+      "pass": true,
+      "durationMs": 2297
+    },
+    {
+      "name": "smooth shelf expansion remote",
+      "pass": true,
+      "durationMs": 2275
+    },
+    {
+      "name": "shelf rapid reversal and reduced motion",
+      "pass": true,
+      "durationMs": 2497
+    },
+    {
+      "name": "remote Down Up Back navigation scale=1",
+      "pass": true,
+      "durationMs": 2722
+    },
+    {
+      "name": "remote Down Up Back navigation scale=1.4",
+      "pass": true,
+      "durationMs": 2705
+    },
+    {
+      "name": "auto hide pause play and expanded shelf persistence",
+      "pass": true,
+      "durationMs": 12813
+    },
+    {
+      "name": "deferred seek cancel commit and pointer progress",
+      "pass": true,
+      "durationMs": 3876
+    },
+    {
+      "name": "subtitle popup and long press stay reachable",
+      "pass": true,
+      "durationMs": 10992
+    },
+    {
+      "name": "quality popup returns to its control and keeps media state",
+      "pass": true,
+      "durationMs": 1929
+    },
+    {
+      "name": "pointer preview expands existing recommendation shelf",
+      "pass": true,
+      "durationMs": 1796
+    },
+    {
+      "name": "recommendation empty has no invented preview and remains navigable",
+      "pass": true,
+      "durationMs": 1939
+    },
+    {
+      "name": "recommendation loading has no invented preview and remains navigable",
+      "pass": true,
+      "durationMs": 1916
+    },
+    {
+      "name": "recommendation failure has no invented preview and remains navigable",
+      "pass": true,
+      "durationMs": 1926
+    },
+    {
+      "name": "follower count stays with the control deck throughout hide and reopen",
+      "pass": true,
+      "durationMs": 2362
+    },
+    {
+      "name": "author followers 0",
+      "pass": true,
+      "durationMs": 1572
+    },
+    {
+      "name": "author followers 125678",
+      "pass": true,
+      "durationMs": 1567
+    },
+    {
+      "name": "author followers unknown",
+      "pass": true,
+      "durationMs": 2077
+    },
+    {
+      "name": "author followers failure",
+      "pass": true,
+      "durationMs": 2057
+    },
+    {
+      "name": "long author small viewport light",
+      "pass": true,
+      "durationMs": 1137
+    },
+    {
+      "name": "long author small viewport dark",
+      "pass": true,
+      "durationMs": 1169
+    },
+    {
+      "name": "720 large text comment rail preserves control navigation",
+      "pass": true,
+      "durationMs": 1540
+    }
+  ]
+}

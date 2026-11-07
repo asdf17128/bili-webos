@@ -1,0 +1,10 @@
+PASS  全新三连 → 三项全亮
+PASS  之前已赞已投(接口只回 fav)→ 仍然三项全亮
+PASS  本地状态是空的(relation 请求失败)→ 三连后照样全亮
+PASS  投币数封顶 2
+PASS  计数:已赞过 → like 不再 +1
+PASS  计数:本次新增收藏 → favorite +1
+PASS  计数:本次投 2 币 → coin +2
+PASS  校准:服务端还没同步(全 false)也不会把已亮的按灭
+PASS  校准:服务端说已赞已投已藏 → 从暗变亮
+PASS  校准:字段名以实测为准(favorite 不是 fav)

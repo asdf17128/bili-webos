@@ -93,7 +93,7 @@ export const storage = {
     this.set('settings', settings);
   },
 
-  // Local watch-progress map (bvid → [seconds, duration, ts]) so EVERY list's
+  // Local watch-progress map (bvid → [seconds, duration, ts, cid?, account?]) so EVERY list's
   // cards can draw the resume bar — the server history API only annotates its
   // own rows. Written by the player, read per card render (parsed once, cached).
   _progressCache: null,
@@ -106,10 +106,27 @@ export const storage = {
     const e = this.getProgressMap()[bvid];
     return e && e[1] > 0 ? { progress: e[0], duration: e[1] } : null;
   },
-  setProgress(bvid, progress, duration) {
+  // Briefly prefer this device's latest part/position while the server's
+  // final heartbeat catches up. Old card-only entries have no part identity
+  // and must never override resume, especially for a different P/account.
+  getRecentProgress(bvid) {
+    const e = bvid && this.getProgressMap()[bvid];
+    const auth = this.getAuth();
+    if (auth?.SESSDATA && !auth.DedeUserID) return null;
+    const account = String(auth?.DedeUserID || '');
+    const age = e && Date.now() - e[2];
+    if (!e || !(Number(e[3]) > 0) || e[4] !== account || !(age >= 0 && age <= 120000)
+      || !Number.isFinite(e[0]) || e[0] < 0 || !Number.isFinite(e[1]) || e[1] <= 0) return null;
+    return { progress: e[0], duration: e[1], cid: e[3] };
+  },
+  setProgress(bvid, progress, duration, cid) {
     if (!bvid || !(duration > 0) || !(progress >= 0)) return;
     const m = this.getProgressMap();
     m[bvid] = [Math.floor(progress), Math.floor(duration), Date.now()];
+    if (Number(cid) > 0) {
+      const auth = this.getAuth();
+      m[bvid].push(cid, auth?.SESSDATA && !auth.DedeUserID ? null : String(auth?.DedeUserID || ''));
+    }
     const keys = Object.keys(m);
     if (keys.length > 300) {
       keys.sort((a, b) => (m[a][2] || 0) - (m[b][2] || 0));

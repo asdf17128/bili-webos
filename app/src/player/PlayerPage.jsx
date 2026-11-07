@@ -10,7 +10,7 @@ import './playerControls.css';
 import { thumbUrl } from '../utils/thumb';
 import { getLibraryPage, getPlayUrl, getDanmaku, getDanmakuSegment, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies, getReplyReplies, tripleVideo, likeVideo, coinVideo, favVideo, getFavFoldersFor, getVideoRelation, getHtml5PlayUrl, mediaProxyBase, addToView, delToView } from '../api/client';
 import { nextPlaylistItem } from '../utils/library';
-import { playPart, playAdvance } from './playIntent';
+import { playPart, playAdvance, resumePosition } from './playIntent';
 import { getPlaybackMode } from './playbackMode';
 import { createStallMonitor, startPlaybackReport, updatePlaybackReport, countPlaybackEvent, bufferedAhead } from './playbackHealth';
 import { selectVideoRepresentation, webOSVideoLimit, listPreferredAudio, hasAudioRepresentations, createPlaybackAttemptPlan, inspectDolbyRepresentation, dolbySignalingFrameRateAllowed } from './mediaSelection';
@@ -741,7 +741,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     castReportState({ playState: 'loading' }).catch(() => {});
     try {
       let cid = video.cid;
-      let resumeProgress = video.progress || 0; // seconds; may be set from 续播
+      let resumeProgress = video.resumeMode === 'none' ? 0 : (video.progress || 0); // seconds
       let epid = video.epid;
       let seasonId = video.seasonId;
       let ownerMid = video.owner?.mid || null;
@@ -846,9 +846,18 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
             const lt = pv?.data?.last_play_time; // ms
             if (lc && ugcPages.some(p => p.cid === lc)) {
               cid = lc;
-              if (lt > 0) resumeProgress = lt / 1000;
+              if (lt != null && Number.isFinite(Number(lt))) resumeProgress = Math.max(0, Number(lt) / 1000);
             }
           } catch {}
+        }
+      }
+      if (video.resumeMode === 'auto') {
+        const recent = storage.getRecentProgress(video.bvid);
+        const samePart = recent && String(recent.cid) === String(cid);
+        const validPart = samePart || (!isBangumi && recent && ugcPages.some(p => String(p.cid) === String(recent.cid)));
+        if (validPart) {
+          cid = recent.cid;
+          resumeProgress = recent.progress >= recent.duration ? 0 : recent.progress;
         }
       }
       if (!isBangumi && !cid) throw new Error('No cid for video');
@@ -1006,10 +1015,12 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
                 .filter(qn => Number.isFinite(qn) && qn < ceiling).sort((a, b) => b - a));
             }
             setQualities([{ qn: 'auto', label: t('自动 · 最高可用') }, ...(meta?.accept_quality || []).map(q => ({ qn: q, label: QUALITY_MAP[q] || `${q}` }))]);
-            const resumeAt = (resumeProgress > 0 && resumeProgress < (dash.duration || 9999) - 10)
-              ? resumeProgress : 0;
+            // Normalize once for BOTH decoder load and the deferred seek below.
+            // Reapplying the raw saved value used to jump completed videos back
+            // to their ending immediately after loading them from zero.
+            resumeProgress = resumePosition(resumeProgress, dash.duration);
             const _tLoad = perfNow();
-            await activeResult(loadDash(player, dash, wantQn, resumeAt, isActive, trace));
+            await activeResult(loadDash(player, dash, wantQn, resumeProgress, isActive, trace));
             mark('po-shaka', perfNow() - _tLoad);
             if (rung > 0) console.warn('[loadVideo] fell back to qn=' + fallbackQn + ' (top rep failed to load/decode)');
             loaded = true;
@@ -1048,6 +1059,12 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
           setPlaying(false);
           setEndNextIn(null);
           castReportState({ playState: 'end' }).catch(() => {});
+          const media = videoRef.current;
+          const completedAt = Number.isFinite(media?.duration) && media.duration > 0 ? media.duration : media?.currentTime;
+          if (video.bvid && cidRef.current && completedAt > 0) {
+            storage.setProgress(video.bvid, completedAt, completedAt, cidRef.current);
+            reportHeartbeat(video.bvid, cidRef.current, completedAt, (Date.now() - startTimeRef.current) / 1000);
+          }
           // 看完自动移出稍后再看(设置项,默认关)。只对**从稍后再看点开**的视频生效
           // ——否则会对着从没进过队列的视频白发一个删除请求。
           if (!removedFromToView && video?.fromToView && storage.getSettings().toviewAutoRemove) {
@@ -1437,16 +1454,18 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     };
   }, [ended, flushPendingSeek, lunaSetPlayRate]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    // Save before React detaches the media ref and Shaka destroys the source.
+    const v = videoRef.current;
     return () => {
       castReportState({ playState: 'stop' }).catch(() => {});
       // Report the FINAL position on exit — the 15s interval alone leaves the
       // resume point up to 15s stale, which reads as "没续播上".
-      const v = videoRef.current;
       if (v && video?.bvid && cidRef.current && v.currentTime > 0) {
-        reportHeartbeat(video.bvid, cidRef.current, v.currentTime, (Date.now() - startTimeRef.current) / 1000);
+        const position = v.ended && Number.isFinite(v.duration) ? v.duration : v.currentTime;
+        reportHeartbeat(video.bvid, cidRef.current, position, (Date.now() - startTimeRef.current) / 1000);
         // Local progress map: every list's cards draw the resume bar from this.
-        storage.setProgress(video.bvid, v.currentTime, v.duration || 0);
+        storage.setProgress(video.bvid, position, v.duration || 0, cidRef.current);
       }
       // Wake the (mounted, memo'd) list cards so their bars show this session.
       storage.notifyProgressChange();
@@ -1474,7 +1493,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     const hb = setInterval(() => {
       if (videoRef.current && video?.bvid && cidRef.current && !videoRef.current.paused) {
         reportHeartbeat(video.bvid, cidRef.current, videoRef.current.currentTime, (Date.now() - startTimeRef.current) / 1000);
-        storage.setProgress(video.bvid, videoRef.current.currentTime, videoRef.current.duration || 0);
+        storage.setProgress(video.bvid, videoRef.current.currentTime, videoRef.current.duration || 0, cidRef.current);
       }
     }, 15000);
     return () => clearInterval(hb);

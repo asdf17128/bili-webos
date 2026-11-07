@@ -28,10 +28,25 @@ export function playAdvance(item) {
   return { ...item, resumeMode: 'none', progress: 0 };
 }
 
+// History stores whole seconds, while media duration may include a fraction.
+// Only a completed position restarts; an unfinished short clip or its last
+// few seconds must still resume. Use the selected part's duration, not the BV
+// total or the duration of the initially requested part.
+export function resumePosition(progress, duration) {
+  const position = Number(progress), total = Number(duration);
+  if (!Number.isFinite(position) || position <= 0) return 0;
+  if (Number.isFinite(total) && total > 0 && position >= (total >= 1 ? Math.floor(total) : total)) return 0;
+  return position;
+}
+
 // Back-compat funnel guard: anything that reaches the player without an
 // explicit intent (pages pass bare feed items; history rows pass progress).
 export function normalizePlay(item) {
-  if (!item || item.resumeMode) return item;
+  if (!item) return item;
+  // B站 history uses -1 for watched to the end. Keep this exact part/episode,
+  // and do not turn the completed row into another server resume lookup.
+  if (Number(item.progress) === -1) return playPart(item);
+  if (item.resumeMode) return item;
   if (item.progress > 0) return playAt(item, item.progress);
   return playFresh(item);
 }

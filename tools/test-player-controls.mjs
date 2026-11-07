@@ -357,7 +357,7 @@ for(const terminal of ['ended','error']) await run('More closes and cancels acco
  },terminal);
  await page.waitForFunction(()=>!document.querySelector('.player-more-panel'));
  await page.keyboard.up('Enter');await page.waitForTimeout(1800);
- assert.equal(f.calls.knownMockWrites.length,0,'terminal transition cancels the pending account write');
+ assert.equal(f.calls.knownMockWrites.filter(path=>!path.endsWith('/heartbeat')).length,0,'terminal transition cancels the pending account action; completion may report watch progress');
  if(terminal==='error')await page.locator('.player-error').waitFor();
  else assert.equal(await page.locator('.related-card.focused').count(),1);
 });

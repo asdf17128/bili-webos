@@ -1,0 +1,767 @@
+{
+  "boundary": "Real React entry points with controlled Shaka/media state. Synthetic accounts and intercepted external HTTP/WebSocket. No television, real account or media decoding.",
+  "sources": {
+    "app/src/player/PlayerPage.jsx": "4f99484c3365181b52603155bd433cae61e6a2c5694d8bd565f8615582482627",
+    "app/src/player/playIntent.js": "2a2c4cac679e9a9cab3bb4ad4a30f4adee44f215e5b8fdde37d174dd9beec74c",
+    "app/src/utils/storage.js": "78bf4c5c1fcc668cfdc7e15441107f2bb49a6d8ae198ce784941e385c98071e7"
+  },
+  "sourcesEnd": {
+    "app/src/player/PlayerPage.jsx": "4f99484c3365181b52603155bd433cae61e6a2c5694d8bd565f8615582482627",
+    "app/src/player/playIntent.js": "2a2c4cac679e9a9cab3bb4ad4a30f4adee44f215e5b8fdde37d174dd9beec74c",
+    "app/src/utils/storage.js": "78bf4c5c1fcc668cfdc7e15441107f2bb49a6d8ae198ce784941e385c98071e7"
+  },
+  "sourcesStable": true,
+  "results": [
+    {
+      "name": "completed history sentinel keeps its part and starts at zero",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": null,
+            "duration": 40,
+            "cid": 3,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019623233
+          }
+        ],
+        "seeks": [],
+        "destroyed": 0,
+        "plays": 1,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [
+          {
+            "cid": 3,
+            "at": 1794019623236
+          }
+        ],
+        "streams": [
+          3
+        ],
+        "heartbeats": [],
+        "unexpectedWrites": [],
+        "intercepted": 20
+      }
+    },
+    {
+      "name": "server completed auto position 100",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": null,
+            "duration": 100,
+            "cid": 2,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019623658
+          }
+        ],
+        "seeks": [],
+        "destroyed": 0,
+        "plays": 1,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [
+          {
+            "cid": 2,
+            "at": 1794019623654
+          }
+        ],
+        "streams": [
+          2
+        ],
+        "heartbeats": [],
+        "unexpectedWrites": [],
+        "intercepted": 20
+      }
+    },
+    {
+      "name": "server completed auto position 130",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": null,
+            "duration": 100,
+            "cid": 2,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019624004
+          }
+        ],
+        "seeks": [],
+        "destroyed": 0,
+        "plays": 1,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [
+          {
+            "cid": 2,
+            "at": 1794019624001
+          }
+        ],
+        "streams": [
+          2
+        ],
+        "heartbeats": [],
+        "unexpectedWrites": [],
+        "intercepted": 20
+      }
+    },
+    {
+      "name": "unfinished final five seconds still resume",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": 95,
+            "duration": 100,
+            "cid": 2,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019624330
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 95
+          }
+        ],
+        "destroyed": 0,
+        "plays": 1,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [
+          {
+            "cid": 2,
+            "at": 1794019624324
+          }
+        ],
+        "streams": [
+          2
+        ],
+        "heartbeats": [],
+        "unexpectedWrites": [],
+        "intercepted": 20
+      }
+    },
+    {
+      "name": "eight-second short video resumes at two seconds",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": 2,
+            "duration": 8,
+            "cid": 2,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019624704
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 2
+          }
+        ],
+        "destroyed": 0,
+        "plays": 1,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [
+          {
+            "cid": 2,
+            "at": 1794019624700
+          }
+        ],
+        "streams": [
+          2
+        ],
+        "heartbeats": [],
+        "unexpectedWrites": [],
+        "intercepted": 20
+      }
+    },
+    {
+      "name": "unfinished explicit history position remains exact",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": 42,
+            "duration": 100,
+            "cid": 2,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019625042
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 42
+          }
+        ],
+        "destroyed": 0,
+        "plays": 1,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [
+          {
+            "cid": 2,
+            "at": 1794019625045
+          }
+        ],
+        "streams": [
+          2
+        ],
+        "heartbeats": [],
+        "unexpectedWrites": [],
+        "intercepted": 20
+      }
+    },
+    {
+      "name": "completed explicit history position restarts",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": null,
+            "duration": 100,
+            "cid": 2,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019625405
+          }
+        ],
+        "seeks": [],
+        "destroyed": 0,
+        "plays": 1,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [
+          {
+            "cid": 2,
+            "at": 1794019625409
+          }
+        ],
+        "streams": [
+          2
+        ],
+        "heartbeats": [],
+        "unexpectedWrites": [],
+        "intercepted": 20
+      }
+    },
+    {
+      "name": "completed PGC episode starts at zero",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": null,
+            "duration": 100,
+            "cid": 2,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019625803
+          }
+        ],
+        "seeks": [],
+        "destroyed": 0,
+        "plays": 1,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [],
+        "streams": [
+          2
+        ],
+        "heartbeats": [],
+        "unexpectedWrites": [],
+        "intercepted": 16
+      }
+    },
+    {
+      "name": "multi-part uses final part duration completed",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": null,
+            "duration": 40,
+            "cid": 3,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019626183
+          }
+        ],
+        "seeks": [],
+        "destroyed": 0,
+        "plays": 1,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [
+          {
+            "cid": 2,
+            "at": 1794019626176
+          },
+          {
+            "cid": 3,
+            "at": 1794019626186
+          }
+        ],
+        "streams": [
+          2,
+          3
+        ],
+        "heartbeats": [],
+        "unexpectedWrites": [],
+        "intercepted": 22
+      }
+    },
+    {
+      "name": "multi-part uses final part duration unfinished",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": 20,
+            "duration": 40,
+            "cid": 3,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019626532
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 20
+          }
+        ],
+        "destroyed": 0,
+        "plays": 1,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [
+          {
+            "cid": 2,
+            "at": 1794019626524
+          },
+          {
+            "cid": 3,
+            "at": 1794019626534
+          }
+        ],
+        "streams": [
+          2,
+          3
+        ],
+        "heartbeats": [],
+        "unexpectedWrites": [],
+        "intercepted": 22
+      }
+    },
+    {
+      "name": "fresh local completed part overrides lagging server",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": null,
+            "duration": 40,
+            "cid": 3,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019626890
+          }
+        ],
+        "seeks": [],
+        "destroyed": 0,
+        "plays": 1,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [
+          {
+            "cid": 2,
+            "at": 1794019626886
+          },
+          {
+            "cid": 3,
+            "at": 1794019626893
+          }
+        ],
+        "streams": [
+          2,
+          3
+        ],
+        "heartbeats": [],
+        "unexpectedWrites": [],
+        "intercepted": 22
+      }
+    },
+    {
+      "name": "fresh local unfinished position overrides lagging server",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": 37,
+            "duration": 100,
+            "cid": 2,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019627229
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 37
+          }
+        ],
+        "destroyed": 0,
+        "plays": 1,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [
+          {
+            "cid": 2,
+            "at": 1794019627223
+          }
+        ],
+        "streams": [
+          2
+        ],
+        "heartbeats": [],
+        "unexpectedWrites": [],
+        "intercepted": 20
+      }
+    },
+    {
+      "name": "legacy local completion cannot override server",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": 85,
+            "duration": 100,
+            "cid": 2,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019627625
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 85
+          }
+        ],
+        "destroyed": 0,
+        "plays": 1,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [
+          {
+            "cid": 2,
+            "at": 1794019627621
+          }
+        ],
+        "streams": [
+          2
+        ],
+        "heartbeats": [],
+        "unexpectedWrites": [],
+        "intercepted": 20
+      }
+    },
+    {
+      "name": "expired local completion cannot override server",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": 85,
+            "duration": 100,
+            "cid": 2,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019628015
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 85
+          }
+        ],
+        "destroyed": 0,
+        "plays": 1,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [
+          {
+            "cid": 2,
+            "at": 1794019628009
+          }
+        ],
+        "streams": [
+          2
+        ],
+        "heartbeats": [],
+        "unexpectedWrites": [],
+        "intercepted": 20
+      }
+    },
+    {
+      "name": "other-account local completion cannot override server",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": 85,
+            "duration": 100,
+            "cid": 2,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019628382
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 85
+          }
+        ],
+        "destroyed": 0,
+        "plays": 1,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [
+          {
+            "cid": 2,
+            "at": 1794019628376
+          }
+        ],
+        "streams": [
+          2
+        ],
+        "heartbeats": [],
+        "unexpectedWrites": [],
+        "intercepted": 20
+      }
+    },
+    {
+      "name": "unknown local part cannot override a valid server part",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": 85,
+            "duration": 100,
+            "cid": 2,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019628704
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 85
+          }
+        ],
+        "destroyed": 0,
+        "plays": 1,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [
+          {
+            "cid": 2,
+            "at": 1794019628700
+          }
+        ],
+        "streams": [
+          2
+        ],
+        "heartbeats": [],
+        "unexpectedWrites": [],
+        "intercepted": 20
+      }
+    },
+    {
+      "name": "another part completion cannot override explicit history selection",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": 30,
+            "duration": 100,
+            "cid": 2,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019629033
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 30
+          }
+        ],
+        "destroyed": 0,
+        "plays": 1,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [
+          {
+            "cid": 2,
+            "at": 1794019629036
+          }
+        ],
+        "streams": [
+          2
+        ],
+        "heartbeats": [],
+        "unexpectedWrites": [],
+        "intercepted": 20
+      }
+    },
+    {
+      "name": "explicit part selection ignores another part progress",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": null,
+            "duration": 100,
+            "cid": 2,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019629362
+          }
+        ],
+        "seeks": [],
+        "destroyed": 0,
+        "plays": 1,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [
+          {
+            "cid": 2,
+            "at": 1794019629365
+          }
+        ],
+        "streams": [
+          2
+        ],
+        "heartbeats": [],
+        "unexpectedWrites": [],
+        "intercepted": 20
+      }
+    },
+    {
+      "name": "ended then immediate reopen starts zero and later watching resumes normally",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "position": 85,
+            "duration": 100,
+            "cid": 2,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019629703
+          },
+          {
+            "position": null,
+            "duration": 100,
+            "cid": 2,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019629867
+          },
+          {
+            "position": 37,
+            "duration": 100,
+            "cid": 2,
+            "mime": "application/dash+xml",
+            "readyAt": 1794019630008
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 85
+          },
+          {
+            "load": 2,
+            "target": 37
+          }
+        ],
+        "destroyed": 2,
+        "plays": 3,
+        "pauses": 0
+      },
+      "calls": {
+        "meta": [
+          {
+            "cid": 2,
+            "at": 1794019629699
+          },
+          {
+            "cid": 2,
+            "at": 1794019629865
+          },
+          {
+            "cid": 2,
+            "at": 1794019630006
+          }
+        ],
+        "streams": [
+          2,
+          2,
+          2
+        ],
+        "heartbeats": [
+          {
+            "bvid": "BVResumeSynthetic",
+            "cid": "2",
+            "played_time": "100",
+            "real_played_time": "0",
+            "type": "3",
+            "dt": "2",
+            "play_type": "0",
+            "start_ts": "1794019629"
+          },
+          {
+            "bvid": "BVResumeSynthetic",
+            "cid": "2",
+            "played_time": "100",
+            "real_played_time": "0",
+            "type": "3",
+            "dt": "2",
+            "play_type": "0",
+            "start_ts": "1794019629"
+          },
+          {
+            "bvid": "BVResumeSynthetic",
+            "cid": "2",
+            "played_time": "37",
+            "real_played_time": "0",
+            "type": "3",
+            "dt": "2",
+            "play_type": "0",
+            "start_ts": "1794019629"
+          }
+        ],
+        "unexpectedWrites": [],
+        "intercepted": 39
+      }
+    }
+  ]
+}

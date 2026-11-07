@@ -12,6 +12,9 @@ This log collects the release history previously included in the README. For ear
 
 ## 未发布 / Unreleased
 
+- 已看完的视频再次打开从头播放；修复加载后又跳回片尾的问题。完成进度按分 P 即时保存，未看完的短视频及片尾进度仍可正常续播。
+- Finished videos restart from the beginning. Part-aware progress is saved immediately on completion; unfinished clips and positions near the ending still resume normally.
+
 - 点播主控制条由最多 13 项收为最多 7 项：播放／暂停、弹幕、字幕（有轨时）、倍速、画质、更多、评论。时间与章节归入进度区，弹幕／字幕开关状态独立显示。
 - 「更多」保留独立点赞／投币／收藏及计数、长按三连、稍后再看、关注和弹幕设置；关闭弹幕设置回到菜单原条目，关闭菜单回到主层「更多」。播放结束或致命错误会关闭菜单并取消未完成长按，避免迟到的账号操作；推荐卡片两排与展开结构保持。
 - VOD primary controls are reduced from up to 13 to up to 7, with time and chapters beside the timeline and separate danmaku/subtitle state labels. More keeps individual engagement actions and counts, hold-to-triple, Watch Later, Follow and danmaku settings, with layered focus restoration and pending-hold cancellation on playback end or fatal error.

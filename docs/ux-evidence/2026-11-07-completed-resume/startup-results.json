@@ -1,0 +1,26 @@
+[
+  {
+    "name": "failed resume metadata is retried for subtitles after media data",
+    "pass": true
+  },
+  {
+    "name": "startup overlaps independent requests and preserves resume: startup-overlap",
+    "pass": true
+  },
+  {
+    "name": "startup overlaps independent requests and preserves resume: startup-part",
+    "pass": true
+  },
+  {
+    "name": "PGC result envelope and refusal: pgc-success",
+    "pass": true
+  },
+  {
+    "name": "PGC result envelope and refusal: pgc-region",
+    "pass": true
+  },
+  {
+    "name": "PGC result envelope and refusal: pgc-voucher",
+    "pass": true
+  }
+]

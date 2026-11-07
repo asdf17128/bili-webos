@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-07",
+  "playIntentUnit": {
+    "passed": 15,
+    "total": 15
+  },
+  "resumeReact": {
+    "passed": 19,
+    "total": 19,
+    "sourcesStable": true
+  },
+  "playbackEndReact": {
+    "passed": 26,
+    "total": 26
+  },
+  "startupAndPgcFocused": {
+    "passed": 6,
+    "total": 6
+  },
+  "terminalMoreFocused": {
+    "passed": 2,
+    "total": 2,
+    "sourcesStable": true
+  },
+  "productionBuild": "pass",
+  "es2016AssetsParsed": 7,
+  "boundary": "Local real React with synthetic accounts and controlled decoder/media. External network intercepted. No TV, real account writes, release or deployment."
+}

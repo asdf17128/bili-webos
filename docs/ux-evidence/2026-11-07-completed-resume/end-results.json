@@ -1,0 +1,106 @@
+[
+  {
+    "name": "legacy off stops home",
+    "pass": true
+  },
+  {
+    "name": "repeat stays on current home",
+    "pass": true
+  },
+  {
+    "name": "legacy off stops playlist",
+    "pass": true
+  },
+  {
+    "name": "repeat stays on current playlist",
+    "pass": true
+  },
+  {
+    "name": "legacy off stops watchlater",
+    "pass": true
+  },
+  {
+    "name": "repeat stays on current watchlater",
+    "pass": true
+  },
+  {
+    "name": "legacy off stops parts",
+    "pass": true
+  },
+  {
+    "name": "repeat stays on current parts",
+    "pass": true
+  },
+  {
+    "name": "legacy off stops season",
+    "pass": true
+  },
+  {
+    "name": "repeat stays on current season",
+    "pass": true
+  },
+  {
+    "name": "legacy off stops paged",
+    "pass": true
+  },
+  {
+    "name": "repeat stays on current paged",
+    "pass": true
+  },
+  {
+    "name": "next advances playlist",
+    "pass": true
+  },
+  {
+    "name": "next advances watchlater",
+    "pass": true
+  },
+  {
+    "name": "next advances parts",
+    "pass": true
+  },
+  {
+    "name": "next advances season",
+    "pass": true
+  },
+  {
+    "name": "next advances paged",
+    "pass": true
+  },
+  {
+    "name": "next keeps related countdown",
+    "pass": true
+  },
+  {
+    "name": "explicit stop overrides legacy on",
+    "pass": true
+  },
+  {
+    "name": "repeat rejection stops with replay controls",
+    "pass": true
+  },
+  {
+    "name": "watch later removal still occurs once while repeating",
+    "pass": true
+  },
+  {
+    "name": "pending playlist respects leave",
+    "pass": true
+  },
+  {
+    "name": "pending playlist respects stop",
+    "pass": true
+  },
+  {
+    "name": "playlist request failure stops without related countdown",
+    "pass": true
+  },
+  {
+    "name": "stop does not skip an unavailable playlist video",
+    "pass": true
+  },
+  {
+    "name": "settings picker persists modes and cancels with Back",
+    "pass": true
+  }
+]

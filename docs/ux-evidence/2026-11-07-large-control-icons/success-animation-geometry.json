@@ -1,0 +1,22 @@
+[
+  {
+    "reducedMotion": "no-preference",
+    "samples": 32,
+    "maxButtonOrCountMovement": 0,
+    "minVisibleDiscGap": 0.8892796039581299,
+    "maxIconScale": 1.0597798824310303,
+    "animationNames": [
+      "player-control-icon-pop"
+    ]
+  },
+  {
+    "reducedMotion": "reduce",
+    "samples": 32,
+    "maxButtonOrCountMovement": 0,
+    "minVisibleDiscGap": 3.5200014114379883,
+    "maxIconScale": 1.0399999618530273,
+    "animationNames": [
+      "none"
+    ]
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "sourceChangesAfterFullControlsSuite": [
+    "app/src/player/playerControls.css"
+  ],
+  "finalTargetedSourcesMatchCurrent": true,
+  "productionBuild": "passed",
+  "es2016Parse": {
+    "files": 7,
+    "passed": true
+  }
+}

@@ -115,6 +115,11 @@
 }
 
 .player-controls-vod .player-btns {
+  --control-width: 96px;
+  --control-disc: 72px;
+  --control-icon: 44px;
+  --control-play-icon: 52px;
+  --control-pop-scale: 1.08;
   display: flex;
   flex-wrap: nowrap;
   align-items: stretch;
@@ -140,30 +145,33 @@
 }
 
 .player-controls-vod .player-control {
-  /* Labels may wrap at word boundaries; their font size is never reduced to
-     squeeze the controls into a narrower video area. */
-  flex: 0 1 auto;
-  min-width: auto;
-  min-height: 76px;
+  flex: 0 0 var(--control-width);
+  width: var(--control-width);
+  min-width: 0;
+  min-height: 112px;
   max-width: none;
   justify-content: flex-start;
-  margin: 0 10px 0 0;
-  padding: 10px 12px;
+  margin: 0 12px 0 0;
+  padding: 8px 4px 6px;
   background: transparent;
   color: #fff;
   text-shadow: inherit;
+  /* Animate the icon disc only: counts and the hold-to-triple ring stay put. */
+  transition: none;
 }
 
-.player-controls-vod .player-control[data-control="play"] {
-  min-width: 88px;
-  background: rgba(255, 255, 255, .12);
-}
+.player-controls-vod .player-control[data-control="play"],
 .player-controls-vod .player-control[data-control="prev"],
 .player-controls-vod .player-control[data-control="next"] {
-  flex: 0 0 calc(84px * var(--ui-scale) + 24px);
-  width: calc(84px * var(--ui-scale) + 24px);
+  flex-basis: var(--control-width);
+  width: var(--control-width);
+  min-width: 0;
 }
 .player-controls-vod .player-control:last-child { margin-right: 0; }
+.player-controls-vod .player-control[data-control="comments"] {
+  flex-basis: calc(var(--control-width) + 24px);
+  width: calc(var(--control-width) + 24px);
+}
 
 .player-controls-vod .player-control:disabled,
 .player-controls-vod .player-control[aria-disabled="true"] {
@@ -173,26 +181,43 @@
 }
 
 .player-controls-vod .player-control-label {
-  margin-top: 7px;
-  font-size: calc(18px * var(--ui-scale));
-  font-weight: 600;
-  line-height: 1.25;
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
+  /* Keep names accessible; the fixed caption names the focused action. */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
 }
 
 .player-controls-vod .player-control-icon {
+  --control-rest-scale: 1;
+  position: relative;
   display: inline-flex;
   flex: none;
   align-items: center;
   justify-content: center;
-  height: calc(22.5px * var(--ui-scale));
-  min-height: 28px;
+  width: var(--control-disc);
+  height: var(--control-disc);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .28);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22);
   white-space: nowrap;
+  /* Switch contrast immediately; only scale interpolates during focus moves. */
+  transition: transform .14s ease-out;
 }
 
-.player-controls-vod .player-control-icon > svg { flex: none; }
+.player-controls-vod .player-control-icon > svg:not(.like-ring) {
+  flex: none;
+  width: var(--control-icon);
+  height: var(--control-icon);
+}
+.player-controls-vod .player-control[data-control="play"] .player-control-icon > svg:not(.like-ring) {
+  width: var(--control-play-icon);
+  height: var(--control-play-icon);
+}
 
 .player-controls-vod .player-control-state {
   flex: none;
@@ -205,20 +230,34 @@
 
 .player-controls-vod .player-control-value {
   display: block;
-  margin-top: 3px;
+  margin-top: 8px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: calc(18px * var(--ui-scale));
   font-weight: 600;
   line-height: 1.25;
   white-space: nowrap;
 }
 
-.player-controls-vod .player-control-caption { display: none; }
+.player-controls-vod .player-control-caption {
+  display: block;
+  min-height: calc(28.6px * var(--ui-scale));
+  margin-top: 6px;
+  font-size: calc(22px * var(--ui-scale));
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-.player-controls-vod .player-control-icon > svg {
+.player-controls-vod .player-control-icon > svg:not(.like-ring) {
   filter: drop-shadow(0 1px 1px #000) drop-shadow(0 0 2px rgba(0, 0, 0, .9));
 }
 
-.player-controls-vod .player-control.focused .player-control-icon > svg {
+.player-controls-vod .player-control.focused .player-control-icon > svg:not(.like-ring) {
   filter: none;
 }
 
@@ -228,10 +267,28 @@
 
 .player-controls-vod .player-control.focused,
 .player-controls-vod .player-control.focused.lit {
+  background: transparent;
+  color: #fff;
+  text-shadow: inherit;
+  transform: none;
+}
+
+.player-controls-vod .player-control.focused .player-control-icon {
+  --control-rest-scale: 1.06;
   background: #f7f7f9;
   color: #191a1e;
   text-shadow: none;
-  transform: scale(1.04);
+  box-shadow: 0 0 0 3px #72d5ff, 0 0 0 5px rgba(0, 0, 0, .82);
+  transform: scale(1.06);
+}
+
+.player-controls-vod .player-control.triple-pop { animation: none; }
+.player-controls-vod .player-control.triple-pop .player-control-icon {
+  animation: player-control-icon-pop .32s ease-out;
+}
+@keyframes player-control-icon-pop {
+  0%, 100% { transform: scale(var(--control-rest-scale)); }
+  45% { transform: scale(var(--control-pop-scale)); }
 }
 
 .player-controls-vod .player-timeline-meta {
@@ -332,6 +389,8 @@
    Collapsed pointer input is already owned by the preview/whole-panel handler. */
 @media (prefers-reduced-motion: reduce) {
   .player-controls.player-controls-vod { transition: opacity .3s; }
+  .player-controls-vod .player-control-icon { transition: none; }
+  .player-controls-vod .player-control.triple-pop .player-control-icon { animation: none; }
   .player-controls-vod .player-related-scroll { scroll-behavior: auto; }
 }
 
@@ -356,49 +415,35 @@
   .player-controls-vod .player-disclaimer { margin-right: 12px; }
   .player-controls-vod .player-timeline-meta { margin-top: 6px; }
   .player-controls-vod .player-control-deck > .player-progress-bar { margin-top: 6px; margin-bottom: 10px; }
+  .player-controls-vod .player-btns {
+    --control-width: 84px;
+    --control-disc: 64px;
+    --control-icon: 40px;
+    --control-play-icon: 48px;
+  }
   .player-controls-vod .player-control-group-transport { margin: 0 16px; }
-  .player-controls-vod .player-control { min-height: 68px; margin: 0 4px 0 0; padding: 6px 4px; }
-  .player-controls-vod .player-control[data-control="prev"],
-  .player-controls-vod .player-control[data-control="next"] { flex-basis: calc(84px * var(--ui-scale) + 8px); width: calc(84px * var(--ui-scale) + 8px); }
-  .player-controls-vod .player-control-label { margin-top: 5px; }
+  .player-controls-vod .player-control { min-height: 104px; margin-right: 10px; padding: 8px 4px 6px; }
   .player-controls-vod .player-recommendation-hint { min-height: 32px; margin-bottom: 0; }
   .player-controls-vod .player-related-panel { margin-top: 4px; }
   .player-controls-vod .panel-tab-row { margin-bottom: 4px; }
 
-  /* A 420px comment rail leaves only 788px at 720p. Keep all nine actions in
-     their groups and all counts readable, with one fixed caption for the
-     focused action instead of overlapping translated labels. */
-  .player-controls-vod.with-comment-rail .player-btns { margin-left: -20px; margin-right: -20px; }
+  /* Keep the nine large icons in three groups beside a 420px comment rail. */
+  .player-controls-vod.with-comment-rail .player-btns {
+    --control-width: 64px;
+    --control-disc: 64px;
+    --control-icon: 44px;
+    --control-play-icon: 52px;
+    --control-pop-scale: 1.06;
+    margin-left: -20px;
+    margin-right: -20px;
+  }
   .player-controls-vod.with-comment-rail .player-control-group-transport { margin: 0 8px; }
-  .player-controls-vod.with-comment-rail .player-control { min-width: 40px; padding: 8px 0; }
-  .player-controls-vod.with-comment-rail .player-control[data-control="play"] { min-width: 64px; }
-  .player-controls-vod.with-comment-rail .player-control[data-control="prev"],
-  .player-controls-vod.with-comment-rail .player-control[data-control="next"] { flex-basis: 40px; width: 40px; }
-  .player-controls-vod.with-comment-rail .player-control-value {
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .player-controls-vod.with-comment-rail .player-control-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-  }
-  .player-controls-vod.with-comment-rail .player-control-caption {
-    display: block;
-    min-height: calc(23.4px * var(--ui-scale));
-    margin-top: 6px;
-    font-size: calc(18px * var(--ui-scale));
-    font-weight: 600;
-    line-height: 1.3;
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .player-controls-vod.with-comment-rail .player-control { min-height: 104px; padding: 8px 0 6px; }
+  .player-controls-vod.with-comment-rail .player-control:not([data-control="play"]) .player-control-icon { margin-top: 4px; margin-bottom: 4px; }
+  .player-controls-vod.with-comment-rail .player-control[data-control="play"] { flex-basis: 72px; width: 72px; }
+  .player-controls-vod.with-comment-rail .player-control[data-control="play"] .player-control-icon { width: 72px; height: 72px; }
+  .player-controls-vod.with-comment-rail .player-control.focused .player-control-icon {
+    --control-rest-scale: 1.04;
+    transform: scale(1.04);
   }
 }

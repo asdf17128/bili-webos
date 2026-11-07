@@ -23,6 +23,8 @@ This log collects the release history previously included in the README. For ear
 - Previous/Next follows the current playlist, multi-part video, collection or series without wrapping; manual changes start from zero. Standalone videos disable Previous and use related videos for Next. Remote navigation skips unavailable actions and signed-out engagement controls.
 - 修复字幕信息晚到时设置焦点跳项；手动切换与片尾自动连播共用切换状态，避免重复请求和跳转。
 - Settings focus stays on the same action when subtitles arrive late. Manual navigation and end-of-video autoplay share a switch gate to prevent duplicate page requests and transitions.
+- 主控制栏改用大图标与圆形按钮，聚焦时显示白底、清晰轮廓和功能名称；播放键保持默认焦点，长按三连进度环贴合圆形图标，互动计数保持稳定。
+- Larger circular playback icons use a high-contrast focus outline and a focused-action caption. Play/Pause remains the default focus; the hold-to-triple ring follows the icon while counts stay in place.
 
 - 实验性智能防挡人物：复用视频提供的人像遮罩，跟随画面选择轮廓并优化切镜衔接；改为直接更新矢量遮罩，修复连续播放时图片准备跟不上造成的弹幕闪烁。默认关闭，源数据缺失或加载失败时保留普通弹幕。
 - Experimental person-aware danmaku masking with frame-aligned selection and cut-transition handling. Stable vector masks fix flicker caused by per-frame image preparation during playback; off by default, with ordinary-danmaku fallback when source masks are missing or fail.

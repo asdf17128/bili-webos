@@ -1791,11 +1791,10 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         doTriple();
       }, HOLD_MS),
     };
-    // Measure the button so the progress outline matches its rounded-rect
-    // shape exactly. rx=12 hugs the button's 8px radius with the 4px stroke.
-    const el = btnRefs.current.like;
+    // Follow the circular icon disc, leaving its count and caption stationary.
+    const el = btnRefs.current.like?.querySelector('.player-control-icon');
     if (el) {
-      const w = el.offsetWidth + 6, h = el.offsetHeight + 6, rx = 12;
+      const w = el.offsetWidth + 12, h = el.offsetHeight + 12, rx = Math.min(w, h) / 2;
       const perim = 2 * (w + h) - 8 * rx + 2 * Math.PI * rx;
       setLikeRing({ w, h, rx, perim });
     }
@@ -3177,14 +3176,15 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
                   onMouseMove={() => { if (focusArea !== 'controls' || focusIdx !== i) endLikeHold(true); setFocusArea('controls'); setFocusIdx(i); hideControlsLater(); }}
                   {...handlers}>
                   <span className="player-control-icon">{btn === 'coin' ? <CoinIcon /> : <Icon size={28}
-                    name={btn === 'play' ? (ended ? 'refresh' : playing ? 'pause' : 'play') : btn === 'fav' ? 'star' : btn} />}</span>
-                  <span className="player-control-label">{label}</span>
-                  {value != null && <span className="player-control-value">{value}</span>}
-                  {btn === 'like' && likeRing && <svg className="like-ring" aria-hidden="true" width={likeRing.w + 8} height={likeRing.h + 8} style={{ left: -7, top: -7 }}>
+                    name={btn === 'play' ? (ended ? 'refresh' : playing ? 'pause' : 'play') : btn === 'fav' ? 'star' : btn} />}
+                  {btn === 'like' && likeRing && <svg className="like-ring" aria-hidden="true" width={likeRing.w + 8} height={likeRing.h + 8} style={{ left: -10, top: -10 }}>
                     <rect className="like-ring-track" x="4" y="4" width={likeRing.w} height={likeRing.h} rx={likeRing.rx} />
                     <rect className="like-ring-fill" x="4" y="4" width={likeRing.w} height={likeRing.h} rx={likeRing.rx}
                       style={{ strokeDasharray: likeRing.perim, strokeDashoffset: likeRing.perim }} />
                   </svg>}
+                  </span>
+                  <span className="player-control-label">{label}</span>
+                  {value != null && <span className="player-control-value">{value}</span>}
                 </button>;
               })}
             </div>

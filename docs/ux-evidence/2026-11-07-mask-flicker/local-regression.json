@@ -1,0 +1,266 @@
+{
+  "browser": [
+    {
+      "name": "actual CSS pixels hide the silhouette and preserve letterboxes",
+      "pass": true
+    },
+    {
+      "name": "seek clears old mask synchronously and selects the target segment",
+      "pass": true
+    },
+    {
+      "name": "paused time keeps the frame stable and backward seek reloads the correct silhouette",
+      "pass": true
+    },
+    {
+      "name": "presentation look-ahead crosses segment boundaries and never freezes the last mask",
+      "pass": true
+    },
+    {
+      "name": "missing frames clear the silhouette and report a gap instead of endless loading",
+      "pass": true
+    },
+    {
+      "name": "off clears the mask, stops requests, and late results cannot reapply it",
+      "pass": true
+    },
+    {
+      "name": "failure and unavailable metadata fall back without retry loops",
+      "pass": true
+    },
+    {
+      "name": "ignored Range and truncated responses fail closed without retry storms",
+      "pass": true
+    },
+    {
+      "name": "video switch during an in-flight request cannot revive the old source",
+      "pass": true
+    },
+    {
+      "name": "request deadline falls back and a late response cannot restore the mask",
+      "pass": true
+    },
+    {
+      "name": "background visibility suspends masking and fetches, foreground resumes",
+      "pass": true
+    },
+    {
+      "name": "portrait video keeps pillarboxes visible and follows layout changes",
+      "pass": true
+    },
+    {
+      "name": "vector masks clean up on seek, source switch and off",
+      "pass": true
+    },
+    {
+      "name": "source without a silhouette reports no protection and does not reuse an old hole",
+      "pass": true
+    },
+    {
+      "name": "empty future mask keeps the current silhouette only until the source transition",
+      "pass": true
+    },
+    {
+      "name": "unknown current geometry keeps only the bounded cut guard on older engines",
+      "pass": true
+    },
+    {
+      "name": "a cold mask across a cut applies synchronously instead of clearing for image decoding",
+      "pass": true
+    },
+    {
+      "name": "presented video frame time wins over playback clock and stale seek callbacks are ignored",
+      "pass": true
+    },
+    {
+      "name": "older browsers follow playback via animation frames without video-frame callbacks",
+      "pass": true
+    },
+    {
+      "name": "native video with silent or stalled frame callbacks follows every available animation frame",
+      "pass": true
+    },
+    {
+      "name": "stable vector mask updates keep visible background pixels through repeated changes",
+      "pass": true
+    },
+    {
+      "name": "SVG allowlist rejects executable and external content",
+      "pass": true
+    },
+    {
+      "name": "Luna binary transport forwards Range and decodes bounded base64",
+      "pass": true
+    }
+  ],
+  "vector": [
+    {
+      "name": "stable SVG reference updates continuously with alpha holes, bounded padding and intact viewport edges",
+      "pass": true,
+      "observations": [
+        {
+          "i": 0,
+          "reference": "url(\"#bili-person-mask-1\")",
+          "hasHole": true
+        },
+        {
+          "i": 1,
+          "reference": "url(\"#bili-person-mask-1\")",
+          "hasHole": true
+        },
+        {
+          "i": 2,
+          "reference": "url(\"#bili-person-mask-1\")",
+          "hasHole": true
+        },
+        {
+          "i": 3,
+          "reference": "url(\"#bili-person-mask-1\")",
+          "hasHole": true
+        },
+        {
+          "i": 4,
+          "reference": "url(\"#bili-person-mask-1\")",
+          "hasHole": true
+        },
+        {
+          "i": 5,
+          "reference": "url(\"#bili-person-mask-1\")",
+          "hasHole": true
+        },
+        {
+          "i": 6,
+          "reference": "url(\"#bili-person-mask-1\")",
+          "hasHole": true
+        },
+        {
+          "i": 7,
+          "reference": "url(\"#bili-person-mask-1\")",
+          "hasHole": true
+        },
+        {
+          "i": 8,
+          "reference": "url(\"#bili-person-mask-1\")",
+          "hasHole": true
+        },
+        {
+          "i": 9,
+          "reference": "url(\"#bili-person-mask-1\")",
+          "hasHole": true
+        },
+        {
+          "i": 10,
+          "reference": "url(\"#bili-person-mask-1\")",
+          "hasHole": true
+        },
+        {
+          "i": 11,
+          "reference": "url(\"#bili-person-mask-1\")",
+          "hasHole": true
+        }
+      ]
+    },
+    {
+      "name": "opaque rect and real empty path are recognized; unsampled tiny holes remain unknown",
+      "pass": true,
+      "classifications": [
+        {
+          "hasHole": false,
+          "ratio": 0
+        },
+        {
+          "hasHole": false,
+          "ratio": 0
+        },
+        {
+          "hasHole": null,
+          "ratio": null
+        }
+      ]
+    },
+    {
+      "name": "degenerate paths and transparent colors cannot claim opaque protection; open or stroke-only geometry gets no padding",
+      "pass": true,
+      "defensive": [
+        {
+          "hasHole": true,
+          "padding": true
+        },
+        {
+          "hasHole": true,
+          "padding": false
+        },
+        {
+          "hasHole": true,
+          "padding": false
+        },
+        {
+          "hasHole": true,
+          "padding": false
+        },
+        {
+          "hasHole": true,
+          "padding": false
+        },
+        {
+          "hasHole": true,
+          "padding": false
+        },
+        {
+          "hasHole": null,
+          "padding": false
+        }
+      ]
+    },
+    {
+      "name": "missing legacy point-in-fill API keeps empty-rectangle detection and classifies complex shapes as unknown",
+      "pass": true,
+      "oldPointAPI": [
+        false,
+        null
+      ]
+    },
+    {
+      "name": "remote executable or external geometry remains rejected",
+      "pass": true
+    },
+    {
+      "name": "real source geometry preparation and rendering under 6x CPU slowdown",
+      "pass": true,
+      "timing": {
+        "updates": 90,
+        "mean": 1.018888885776202,
+        "max": 3.5999999940395355,
+        "frameMean": 18.54157303370787,
+        "frameMax": 185
+      }
+    },
+    {
+      "name": "clear and repeated disposal release inline mask resources",
+      "pass": true,
+      "cleanup": {
+        "cleared": true,
+        "resources": 0
+      }
+    }
+  ],
+  "errors": {
+    "browser": [],
+    "vector": []
+  },
+  "lifecycle": {
+    "beforeFinalWatchdog": true,
+    "durationSeconds": 121,
+    "cycles": 139,
+    "seeks": 556,
+    "maxCache": 2,
+    "heapDelta": 403100,
+    "nodeDelta": 0,
+    "listenerDelta": 0
+  },
+  "build": {
+    "legacyBundles": 7,
+    "parseEcmaVersion": 2016,
+    "pass": true
+  }
+}

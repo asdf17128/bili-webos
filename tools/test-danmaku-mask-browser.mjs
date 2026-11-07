@@ -18,22 +18,6 @@ const browser=await chromium.launch();const page=await browser.newPage({viewport
 page.on('pageerror',e=>errors.push(e.message));await page.routeWebSocket('**/*',s=>s.close());
 await page.route('**/*',async route=>{
  const u=new URL(route.request().url());
- if(u.origin===base&&u.pathname==='/src/player/danmakuMaskImage.js'){
-  const response=await route.fetch();let body=await response.text();assert.ok(body.includes('export async function prepareDanmakuMaskImage('));
-  body=body.replace('export async function prepareDanmakuMaskImage(', 'async function originalPrepareMask(')+`
-export async function prepareDanmakuMaskImage(uri, options={}) {
- window.__prepareInFlight=(window.__prepareInFlight||0)+1;window.__prepareMax=Math.max(window.__prepareMax||0,window.__prepareInFlight);
- try {
-  if(window.__prepareDelay)await new Promise((resolve,reject)=>{
-   const done=()=>{clearTimeout(timer);options.signal?.removeEventListener('abort',abort);resolve();};
-   const abort=()=>{clearTimeout(timer);options.signal?.removeEventListener('abort',abort);reject(new Error('Cancelled test preparation'));};
-   const timer=setTimeout(done,window.__prepareDelay);options.signal?.addEventListener('abort',abort);if(options.signal?.aborted)abort();
-  });
-  return await originalPrepareMask(uri,options);
- } finally { window.__prepareInFlight--; }
-}`;
-  return route.fulfill({response,body});
- }
  if(u.origin===base)return route.continue();
  if(u.pathname.includes('/cmaskboss/')){
   const range=route.request().headers().range;requests.push({path:u.pathname,range});
@@ -167,20 +151,16 @@ if(process.env.MASK_SOAK_SECONDS)await test('local lifecycle and seek soak retai
  results.push({measurement});console.log('SOAK',JSON.stringify(measurement));
  assert.ok(measurement.heapDelta<8*1024*1024);assert.ok(measurement.nodeDelta<100);assert.ok(measurement.listenerDelta<=5);
 });
-await test('slow bitmap preparation is cancelled on seek, source switch and off',async()=>{
- await page.evaluate(()=>{window.__prepareDelay=250;window.__maskTime=1;window.__drawMask({maskSource:{mask_url:'https://a.bilivideo.com/cmaskboss/slowbitmap.webmask'},settings:{danmakuMask:true}});});
- await page.waitForFunction(()=>window.__prepareInFlight===1);
+await test('vector masks clean up on seek, source switch and off',async()=>{
+ await page.evaluate(()=>{window.__maskTime=1;window.__drawMask({maskSource:{mask_url:'https://a.bilivideo.com/cmaskboss/vector.webmask'},settings:{danmakuMask:true}});});await active();
+ assert.equal(await page.evaluate(()=>window.__danmakuMaskStats().renderer),'vector');
  await page.evaluate(()=>{window.__maskTime=15;window.__maskVideo.dispatchEvent(new Event('seeking'));window.__maskVideo.dispatchEvent(new Event('seeked'));});
  await active();assert.equal(await page.evaluate(()=>window.__danmakuMaskStats().frameTime),15100);
- await page.evaluate(()=>window.__drawMask({maskSource:{mask_url:'https://a.bilivideo.com/cmaskboss/slowbitmap2.webmask'}}));
- await page.waitForFunction(()=>window.__prepareInFlight===1);
- await page.evaluate(()=>window.__drawMask({maskSource:null}));
- await page.waitForFunction(()=>window.__prepareInFlight===0);await page.waitForTimeout(350);
+ await page.evaluate(()=>window.__drawMask({maskSource:null}));await page.waitForTimeout(150);
  assert.ok(await page.evaluate(()=>!window.__danmakuMaskStats));assert.equal(await page.evaluate(()=>document.querySelector('.danmaku-container').style.maskImage),'none');
- await page.evaluate(()=>window.__drawMask({maskSource:{mask_url:'https://a.bilivideo.com/cmaskboss/slowbitmap3.webmask'}}));
- await page.waitForFunction(()=>window.__prepareInFlight===1);await page.evaluate(()=>window.__drawMask({settings:{danmakuMask:false}}));
- await page.waitForFunction(()=>window.__prepareInFlight===0);assert.ok(await page.evaluate(()=>!window.__danmakuMaskStats));
- assert.ok(await page.evaluate(()=>window.__prepareMax<=1));await page.evaluate(()=>window.__prepareDelay=0);
+ await page.evaluate(()=>window.__drawMask({maskSource:{mask_url:'https://a.bilivideo.com/cmaskboss/vector2.webmask'}}));await active();
+ await page.evaluate(()=>window.__drawMask({settings:{danmakuMask:false}}));await page.waitForFunction(()=>!window.__danmakuMaskStats);
+ assert.equal(await page.evaluate(()=>window.__prepareMax||0),0);await page.evaluate(()=>window.__prepareDelay=0);
 });
 await test('source without a silhouette reports no protection and does not reuse an old hole',async()=>{
  await page.evaluate(()=>{window.__maskTime=1;window.__drawMask({maskSource:{mask_url:'https://a.bilivideo.com/cmaskboss/test.webmask'},settings:{danmakuMask:true}});});await active();
@@ -196,13 +176,28 @@ await test('empty future mask keeps the current silhouette only until the source
  await page.evaluate(()=>{window.__maskTime=1;window.__maskVideo.dispatchEvent(new Event('seeking'));window.__maskVideo.dispatchEvent(new Event('seeked'));});
  await page.waitForFunction(()=>window.__danmakuMaskStats?.().state==='unprotected');assert.equal(await page.evaluate(()=>window.__danmakuMaskStats().sourceProtectedRatio),0);
 });
-await test('slow preparation expires the old silhouette by presentation time, not its future source time',async()=>{
- await page.evaluate(()=>{window.__prepareDelay=1000;window.__maskTime=9.85;window.__drawMask({maskSource:{mask_url:'https://a.bilivideo.com/cmaskboss/slowage.webmask'},settings:{danmakuMask:true}});});await active();
- assert.equal(await page.evaluate(()=>window.__danmakuMaskStats().frameTime),9900);
- await page.evaluate(()=>window.__maskTime=9.95);
- await page.waitForFunction(()=>document.querySelector('.danmaku-container').style.maskImage==='none',null,{timeout:700});
- await page.evaluate(()=>window.__prepareDelay=0);await active();
- await page.evaluate(()=>window.__drawMask({settings:{danmakuMask:false}}));await page.waitForFunction(()=>!window.__danmakuMaskStats);
+await test('unknown current geometry keeps only the bounded cut guard on older engines',async()=>{
+ await page.evaluate(()=>{
+  window.__savedPointInFill=SVGGeometryElement.prototype.isPointInFill;
+  SVGGeometryElement.prototype.isPointInFill=undefined;
+  window.__maskTime=.95;window.__drawMask({maskSource:{mask_url:'https://a.bilivideo.com/cmaskboss/unknown-transition.webmask'},settings:{danmakuMask:true}});
+ });
+ try {
+  await active();
+  const before=await page.evaluate(()=>window.__danmakuMaskStats());
+  assert.equal(before.sourceHasHole,null);assert.equal(before.selection,'current-transition');assert.equal(before.frameTime,900);
+  await page.evaluate(()=>{window.__maskTime=1;window.__maskVideo.dispatchEvent(new Event('seeking'));window.__maskVideo.dispatchEvent(new Event('seeked'));});
+  await page.waitForFunction(()=>window.__danmakuMaskStats?.().state==='unprotected');
+  assert.ok(await page.evaluate(()=>window.__danmakuMaskStats().frameTime>=1000));
+ } finally { await page.evaluate(()=>{SVGGeometryElement.prototype.isPointInFill=window.__savedPointInFill;delete window.__savedPointInFill;}); }
+});
+await test('a cold mask across a cut applies synchronously instead of clearing for image decoding',async()=>{
+ await page.evaluate(()=>{window.__maskTime=9.85;window.__drawMask({maskSource:{mask_url:'https://a.bilivideo.com/cmaskboss/coldcut.webmask'},settings:{danmakuMask:true}});});await active();
+ await page.waitForFunction(()=>window.__danmakuMaskStats().cached===2);
+ await page.evaluate(()=>{window.__maskTime=9.95;window.__maskVideo.dispatchEvent(new Event('seeked'));});
+ assert.equal(await page.evaluate(()=>window.__danmakuMaskStats().frameTime),10000);
+ assert.notEqual(await page.evaluate(()=>document.querySelector('.danmaku-container').style.maskImage),'none');
+ await page.evaluate(()=>{window.__drawMask({settings:{danmakuMask:false}})});await page.waitForFunction(()=>!window.__danmakuMaskStats);
 });
 await test('presented video frame time wins over playback clock and stale seek callbacks are ignored',async()=>{
  await page.evaluate(()=>{
@@ -211,7 +206,7 @@ await test('presented video frame time wins over playback clock and stale seek c
   window.__maskVideo.requestVideoFrameCallback=cb=>{const id=++window.__frameSerial;window.__frameCallbacks.set(id,cb);return id;};
   window.__maskVideo.cancelVideoFrameCallback=id=>window.__frameCallbacks.delete(id);
   window.__drawMask({maskSource:{mask_url:'https://a.bilivideo.com/cmaskboss/frameclock.webmask'},settings:{danmakuMask:true}});
- });await active();await page.waitForFunction(()=>window.__danmakuMaskStats().cached===2&&window.__danmakuMaskStats().prepared>=2);
+ });await active();await page.waitForFunction(()=>window.__danmakuMaskStats().cached===2&&window.__danmakuMaskStats().prepared>=1);
  const state=await page.evaluate(()=>{
   const fire=time=>{const [id,cb]=window.__frameCallbacks.entries().next().value;window.__frameCallbacks.delete(id);cb(performance.now(),{mediaTime:time});};
   fire(15);const presented=window.__danmakuMaskStats();
@@ -235,12 +230,43 @@ await test('older browsers follow playback via animation frames without video-fr
   window.__maskTime=1;Object.defineProperty(window.__maskVideo,'paused',{configurable:true,get:()=>false});
   window.__maskVideo.requestVideoFrameCallback=undefined;window.__maskVideo.cancelVideoFrameCallback=undefined;
   window.__drawMask({maskSource:{mask_url:'https://a.bilivideo.com/cmaskboss/raf.webmask'},settings:{danmakuMask:true}});
- });await active();await page.waitForFunction(()=>window.__danmakuMaskStats().cached===2&&window.__danmakuMaskStats().prepared>=2);
+ });await active();await page.waitForFunction(()=>window.__danmakuMaskStats().cached===2&&window.__danmakuMaskStats().prepared>=1);
  await page.evaluate(()=>window.__maskTime=15);await page.waitForFunction(()=>window.__danmakuMaskStats().frameTime===15100);
  await page.evaluate(()=>window.__drawMask({settings:{danmakuMask:false}}));await page.waitForFunction(()=>!window.__danmakuMaskStats);
  await page.evaluate(()=>{delete window.__maskVideo.paused;delete window.__maskVideo.requestVideoFrameCallback;delete window.__maskVideo.cancelVideoFrameCallback;});
 });
-await test('decoded PNG updates keep visible background pixels through repeated mask changes',async()=>{
+await test('native video with silent or stalled frame callbacks follows every available animation frame',async()=>{
+ await page.evaluate(()=>{
+  window.__maskTime=1;Object.defineProperty(window.__maskVideo,'paused',{configurable:true,get:()=>false});
+  window.__silentCallbacks=new Map();window.__silentSerial=0;
+  window.__maskVideo.requestVideoFrameCallback=cb=>{const id=++window.__silentSerial;window.__silentCallbacks.set(id,cb);return id;};
+  window.__maskVideo.cancelVideoFrameCallback=id=>window.__silentCallbacks.delete(id);
+  window.__drawMask({maskSource:{mask_url:'https://a.bilivideo.com/cmaskboss/moving-silent.webmask'},settings:{danmakuMask:true}});
+ });
+ try {
+  await active();
+  const results=await page.evaluate(async()=>{
+   const runs=[];
+   for(const stalled of [false,true]){
+    if(stalled){const[id,cb]=window.__silentCallbacks.entries().next().value;window.__silentCallbacks.delete(id);cb(performance.now(),{mediaTime:window.__maskTime});}
+    const samples=[];const start=performance.now(),initial=window.__maskTime,applied=window.__danmakuMaskStats().applied;
+    await new Promise(resolve=>{const step=()=>{const elapsed=performance.now()-start;const stats=window.__danmakuMaskStats();samples.push({elapsed,lag:window.__maskTime*1000-stats.timelineTime,age:window.__maskTime*1000-stats.frameTime});window.__maskTime=initial+Math.floor(elapsed/40)*.04;if(elapsed<1000)requestAnimationFrame(step);else resolve();};requestAnimationFrame(step);});
+    runs.push({stalled,samples:samples.filter(s=>s.elapsed>160),updates:window.__danmakuMaskStats().applied-applied});
+   }
+   const before=window.__danmakuMaskStats();
+   const[id,late]=window.__silentCallbacks.entries().next().value;window.__silentCallbacks.delete(id);late(performance.now(),{mediaTime:window.__maskTime-1});
+   const after=window.__danmakuMaskStats();
+   return {runs,lateIgnored:before.timelineTime===after.timelineTime&&before.frameTime===after.frameTime&&before.videoFrameCallbacks===after.videoFrameCallbacks};
+  });
+  assert.ok(results.lateIgnored);
+  for(const result of results.runs){assert.ok(result.updates>=20,JSON.stringify(result));assert.ok(result.samples.every(s=>s.lag<=40.01&&s.age<=80.01),JSON.stringify(result));}
+ } finally {
+  await page.evaluate(()=>window.__drawMask({settings:{danmakuMask:false}}));await page.waitForFunction(()=>!window.__danmakuMaskStats);
+  assert.equal(await page.evaluate(()=>window.__silentCallbacks.size),0);
+  await page.evaluate(()=>{delete window.__maskVideo.paused;delete window.__maskVideo.requestVideoFrameCallback;delete window.__maskVideo.cancelVideoFrameCallback;});
+ }
+});
+await test('stable vector mask updates keep visible background pixels through repeated changes',async()=>{
  await page.evaluate(()=>{
   window.__maskTime=1;Object.defineProperty(window.__maskVideo,'paused',{configurable:true,get:()=>false});window.__maskVideo.requestVideoFrameCallback=undefined;window.__maskVideo.cancelVideoFrameCallback=undefined;
   window.__drawMask({maskSource:{mask_url:'https://a.bilivideo.com/cmaskboss/moving.webmask'},settings:{danmakuMask:true}});

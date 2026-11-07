@@ -1,0 +1,1514 @@
+{
+  "kind": "television-before-vector-fix",
+  "recordedOn": "2026-11-07",
+  "redaction": "Only timing, renderer state, mask presence and per-stage durations are retained; no identifiers, URLs, network addresses or credentials.",
+  "summary": {
+    "windowMs": 13949,
+    "samples": 208,
+    "waiting": 91,
+    "maskMissing": 91,
+    "presenceTransitions": 41,
+    "allSamplesPlaying": true,
+    "readyStateValues": [
+      4
+    ],
+    "sampledPrepareMs": {
+      "median": 59.0,
+      "min": 28,
+      "max": 203
+    }
+  },
+  "instrumentedPreparation": [
+    {
+      "totalMs": 69.5,
+      "stages": {
+        "parseMs": 5.7,
+        "sourceDecodeMs": 8.9,
+        "readMs": 7.0,
+        "erodeMs": 23.2,
+        "encodeMs": 4.6,
+        "outputDecodeMs": 20.1
+      }
+    },
+    {
+      "totalMs": 38.9,
+      "stages": {
+        "parseMs": 4.4,
+        "sourceDecodeMs": 7.8,
+        "readMs": 3.4,
+        "erodeMs": 5.4,
+        "encodeMs": 3.8,
+        "outputDecodeMs": 14.1
+      }
+    },
+    {
+      "totalMs": 39.7,
+      "stages": {
+        "parseMs": 2.2,
+        "sourceDecodeMs": 7.1,
+        "readMs": 4.1,
+        "erodeMs": 5.4,
+        "encodeMs": 4.4,
+        "outputDecodeMs": 16.5
+      }
+    }
+  ],
+  "samples": [
+    {
+      "atMs": 0,
+      "mediaTimeSeconds": 100.36,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 125
+    },
+    {
+      "atMs": 99,
+      "mediaTimeSeconds": 100.48,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 124
+    },
+    {
+      "atMs": 295,
+      "mediaTimeSeconds": 100.68,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 203
+    },
+    {
+      "atMs": 350,
+      "mediaTimeSeconds": 100.72,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 93
+    },
+    {
+      "atMs": 426,
+      "mediaTimeSeconds": 100.8,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 40
+    },
+    {
+      "atMs": 494,
+      "mediaTimeSeconds": 100.88,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 73
+    },
+    {
+      "atMs": 560,
+      "mediaTimeSeconds": 100.92,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 84
+    },
+    {
+      "atMs": 640,
+      "mediaTimeSeconds": 101,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 60
+    },
+    {
+      "atMs": 708,
+      "mediaTimeSeconds": 101.08,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 73
+    },
+    {
+      "atMs": 764,
+      "mediaTimeSeconds": 101.12,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 64
+    },
+    {
+      "atMs": 836,
+      "mediaTimeSeconds": 101.2,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 28
+    },
+    {
+      "atMs": 892,
+      "mediaTimeSeconds": 101.24,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 56
+    },
+    {
+      "atMs": 963,
+      "mediaTimeSeconds": 101.32,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 1015,
+      "mediaTimeSeconds": 101.4,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 43
+    },
+    {
+      "atMs": 1070,
+      "mediaTimeSeconds": 101.44,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 50
+    },
+    {
+      "atMs": 1122,
+      "mediaTimeSeconds": 101.48,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 48
+    },
+    {
+      "atMs": 1193,
+      "mediaTimeSeconds": 101.56,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 76
+    },
+    {
+      "atMs": 1249,
+      "mediaTimeSeconds": 101.6,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 57
+    },
+    {
+      "atMs": 1348,
+      "mediaTimeSeconds": 101.72,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 84
+    },
+    {
+      "atMs": 1404,
+      "mediaTimeSeconds": 101.76,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 67
+    },
+    {
+      "atMs": 1457,
+      "mediaTimeSeconds": 101.84,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 53
+    },
+    {
+      "atMs": 1518,
+      "mediaTimeSeconds": 101.88,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 51
+    },
+    {
+      "atMs": 1572,
+      "mediaTimeSeconds": 101.92,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 56
+    },
+    {
+      "atMs": 1660,
+      "mediaTimeSeconds": 102.04,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 48
+    },
+    {
+      "atMs": 1714,
+      "mediaTimeSeconds": 102.08,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 48
+    },
+    {
+      "atMs": 1828,
+      "mediaTimeSeconds": 102.2,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 42
+    },
+    {
+      "atMs": 1919,
+      "mediaTimeSeconds": 102.28,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 49
+    },
+    {
+      "atMs": 1987,
+      "mediaTimeSeconds": 102.36,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 72
+    },
+    {
+      "atMs": 2041,
+      "mediaTimeSeconds": 102.4,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 2094,
+      "mediaTimeSeconds": 102.48,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 2147,
+      "mediaTimeSeconds": 102.52,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 2201,
+      "mediaTimeSeconds": 102.56,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 2254,
+      "mediaTimeSeconds": 102.64,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 2307,
+      "mediaTimeSeconds": 102.68,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 2361,
+      "mediaTimeSeconds": 102.72,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 2414,
+      "mediaTimeSeconds": 102.76,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 2467,
+      "mediaTimeSeconds": 102.84,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 2518,
+      "mediaTimeSeconds": 102.88,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 2571,
+      "mediaTimeSeconds": 102.92,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 2625,
+      "mediaTimeSeconds": 103,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 2678,
+      "mediaTimeSeconds": 103.04,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 2732,
+      "mediaTimeSeconds": 103.08,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 2784,
+      "mediaTimeSeconds": 103.16,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 2839,
+      "mediaTimeSeconds": 103.2,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 2890,
+      "mediaTimeSeconds": 103.24,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 2941,
+      "mediaTimeSeconds": 103.32,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 2994,
+      "mediaTimeSeconds": 103.36,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 3047,
+      "mediaTimeSeconds": 103.4,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 3102,
+      "mediaTimeSeconds": 103.48,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 3153,
+      "mediaTimeSeconds": 103.52,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 3206,
+      "mediaTimeSeconds": 103.56,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 3259,
+      "mediaTimeSeconds": 103.64,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 3313,
+      "mediaTimeSeconds": 103.68,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 3366,
+      "mediaTimeSeconds": 103.72,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 3419,
+      "mediaTimeSeconds": 103.8,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 3472,
+      "mediaTimeSeconds": 103.84,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 3526,
+      "mediaTimeSeconds": 103.88,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 3608,
+      "mediaTimeSeconds": 103.96,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 3662,
+      "mediaTimeSeconds": 104.04,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 46
+    },
+    {
+      "atMs": 3716,
+      "mediaTimeSeconds": 104.08,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 46
+    },
+    {
+      "atMs": 3795,
+      "mediaTimeSeconds": 104.16,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 56
+    },
+    {
+      "atMs": 3858,
+      "mediaTimeSeconds": 104.24,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 88
+    },
+    {
+      "atMs": 3917,
+      "mediaTimeSeconds": 104.28,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 53
+    },
+    {
+      "atMs": 3970,
+      "mediaTimeSeconds": 104.32,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 50
+    },
+    {
+      "atMs": 4065,
+      "mediaTimeSeconds": 104.44,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 47
+    },
+    {
+      "atMs": 4133,
+      "mediaTimeSeconds": 104.48,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 68
+    },
+    {
+      "atMs": 4216,
+      "mediaTimeSeconds": 104.56,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 71
+    },
+    {
+      "atMs": 4270,
+      "mediaTimeSeconds": 104.64,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 55
+    },
+    {
+      "atMs": 4365,
+      "mediaTimeSeconds": 104.72,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 98
+    },
+    {
+      "atMs": 4448,
+      "mediaTimeSeconds": 104.8,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 43
+    },
+    {
+      "atMs": 4539,
+      "mediaTimeSeconds": 104.92,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 52
+    },
+    {
+      "atMs": 4618,
+      "mediaTimeSeconds": 105,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 81
+    },
+    {
+      "atMs": 4675,
+      "mediaTimeSeconds": 105.04,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 47
+    },
+    {
+      "atMs": 4730,
+      "mediaTimeSeconds": 105.08,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 47
+    },
+    {
+      "atMs": 4791,
+      "mediaTimeSeconds": 105.16,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 52
+    },
+    {
+      "atMs": 4875,
+      "mediaTimeSeconds": 105.24,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 62
+    },
+    {
+      "atMs": 4966,
+      "mediaTimeSeconds": 105.32,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 119
+    },
+    {
+      "atMs": 5064,
+      "mediaTimeSeconds": 105.44,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 5160,
+      "mediaTimeSeconds": 105.52,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 80
+    },
+    {
+      "atMs": 5228,
+      "mediaTimeSeconds": 105.6,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 59
+    },
+    {
+      "atMs": 5548,
+      "mediaTimeSeconds": 105.92,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 163
+    },
+    {
+      "atMs": 5631,
+      "mediaTimeSeconds": 106,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 63
+    },
+    {
+      "atMs": 5707,
+      "mediaTimeSeconds": 106.08,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 45
+    },
+    {
+      "atMs": 5789,
+      "mediaTimeSeconds": 106.16,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 41
+    },
+    {
+      "atMs": 5842,
+      "mediaTimeSeconds": 106.2,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 37
+    },
+    {
+      "atMs": 5924,
+      "mediaTimeSeconds": 106.28,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 43
+    },
+    {
+      "atMs": 6009,
+      "mediaTimeSeconds": 106.36,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 37
+    },
+    {
+      "atMs": 6075,
+      "mediaTimeSeconds": 106.44,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 47
+    },
+    {
+      "atMs": 6175,
+      "mediaTimeSeconds": 106.56,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 59
+    },
+    {
+      "atMs": 6230,
+      "mediaTimeSeconds": 106.6,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 43
+    },
+    {
+      "atMs": 6290,
+      "mediaTimeSeconds": 106.64,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 63
+    },
+    {
+      "atMs": 6345,
+      "mediaTimeSeconds": 106.72,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 51
+    },
+    {
+      "atMs": 6428,
+      "mediaTimeSeconds": 106.8,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 38
+    },
+    {
+      "atMs": 6486,
+      "mediaTimeSeconds": 106.84,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 43
+    },
+    {
+      "atMs": 6556,
+      "mediaTimeSeconds": 106.92,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 55
+    },
+    {
+      "atMs": 6650,
+      "mediaTimeSeconds": 107,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 106
+    },
+    {
+      "atMs": 6726,
+      "mediaTimeSeconds": 107.08,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 61
+    },
+    {
+      "atMs": 6819,
+      "mediaTimeSeconds": 107.2,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 46
+    },
+    {
+      "atMs": 6870,
+      "mediaTimeSeconds": 107.24,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 41
+    },
+    {
+      "atMs": 6954,
+      "mediaTimeSeconds": 107.32,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 38
+    },
+    {
+      "atMs": 7039,
+      "mediaTimeSeconds": 107.4,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 43
+    },
+    {
+      "atMs": 7112,
+      "mediaTimeSeconds": 107.48,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 56
+    },
+    {
+      "atMs": 7179,
+      "mediaTimeSeconds": 107.56,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 64
+    },
+    {
+      "atMs": 7252,
+      "mediaTimeSeconds": 107.6,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 89
+    },
+    {
+      "atMs": 7337,
+      "mediaTimeSeconds": 107.72,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 50
+    },
+    {
+      "atMs": 7407,
+      "mediaTimeSeconds": 107.76,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 7459,
+      "mediaTimeSeconds": 107.84,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 46
+    },
+    {
+      "atMs": 7512,
+      "mediaTimeSeconds": 107.88,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 7565,
+      "mediaTimeSeconds": 107.92,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 7620,
+      "mediaTimeSeconds": 108,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 7675,
+      "mediaTimeSeconds": 108.04,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 7727,
+      "mediaTimeSeconds": 108.08,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 7780,
+      "mediaTimeSeconds": 108.16,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 7831,
+      "mediaTimeSeconds": 108.2,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 7882,
+      "mediaTimeSeconds": 108.24,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 7936,
+      "mediaTimeSeconds": 108.32,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 7989,
+      "mediaTimeSeconds": 108.36,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 8061,
+      "mediaTimeSeconds": 108.44,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 8114,
+      "mediaTimeSeconds": 108.48,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 8167,
+      "mediaTimeSeconds": 108.52,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 8220,
+      "mediaTimeSeconds": 108.6,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 8273,
+      "mediaTimeSeconds": 108.64,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 8326,
+      "mediaTimeSeconds": 108.68,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 8382,
+      "mediaTimeSeconds": 108.76,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 8435,
+      "mediaTimeSeconds": 108.8,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 8488,
+      "mediaTimeSeconds": 108.84,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 8542,
+      "mediaTimeSeconds": 108.92,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 8596,
+      "mediaTimeSeconds": 108.96,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 8648,
+      "mediaTimeSeconds": 109,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 8702,
+      "mediaTimeSeconds": 109.08,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 8755,
+      "mediaTimeSeconds": 109.12,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 8808,
+      "mediaTimeSeconds": 109.16,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 8861,
+      "mediaTimeSeconds": 109.24,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 8913,
+      "mediaTimeSeconds": 109.28,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 8965,
+      "mediaTimeSeconds": 109.32,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 9018,
+      "mediaTimeSeconds": 109.4,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 9069,
+      "mediaTimeSeconds": 109.44,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 9122,
+      "mediaTimeSeconds": 109.48,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 9176,
+      "mediaTimeSeconds": 109.56,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 9229,
+      "mediaTimeSeconds": 109.6,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 9282,
+      "mediaTimeSeconds": 109.64,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 9335,
+      "mediaTimeSeconds": 109.72,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 9385,
+      "mediaTimeSeconds": 109.76,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 9439,
+      "mediaTimeSeconds": 109.8,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 9491,
+      "mediaTimeSeconds": 109.84,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 9545,
+      "mediaTimeSeconds": 109.92,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 9597,
+      "mediaTimeSeconds": 109.96,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 9650,
+      "mediaTimeSeconds": 110,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 9704,
+      "mediaTimeSeconds": 110.08,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 9840,
+      "mediaTimeSeconds": 110.2,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 9896,
+      "mediaTimeSeconds": 110.24,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 9950,
+      "mediaTimeSeconds": 110.32,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 10005,
+      "mediaTimeSeconds": 110.36,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 10057,
+      "mediaTimeSeconds": 110.44,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 10113,
+      "mediaTimeSeconds": 110.48,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 10166,
+      "mediaTimeSeconds": 110.52,
+      "state": "unprotected",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 10249,
+      "mediaTimeSeconds": 110.6,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 10352,
+      "mediaTimeSeconds": 110.72,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 127
+    },
+    {
+      "atMs": 10465,
+      "mediaTimeSeconds": 110.84,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 91
+    },
+    {
+      "atMs": 10640,
+      "mediaTimeSeconds": 111,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 140
+    },
+    {
+      "atMs": 10808,
+      "mediaTimeSeconds": 111.16,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 192
+    },
+    {
+      "atMs": 10893,
+      "mediaTimeSeconds": 111.24,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 94
+    },
+    {
+      "atMs": 10951,
+      "mediaTimeSeconds": 111.32,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 66
+    },
+    {
+      "atMs": 11037,
+      "mediaTimeSeconds": 111.4,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 45
+    },
+    {
+      "atMs": 11120,
+      "mediaTimeSeconds": 111.48,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 79
+    },
+    {
+      "atMs": 11196,
+      "mediaTimeSeconds": 111.56,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 42
+    },
+    {
+      "atMs": 11265,
+      "mediaTimeSeconds": 111.64,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 84
+    },
+    {
+      "atMs": 11317,
+      "mediaTimeSeconds": 111.68,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 61
+    },
+    {
+      "atMs": 11370,
+      "mediaTimeSeconds": 111.72,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 52
+    },
+    {
+      "atMs": 11424,
+      "mediaTimeSeconds": 111.8,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 60
+    },
+    {
+      "atMs": 11503,
+      "mediaTimeSeconds": 111.88,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 37
+    },
+    {
+      "atMs": 11554,
+      "mediaTimeSeconds": 111.92,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 35
+    },
+    {
+      "atMs": 11608,
+      "mediaTimeSeconds": 111.96,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 59
+    },
+    {
+      "atMs": 11661,
+      "mediaTimeSeconds": 112.04,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 48
+    },
+    {
+      "atMs": 11747,
+      "mediaTimeSeconds": 112.12,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 90
+    },
+    {
+      "atMs": 11805,
+      "mediaTimeSeconds": 112.16,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 56
+    },
+    {
+      "atMs": 11856,
+      "mediaTimeSeconds": 112.24,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 11932,
+      "mediaTimeSeconds": 112.28,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 79
+    },
+    {
+      "atMs": 11988,
+      "mediaTimeSeconds": 112.36,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 49
+    },
+    {
+      "atMs": 12040,
+      "mediaTimeSeconds": 112.4,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 47
+    },
+    {
+      "atMs": 12102,
+      "mediaTimeSeconds": 112.48,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 54
+    },
+    {
+      "atMs": 12169,
+      "mediaTimeSeconds": 112.52,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 66
+    },
+    {
+      "atMs": 12237,
+      "mediaTimeSeconds": 112.6,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 74
+    },
+    {
+      "atMs": 12296,
+      "mediaTimeSeconds": 112.68,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 57
+    },
+    {
+      "atMs": 12358,
+      "mediaTimeSeconds": 112.72,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 77
+    },
+    {
+      "atMs": 12430,
+      "mediaTimeSeconds": 112.8,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 37
+    },
+    {
+      "atMs": 12525,
+      "mediaTimeSeconds": 112.88,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 54
+    },
+    {
+      "atMs": 12645,
+      "mediaTimeSeconds": 113,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 109
+    },
+    {
+      "atMs": 12702,
+      "mediaTimeSeconds": 113.08,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 65
+    },
+    {
+      "atMs": 12754,
+      "mediaTimeSeconds": 113.12,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 51
+    },
+    {
+      "atMs": 12827,
+      "mediaTimeSeconds": 113.2,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 78
+    },
+    {
+      "atMs": 12899,
+      "mediaTimeSeconds": 113.28,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 58
+    },
+    {
+      "atMs": 12967,
+      "mediaTimeSeconds": 113.32,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 49
+    },
+    {
+      "atMs": 13043,
+      "mediaTimeSeconds": 113.4,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 90
+    },
+    {
+      "atMs": 13124,
+      "mediaTimeSeconds": 113.48,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 34
+    },
+    {
+      "atMs": 13176,
+      "mediaTimeSeconds": 113.56,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 43
+    },
+    {
+      "atMs": 13230,
+      "mediaTimeSeconds": 113.6,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 43
+    },
+    {
+      "atMs": 13299,
+      "mediaTimeSeconds": 113.68,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 84
+    },
+    {
+      "atMs": 13392,
+      "mediaTimeSeconds": 113.76,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 41
+    },
+    {
+      "atMs": 13466,
+      "mediaTimeSeconds": 113.84,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 66
+    },
+    {
+      "atMs": 13533,
+      "mediaTimeSeconds": 113.88,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 75
+    },
+    {
+      "atMs": 13589,
+      "mediaTimeSeconds": 113.96,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 63
+    },
+    {
+      "atMs": 13640,
+      "mediaTimeSeconds": 114,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 51
+    },
+    {
+      "atMs": 13698,
+      "mediaTimeSeconds": 114.08,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 54
+    },
+    {
+      "atMs": 13748,
+      "mediaTimeSeconds": 114.12,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 45
+    },
+    {
+      "atMs": 13832,
+      "mediaTimeSeconds": 114.2,
+      "state": "waiting",
+      "maskPresent": false,
+      "prepareMs": 35
+    },
+    {
+      "atMs": 13887,
+      "mediaTimeSeconds": 114.24,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 41
+    },
+    {
+      "atMs": 13949,
+      "mediaTimeSeconds": 114.32,
+      "state": "active",
+      "maskPresent": true,
+      "prepareMs": 77
+    }
+  ]
+}

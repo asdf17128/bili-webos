@@ -1,0 +1,53 @@
+{
+  "observedAt": "2026-11-07",
+  "purpose": "Pre-fix continuous playback baseline; original async PNG preparation and 80 ms stale-mask clearing",
+  "fixture": {
+    "kind": "public Rick webmask, unmodified local fixture",
+    "sha256": "1a93185e37cd206126a923d3be7e628de11f816695914a3fd5562eb3cd407d0a",
+    "intervalSeconds": [
+      1,
+      6
+    ],
+    "sourceFramesInInspectedWindow": 138,
+    "uniqueSourceFramesInInspectedWindow": 102,
+    "inspectedWindowSeconds": [
+      1,
+      6.5
+    ]
+  },
+  "method": {
+    "clock": "continuous 25 fps; rAF sample each browser frame",
+    "durationSecondsPerCase": 5,
+    "latencyInjection": "100 ms delay before prepareDanmakuMaskImage; baseline prototype only",
+    "startupExcluded": true,
+    "noTelevisionOperations": true
+  },
+  "results": [
+    {
+      "prepareDelay": 0,
+      "samples": 301,
+      "off": 0,
+      "offRatio": 0,
+      "transitions": 0,
+      "maxTimelineLag": 0,
+      "stale": 0,
+      "maxPrepared": 8,
+      "appliedAdvance": 91,
+      "lastPrepareMs": 3
+    },
+    {
+      "prepareDelay": 100,
+      "samples": 301,
+      "off": 202,
+      "offRatio": 0.6710963455149501,
+      "transitions": 3,
+      "maxTimelineLag": 80,
+      "stale": 0,
+      "maxPrepared": 8,
+      "appliedAdvance": 6,
+      "lastPrepareMs": 107
+    }
+  ],
+  "finding": "100 ms preparation caused 202/301 samples without a CSS mask, despite available source frames. Normal speed had zero missing samples. Merely keeping stale silhouettes is not accepted by the new regression.",
+  "regression": "tools/test-danmaku-mask-continuity.mjs uses generated unique geometry, actual PNG decode latency, and center/background pixel checks; no private or signed URLs in this evidence."
+}

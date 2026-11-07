@@ -1,0 +1,215 @@
+{
+  "fixture": {
+    "kind": "generated-moving-person",
+    "sha256": "7898cbae9e4957bb8a094058efad27700ab6f67b9711bc068dd11bcd5dd4f396",
+    "framesInWindow": 206,
+    "uniqueFramesInWindow": 206
+  },
+  "durationSeconds": 8,
+  "startSeconds": 1,
+  "results": [
+    {
+      "decodeDelayMs": 0,
+      "samples": 480,
+      "missing": 0,
+      "missingRatio": 0,
+      "transitions": 0,
+      "stale": 0,
+      "appliedAdvance": 200,
+      "maxTimelineLagMs": 40,
+      "decoding": {
+        "calls": 0,
+        "pngCalls": 0,
+        "delayedCalls": 0
+      },
+      "screenshots": [
+        {
+          "name": "delay-0-1.png",
+          "center": [
+            0,
+            0,
+            255
+          ],
+          "left": [
+            255,
+            0,
+            0
+          ],
+          "right": [
+            255,
+            0,
+            0
+          ],
+          "pass": true
+        },
+        {
+          "name": "delay-0-2.png",
+          "center": [
+            0,
+            0,
+            255
+          ],
+          "left": [
+            255,
+            0,
+            0
+          ],
+          "right": [
+            255,
+            0,
+            0
+          ],
+          "pass": true
+        },
+        {
+          "name": "delay-0-3.png",
+          "center": [
+            0,
+            0,
+            255
+          ],
+          "left": [
+            255,
+            0,
+            0
+          ],
+          "right": [
+            255,
+            0,
+            0
+          ],
+          "pass": true
+        },
+        {
+          "name": "delay-0-4.png",
+          "center": [
+            0,
+            0,
+            255
+          ],
+          "left": [
+            255,
+            0,
+            0
+          ],
+          "right": [
+            255,
+            0,
+            0
+          ],
+          "pass": true
+        }
+      ],
+      "checks": {
+        "continuousMask": true,
+        "noStaleSilhouette": true,
+        "changingSilhouette": true,
+        "centralHoleAndBackground": true,
+        "boundedCache": true,
+        "noFailures": true
+      }
+    },
+    {
+      "decodeDelayMs": 100,
+      "samples": 481,
+      "missing": 0,
+      "missingRatio": 0,
+      "transitions": 0,
+      "stale": 0,
+      "appliedAdvance": 200,
+      "maxTimelineLagMs": 0,
+      "decoding": {
+        "calls": 0,
+        "pngCalls": 0,
+        "delayedCalls": 0
+      },
+      "screenshots": [
+        {
+          "name": "delay-100-1.png",
+          "center": [
+            0,
+            0,
+            255
+          ],
+          "left": [
+            255,
+            0,
+            0
+          ],
+          "right": [
+            255,
+            0,
+            0
+          ],
+          "pass": true
+        },
+        {
+          "name": "delay-100-2.png",
+          "center": [
+            0,
+            0,
+            255
+          ],
+          "left": [
+            255,
+            0,
+            0
+          ],
+          "right": [
+            255,
+            0,
+            0
+          ],
+          "pass": true
+        },
+        {
+          "name": "delay-100-3.png",
+          "center": [
+            0,
+            0,
+            255
+          ],
+          "left": [
+            255,
+            0,
+            0
+          ],
+          "right": [
+            255,
+            0,
+            0
+          ],
+          "pass": true
+        },
+        {
+          "name": "delay-100-4.png",
+          "center": [
+            0,
+            0,
+            255
+          ],
+          "left": [
+            255,
+            0,
+            0
+          ],
+          "right": [
+            255,
+            0,
+            0
+          ],
+          "pass": true
+        }
+      ],
+      "checks": {
+        "continuousMask": true,
+        "noStaleSilhouette": true,
+        "changingSilhouette": true,
+        "centralHoleAndBackground": true,
+        "boundedCache": true,
+        "noFailures": true
+      }
+    }
+  ],
+  "errors": []
+}

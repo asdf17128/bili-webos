@@ -1,0 +1,64 @@
+{
+  "build": "2.5.2 danmaku-mask.2",
+  "packageSha256": "955eaa9f6978a4d5ac97bcb4bd6ec70b77cfd4c93604130767dce6d46071cb24",
+  "files": {
+    "app/dist/assets/LivePlayerPage-legacy-BPl-wjv1.js": "8f8b0963fe712e0ef83728a81825068b6eacd807a30b16b28d364ecafaadba76",
+    "app/dist/assets/NerdInfo-legacy-CYk83iuA.js": "5c7ea91b0031dd76162111fc0885f12247ef72d97e70e219634c386bd789b6c4",
+    "app/dist/assets/PlayerPage-legacy-_DyPqfj0.js": "768e9586f006019ed3325acae0c30391acebe1a5b6e55c92b37178d5d080b59d",
+    "app/dist/assets/index-legacy-BumvsBY_.js": "fbe84a62150fe6e3f16ba53cdb55a72ef9369bd3d2841d1319044261b6200b9b",
+    "app/dist/assets/polyfills-legacy-BiQ8HPCG.js": "8ab0dde636d7367f21f61e6c2b0cb73db36d72041480a8baff92518aceabc6d3",
+    "app/dist/assets/react-vendor-legacy-B2h5bzJ7.js": "35b6eec340e5d94be0db7cb0978d708b51ed326b6b5144b1afb1d9a2d28cad7c",
+    "app/dist/assets/shaka-player.compiled-legacy-01vuRLq-.js": "e7555409c7b44282543f08a2c96f3b10f4925540208e22735c90e90c84138b0f",
+    "service/com.biliwebos.app.service/service.js": "144494e6f4b059fdb163896ac6df54ff67b74ce2964aed76d55ed8d6092c7a25",
+    "service/com.biliwebos.app.service/danmaku.js": "0d2acd8c32e34abe50258d4e0a580437682882c0a23c8e9439ee2b73e4ef31a4"
+  },
+  "installedFiles": {
+    "app/dist/assets/LivePlayerPage-legacy-BPl-wjv1.js": {
+      "sha256": "8f8b0963fe712e0ef83728a81825068b6eacd807a30b16b28d364ecafaadba76",
+      "match": true
+    },
+    "app/dist/assets/NerdInfo-legacy-CYk83iuA.js": {
+      "sha256": "5c7ea91b0031dd76162111fc0885f12247ef72d97e70e219634c386bd789b6c4",
+      "match": true
+    },
+    "app/dist/assets/PlayerPage-legacy-_DyPqfj0.js": {
+      "sha256": "768e9586f006019ed3325acae0c30391acebe1a5b6e55c92b37178d5d080b59d",
+      "match": true
+    },
+    "app/dist/assets/index-legacy-BumvsBY_.js": {
+      "sha256": "fbe84a62150fe6e3f16ba53cdb55a72ef9369bd3d2841d1319044261b6200b9b",
+      "match": true
+    },
+    "app/dist/assets/polyfills-legacy-BiQ8HPCG.js": {
+      "sha256": "8ab0dde636d7367f21f61e6c2b0cb73db36d72041480a8baff92518aceabc6d3",
+      "match": true
+    },
+    "app/dist/assets/react-vendor-legacy-B2h5bzJ7.js": {
+      "sha256": "35b6eec340e5d94be0db7cb0978d708b51ed326b6b5144b1afb1d9a2d28cad7c",
+      "match": true
+    },
+    "app/dist/assets/shaka-player.compiled-legacy-01vuRLq-.js": {
+      "sha256": "e7555409c7b44282543f08a2c96f3b10f4925540208e22735c90e90c84138b0f",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/service.js": {
+      "sha256": "144494e6f4b059fdb163896ac6df54ff67b74ce2964aed76d55ed8d6092c7a25",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/danmaku.js": {
+      "sha256": "0d2acd8c32e34abe50258d4e0a580437682882c0a23c8e9439ee2b73e4ef31a4",
+      "match": true
+    }
+  },
+  "loadedEntryMatches": true,
+  "device": {
+    "userAgent": "Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.6834.207 Safari/537.36 WebAppManager",
+    "node": "v20.12.2",
+    "loadedBundles": [
+      "index-legacy-BumvsBY_.js",
+      "PlayerPage-legacy-_DyPqfj0.js"
+    ]
+  },
+  "installedAt": "2026-11-07T01:40:52.112Z",
+  "published": false
+}

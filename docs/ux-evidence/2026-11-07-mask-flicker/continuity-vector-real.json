@@ -1,0 +1,216 @@
+{
+  "fixture": {
+    "kind": "local-public-webmask",
+    "sha256": "1a93185e37cd206126a923d3be7e628de11f816695914a3fd5562eb3cd407d0a",
+    "framesInWindow": 130,
+    "uniqueFramesInWindow": 94
+  },
+  "durationSeconds": 5,
+  "startSeconds": 1,
+  "results": [
+    {
+      "decodeDelayMs": 0,
+      "samples": 301,
+      "missing": 0,
+      "missingRatio": 0,
+      "transitions": 0,
+      "stale": 0,
+      "appliedAdvance": 91,
+      "maxTimelineLagMs": 40,
+      "decoding": {
+        "calls": 0,
+        "pngCalls": 0,
+        "delayedCalls": 0
+      },
+      "screenshots": [
+        {
+          "name": "delay-0-1.png",
+          "center": [
+            255,
+            0,
+            0
+          ],
+          "left": [
+            255,
+            0,
+            0
+          ],
+          "right": [
+            255,
+            0,
+            0
+          ],
+          "pass": null
+        },
+        {
+          "name": "delay-0-2.png",
+          "center": [
+            0,
+            0,
+            255
+          ],
+          "left": [
+            255,
+            0,
+            0
+          ],
+          "right": [
+            255,
+            0,
+            0
+          ],
+          "pass": null
+        },
+        {
+          "name": "delay-0-3.png",
+          "center": [
+            0,
+            0,
+            255
+          ],
+          "left": [
+            255,
+            0,
+            0
+          ],
+          "right": [
+            255,
+            0,
+            0
+          ],
+          "pass": null
+        },
+        {
+          "name": "delay-0-4.png",
+          "center": [
+            0,
+            0,
+            255
+          ],
+          "left": [
+            255,
+            0,
+            0
+          ],
+          "right": [
+            255,
+            0,
+            0
+          ],
+          "pass": null
+        }
+      ],
+      "checks": {
+        "continuousMask": true,
+        "noStaleSilhouette": true,
+        "changingSilhouette": true,
+        "centralHoleAndBackground": true,
+        "boundedCache": true,
+        "noFailures": true
+      }
+    },
+    {
+      "decodeDelayMs": 100,
+      "samples": 301,
+      "missing": 0,
+      "missingRatio": 0,
+      "transitions": 0,
+      "stale": 0,
+      "appliedAdvance": 91,
+      "maxTimelineLagMs": 0,
+      "decoding": {
+        "calls": 0,
+        "pngCalls": 0,
+        "delayedCalls": 0
+      },
+      "screenshots": [
+        {
+          "name": "delay-100-1.png",
+          "center": [
+            255,
+            0,
+            0
+          ],
+          "left": [
+            255,
+            0,
+            0
+          ],
+          "right": [
+            255,
+            0,
+            0
+          ],
+          "pass": null
+        },
+        {
+          "name": "delay-100-2.png",
+          "center": [
+            0,
+            0,
+            255
+          ],
+          "left": [
+            255,
+            0,
+            0
+          ],
+          "right": [
+            255,
+            0,
+            0
+          ],
+          "pass": null
+        },
+        {
+          "name": "delay-100-3.png",
+          "center": [
+            0,
+            0,
+            255
+          ],
+          "left": [
+            255,
+            0,
+            0
+          ],
+          "right": [
+            255,
+            0,
+            0
+          ],
+          "pass": null
+        },
+        {
+          "name": "delay-100-4.png",
+          "center": [
+            0,
+            0,
+            255
+          ],
+          "left": [
+            255,
+            0,
+            0
+          ],
+          "right": [
+            255,
+            0,
+            0
+          ],
+          "pass": null
+        }
+      ],
+      "checks": {
+        "continuousMask": true,
+        "noStaleSilhouette": true,
+        "changingSilhouette": true,
+        "centralHoleAndBackground": true,
+        "boundedCache": true,
+        "noFailures": true
+      }
+    }
+  ],
+  "errors": [],
+  "pixelAssertionScope": "Real-file mode captures RGB samples but does not assert a fixed central hole; screenshots.pass=null. centralHoleAndBackground=true is not evidence that real-face pixels passed."
+}

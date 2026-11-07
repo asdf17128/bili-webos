@@ -1,0 +1,140 @@
+{
+  "kind": "local-real-media-vector-validation",
+  "televisionValidation": false,
+  "rick": {
+    "stillSamples": [
+      {
+        "time": 4.95,
+        "width": 640,
+        "height": 360,
+        "mask": {
+          "requests": 4,
+          "failures": 0,
+          "applied": 2,
+          "cached": 2,
+          "decodedFrames": 499,
+          "frameTime": 5002,
+          "timelineTime": 4950,
+          "sourceProtectedRatio": null,
+          "sourceHasHole": true,
+          "prepareMs": 2,
+          "selection": "future",
+          "prepared": 1,
+          "preparing": false,
+          "renderer": "vector",
+          "state": "active"
+        },
+        "maskStatus": "active"
+      },
+      {
+        "time": 7.75,
+        "width": 640,
+        "height": 360,
+        "mask": {
+          "requests": 4,
+          "failures": 0,
+          "applied": 3,
+          "cached": 2,
+          "decodedFrames": 499,
+          "frameTime": 7802,
+          "timelineTime": 7750,
+          "sourceProtectedRatio": 0,
+          "sourceHasHole": false,
+          "prepareMs": 1,
+          "selection": "future",
+          "prepared": 2,
+          "preparing": false,
+          "renderer": "vector",
+          "state": "unprotected"
+        },
+        "maskStatus": "gap"
+      }
+    ],
+    "continuousPlayback": {
+      "requestedSeconds": 120,
+      "samples": 120,
+      "advancingIntervals": 119,
+      "allPlaying": true,
+      "mediaErrors": 0,
+      "maskFailuresMax": 0,
+      "segmentCacheMax": 2,
+      "preparedGeometryMax": 8,
+      "lastDroppedVideoFrames": 0
+    },
+    "faceRegionComparison": {
+      "timeSeconds": 4.95,
+      "roi": {
+        "x": 780,
+        "y": 430,
+        "width": 220,
+        "height": 460
+      },
+      "differenceThreshold": 40,
+      "changedPixels": 0,
+      "pixels": 101200,
+      "checkedBy": "root agent compared captured overlay and base frame, and visually inspected head/face",
+      "scope": "one selected region of one frame; not whole-video face coverage"
+    },
+    "sourceLimitation": {
+      "timeSeconds": 7.75,
+      "sourceHasHole": false,
+      "personStillVisible": true,
+      "expectedBehavior": "show ordinary danmaku and report no source protection"
+    },
+    "cpuRate": 1,
+    "errors": []
+  },
+  "second": {
+    "stillSamples": [
+      {
+        "time": 17.9,
+        "width": 640,
+        "height": 360,
+        "mask": {
+          "requests": 4,
+          "failures": 0,
+          "applied": 2,
+          "cached": 2,
+          "decodedFrames": 600,
+          "frameTime": 17900,
+          "timelineTime": 17900,
+          "sourceProtectedRatio": null,
+          "sourceHasHole": true,
+          "prepareMs": 0,
+          "selection": "current-transition",
+          "prepared": 2,
+          "preparing": false,
+          "renderer": "vector",
+          "state": "active"
+        },
+        "maskStatus": "active"
+      },
+      {
+        "time": 18.02,
+        "width": 640,
+        "height": 360,
+        "mask": {
+          "requests": 4,
+          "failures": 0,
+          "applied": 3,
+          "cached": 2,
+          "decodedFrames": 600,
+          "frameTime": 18067,
+          "timelineTime": 18020,
+          "sourceProtectedRatio": 0,
+          "sourceHasHole": false,
+          "prepareMs": 0,
+          "selection": "future",
+          "prepared": 2,
+          "preparing": false,
+          "renderer": "vector",
+          "state": "unprotected"
+        },
+        "maskStatus": "gap"
+      }
+    ],
+    "cpuRate": 1,
+    "errors": [],
+    "scope": "17.9s current-transition and 18.02s no-hole state; the 17.9s sticker is not covered by the source, so this is not proof of face-avoidance accuracy"
+  }
+}

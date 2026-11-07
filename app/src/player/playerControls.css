@@ -1,6 +1,6 @@
 /* VOD controls only. Keep the live player's geometry and remote layers intact.
    A continuous scrim leaves footage visible, without a dark control-panel edge.
-   Normal flow keeps the progress track from shrinking when buttons wrap. */
+   Normal flow keeps the progress track separate from the three action groups. */
 .player-page.player-page-vod {
   width: 100vw;
   height: 100vh;
@@ -121,10 +121,27 @@
   gap: 0; /* Reset global spacing; margins also work on older webOS. */
 }
 
+.player-controls-vod .player-control-group {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+}
+
+/* Equal side columns keep transport centered in the actual video area,
+   regardless of the different number of buttons on either side. */
+.player-controls-vod .player-control-group-engagement,
+.player-controls-vod .player-control-group-tools { flex: 1 1 0; }
+.player-controls-vod .player-control-group-engagement { justify-content: flex-start; }
+.player-controls-vod .player-control-group-tools { justify-content: flex-end; }
+.player-controls-vod .player-control-group-transport {
+  flex: 0 0 auto;
+  justify-content: center;
+  margin: 0 24px;
+}
+
 .player-controls-vod .player-control {
-  /* Let translated labels use the available row instead of clipping them
-     inside fixed-width buttons. The automatic minimum preserves whole words
-     and the separate On/Off indicator when the comment rail is open. */
+  /* Labels may wrap at word boundaries; their font size is never reduced to
+     squeeze the controls into a narrower video area. */
   flex: 0 1 auto;
   min-width: auto;
   min-height: 76px;
@@ -138,11 +155,22 @@
 }
 
 .player-controls-vod .player-control[data-control="play"] {
-  flex-basis: 88px;
+  min-width: 88px;
   background: rgba(255, 255, 255, .12);
 }
-.player-controls-vod .player-control[data-control="more"] { margin-left: auto; }
+.player-controls-vod .player-control[data-control="prev"],
+.player-controls-vod .player-control[data-control="next"] {
+  flex: 0 0 calc(84px * var(--ui-scale) + 24px);
+  width: calc(84px * var(--ui-scale) + 24px);
+}
 .player-controls-vod .player-control:last-child { margin-right: 0; }
+
+.player-controls-vod .player-control:disabled,
+.player-controls-vod .player-control[aria-disabled="true"] {
+  color: #b2b2b6;
+  opacity: .65;
+  cursor: default;
+}
 
 .player-controls-vod .player-control-label {
   margin-top: 7px;
@@ -174,6 +202,17 @@
   line-height: 1.25;
   white-space: nowrap;
 }
+
+.player-controls-vod .player-control-value {
+  display: block;
+  margin-top: 3px;
+  font-size: calc(18px * var(--ui-scale));
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.player-controls-vod .player-control-caption { display: none; }
 
 .player-controls-vod .player-control-icon > svg {
   filter: drop-shadow(0 1px 1px #000) drop-shadow(0 0 2px rgba(0, 0, 0, .9));
@@ -317,10 +356,49 @@
   .player-controls-vod .player-disclaimer { margin-right: 12px; }
   .player-controls-vod .player-timeline-meta { margin-top: 6px; }
   .player-controls-vod .player-control-deck > .player-progress-bar { margin-top: 6px; margin-bottom: 10px; }
-  .player-controls-vod .player-control { min-height: 68px; margin: 0 4px 0 0; padding: 6px 8px; }
+  .player-controls-vod .player-control-group-transport { margin: 0 16px; }
+  .player-controls-vod .player-control { min-height: 68px; margin: 0 4px 0 0; padding: 6px 4px; }
+  .player-controls-vod .player-control[data-control="prev"],
+  .player-controls-vod .player-control[data-control="next"] { flex-basis: calc(84px * var(--ui-scale) + 8px); width: calc(84px * var(--ui-scale) + 8px); }
   .player-controls-vod .player-control-label { margin-top: 5px; }
   .player-controls-vod .player-recommendation-hint { min-height: 32px; margin-bottom: 0; }
   .player-controls-vod .player-related-panel { margin-top: 4px; }
   .player-controls-vod .panel-tab-row { margin-bottom: 4px; }
 
+  /* A 420px comment rail leaves only 788px at 720p. Keep all nine actions in
+     their groups and all counts readable, with one fixed caption for the
+     focused action instead of overlapping translated labels. */
+  .player-controls-vod.with-comment-rail .player-btns { margin-left: -20px; margin-right: -20px; }
+  .player-controls-vod.with-comment-rail .player-control-group-transport { margin: 0 8px; }
+  .player-controls-vod.with-comment-rail .player-control { min-width: 40px; padding: 8px 0; }
+  .player-controls-vod.with-comment-rail .player-control[data-control="play"] { min-width: 64px; }
+  .player-controls-vod.with-comment-rail .player-control[data-control="prev"],
+  .player-controls-vod.with-comment-rail .player-control[data-control="next"] { flex-basis: 40px; width: 40px; }
+  .player-controls-vod.with-comment-rail .player-control-value {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .player-controls-vod.with-comment-rail .player-control-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+  .player-controls-vod.with-comment-rail .player-control-caption {
+    display: block;
+    min-height: calc(23.4px * var(--ui-scale));
+    margin-top: 6px;
+    font-size: calc(18px * var(--ui-scale));
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }

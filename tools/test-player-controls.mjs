@@ -13,7 +13,7 @@ const baseline = process.argv.includes('--baseline');
 const output = process.env.CONTROLS_OUTPUT || '/tmp/bili-player-controls';
 await mkdir(output, { recursive: true });
 const reports = [];
-const sourcePaths = ['app/src/player/PlayerPage.jsx', 'app/src/player/SubtitleLayer.jsx', 'app/src/player/playerControls.css', 'app/src/player/PlayerMoreControls.jsx', 'app/src/player/playerMoreControls.css', 'app/src/components/Icon.jsx', 'app/src/i18n/en.js', 'app/src/i18n/es.js', 'app/src/styles.css', 'app/src/tv-design.css', 'app/src/hooks/useAuthorFollowers.js', 'app/src/utils/authorFollowers.js'];
+const sourcePaths = ['app/src/player/PlayerPage.jsx', 'app/src/player/adjacentVideo.js', 'app/src/player/SubtitleLayer.jsx', 'app/src/player/playerControls.css', 'app/src/player/PlayerMoreControls.jsx', 'app/src/player/playerMoreControls.css', 'app/src/components/Icon.jsx', 'app/src/i18n/en.js', 'app/src/i18n/es.js', 'app/src/styles.css', 'app/src/tv-design.css', 'app/src/hooks/useAuthorFollowers.js', 'app/src/utils/authorFollowers.js'];
 const hashSources = () => Promise.all(sourcePaths.map(async path => [path, createHash('sha256').update(await readFile(path)).digest('hex')])).then(Object.fromEntries);
 const sources = await hashSources();
 if (process.env.CONTROLS_ANALYZE_ONLY) {
@@ -56,7 +56,7 @@ function sceneSvg(name) {
 }
 
 // Measure spatial texture in the actual pixels, not the CSS background string.
-// The quiet 70–80% ROI is between viewing tools and the More group; it
+// The quiet 70–80% ROI is between transport and the comments/settings group; it
 // avoids title glyphs, controls, time and subtitles in
 // these fixed 1080p scenes. Low-variance rows cannot support a meaningful fit.
 function analyzeScenePixels(referenceBytes, controlsBytes, geometry) {
@@ -192,7 +192,7 @@ async function fixture(options = {}) {
   await page.waitForFunction(() => !!window.__openVideo);
   await page.evaluate(() => window.__openVideo({ bvid: 'BVControlsFixture', resumeMode: 'none' }));
   await page.waitForFunction(() => window.__controlsProbe.loads === 1 && document.querySelector('video')?.readyState === 4);
-  await page.waitForFunction(() => ['暂停','Pause','Pausa'].includes(document.querySelector('.player-control-label')?.textContent));
+  await page.waitForFunction(() => ['暂停','Pause','Pausa'].includes(document.querySelector('[data-control=play] .player-control-label')?.textContent));
   await page.waitForFunction(() => document.querySelector('.player-time')?.textContent.includes('/ 10:00'));
   const scene = options.scene ? `url("data:image/svg+xml;base64,${Buffer.from(sceneSvg(options.scene)).toString('base64')}") center / 100% 100% no-repeat` : options.background === 'dark' ? 'linear-gradient(125deg,#08161b,#132937 40%,#060b13)' : 'linear-gradient(125deg,#fffce4,#edf6fa 40%,#ffffff)';
   await page.addStyleTag({ content: `video { background: ${scene} !important; }` });
@@ -207,16 +207,19 @@ async function state(page) {
   });
 }
 async function openControls(page) { await page.keyboard.press('ArrowUp'); await page.waitForFunction(() => !document.querySelector('.player-controls').classList.contains('hidden')); await page.waitForTimeout(350); }
-async function openMore(page, id) {
+async function focusPrimary(page, id) {
+  for (let i=0;i<10 && await page.locator('.player-control.focused').getAttribute('data-control')!==id;i++) await page.keyboard.press('ArrowRight');
+  assert.equal(await page.locator('.player-control.focused').getAttribute('data-control'),id);
+}
+async function openSettings(page, id) {
   if (!await page.locator('.player-more-panel').count()) {
-    for (let i = 0; i < 9 && await page.locator('.player-control.focused').getAttribute('data-control') !== 'more'; i++) await page.keyboard.press('ArrowRight');
-    assert.equal(await page.locator('.player-control.focused').getAttribute('data-control'), 'more');
-    await page.keyboard.press('Enter'); await page.locator('.player-more-panel').waitFor();
+    await focusPrimary(page,'settings');
+    await page.keyboard.press('Enter');await page.locator('.player-more-panel').waitFor();
   }
   if (id) {
-    for (let i = 0; i < 8; i++) await page.keyboard.press('ArrowUp');
-    for (let i = 0; i < 8 && await page.locator('.player-more-action.focused').getAttribute('data-control') !== id; i++) await page.keyboard.press('ArrowDown');
-    assert.equal(await page.locator('.player-more-action.focused').getAttribute('data-control'), id);
+    for (let i=0;i<8;i++)await page.keyboard.press('ArrowUp');
+    for (let i=0;i<8 && await page.locator('.player-more-action.focused').getAttribute('data-control')!==id;i++)await page.keyboard.press('ArrowDown');
+    assert.equal(await page.locator('.player-more-action.focused').getAttribute('data-control'),id);
   }
 }
 async function focusedCard(page, index) {
@@ -250,7 +253,7 @@ async function run(name, options, fn) {
 
 for(const mask of ['failure','missing','mismatch']) await run('person mask metadata integration '+mask, {mask}, async f=>{
  await openControls(f.page);
- await openMore(f.page,'danmakuSettings');await f.page.keyboard.press('Enter');
+ await openSettings(f.page,'danmakuSettings');await f.page.keyboard.press('Enter');
  const text=mask==='failure'?'人物遮罩加载失败，已使用普通弹幕':'当前视频未提供人物遮罩';
  await f.page.getByRole('status').filter({hasText:text}).waitFor();
  assert.equal((f.calls.maskRanges||[]).length,mask==='failure'?1:0);
@@ -263,11 +266,11 @@ for(const mask of ['failure','missing','mismatch']) await run('person mask metad
 await run('in-playback danmaku settings preserve playback and restore remote focus', {}, async f => {
  const page=f.page;await openControls(page);
  await page.route('**/list.so?**',route=>route.fulfill({contentType:'text/xml',body:'<i><d p="120,1,28,16777215,0,0,hash,99">即时样式测试</d></i>'}));
- await page.locator('.player-control[data-control="danmaku"]').click();
+ await openSettings(page,'danmaku');await page.keyboard.press('Enter');
  const actual=page.locator('.player-page-vod > .danmaku-container .danmaku-item');
  await actual.first().waitFor();assert.equal(await actual.first().evaluate(e=>e.style.fontSize),'28px');
  const before=await state(page);
- await openMore(page,'danmakuSettings');
+ await openSettings(page,'danmakuSettings');
  await page.keyboard.press('Enter');
  await page.getByRole('dialog',{name:'弹幕设置'}).waitFor();
  await page.keyboard.press('Enter');await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
@@ -282,62 +285,65 @@ await run('in-playback danmaku settings preserve playback and restore remote foc
  await page.keyboard.press('Enter');await page.getByRole('dialog',{name:'弹幕设置'}).waitFor();
  assert.ok((await page.locator('.dm-setting-row').first().innerText()).includes('大'));
  await page.keyboard.press('Escape');await page.keyboard.press('Escape');
- assert.equal((await state(page)).focused,'更多');
- for(let i=0;i<8 && (await page.locator('.player-control.focused').getAttribute('data-control'))!=='danmaku';i++)await page.keyboard.press('ArrowLeft');
- assert.equal(await page.locator('.player-control.focused').getAttribute('data-control'),'danmaku');
+ assert.equal((await state(page)).focused,'设置');
+ await openSettings(page,'danmaku');assert.equal(await page.locator('.player-more-action.focused').getAttribute('data-control'),'danmaku');
 });
 
-for(const options of [{}, {width:1280,height:720,scale:1.4}, {auth:false,subtitles:false}, {language:'en',width:1280,height:720,scale:1.4,subtitleOff:true}]) await run('grouped primary tools and More hierarchy '+JSON.stringify(options), options, async f => {
+for(const options of [{}, {width:1280,height:720,scale:1.4}, {auth:false,subtitles:false}, {language:'en',width:1280,height:720,scale:1.4,subtitleOff:true}]) await run('three primary groups and nested settings '+JSON.stringify(options), options, async f => {
  const page=f.page;await page.waitForTimeout(700);await openControls(page);
- const buttons=await page.locator('.player-control').evaluateAll(nodes=>nodes.map(e=>{const r=e.getBoundingClientRect();return {id:e.dataset.control,x:r.x,y:r.y,centerY:(r.y+r.bottom)/2,right:r.right,bottom:r.bottom}}));
- assert.deepEqual(buttons.map(b=>b.id),['play','danmaku',...(options.subtitles===false?[]:['subtitle']),'speed','quality','more','comments']);
- assert.ok(buttons.every(b=>Math.abs(b.centerY-buttons[0].centerY)<1&&b.x>=0&&b.right<=(options.width||1920)),'primary actions stay on one visible row');
- const stateBadges=await page.locator('.player-control-state').evaluateAll(nodes=>nodes.map(e=>{const r=e.getBoundingClientRect(),b=e.closest('button').getBoundingClientRect();return {id:e.closest('button').dataset.control,text:e.textContent,visible:r.width>0&&r.left>=b.left&&r.right<=b.right&&r.top>=b.top&&r.bottom<=b.bottom&&e.scrollWidth<=e.clientWidth+1,font:parseFloat(getComputedStyle(e).fontSize)};}));
- assert.equal(stateBadges.length,options.subtitles===false?1:2);
- for(const badge of stateBadges){assert.ok(badge.visible,'state is visible without truncation: '+badge.id);assert.ok(badge.font>=18*(options.scale||1)-.01,'state respects text size');}
- assert.equal(stateBadges.find(b=>b.id==='danmaku').text,options.language==='en'?'Off':'关');
- if(options.subtitleOff)assert.equal(stateBadges.find(b=>b.id==='subtitle').text,'Off');
+ const layout=await page.evaluate(()=>{
+  const rect=e=>{const r=e.getBoundingClientRect();return{x:r.x,right:r.right,centerX:(r.x+r.right)/2,centerY:(r.y+r.bottom)/2}};
+  return {row:rect(document.querySelector('.player-btns')),buttons:[...document.querySelectorAll('.player-control')].map(e=>({id:e.dataset.control,...rect(e)})),groups:[...document.querySelectorAll('.player-control-group')].map(e=>[...e.querySelectorAll('button')].map(b=>b.dataset.control))};
+ });
+ assert.deepEqual(layout.groups,[['like','coin','fav','later'],['prev','play','next'],['comments','settings']]);
+ assert.ok(layout.buttons.every(b=>Math.abs(b.centerY-layout.buttons[0].centerY)<1&&b.x>=0&&b.right<=(options.width||1920)),'nine actions stay on one row');
+ assert.ok(Math.abs(layout.buttons.find(b=>b.id==='play').centerX-layout.row.centerX)<1,'play is centered in the video control area');
+ assert.ok(layout.buttons[3].right+8<layout.buttons[4].x&&layout.buttons[6].right+8<layout.buttons[7].x,'visible space separates the three groups');
+ for(const id of ['like','coin','fav','later'])assert.equal(await page.locator(`[data-control="${id}"]`).isDisabled(),options.auth===false);
+ assert.equal(await page.locator('.player-control.focused').getAttribute('data-control'),'play');
  assert.equal(await page.locator('.player-btns .player-time').count(),0);
  assert.equal(await page.locator('.player-timeline-meta .player-time').count(),1);
- assert.equal(await page.locator('.player-more-panel').count(),0);
- const before=await state(page);await openMore(page);
+ await shot(f,'after-three-groups-'+(options.language||'zh')+'-'+(options.height||1080)+'-'+(options.auth===false?'guest':'account'));
+ const before=await state(page);await openSettings(page);
  const rows=await page.locator('.player-more-action').evaluateAll(nodes=>nodes.map(e=>e.dataset.control));
- for(const key of ['like','coin','fav','later'])assert.equal(rows.includes(key),options.auth!==false);
- assert.ok(rows.includes('danmakuSettings'));
+ assert.deepEqual(rows.slice(0,5),['quality','speed',...(options.subtitles===false?[]:['subtitle']),'danmaku','danmakuSettings',...(options.subtitles===false?['follow']:[])]);
+ for(const id of ['like','coin','fav','later'])assert.ok(!rows.includes(id),'engagement remains in the primary row');
+ const off=options.language==='en'?'Off':'关';
+ assert.equal(await page.locator('[data-control="danmaku"] .player-more-value').textContent(),off);
+ if(options.subtitleOff)assert.equal(await page.locator('[data-control="subtitle"] .player-more-value').textContent(),off);
  for(let n=0;n<rows.length;n++){
-  const focused=page.locator('.player-more-action.focused');const box=await focused.boundingBox();
-  assert.ok(box.y>=0&&box.y+box.height<=(options.height||1080),'every More action is visible through remote navigation');
+  const box=await page.locator('.player-more-action.focused').boundingBox();
+  assert.ok(box.y>=0&&box.y+box.height<=(options.height||1080),'settings actions are visible through remote navigation');
   await page.keyboard.press('ArrowDown');
  }
- await shot(f,'after-more-'+(options.language||'zh')+'-'+(options.height||1080)+'-'+(options.auth===false?'guest':'account'));
- await page.waitForTimeout(5200);assert.equal((await state(page)).visibleControls,true,'More prevents auto-hide');
+ await shot(f,'after-settings-'+(options.language||'zh')+'-'+(options.height||1080)+'-'+(options.auth===false?'guest':'account'));
+ await page.waitForTimeout(5200);assert.equal((await state(page)).visibleControls,true,'settings prevent auto-hide');
  await page.keyboard.press('Escape');assert.equal(await page.locator('.player-more-panel').count(),0);
- assert.equal(await page.locator('.player-control.focused').getAttribute('data-control'),'more');
+ assert.equal(await page.locator('.player-control.focused').getAttribute('data-control'),'settings');
  const after=await state(page);assert.equal(after.probe.loads,before.probe.loads);assert.deepEqual(after.probe.seeks,before.probe.seeks);assert.equal(after.media.paused,before.media.paused);
- assert.equal(f.calls.knownMockWrites.length,0,'navigating through actions performs no account writes');
+ assert.equal(f.calls.knownMockWrites.length,0,'navigating settings performs no account writes');
 });
-await run('More like tap is single and navigation or Back cancels an unfinished hold',{},async f=>{
- const page=f.page;await openControls(page);await openMore(page,'like');
+await run('primary like tap is single and leaving focus cancels an unfinished hold',{},async f=>{
+ const page=f.page;await openControls(page);await focusPrimary(page,'like');
  await page.keyboard.press('Enter');await page.waitForTimeout(200);
- assert.equal(f.calls.knownMockWrites.filter(p=>p.endsWith('/archive/like')).length,1,'quick press likes once');
- await page.keyboard.down('Enter');await page.waitForTimeout(400);await page.keyboard.press('ArrowDown');await page.keyboard.up('Enter');
+ assert.equal(f.calls.knownMockWrites.filter(p=>p.endsWith('/archive/like')).length,1);
+ await page.keyboard.down('Enter');await page.waitForTimeout(400);await page.keyboard.press('ArrowRight');await page.keyboard.up('Enter');
  assert.equal(f.calls.knownMockWrites.length,1,'moving focus cancels the held action');
- await page.keyboard.press('ArrowUp');await page.keyboard.down('Enter');await page.waitForTimeout(400);await page.keyboard.press('Escape');await page.keyboard.up('Enter');
+ await focusPrimary(page,'like');await page.keyboard.down('Enter');await page.waitForTimeout(400);await page.keyboard.press('Escape');await page.keyboard.up('Enter');
  assert.equal(f.calls.knownMockWrites.length,1,'Back cancels the held action');
- assert.equal(await page.locator('.player-control.focused').getAttribute('data-control'),'more');
- await page.keyboard.press('Enter');await page.locator('.player-more-panel').waitFor();
- await page.getByRole('button',{name:'点赞',exact:true}).click();await page.waitForTimeout(200);
- assert.equal(f.calls.knownMockWrites.filter(p=>p.endsWith('/archive/like')).length,2,'pointer click likes once without a second synthetic click');
+ assert.equal((await state(page)).visibleControls,false);
+ await openControls(page);await page.getByRole('button',{name:'点赞',exact:true}).click();await page.waitForTimeout(200);
+ assert.equal(f.calls.knownMockWrites.filter(p=>p.endsWith('/archive/like')).length,2,'pointer click likes once');
 });
 
-await run('More preserves separate coin favorite and watch later actions',{moreActions:true},async f=>{
- const page=f.page;await openControls(page);await openMore(page,'coin');
+await run('primary row preserves separate coin favorite and watch later actions',{moreActions:true},async f=>{
+ const page=f.page;await openControls(page);await focusPrimary(page,'coin');
  await page.keyboard.press('Enter');
- await page.waitForFunction(()=>document.querySelector('[data-control="coin"] .player-more-value')?.textContent==='124');
- await openMore(page,'fav');await page.keyboard.press('Enter');
+ await page.waitForFunction(()=>document.querySelector('[data-control="coin"] .player-control-value')?.textContent==='124');
+ await focusPrimary(page,'fav');await page.keyboard.press('Enter');
  await page.waitForFunction(()=>document.querySelector('[data-control="fav"]')?.getAttribute('aria-pressed')==='true');
- assert.equal(await page.locator('[data-control="fav"] .player-more-value').textContent(),'891');
- await openMore(page,'later');await page.keyboard.press('Enter');
+ assert.equal(await page.locator('[data-control="fav"] .player-control-value').textContent(),'891');
+ await focusPrimary(page,'later');await page.keyboard.press('Enter');
  await page.getByRole('button',{name:'已稍后再看',exact:true}).waitFor();
  await page.keyboard.press('Enter');await page.getByRole('button',{name:'稍后再看',exact:true}).waitFor();
  const writes=f.calls.mockWriteDetails.map(w=>({path:w.path,form:new URLSearchParams(w.body)}));
@@ -348,8 +354,8 @@ await run('More preserves separate coin favorite and watch later actions',{moreA
  assert.equal((await state(page)).probe.loads,1);
 });
 
-for(const terminal of ['ended','error']) await run('More closes and cancels account hold when playback '+terminal,{},async f=>{
- const page=f.page;await openControls(page);await openMore(page,'like');
+for(const terminal of ['ended','error']) await run('terminal transition cancels primary account hold when playback '+terminal,{},async f=>{
+ const page=f.page;await openControls(page);await focusPrimary(page,'like');
  await page.keyboard.down('Enter');await page.waitForTimeout(400);
  await page.evaluate(terminal=>{
   if(terminal==='ended')document.querySelector('video').dispatchEvent(new Event('ended'));
@@ -362,16 +368,46 @@ for(const terminal of ['ended','error']) await run('More closes and cancels acco
  else assert.equal(await page.locator('.related-card.focused').count(),1);
 });
 
+for(const terminal of ['ended','error']) await run('terminal transition closes nested playback settings '+terminal,{},async f=>{
+ const page=f.page;await openControls(page);await openSettings(page,'quality');await page.keyboard.press('Enter');
+ await page.locator('.quality-popup').waitFor();
+ await page.evaluate(terminal=>{
+  if(terminal==='ended')document.querySelector('video').dispatchEvent(new Event('ended'));
+  else window.__shakaPlayer.events.error({detail:{category:3,code:3016,severity:2}});
+ },terminal);
+ await page.waitForFunction(()=>!document.querySelector('.player-more-panel'));
+ if(terminal==='error')await page.locator('.player-error').waitFor();
+ else assert.equal(await page.locator('.related-card.focused').count(),1);
+ assert.equal(f.calls.knownMockWrites.filter(path=>!path.endsWith('/heartbeat')).length,0);
+});
+
 for(const language of ['zh','en']) await run('comment count remains visible before opening and within narrow rail '+language,{language,width:1280,height:720,scale:1.4,commentCount:125678},async f=>{
  const page=f.page;await openControls(page);
  assert.ok((await page.locator('.player-control[data-control="comments"]').textContent()).includes(language==='zh'?'12.6万':'125.7K'),'existing comment total remains visible before opening');
- await page.keyboard.press('ArrowLeft');await page.keyboard.press('Enter');
+ await focusPrimary(page,'comments');await page.keyboard.press('Enter');
  await page.locator('.comment-rail-body').waitFor();await page.waitForTimeout(350);
  const geometry=await page.evaluate(()=>{
   const rail=document.querySelector('.comment-rail-body').parentElement.getBoundingClientRect();
-  return [...document.querySelectorAll('.player-control')].map(e=>{const b=e.getBoundingClientRect(),label=e.querySelector('.player-control-label'),state=e.querySelector('.player-control-state');return{id:e.dataset.control,right:b.right,edge:rail.left,center:(b.y+b.bottom)/2,labelClipped:label.scrollWidth>label.clientWidth+1,stateClipped:state&&state.scrollWidth>state.clientWidth+1};});
+  return [...document.querySelectorAll('.player-control')].map(e=>{const b=e.getBoundingClientRect(),value=e.querySelector('.player-control-value');return{id:e.dataset.control,left:b.left,right:b.right,edge:rail.left,center:(b.y+b.bottom)/2,valueClipped:value&&value.scrollWidth>value.clientWidth+1};});
  });
- for(const b of geometry){assert.ok(b.right<=b.edge,'button stays left of comment rail: '+b.id);assert.ok(!b.labelClipped&&!b.stateClipped,'label and status remain readable: '+b.id);assert.ok(Math.abs(b.center-geometry[0].center)<1,'one row with consistent alignment');}
+ for(const [i,b] of geometry.entries()){
+  assert.ok(b.right<=b.edge&&b.left>=0,'button stays inside video area: '+b.id);
+  assert.ok(!b.valueClipped,'count remains readable: '+b.id);
+  assert.ok(Math.abs(b.center-geometry[0].center)<1,'one row with consistent alignment');
+  if(i)assert.ok(geometry[i-1].right<=b.left,'buttons do not overlap');
+ }
+ await page.keyboard.press('ArrowLeft');
+ assert.equal(await page.locator('.player-control.focused').getAttribute('data-control'),'comments');
+ for(let i=0;i<9;i++){
+  const caption=await page.evaluate(()=>{
+   const button=document.querySelector('.player-control.focused'),label=button.querySelector('.player-control-label').textContent,value=button.querySelector('.player-control-value')?.textContent||'',caption=document.querySelector('.player-control-caption'),box=caption.getBoundingClientRect();
+   return{expected:`${label} ${value}`.trim(),text:caption.textContent.trim(),clipped:caption.scrollWidth>caption.clientWidth+1,visible:box.height>0&&box.top>=0&&box.bottom<=innerHeight};
+  });
+  assert.equal(caption.text,caption.expected,'narrow view names the focused action and its complete count');
+  assert.ok(caption.visible&&!caption.clipped,'focused caption fits the viewport');
+  await page.keyboard.press('ArrowRight');
+ }
+ await focusPrimary(page,'comments');
  await shot(f,'after-comments-count-'+language+'-720-large');
  await page.keyboard.press('Escape');assert.equal(await page.locator('.player-control.focused').getAttribute('data-control'),'comments');
 });
@@ -651,14 +687,15 @@ if (!baseline) {
 
   await run('subtitle popup and long press stay reachable', { background: 'light' }, async f => {
     await f.page.waitForTimeout(700); await openControls(f.page);
-    for (let i = 0; i < 20 && !/字幕/.test((await state(f.page)).focused); i++) await f.page.keyboard.press('ArrowRight');
+    await openSettings(f.page,'subtitle');
     assert.match((await state(f.page)).focused, /字幕/);
     await f.page.keyboard.press('Enter'); await f.page.locator('.ctrl-popup').waitFor();
     await f.page.waitForTimeout(5350);
     assert.equal((await state(f.page)).visibleControls, true, 'subtitle choice suspends auto-hide');
     await f.page.keyboard.press('Escape');
     assert.match((await state(f.page)).focused, /字幕/);
-    await openMore(f.page,'like');
+    await f.page.keyboard.press('Escape');
+    await focusPrimary(f.page,'like');
     assert.equal(await f.page.locator('.player-btn.focused').getAttribute('aria-label'),'点赞');
     await f.page.keyboard.down('Enter'); await f.page.waitForTimeout(500);
     await f.page.locator('.like-ring').waitFor(); await shot(f, 'after-like-hold');
@@ -666,7 +703,6 @@ if (!baseline) {
     assert.equal(f.calls.knownMockWrites.length, 0, 'aborted like hold does not submit a like or triple');
     await f.page.keyboard.down('Enter'); await f.page.waitForTimeout(2200); await f.page.keyboard.up('Enter');
     assert.equal(f.calls.knownMockWrites.filter(path => path.endsWith('/archive/like/triple')).length, 1, 'full two-second hold submits one synthetic triple');
-    await f.page.keyboard.press('Escape');
     await f.page.keyboard.press('ArrowDown'); await f.page.keyboard.press('ArrowDown');
     await f.page.keyboard.down('Enter'); await f.page.waitForTimeout(900); await f.page.keyboard.up('Enter');
     await f.page.locator('.cardmenu').waitFor();
@@ -678,12 +714,12 @@ if (!baseline) {
 
   await run('quality popup returns to its control and keeps media state', { background: 'dark' }, async f => {
     await f.page.waitForTimeout(700); await openControls(f.page);
-    for (let i = 0; i < 20 && (await state(f.page)).focused !== '1080P'; i++) await f.page.keyboard.press('ArrowRight');
-    assert.equal((await state(f.page)).focused, '1080P');
+    await openSettings(f.page,'quality');
+    assert.equal(await f.page.locator('.player-more-action.focused').getAttribute('data-control'),'quality');
     await f.page.keyboard.press('Enter'); await f.page.locator('.quality-popup').waitFor();
     await shot(f, 'after-quality-popup');
     await f.page.keyboard.press('Escape');
-    assert.equal((await state(f.page)).focused, '1080P');
+    assert.equal(await f.page.locator('.player-more-action.focused').getAttribute('data-control'),'quality');
     assert.equal((await state(f.page)).probe.loads, 1, 'closing menu does not reload media');
   });
 
@@ -758,7 +794,7 @@ if (!baseline) {
   });
 
   await run('720 large text comment rail preserves control navigation', { background: 'light', longName: true, width: 1280, height: 720, scale: 1.4 }, async f => {
-    await openControls(f.page); await f.page.keyboard.press('ArrowLeft');
+    await openControls(f.page); await focusPrimary(f.page,'comments');
     assert.equal((await state(f.page)).focused, '评论');
     await f.page.keyboard.press('Enter'); await f.page.locator('.comment-rail-body').waitFor();
     await f.page.waitForTimeout(350);
@@ -775,7 +811,8 @@ if (!baseline) {
     assert.equal(await f.page.locator('.comment-rail-body').count(), 0);
     assert.equal((await state(f.page)).focused, '评论');
     await f.page.keyboard.press('ArrowRight');
-    assert.equal((await state(f.page)).focused, '暂停');
+    assert.equal((await state(f.page)).focused, '设置');
+    await focusPrimary(f.page,'play');
     const button = await f.page.locator('.player-btn.focused').boundingBox();
     assert.ok(button.x >= 0 && button.y >= 0 && button.x + button.width <= 1280 && button.y + button.height <= 720);
   });

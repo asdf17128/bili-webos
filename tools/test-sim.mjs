@@ -102,13 +102,15 @@ async function main() {
 
   const key = (k) => page.keyboard.press(k);
   const focusedBtn = () => page.evaluate(() => (document.querySelector('.player-btn.focused') || {}).textContent || '');
-  const focusedMoreBtn = () => page.evaluate(() => document.querySelector('.player-more-panel .player-btn.focused')?.textContent || '');
-  const openMoreControls = async () => {
+  const focusPrimary = async id => {
     if (!await page.locator('.player-btns .player-btn.focused').count()) await key('ArrowUp');
     await page.locator('.player-btns .player-btn.focused').waitFor();
-    const more = page.locator('.player-btns [data-control="more"].focused');
-    for (let i = 0; i < 10 && !await more.count(); i++) { await key('ArrowRight'); await sleep(220); }
-    if (!await more.count()) throw new Error('More is not reachable from the primary player controls');
+    const target = page.locator('.player-btns [data-control="'+id+'"].focused');
+    for (let i = 0; i < 10 && !await target.count(); i++) { await key('ArrowRight'); await sleep(220); }
+    if (!await target.count()) throw new Error(id+' is not reachable from the primary player controls');
+  };
+  const openPlaybackSettings = async () => {
+    await focusPrimary('settings');
     await key('Enter');
     await page.locator('.player-more-panel').waitFor();
   };
@@ -215,40 +217,47 @@ async function main() {
     }
     check('Video plays', vod.playing, `t=${vod.ct}s`);
     for (let a = 0; a < 4; a++) { await key('ArrowUp'); await sleep(700); if (await focusedBtn()) break; }
-    const controls = await page.evaluate(() => [...document.querySelectorAll('.player-btn')].map(b => b.textContent.trim()));
-    check('Control bar has the expected buttons', controls.some(c => c.includes('弹幕')) && controls.some(c => c.includes('倍速')) && controls.some(c => c.includes('评论')),
-      controls.join(' | '));
+    const controls = await page.locator('.player-btns .player-control').evaluateAll(buttons => buttons.map(b => ({id:b.dataset.control,text:b.textContent.trim(),disabled:b.disabled})));
+    check('Control bar has the three groups in order',
+      controls.map(b=>b.id).join(',')==='like,coin,fav,later,prev,play,next,comments,settings', controls.map(b=>b.text).join(' | '));
+    check('Control bar opens on playback', await page.locator('.player-btns [data-control="play"].focused').count()===1);
     // 评论数在**打开评论之前**就该显示 —— 视频信息里本来就带 stat.reply,
     // 原来清零后非要等评论加载完才显示(owner 2026-08-31:"不够友好")。
-    check('评论按钮打开前就带数量', controls.some(c => /评论\s*·/.test(c)),
-      controls.filter(c => c.includes('评论')).join(''));
+    const commentTotal = await page.locator('.player-btns [data-control="comments"] .player-control-value').textContent();
+    check('评论按钮打开前就带数量', !!commentTotal && /[0-9]/.test(commentTotal), commentTotal || 'missing');
 
     // 控制栏首尾循环:第一个按左 → 最后一个;最后一个按右 → 第一个
+    const enabled = controls.filter(button=>!button.disabled).map(button=>button.id);
+    await focusPrimary(enabled[0]);
     const wrapSeq = [];
-    const curBtn = () => page.evaluate(() => ((document.querySelector('.player-btn.focused') || {}).textContent || '').trim());
+    const curBtn = () => page.locator('.player-btns .player-control.focused').getAttribute('data-control');
     wrapSeq.push(await curBtn());
     await key('ArrowLeft'); await sleep(600); wrapSeq.push(await curBtn());
     await key('ArrowRight'); await sleep(600); wrapSeq.push(await curBtn());
-    check('控制栏首尾循环(暂停 ←→ 评论)',
-      wrapSeq[0].includes('暂停') && wrapSeq[1].includes('评论') && wrapSeq[2].includes('暂停'),
+    check('控制栏首尾循环并跳过不可用按钮',
+      wrapSeq[0]===enabled[0] && wrapSeq[1]===enabled[enabled.length-1] && wrapSeq[2]===enabled[0],
       wrapSeq.join(' → '));
 
     const storedAuth = await page.evaluate(() => !!(JSON.parse(localStorage.getItem('bili_auth') || '{}').SESSDATA));
     const nav = await serviceJson('https://api.bilibili.com/x/web-interface/nav');
     const loggedIn = nav.code === 0 && nav.data?.isLogin === true;
     if (storedAuth) {
-      await openMoreControls();
-      check('Stored login: 赞/币/藏 present in the More menu',
-        await page.locator('.player-more-panel [data-control="like"][aria-label="点赞"]').count() === 1 &&
-        await page.locator('.player-more-panel [data-control="coin"][aria-label="投币"]').count() === 1 &&
-        await page.locator('.player-more-panel [data-control="fav"][aria-label="收藏"]').count() === 1,
+      check('Stored login: 赞/币/藏 enabled in the primary row',
+        await page.locator('.player-btns [data-control="like"][aria-label="点赞"]:enabled').count() === 1 &&
+        await page.locator('.player-btns [data-control="coin"][aria-label="投币"]:enabled').count() === 1 &&
+        await page.locator('.player-btns [data-control="fav"][aria-label="收藏"]:enabled').count() === 1,
         'named like / coin / favorite controls');
-      await key('Escape');
-      await page.locator('.player-more-panel').waitFor({ state: 'detached' });
-      check('Back from More restores the primary More button', await page.locator('.player-btns [data-control="more"].focused').count() === 1);
     } else {
       warn('Not logged in', 'like/coin/fav surface skipped — start tools/dev-service.mjs to seed cookies');
     }
+
+    await openPlaybackSettings();
+    check('Playback settings retain danmaku speed and quality',
+      await page.locator('.player-more-panel [data-control="danmaku"]').count()===1 &&
+      await page.locator('.player-more-panel [data-control="speed"]').count()===1 &&
+      await page.locator('.player-more-panel [data-control="quality"]').count()===1);
+    await key('Escape');await page.locator('.player-more-panel').waitFor({state:'detached'});
+    check('Back from playback settings restores its primary entry',await page.locator('.player-btns [data-control="settings"].focused').count()===1);
 
     let f = '';
     for (let i = 0; i < 10; i++) { f = await focusedBtn(); if (f.includes('评论')) break; await key('ArrowRight'); await sleep(220); }
@@ -470,12 +479,10 @@ async function main() {
       await page.evaluate((bv) => window.__openVideo({ bvid: bv }), FIXTURE);
       await sleep(8000);
       for (let a = 0; a < 4; a++) { await key('ArrowUp'); await sleep(600); if (await focusedBtn()) break; }
-      await openMoreControls();
-      const laterBtns = await page.locator('.player-more-panel [data-control]').allTextContents();
-      check('Player More menu has a 稍后再看 button', laterBtns.some(c => c.includes('稍后再看')), laterBtns.join(' | '));
-      // 更多菜单内纵向选到稍后再看，再按 OK。
-      let hops = 0, cur = await focusedMoreBtn();
-      while (hops < 6 && !cur.includes('稍后再看')) { await key('ArrowDown'); await sleep(250); cur = await focusedMoreBtn(); hops++; }
+      const laterButton = page.locator('.player-btns [data-control="later"]');
+      check('Primary control row has an enabled 稍后再看 button',await laterButton.count()===1 && await laterButton.isEnabled());
+      await focusPrimary('later');
+      const cur = await laterButton.getAttribute('aria-label');
       let added = false;
       if (cur.includes('稍后再看')) {
         await key('Enter');
@@ -483,13 +490,13 @@ async function main() {
         let after = '';
         for (let w = 0; w < 10; w++) {
           await sleep(500);
-          after = await focusedMoreBtn();
-          if (after.includes('已稍后再看')) break;
+          after = await laterButton.getAttribute('aria-label');
+          if (after.includes('已稍后再看') && await laterButton.getAttribute('aria-pressed')==='true') break;
         }
-        added = after.includes('已稍后再看');
-        check('OK adds it and the button flips to 已稍后再看', added, after);
+        added = after.includes('已稍后再看') && await laterButton.getAttribute('aria-pressed')==='true';
+        check('OK adds it and the button reports 已稍后再看', added, after);
       } else {
-        check('OK adds it and the button flips to 已稍后再看', false, 'button not reachable');
+        check('OK adds it and the button reports 已稍后再看', false, 'button not reachable');
       }
       for (let i = 0; i < 4; i++) { await key('Escape'); await sleep(700); }
 

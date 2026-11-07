@@ -1,5 +1,8 @@
 // Spanish dictionary. Keys are the Chinese source strings (see index.js).
 export default {
+  '播放设置': 'Ajustes de reproducción',
+  '上一个': 'Anterior',
+  '下一个': 'Siguiente',
   '更多': 'Más',
   '更多操作': 'Más opciones',
   "直播当前支持白色滚动弹幕；这里的外观设置与点播共用。": "El directo admite comentarios blancos en movimiento. Los ajustes de aspecto se comparten con los vídeos grabados.",

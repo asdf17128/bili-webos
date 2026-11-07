@@ -33,6 +33,23 @@
   box-shadow: 0 12px 36px rgba(0, 0, 0, .35);
 }
 
+/* Nested quality/subtitle/speed options share this same sheet. Reset the old
+   anchored popup geometry; only the inner list is allowed to scroll. */
+.player-more-panel.ctrl-popup {
+  position: static;
+  z-index: auto;
+  top: auto;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  transform: none;
+  min-width: 0;
+  max-height: 100%;
+  padding: 0;
+  overflow: hidden;
+  white-space: normal;
+}
+
 .player-more-header {
   flex: none;
   display: flex;
@@ -105,13 +122,6 @@
   outline: none;
 }
 
-.player-more-panel .player-more-action.triple-pop { animation: player-more-pop .4s ease; }
-.player-more-panel .player-more-action.focused.triple-pop { animation: none; }
-@keyframes player-more-pop {
-  0%, 100% { transform: scale(1); }
-  45% { transform: scale(1.015); }
-}
-
 .player-more-icon {
   flex: none;
   display: flex;
@@ -121,8 +131,14 @@
   margin-right: 16px;
 }
 
-.player-more-label {
+.player-more-text {
+  display: block;
   flex: 1 1 auto;
+  min-width: 0;
+}
+
+.player-more-label {
+  display: block;
   min-width: 0;
   font-size: calc(20px * var(--ui-scale));
   font-weight: 600;
@@ -130,15 +146,23 @@
 }
 
 .player-more-value {
-  flex: 0 1 auto;
+  display: block;
   min-width: 0;
-  max-width: 45%;
-  margin-left: 16px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  max-width: 100%;
+  margin-top: 3px;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: break-word;
   font-size: calc(18px * var(--ui-scale));
   font-weight: 600;
+}
+
+.player-more-next {
+  display: flex;
+  align-items: center;
+  flex: none;
+  width: 20px;
+  margin-left: 14px;
 }
 
 @media (max-width: 1366px), (max-height: 800px) {
@@ -149,5 +173,4 @@
 
 @media (prefers-reduced-motion: reduce) {
   .player-more-panel .player-more-action { transition: none; animation: none; }
-  .player-more-panel .player-more-action.triple-pop { animation: none; }
 }

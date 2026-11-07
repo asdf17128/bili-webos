@@ -112,6 +112,7 @@ async function run(name, mode, fn, scale) {
     return route.fulfill({status:206,body:init,headers:{'content-range':`bytes 0-${init.length-1}/1000`,'content-length':String(init.length),'access-control-allow-origin':'*','access-control-expose-headers':'Content-Range, Content-Length'}});
   }
   if(/videoshot|list.so|archive\/related/.test(u.pathname))calls.extras++;
+  if(u.pathname.endsWith('/v2')&&mode.startsWith('follow-settings-delayed'))await new Promise(resolve=>calls.releaseSettingsMetadata=resolve);
   if(u.pathname.endsWith('/v2')) { calls.meta++;calls.events.push({type:'meta-start',cid:u.searchParams.get('cid'),at:Date.now()});if(mode.startsWith('startup'))await new Promise(r=>setTimeout(r,500));calls.events.push({type:'meta-end',at:Date.now()});if(mode==='startup-meta-error' && calls.meta===1)return route.fulfill({json:{code:-352}});data={last_play_cid:mode==='startup-part'?3:2,last_play_time:12000,subtitle:{subtitles:[{lan:'zh-CN',lan_doc:'中文',subtitle_url:'https://aisubtitle.hdslb.com/test.json'}]}}; }
   if(u.pathname.endsWith('/test.json')){
    if(mode==='subtitle-lifecycle-body')await new Promise(r=>calls.releaseSubtitle=r);
@@ -140,6 +141,21 @@ async function run(name, mode, fn, scale) {
 }
 const report=page=>page.evaluate(async()=>{const url=performance.getEntriesByType('resource').find(e=>new URL(e.name).pathname==='/src/player/playbackHealth.js').name;return (await import(url)).getPlaybackReport()});
 const open=page=>page.evaluate(()=>window.__openVideo({bvid:'BVtest',resumeMode:'none'}));
+async function openSetting(page, id) {
+ if (await page.locator('.ctrl-popup').count()) await page.keyboard.press('Escape');
+ if (!await page.locator('.player-more-panel:not(.ctrl-popup)').count()) {
+  if (await page.locator('.player-controls.hidden').count()) await page.keyboard.press('ArrowUp');
+  await page.locator('.player-btns [data-control="settings"]').click();
+ }
+ await page.locator('.player-more-panel:not(.ctrl-popup) [data-control="'+id+'"]').click();
+ await page.locator('.'+id+'-popup').waitFor();
+}
+async function leavePlayer(page) {
+ for(let i=0;i<4 && await page.locator('.player-page').count();i++){
+  await page.keyboard.press('Escape');await page.waitForTimeout(50);
+ }
+ await page.waitForFunction(()=>!document.querySelector('video'));
+}
 for(const stage of ['body','batches','success'])await run('subtitle lifecycle cancels obsolete translation: '+stage,'subtitle-lifecycle-'+stage,async(page,calls)=>{
  await open(page);await page.waitForFunction(()=>window.__probe.loads===1);
  const deadline=Date.now()+5000;
@@ -182,8 +198,9 @@ async function nativeFixture(page) {
  await page.keyboard.press('ArrowUp');
 }
 async function chooseSpeed(page,label) {
- await page.locator('.player-btn').filter({hasText:/倍速|^[0-9.]+x$/}).click();
- await page.locator('.quality-option').filter({hasText:new RegExp('^'+label.replace('.','\\.')+'$')}).click();
+ await openSetting(page,'speed');
+ await page.locator('.speed-popup .quality-option').filter({hasText:new RegExp('^'+label.replace('.','\\.')+'$')}).click();
+ await page.locator('.player-more-panel:not(.ctrl-popup) [data-control="speed"].focused').waitFor();
 }
 for(const scenario of ['exit','normal','newer-speed','new-video','quality','exit-unloading','normal-unloading','success']) await run('native speed lifecycle: '+scenario,'native-speed-'+scenario,async page=>{
  await nativeFixture(page);
@@ -191,8 +208,7 @@ for(const scenario of ['exit','normal','newer-speed','new-video','quality','exit
  await chooseSpeed(page,'2x');await page.waitForFunction(()=>window.__speedPending.length===1);
  if(scenario.endsWith('unloading')){await page.evaluate(()=>window.__speedPending[0]());await page.waitForFunction(()=>!!window.__releaseUnload);}
  if(scenario==='exit'||scenario==='exit-unloading'){
-  await page.keyboard.press('Escape');await page.keyboard.press('Escape');
-  await page.waitForFunction(()=>!document.querySelector('video'));
+  await leavePlayer(page);
  }else if(scenario==='normal'||scenario==='normal-unloading')await chooseSpeed(page,'正常');
  else if(scenario==='newer-speed'){
   await chooseSpeed(page,'1.5x');await page.waitForFunction(()=>window.__speedPending.length===2);
@@ -201,7 +217,7 @@ for(const scenario of ['exit','normal','newer-speed','new-video','quality','exit
   await page.evaluate(()=>window.__openVideo({bvid:'BVnext',resumeMode:'none'}));
   await page.waitForFunction(()=>window.__probe.destroyed===1&&window.__probe.loads===2);
  }else if(scenario==='quality'){
-  await page.locator('.player-btn').filter({hasText:'1080P'}).click();
+  await openSetting(page,'quality');
   await page.locator('.quality-option').filter({hasText:'360P'}).click();
   await page.waitForFunction(()=>window.__probe.loads===2);
  }
@@ -235,7 +251,7 @@ for(const order of ['before-unload','after-unload','normal','quality','normal-be
   await chooseSpeed(page,'正常');
  }else if(order==='normal'||order==='quality'){
   if(order==='normal')await chooseSpeed(page,'正常');
-  else {await chooseSpeed(page,'正常');await page.keyboard.press('ArrowRight');await page.keyboard.press('Enter');await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');}
+  else {await chooseSpeed(page,'正常');await openSetting(page,'quality');await page.locator('.quality-popup [data-control="16"]').click();}
   await page.waitForTimeout(100);assert.equal(await page.evaluate(()=>window.__probe.loads),1,'replacement load waits for old unload');
   await page.evaluate(()=>{window.__holdUnload=false;window.__releaseUnload()});
  }else{
@@ -305,7 +321,7 @@ for(const intent of ['exit','newer-native'])await run('native speed explicit det
  await page.evaluate(()=>{const v=document.querySelector('video');Object.defineProperty(v,'readyState',{configurable:true,get:()=>4});v.dispatchEvent(new Event('loadedmetadata'));window.__holdUnload=true});
  await chooseSpeed(page,'正常');await page.waitForFunction(()=>window.__probe.unloads===2&&!!window.__releaseUnload);
  if(intent==='exit'){
-  await page.keyboard.press('Escape');await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('video'));
+  await leavePlayer(page);
  }else{
   await page.keyboard.press('Enter');await page.keyboard.press('ArrowDown');await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
   await page.waitForFunction(()=>window.__speedPending.length===2);
@@ -521,20 +537,59 @@ await run('repeated fatal runtime errors exhaust bounded remount budget','runtim
  await page.clock.fastForward(120000);assert.equal(await page.evaluate(()=>window.__probe.loads),3);
  await page.keyboard.press('Enter');await page.waitForFunction(()=>window.__probe.loads===4);
 });
-await run('creator follow from player more menu','follow',async(page,calls)=>{
+await run('creator follow from player settings menu','follow',async(page,calls)=>{
  await open(page);await page.waitForFunction(()=>window.__probe.loads===1);await page.waitForTimeout(200);
  assert.equal(calls.follow||0,0);
+ const relationReady=page.waitForResponse(response=>new URL(response.url()).pathname.endsWith('/x/relation'));
  await page.keyboard.press('ArrowUp');
- for(let i=0;i<8 && !await page.locator('.player-btns [data-control="more"].focused').count();i++)await page.keyboard.press('ArrowRight');
- assert.equal(await page.locator('.player-btns [data-control="more"].focused').count(),1,'More is reachable from the primary row');
+ await (await relationReady).finished();
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ for(let i=0;i<9 && !await page.locator('.player-btns [data-control="settings"].focused').count();i++)await page.keyboard.press('ArrowRight');
+ assert.equal(await page.locator('.player-btns [data-control="settings"].focused').count(),1,'Settings is reachable from the primary row');
  await page.keyboard.press('Enter');await page.locator('.player-more-panel').waitFor();
  for(let i=0;i<6 && !await page.locator('.player-more-panel [data-control="follow"].focused').count();i++)await page.keyboard.press('ArrowDown');
- assert.equal(await page.locator('.player-more-panel [data-control="follow"].focused').count(),1,'Follow is reachable in the vertical More menu');
+ assert.equal(await page.locator('.player-more-panel [data-control="follow"].focused').count(),1,'Follow is reachable in the playback settings menu');
  await page.keyboard.press('Enter');
  await page.locator('.player-more-panel').getByText('取消关注 UP 主',{exact:true}).waitFor();
  assert.equal(calls.follow,1);
  await page.keyboard.press('Escape');await page.locator('.player-more-panel').waitFor({state:'detached'});
- assert.equal(await page.locator('.player-btns [data-control="more"].focused').count(),1,'Back returns to More in the primary row');
+ assert.equal(await page.locator('.player-btns [data-control="settings"].focused').count(),1,'Back returns to Settings in the primary row');
+});
+for(const target of ['danmaku','danmakuSettings','follow'])await run('settings focus survives delayed subtitle insertion: '+target,'follow-settings-delayed-'+target,async(page,calls)=>{
+ await open(page);await page.waitForFunction(()=>window.__probe.loads===1&&!document.querySelector('.player-page .loading'));
+ const deadline=Date.now()+5000;
+ while(!calls.releaseSettingsMetadata&&Date.now()<deadline)await page.waitForTimeout(20);
+ assert.equal(typeof calls.releaseSettingsMetadata,'function','subtitle metadata is held while playback runs');
+ const relationReady=page.waitForResponse(response=>new URL(response.url()).pathname.endsWith('/x/relation'));
+ await page.keyboard.press('ArrowUp');await (await relationReady).finished();
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ for(let i=0;i<9&&!await page.locator('.player-btns [data-control="settings"].focused').count();i++)await page.keyboard.press('ArrowRight');
+ assert.equal(await page.locator('.player-btns [data-control="settings"].focused').count(),1);
+ await page.keyboard.press('Enter');await page.locator('.player-more-panel').waitFor();
+ assert.equal(await page.locator('.player-more-panel [data-control="subtitle"]').count(),0);
+ const focused=page.locator('.player-more-panel:not(.ctrl-popup) [data-control="'+target+'"].focused');
+ for(let i=0;i<6&&!await focused.count();i++)await page.keyboard.press('ArrowDown');
+ assert.equal(await focused.count(),1,'target is focused before the new row arrives');
+ calls.releaseSettingsMetadata();
+ await page.locator('.player-more-panel [data-control="subtitle"]').waitFor();
+ assert.equal(await focused.count(),1,'inserting Subtitle keeps focus on the same setting ID');
+ assert.equal(calls.follow||0,0,'inserting a setting never performs a follow write');
+ await page.keyboard.press('Enter');
+ if(target==='danmaku'){
+  await page.waitForFunction(()=>document.querySelector('.player-more-panel [data-control="danmaku"]')?.getAttribute('aria-pressed')==='false');
+  assert.equal(await page.locator('.subtitle-popup').count(),0,'OK toggles danmaku instead of opening the inserted subtitle row');
+ }else if(target==='danmakuSettings'){
+  await page.locator('.dm-settings').waitFor();await page.keyboard.press('Escape');
+  await page.locator('.dm-settings').waitFor({state:'detached'});
+ }else{
+  await page.locator('.player-more-panel').getByText('取消关注 UP 主',{exact:true}).waitFor();
+  assert.equal(calls.follow,1,'OK writes the intended creator follow action exactly once');
+ }
+ assert.equal(await focused.count(),1,'the action or nested Back restores the same setting');
+ await page.keyboard.press('Escape');await page.locator('.player-more-panel').waitFor({state:'detached'});
+ assert.equal(await page.locator('.player-btns [data-control="settings"].focused').count(),1);
+ await page.keyboard.press('Enter');await focused.waitFor();
+ assert.equal(await page.evaluate(()=>window.__probe.loads),1,'changing setting focus does not reload media');
 });
 await run('outage recovery: permanent outage has a finite retry budget','network',async(page,calls)=>{
  await page.clock.install();await open(page);
@@ -585,7 +640,7 @@ await run('leaving while video information is pending prevents later streaming',
 await run('failed quality load restores original stream with explicit DASH MIME','quality-restore',async page=>{
  await open(page);await page.waitForFunction(()=>window.__probe.mpds.length===1);
  await page.keyboard.press('ArrowUp');
- await page.locator('.player-btn').filter({hasText:'1080P'}).click();
+ await openSetting(page,'quality');
  await page.locator('.quality-option').filter({hasText:'360P'}).click();
  await page.waitForFunction(()=>window.__probe.loads===3);
  await page.waitForFunction(()=>!document.querySelector('.player-page .loading'));
@@ -595,7 +650,7 @@ await run('failed quality load restores original stream with explicit DASH MIME'
 });
 await run('quality voucher explains API refusal and preserves the playing stream','quality-voucher',async page=>{
  await open(page);await page.waitForFunction(()=>window.__probe.loads===1);
- await page.keyboard.press('ArrowUp');await page.locator('.player-btn').filter({hasText:'1080P'}).click();
+ await page.keyboard.press('ArrowUp');await openSetting(page,'quality');
  await page.locator('.quality-option').filter({hasText:'360P'}).click();
  await page.waitForFunction(()=>document.body.innerText.includes('风控校验未通过'));
  assert.equal(await page.evaluate(()=>window.__probe.loads),1);
@@ -607,7 +662,7 @@ await run('missing requested quality keeps existing stream and never blames memb
  await page.evaluate(()=>window.__openVideo({bvid:'BVtest',resumeMode:'none'}));
  await page.waitForFunction(()=>window.__probe.loads===1);
  await page.keyboard.press('ArrowUp');
- await page.locator('.player-btn').filter({hasText:'1080P'}).click();
+ await openSetting(page,'quality');
  await page.locator('.quality-option').filter({hasText:'360P'}).click();
  await page.waitForFunction(()=>document.body.innerText.includes('画质切换失败'));
  assert.equal(await page.evaluate(()=>window.__probe.loads),1);
@@ -719,11 +774,11 @@ await run('member default requests highest and supports explicit manual and auto
  await open(page);await page.waitForFunction(()=>window.__probe.loads===1&&!document.querySelector('.loading'));
  assert.equal(calls.requestedQualities[0],127);
  assert.match(await page.evaluate(()=>window.__lastMpd),/id="120"/);
- await page.keyboard.press('ArrowUp');await page.locator('.player-btn').filter({hasText:'4K'}).click();
+ await page.keyboard.press('ArrowUp');await openSetting(page,'quality');
  assert.equal(await page.locator('.quality-option.active').textContent(),'自动 · 最高可用');
  await page.locator('.quality-option').filter({hasText:'1080P'}).click();
  await page.waitForFunction(()=>window.__appStorage.getSettings().quality===80&&window.__appStorage.getSettings().qualityMode==='manual');
- await page.locator('.player-btn').filter({hasText:'1080P'}).click();
+ await openSetting(page,'quality');
  await page.locator('.quality-option').filter({hasText:'自动 · 最高可用'}).click();
  await page.waitForFunction(()=>window.__appStorage.getSettings().quality==='auto');
  assert.deepEqual(calls.requestedQualities,[127,80,127]);
@@ -731,7 +786,7 @@ await run('member default requests highest and supports explicit manual and auto
 });
 await run('member full quality ladder scrolls with remote at large UI size','member-tall',async page=>{
  await open(page);await page.waitForFunction(()=>window.__probe.loads===1&&!document.querySelector('.loading'));
- await page.keyboard.press('ArrowUp');await page.locator('.player-btn').filter({hasText:'4K'}).click();
+ await page.keyboard.press('ArrowUp');await openSetting(page,'quality');
  for(let i=0;i<12;i++)await page.keyboard.press('ArrowDown');
  const bounds=await page.locator('.quality-popup .focused').evaluate(el=>{const r=el.getBoundingClientRect(),p=el.parentElement.getBoundingClientRect();return {top:r.top,bottom:r.bottom,parentTop:p.top,parentBottom:p.bottom,text:el.textContent}});
  assert.match(bounds.text,/360P/);assert.ok(bounds.top>=bounds.parentTop&&bounds.bottom<=bounds.parentBottom+1&&bounds.parentTop>=0,JSON.stringify(bounds));
@@ -790,7 +845,10 @@ await run('Nerd info defaults hidden and keeps everyday quality controls','premi
  await open(page);await page.waitForFunction(()=>window.__probe.loads===1&&!document.querySelector('.loading'));
  await page.keyboard.press('ArrowUp');
  assert.equal(await page.locator('.nerd-info,.player-audio-format').count(),0);
- assert.ok(await page.locator('.player-btn').filter({hasText:'1080P'}).count());
+ await page.locator('.player-btns [data-control="settings"]').click();
+ assert.ok((await page.locator('.player-more-panel [data-control="quality"]').textContent()).includes('1080P'));
+ await page.keyboard.press('Escape');
+ assert.equal(await page.locator('.player-btns [data-control="settings"].focused').count(),1);
 });
 await run('Nerd setting is reachable by wheel when signed out','fonts',async page=>{
  await page.locator('[data-focus-id="sidebar-13-0"]').click();

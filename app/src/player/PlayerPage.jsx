@@ -1,5 +1,5 @@
 import DanmakuSettings from '../components/DanmakuSettings';
-import PlayerMoreControls from './PlayerMoreControls';
+import PlayerSettingsControls from './PlayerMoreControls';
 import { createDanmakuSegments } from './danmakuSegments';
 import { mediaKeyAction } from './mediaKeys';
 import NerdInfo from './NerdInfo';
@@ -10,6 +10,7 @@ import './playerControls.css';
 import { thumbUrl } from '../utils/thumb';
 import { getLibraryPage, getPlayUrl, getDanmaku, getDanmakuSegment, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies, getReplyReplies, tripleVideo, likeVideo, coinVideo, favVideo, getFavFoldersFor, getVideoRelation, getHtml5PlayUrl, mediaProxyBase, addToView, delToView } from '../api/client';
 import { nextPlaylistItem } from '../utils/library';
+import { adjacentAvailability, resolveAdjacentVideo } from './adjacentVideo';
 import { playPart, playAdvance, resumePosition } from './playIntent';
 import { getPlaybackMode } from './playbackMode';
 import { createStallMonitor, startPlaybackReport, updatePlaybackReport, countPlaybackEvent, bufferedAhead } from './playbackHealth';
@@ -107,6 +108,8 @@ export default function RecoverablePlayer(props) {
     onRetry={retry} autoRetryDelay={attempt.used < 2 ? 8000 * (attempt.used + 1) : 0} />;
 }
 
+const PRIMARY_CONTROLS = ['like', 'coin', 'fav', 'later', 'prev', 'play', 'next', 'comments', 'settings'];
+
 function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   useTitlesMT(); // re-render when list-title translations land (no-op on zh)
   const videoRef = useRef(null);
@@ -149,8 +152,8 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   }, [currentTime, duration, danmakuEnabled]);
   // Initialize appearance from storage; in-player danmaku changes apply live.
   const [showDanmakuSettings, setShowDanmakuSettings] = useState(false);
-  const [showMoreControls, setShowMoreControls] = useState(false);
-  const moreFocusRef = useRef('like');
+  const [showPlayerSettings, setShowPlayerSettings] = useState(false);
+  const [settingsFocusId, setSettingsFocusId] = useState('quality');
   const [danmakuSettings, setDanmakuSettings] = useState(() => storage.getSettings());
   const danmakuScale = danmakuSettings.danmakuScale || 1;
   const [subtitleScale] = useState(() => storage.getSettings().subtitleScale || 1);
@@ -195,6 +198,9 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   const [partsLabel, setPartsLabel] = useState(t('选集'));
   const [partsList, setPartsList] = useState([]); // 选集/合集 items (separate from 相关推荐)
   const partsRef = useRef([]);
+  const [adjacentBusy, setAdjacentBusy] = useState(false);
+  const [adjacentExhausted, setAdjacentExhausted] = useState(false);
+  const adjacentBusyRef = useRef(false);
   // YouTube-style deferred seek (scrub): arrows move a GHOST playhead with a
   // time bubble + videoshot thumbnail; the video only jumps on OK or ~1s after
   // the last press. Repeated presses accelerate 10s → 30s → 60s.
@@ -232,7 +238,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   const commentDoneRef = useRef(false);
   // Focus: 'none' | 'controls' | 'quality' | 'tabs' | 'related' (=grid)
   const [focusArea, setFocusArea] = useState('none');
-  const [focusIdx, setFocusIdx] = useState(0);
+  const [focusIdx, setFocusIdx] = useState(PRIMARY_CONTROLS.indexOf('play'));
   const controlsTimer = useRef(null);
   const controlsElRef = useRef(null), progressElRef = useRef(null);
   const shelfGestureUntilRef = useRef(0);
@@ -308,13 +314,21 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     pendingSeekRef.current = null;
   }, []);
 
-  // Keep viewing tools in one stable row. Engagement and appearance details
-  // live one level below it; their independent actions and counts are retained.
+  // Three stable groups: engagement | transport | comments and settings.
   const loggedIn = !!storage.getAuth()?.SESSDATA;
-  const CONTROLS = ['play', 'danmaku', ...(subTracks.length > 0 ? ['subtitle'] : []), 'speed', 'quality', 'more', 'comments'];
-  const MORE_CONTROLS = [...(loggedIn ? ['like', 'coin', 'fav', 'later'] : []), ...(follow.available ? ['follow'] : []), 'danmakuSettings'];
-  const moreControlsRef = useRef(MORE_CONTROLS);
-  moreControlsRef.current = MORE_CONTROLS;
+  const CONTROLS = PRIMARY_CONTROLS;
+  const SETTINGS_CONTROLS = ['quality', 'speed', ...(subTracks.length > 0 ? ['subtitle'] : []), 'danmaku', 'danmakuSettings', ...(follow.available ? ['follow'] : [])];
+  const settingsControlsRef = useRef(SETTINGS_CONTROLS);
+  settingsControlsRef.current = SETTINGS_CONTROLS;
+  const focusedSettingId = SETTINGS_CONTROLS.includes(settingsFocusId) ? settingsFocusId : 'quality';
+  const adjacent = adjacentAvailability({ video, cid: cidRef.current || video.cid, parts: partsList, related: relatedVideos });
+  const disabledControls = new Set([
+    ...(!loggedIn ? ['like', 'coin', 'fav', 'later'] : []),
+    ...(!onPlayNext || !adjacent.previous || adjacentBusy ? ['prev'] : []),
+    ...(!onPlayNext || !adjacent.next || adjacentBusy || adjacentExhausted ? ['next'] : []),
+  ]);
+  const disabledControlsRef = useRef(disabledControls);
+  disabledControlsRef.current = disabledControls;
   const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2];
   const controlsRef = useRef(CONTROLS);
   controlsRef.current = CONTROLS;
@@ -378,24 +392,14 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   }, []);
 
   // 倍速 (playback speed): PER-VIDEO only — switching to another video resets
-  // to 1x (owner: 切视频不应保留倍速). The options render as a small popup
-  // anchored right above the 倍速 button (owner: 选项离按钮太远).
+  // to 1x (owner: 切视频不应保留倍速). Options live in a settings subpanel.
   const [showSpeedPanel, setShowSpeedPanel] = useState(false);
   const [currentSpeed, setCurrentSpeed] = useState(1);
   const speedRef = useRef(currentSpeed);
   useEffect(() => { speedRef.current = currentSpeed; }, [currentSpeed]);
-  // Popup anchoring: 倍速/字幕/画质 panels pop up right above their own
-  // button (owner: 选项离按钮太远). Screen coords, rendered at the page ROOT —
-  // .player-controls is overflow-y:auto and would clip them (#11 trap).
+  // Primary buttons supply focus targets and dimensions for the like hold ring.
+  // Quality, subtitles and speed use settings subpanels outside the moving deck.
   const btnRefs = useRef({});
-  const [popupPos, setPopupPos] = useState(null); // {left, bottom}
-  const anchorFor = useCallback((name) => {
-    const el = btnRefs.current[name];
-    if (!el) return null;
-    const r = el.getBoundingClientRect();
-    const page = el.closest('.player-page').getBoundingClientRect();
-    return { left: r.left - page.left + r.width / 2, bottom: page.bottom - r.top + 12 };
-  }, []);
 
   // 点赞/投币/收藏 (B站 app style). stat = the video's public counts (view
   // API); rel = MY state on it (relation API). Short-press 点赞 toggles;
@@ -1055,6 +1059,11 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       videoRef.current.addEventListener('ended', async () => {
         if (!isActive() || finishing) return;
         finishing = true;
+        // A deliberate transport action already owns the next destination.
+        // EOS still records completion and shows the end controls, but must
+        // not launch a second page request, repeat, or related countdown.
+        const manualPending = adjacentBusyRef.current;
+        let ownsAdjacentLock = false;
         try {
           setPlaying(false);
           setEndNextIn(null);
@@ -1078,7 +1087,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
           }
           // PR #42 identified the missing playlist/part gate. Repeat is opt-in;
           // turning autoplay off must continue to mean stop (#27/#41).
-          const mode = getPlaybackMode(storage.getSettings());
+          const mode = manualPending ? 'stop' : getPlaybackMode(storage.getSettings());
           if (mode === 'repeat') {
             try {
               const v = videoRef.current;
@@ -1104,6 +1113,11 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
           const pl = video?.playlist;
           let playlistFailed = false;
           if (mode === 'next' && pl && onPlayNext) {
+            // Share the manual transport gate while the automatic next-page
+            // request is unresolved. A later OK/pointer press cannot race it.
+            adjacentBusyRef.current = true;
+            setAdjacentBusy(true);
+            ownsAdjacentLock = true;
             try {
               const next = await nextPlaylistItem(video, getLibraryPage);
               if (!isActive()) return;
@@ -1134,8 +1148,12 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
           setFocusArea('related');
           setFocusIdx(0);
           // YouTube-style autoplay next — 可在设置里关 (#27):关了就停在推荐列表等手动选。
-          if (!playlistFailed && relatedRef.current.length > 0 && getPlaybackMode(storage.getSettings()) === 'next') setEndNextIn(10);
+          if (mode === 'next' && !playlistFailed && relatedRef.current.length > 0 && getPlaybackMode(storage.getSettings()) === 'next') setEndNextIn(10);
         } finally {
+          if (ownsAdjacentLock) {
+            adjacentBusyRef.current = false;
+            if (isActive()) setAdjacentBusy(false);
+          }
           finishing = false;
         }
       });
@@ -1626,7 +1644,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     pointerDismissedRef.current = false;
     setShowControls(true);
     setFocusArea('controls');
-    setFocusIdx(0);
+    setFocusIdx(PRIMARY_CONTROLS.indexOf('play'));
     hideControlsLater();
   }, [hideControlsLater]);
 
@@ -1828,19 +1846,50 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
   useLayoutEffect(() => {
     if (!ended && !loadError) return;
     endLikeHold(true);
-    setShowMoreControls(false); setShowDanmakuSettings(false);
+    setShowPlayerSettings(false); setShowDanmakuSettings(false);
+    setShowQuality(false); setShowSubPanel(false); setShowSpeedPanel(false);
   }, [ended, loadError, endLikeHold]);
 
-  const closeMoreControls = useCallback(() => {
+  const closePlayerSettings = useCallback(() => {
     endLikeHold(true);
-    setShowMoreControls(false); setShowControls(true); setFocusArea('controls');
-    setFocusIdx(Math.max(0, controlsRef.current.indexOf('more')));
+    setShowPlayerSettings(false); setShowControls(true); setFocusArea('controls');
+    setFocusIdx(Math.max(0, controlsRef.current.indexOf('settings')));
     hideControlsLater();
   }, [endLikeHold, hideControlsLater]);
+
+  const returnToSettings = useCallback(id => {
+    setShowQuality(false); setShowSubPanel(false); setShowSpeedPanel(false); setShowDanmakuSettings(false);
+    setShowPlayerSettings(true); setShowControls(true); setFocusArea('settings');
+    setSettingsFocusId(previous => {
+      const target = id || previous;
+      return settingsControlsRef.current.includes(target) ? target : 'quality';
+    });
+    if (controlsTimer.current) clearTimeout(controlsTimer.current);
+  }, []);
+
+  const switchAdjacent = useCallback(async direction => {
+    if (!onPlayNext || adjacentBusyRef.current) return;
+    adjacentBusyRef.current = true; setAdjacentBusy(true);
+    endLikeHold(true); clearScrub(); setEndNextIn(null);
+    try {
+      const target = await resolveAdjacentVideo(direction, {
+        video, cid: cidRef.current || video.cid, parts: partsList, related: relatedVideos,
+      }, getLibraryPage);
+      if (!mountedRef.current) return;
+      if (target) onPlayNext(playAdvance(target));
+      else if (direction === 'next') setAdjacentExhausted(true);
+    } catch {
+      if (mountedRef.current) showPlayerToast(t('连播列表加载失败，请返回列表重试'));
+    } finally {
+      adjacentBusyRef.current = false;
+      if (mountedRef.current) setAdjacentBusy(false);
+    }
+  }, [video, partsList, relatedVideos, onPlayNext, endLikeHold, clearScrub, showPlayerToast]);
 
   // One entry for a control-bar action — shared by D-pad OK and pointer click
   // (the Magic Remote pointer must drive every button the D-pad can).
   const pressControl = useCallback((btn) => {
+    if (disabledControlsRef.current.has(btn)) return;
     if (btn === 'play') {
       if (videoRef.current.paused) {
         videoRef.current.play(); setPlaying(true);
@@ -1849,6 +1898,9 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         videoRef.current.pause(); setPlaying(false);
         castReportState({ playState: 'paused' }).catch(() => {});
       }
+    } else if (btn === 'prev' || btn === 'next') {
+      switchAdjacent(btn === 'prev' ? 'previous' : 'next');
+      return;
     } else if (btn === 'danmaku') {
       setDanmakuEnabled(prev => {
         const next = !prev;
@@ -1857,19 +1909,18 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         storage.setSettings({ ...storage.getSettings(), danmaku: next });
         return next;
       });
-    } else if (btn === 'more') {
+    } else if (btn === 'settings') {
+      endLikeHold(true);
       setEndNextIn(null);
-      setShowMoreControls(true); setFocusArea('more');
-      setFocusIdx(Math.max(0, moreControlsRef.current.indexOf(moreFocusRef.current)));
-      if (controlsTimer.current) clearTimeout(controlsTimer.current);
+      returnToSettings();
       return;
     } else if (btn === 'danmakuSettings') {
-      setShowMoreControls(false);
+      setShowPlayerSettings(false);
       setShowDanmakuSettings(true);
       if (controlsTimer.current) clearTimeout(controlsTimer.current);
       return;
     } else if (btn === 'subtitle') {
-      setPopupPos(anchorFor('subtitle'));
+      setShowPlayerSettings(false);
       setShowSubPanel(true);
       setFocusArea('subpanel');
       const cur = subOptions.findIndex(o => o.key === (subLan || 'off'));
@@ -1881,7 +1932,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       if (subTracks[0]) fetchSubBody(subTracks[0].subtitle_url).catch(() => {});
       return;
     } else if (btn === 'speed') {
-      setPopupPos(anchorFor('speed'));
+      setShowPlayerSettings(false);
       setShowSpeedPanel(true);
       setFocusArea('speed');
       setFocusIdx(Math.max(0, SPEED_OPTIONS.indexOf(speedRef.current)));
@@ -1901,7 +1952,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         hideControlsLater();
         return;
       }
-      setPopupPos(anchorFor('quality'));
+      setShowPlayerSettings(false);
       setShowQuality(true);
       setFocusArea('quality');
       // Open ON the current tier (same as the subtitle/speed panels) — the
@@ -1921,7 +1972,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     // 'like' never routes here: its press/release runs the long-press machinery
     // (keydown/keyup + mousedown/mouseup on the button itself).
     hideControlsLater();
-  }, [subOptions, subLan, subTracks, fetchSubBody, hideControlsLater, doCoin, doFav, doToView, showPlayerToast, anchorFor, qualities, currentQuality, autoQuality, comments, follow.toggle]);
+  }, [returnToSettings, switchAdjacent, endLikeHold, subOptions, subLan, subTracks, fetchSubBody, hideControlsLater, doCoin, doFav, doToView, showPlayerToast, qualities, currentQuality, autoQuality, comments, follow.toggle]);
 
   // Load more related videos
   const loadingRelatedRef = useRef(false);
@@ -2186,10 +2237,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     const generation = ++speedGenerationRef.current;
     const isActive = () => mountedRef.current && generation === speedGenerationRef.current;
     setCurrentSpeed(s);
-    setShowSpeedPanel(false);
-    setFocusArea('controls');
-    setFocusIdx(Math.max(0, controlsRef.current.indexOf('speed')));
-    hideControlsLater();
+    returnToSettings('speed');
     if (!onWebOS) {
       try { if (videoRef.current) videoRef.current.playbackRate = s; } catch (e) { /* ignore */ }
       return;
@@ -2209,7 +2257,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         if (nativeModeRef.current || nativeUnloadRef.current) await changeQuality(currentQuality, false);
       }
     }
-  }, [hideControlsLater, onWebOS, changeQuality, currentQuality, lunaSetPlayRate, enterNativeSpeed, showPlayerToast]);
+  }, [returnToSettings, onWebOS, changeQuality, currentQuality, lunaSetPlayRate, enterNativeSpeed, showPlayerToast]);
 
   useEffect(() => {
     storage.setSettings({ ...storage.getSettings(), danmaku: danmakuEnabled });
@@ -2302,6 +2350,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         setEndNextIn(null); // cancel, then fall through
       }
       if (e.keyCode === 461 || e.key === 'Backspace' || e.key === 'GoBack' || e.key === 'Escape') {
+        endLikeHold(true);
         e.preventDefault();
         e.stopPropagation();
 
@@ -2311,8 +2360,10 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
           clearScrub();
           setShowControls(false);
           setFocusArea('none');
-        } else if (showMoreControls) {
-          closeMoreControls();
+        } else if (showPlayerSettings) {
+          closePlayerSettings();
+        } else if (showQuality || showSubPanel || showSpeedPanel) {
+          returnToSettings(showQuality ? 'quality' : showSubPanel ? 'subtitle' : 'speed');
         } else if (ended) {
           // End screen: back exits player
           onBack();
@@ -2321,16 +2372,6 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         setFocusArea('controls');
         setFocusIdx(Math.max(0, controlsRef.current.indexOf('comments')));
         hideControlsLater();
-      } else if (showQuality || showSubPanel || showSpeedPanel) {
-          // A secondary popup is open: Back closes ONLY the popup and returns
-          // focus to its button — one level at a time (owner: 返回应先关二级选项).
-          const backTo = showQuality ? 'quality' : showSubPanel ? 'subtitle' : 'speed';
-          setShowQuality(false);
-          setShowSubPanel(false);
-          setShowSpeedPanel(false);
-          setFocusArea('controls');
-          setFocusIdx(Math.max(0, controlsRef.current.indexOf(backTo)));
-          hideControlsLater(); // resume the auto-hide clock now that no panel is up
         } else if (showRelated) {
           // Choosing another video is one level below the playback controls.
           endRelHold(null);
@@ -2393,39 +2434,41 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       }
 
       // A separate vertical action list never changes the primary row order.
-      if (showMoreControls) {
+      if (showPlayerSettings) {
         e.preventDefault(); e.stopPropagation();
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
           endLikeHold(true);
           const delta = e.key === 'ArrowUp' ? -1 : 1;
-          setFocusIdx(prev => Math.max(0, Math.min(moreControlsRef.current.length - 1, prev + delta)));
+          setSettingsFocusId(previous => {
+            const list = settingsControlsRef.current;
+            const index = Math.max(0, list.indexOf(previous));
+            return list[Math.max(0, Math.min(list.length - 1, index + delta))] || 'quality';
+          });
         } else if (e.key === 'Enter') {
-          const action = moreControlsRef.current[focusIdx];
-          if (action === 'like') { if (!e.repeat) startLikeHold(); }
-          else if (!e.repeat && action) pressControl(action);
+          if (!e.repeat) pressControl(focusedSettingId);
         }
         return true;
       }
 
       // === Controls visible ===
       if (focusArea === 'controls') {
-        if (e.key === 'ArrowLeft') {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
           e.preventDefault();
-          // 首尾循环:在第一个(暂停)上按左 → 跳到最后一个(评论)。
-          // 和侧栏的上下循环一致;控制栏一行十个按钮,从头走到尾要按九下,
-          // 循环之后一下就到(owner 2026-08-31)。
-          setFocusIdx(prev => (prev <= 0 ? controlsRef.current.length - 1 : prev - 1));
-          hideControlsLater();
-          return true;
-        }
-        if (e.key === 'ArrowRight') {
-          e.preventDefault();
-          // 反向同理:最后一个上按右 → 回到第一个
-          setFocusIdx(prev => (prev >= controlsRef.current.length - 1 ? 0 : prev + 1));
+          endLikeHold(true);
+          const delta = e.key === 'ArrowLeft' ? -1 : 1;
+          setFocusIdx(prev => {
+            const list = controlsRef.current;
+            for (let n = 1; n <= list.length; n++) {
+              const index = (prev + delta * n + list.length) % list.length;
+              if (!disabledControlsRef.current.has(list[index])) return index;
+            }
+            return prev;
+          });
           hideControlsLater();
           return true;
         }
         if (e.key === 'ArrowDown') {
+          endLikeHold(true);
           e.preventDefault();
           if (partsList.length > 0 || relatedVideos.length > 0 || upMidRef.current) {
             openRelatedPanel();
@@ -2433,6 +2476,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
           return true;
         }
         if (e.key === 'ArrowUp') {
+          endLikeHold(true);
           e.preventDefault();
           // Close controls
           setShowControls(false);
@@ -2445,12 +2489,12 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         if (e.key === 'Enter') {
           e.preventDefault();
           // 点赞 runs the hold machinery: press starts the ring, release before
-          // 0.9s = plain like toggle, holding through = 一键三连.
+          // 300ms = plain like toggle, holding for 2s = 一键三连.
           if (CONTROLS[focusIdx] === 'like') {
-            if (!e.repeat) startLikeHold();
+            if (!e.repeat && !disabledControlsRef.current.has('like')) startLikeHold();
             return true;
           }
-          if (CONTROLS[focusIdx] !== 'follow' || !e.repeat) pressControl(CONTROLS[focusIdx]);
+          if (!e.repeat) pressControl(CONTROLS[focusIdx]);
           return true;
         }
         return false;
@@ -2471,10 +2515,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         if (e.key === 'Enter') {
           e.preventDefault();
           applySubOption(subOptions[focusIdx]);
-          setShowSubPanel(false);
-          setFocusArea('controls');
-          setFocusIdx(CONTROLS.indexOf('subtitle'));
-          hideControlsLater(); // decision made — resume the auto-hide clock
+          returnToSettings('subtitle');
           return true;
         }
         return false;
@@ -2495,7 +2536,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         if (e.key === 'Enter') {
           e.preventDefault();
           const q = qualities[focusIdx];
-          if (q) { changeQuality(q.qn); setShowQuality(false); setFocusArea('controls'); setFocusIdx(CONTROLS.indexOf('quality')); hideControlsLater(); }
+          if (q) { changeQuality(q.qn); returnToSettings('quality'); }
           return true;
         }
         return false;
@@ -2532,6 +2573,10 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
 
       // === 评论竖栏 ===
       if (focusArea === 'commentRail') {
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault(); setFocusArea('controls'); setFocusIdx(CONTROLS.indexOf('comments'));
+          return true;
+        }
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
           e.preventDefault();
           const next = e.key === 'ArrowUp'
@@ -2647,14 +2692,13 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
 
     setCustomKeyHandler(handler);
     return () => setCustomKeyHandler(null);
-  }, [showMoreControls, closeMoreControls, endLikeHold, showDanmakuSettings, focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, showSpeedPanel, applySpeed, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, comments, loadUpVideos, loadComments, onBack, onPlayNext, openControls, hideControlsLater, openRelatedPanel, closeRelatedPanel, endRelHold, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody, pressControl, startLikeHold, pressComment, showCommentRail, recoverable, errorAction, retryPlayback]);
+  }, [showPlayerSettings, focusedSettingId, closePlayerSettings, returnToSettings, endLikeHold, showDanmakuSettings, focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, showSpeedPanel, applySpeed, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, comments, loadUpVideos, loadComments, onBack, onPlayNext, openControls, hideControlsLater, openRelatedPanel, closeRelatedPanel, endRelHold, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody, pressControl, startLikeHold, pressComment, showCommentRail, recoverable, errorAction, retryPlayback]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
   const previewVideos = panelTab === 'parts' ? partsList : panelTab === 'up' ? upVideos : relatedVideos;
-  controlsPinnedRef.current = showMoreControls || showDanmakuSettings || ended || showRelated || showQuality || showSubPanel || showSpeedPanel
+  controlsPinnedRef.current = adjacentBusy || showPlayerSettings || showDanmakuSettings || ended || showRelated || showQuality || showSubPanel || showSpeedPanel
     || showCommentRail || focusArea === 'scrub';
   if (focusArea === 'controls' && CONTROLS[focusIdx]) lastControlRef.current = CONTROLS[focusIdx];
-  if (focusArea === 'more' && MORE_CONTROLS[focusIdx]) moreFocusRef.current = MORE_CONTROLS[focusIdx];
   // Size the viewport from full-sized shared cards, never compress the cards
   // to fit the old deck. Layout measurements run only on content/size changes;
   // the expand animation itself remains transform-only.
@@ -2706,7 +2750,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     const el = controlsElRef.current;
     if (!el) return;
     const wheel = event => {
-      if (showMoreControls || showDanmakuSettings || !showControls || showQuality || showSubPanel || showSpeedPanel || !event.deltaY) return;
+      if (showPlayerSettings || showDanmakuSettings || !showControls || showQuality || showSubPanel || showSpeedPanel || !event.deltaY) return;
       if (Date.now() < shelfGestureUntilRef.current) { event.preventDefault(); return; }
       const list = el.querySelector('.player-related-scroll');
       if (!showRelated && event.deltaY > 0) {
@@ -2744,7 +2788,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     };
     el.addEventListener('wheel', wheel, { passive: false });
     return () => el.removeEventListener('wheel', wheel);
-  }, [showMoreControls, showDanmakuSettings, showControls, showRelated, showQuality, showSubPanel, showSpeedPanel, openRelatedPanel, closeRelatedPanel, panelTab, loadUpVideos, loadMoreRelated]);
+  }, [showPlayerSettings, showDanmakuSettings, showControls, showRelated, showQuality, showSubPanel, showSpeedPanel, openRelatedPanel, closeRelatedPanel, panelTab, loadUpVideos, loadMoreRelated]);
 
   // Magic Remote: waving the pointer must summon the controls bar (the D-pad
   // path was the only way in). Throttled; ignored while a panel/end screen has
@@ -2756,9 +2800,17 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
     if (now - lastMoveRef.current < 400) return;
     lastMoveRef.current = now;
     if (ended) return;
-    if (!showControls) { setShowControls(true); setFocusArea('controls'); setFocusIdx(0); }
+    if (!showControls) { setShowControls(true); setFocusArea('controls'); setFocusIdx(PRIMARY_CONTROLS.indexOf('play')); }
     if (!controlsPinnedRef.current) hideControlsLater();
   }, [ended, showControls, showSubPanel, showQuality, hideControlsLater]);
+
+  const controlLabel = btn => btn === 'play' ? (ended ? t('重播') : playing ? t('暂停') : t('播放'))
+    : btn === 'like' ? t('点赞') : btn === 'coin' ? t('投币') : btn === 'fav' ? t('收藏')
+    : btn === 'later' ? t('稍后再看') : btn === 'prev' ? t('上一个') : btn === 'next' ? t('下一个')
+    : btn === 'comments' ? t('评论') : t('设置');
+  const controlValue = btn => btn === 'like' ? formatCount(stat.like) : btn === 'coin' ? formatCount(stat.coin)
+    : btn === 'fav' ? formatCount(stat.favorite) : btn === 'comments' && commentCount ? formatCount(commentCount) : null;
+  const settingsOpen = showPlayerSettings || showQuality || showSubPanel || showSpeedPanel || showDanmakuSettings;
 
   return (
     <div className="player-page player-page-vod" onMouseMove={handlePointerMove}
@@ -2870,27 +2922,25 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         </div>
       )}
 
-      {showMoreControls && <PlayerMoreControls
-        items={MORE_CONTROLS.map(id => ({ id,
-          label: id === 'like' ? t('点赞') : id === 'coin' ? t('投币') : id === 'fav' ? t('收藏')
-            : id === 'later' ? t(inToView ? '已稍后再看' : '稍后再看') : id === 'follow' ? follow.label : t('弹幕设置'),
-          value: id === 'like' ? formatCount(stat.like) : id === 'coin' ? formatCount(stat.coin) : id === 'fav' ? formatCount(stat.favorite) : undefined,
-          icon: id === 'fav' ? 'star' : id === 'danmakuSettings' ? 'settings' : id,
-          active: id === 'like' ? rel.liked : id === 'coin' ? rel.coined > 0 : id === 'fav' ? rel.faved : id === 'later' ? inToView : undefined,
+      {showPlayerSettings && <PlayerSettingsControls
+        items={SETTINGS_CONTROLS.map(id => ({ id,
+          label: id === 'quality' ? t('画质') : id === 'speed' ? t('倍速') : id === 'subtitle' ? t('字幕')
+            : id === 'danmaku' ? t('弹幕') : id === 'follow' ? follow.label : t('弹幕设置'),
+          value: id === 'quality' ? (autoQuality ? t('自动 · 最高可用') : streamFormat.video || QUALITY_MAP[currentQuality])
+            : id === 'speed' ? (currentSpeed === 1 ? t('正常') : `${currentSpeed}x`)
+            : id === 'subtitle' ? (subLan == null ? t('关') : t(subLan === 'x-mt' ? mtLanName(getLocale())
+              : subtitleLanName(subLan, (subTracks.find(track => track.lan === subLan) || {}).lan_doc)))
+            : id === 'danmaku' ? t(danmakuEnabled ? '开' : '关') : undefined,
+          icon: id === 'danmakuSettings' ? 'settings' : id,
+          active: id === 'danmaku' ? danmakuEnabled : undefined,
+          opensPanel: ['quality', 'speed', 'subtitle', 'danmakuSettings'].includes(id),
         }))}
-        focusedId={focusArea === 'more' ? MORE_CONTROLS[focusIdx] : null}
-        onFocus={id => {
-          if (moreFocusRef.current !== id) endLikeHold(true);
-          setFocusArea('more'); setFocusIdx(MORE_CONTROLS.indexOf(id));
-        }}
-        onAction={pressControl} onClose={closeMoreControls}
-        onLikeStart={startLikeHold} onLikeEnd={endLikeHold}
-        buttonRef={(id, el) => { btnRefs.current[id] = el; }} likeRing={likeRing} triplePop={triplePop}
+        focusedId={focusArea === 'settings' ? focusedSettingId : null}
+        onFocus={id => { setFocusArea('settings'); setSettingsFocusId(id); }}
+        onAction={pressControl} onClose={closePlayerSettings}
       />}
-      {showDanmakuSettings && <DanmakuSettings maskStatus={maskStatus} onChange={setDanmakuSettings} onClose={() => {
-        setShowDanmakuSettings(false); setShowControls(true); setShowMoreControls(true); setFocusArea('more');
-        setFocusIdx(Math.max(0, MORE_CONTROLS.indexOf('danmakuSettings')));
-      }} />}
+      {showDanmakuSettings && <DanmakuSettings maskStatus={maskStatus} onChange={setDanmakuSettings}
+        onClose={() => returnToSettings('danmakuSettings')} />}
       <DanmakuLayer preserveOnAppend videoRef={videoRef} maskSource={maskSource} onMaskStatus={setMaskStatus} settings={danmakuSettings} danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale} paused={!playing}
         mtRef={dmMtActive ? dmMtRef : null} />
 
@@ -3057,7 +3107,7 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
       )}
 
       {/* Controls bar */}
-      <div ref={controlsElRef} className={`player-controls player-controls-vod ${showRelated || previewVideos.length > 0 ? 'has-recommendations' : ''} ${showRelated ? 'recommendations-open' : ''} ${showControls ? '' : 'hidden'}`} style={showCommentRail ? { right: RAIL_W } : undefined}>
+      <div ref={controlsElRef} className={`player-controls player-controls-vod ${showCommentRail ? 'with-comment-rail' : ''} ${showRelated || previewVideos.length > 0 ? 'has-recommendations' : ''} ${showRelated ? 'recommendations-open' : ''} ${showControls ? '' : 'hidden'}`} style={showCommentRail ? { right: RAIL_W } : undefined}>
         <div className="player-control-deck">
         <div className="player-title">{titleMT(cleanTitle(videoTitle))}</div>
         {(metaOwner || metaPubdate > 0 || argueMsg || aigcMsg) && (
@@ -3107,34 +3157,40 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
           )}
         </div>
         <div className="player-btns">
-          {CONTROLS.map((btn, i) => {
-            const label = btn === 'play' ? (ended ? t('重播') : playing ? t('暂停') : t('播放'))
-              : btn === 'danmaku' ? t('弹幕')
-              : btn === 'subtitle' ? t('字幕')
-              : btn === 'speed' ? (currentSpeed === 1 ? t('倍速') : `${currentSpeed}x`)
-              : btn === 'more' ? t('更多')
-              : btn === 'comments' ? (commentCount ? t('评论 · {n}', { n: formatCount(commentCount) }) : t('评论'))
-              : streamFormat.video || QUALITY_MAP[currentQuality] || `${currentQuality}`;
-            const stateLabel = btn === 'danmaku' ? t(danmakuEnabled ? '开' : '关')
-              : btn === 'subtitle' ? t(subLan == null ? '关' : '开') : null;
-            return <button key={btn} data-control={btn}
-              ref={el => { btnRefs.current[btn] = el; }}
-              aria-label={btn === 'more' ? t('更多操作') : stateLabel ? `${label} ${stateLabel}` : label}
-              aria-pressed={btn === 'danmaku' ? danmakuEnabled : undefined}
-              aria-haspopup={['more', 'quality', 'speed', 'subtitle'].includes(btn) ? 'dialog' : undefined}
-              aria-expanded={btn === 'more' ? showMoreControls : undefined}
-              className={`player-btn player-control ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''}`}
-              onMouseMove={() => { setFocusArea('controls'); setFocusIdx(i); hideControlsLater(); }}
-              onClick={() => pressControl(btn)}>
-              <span className="player-control-icon">
-                <Icon size={28} name={btn === 'play' ? (ended ? 'refresh' : playing ? 'pause' : 'play') : btn} />
-                {stateLabel && <span className="player-control-state">{stateLabel}</span>}
-              </span>
-              <span className="player-control-label">{label}</span>
-            </button>;
-          })}
-
+          {[['engagement', CONTROLS.slice(0, 4)], ['transport', CONTROLS.slice(4, 7)], ['tools', CONTROLS.slice(7)]].map(([group, buttons]) => (
+            <div className={`player-control-group player-control-group-${group}`} key={group}>
+              {buttons.map(btn => {
+                const i = CONTROLS.indexOf(btn), label = controlLabel(btn);
+                const value = controlValue(btn);
+                const active = btn === 'like' ? rel.liked : btn === 'coin' ? rel.coined > 0 : btn === 'fav' ? rel.faved : btn === 'later' ? inToView : undefined;
+                const handlers = btn === 'like' ? {
+                  onMouseDown: event => { if (event.button === 0 && !disabledControlsRef.current.has('like')) startLikeHold(); },
+                  onMouseUp: event => { if (event.button === 0) endLikeHold(false); },
+                  onMouseLeave: () => endLikeHold(true),
+                } : { onClick: () => pressControl(btn) };
+                return <button key={btn} type="button" data-control={btn}
+                  ref={el => { btnRefs.current[btn] = el; }} disabled={disabledControls.has(btn)} aria-disabled={disabledControls.has(btn)}
+                  aria-label={btn === 'later' && inToView ? t('已稍后再看') : label} aria-pressed={active}
+                  aria-haspopup={btn === 'settings' ? 'dialog' : undefined}
+                  aria-expanded={btn === 'settings' ? settingsOpen : undefined}
+                  className={`player-btn player-control ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''} ${active ? 'lit' : ''} ${['like', 'coin', 'fav'].includes(btn) && triplePop ? 'triple-pop' : ''}`}
+                  onMouseMove={() => { if (focusArea !== 'controls' || focusIdx !== i) endLikeHold(true); setFocusArea('controls'); setFocusIdx(i); hideControlsLater(); }}
+                  {...handlers}>
+                  <span className="player-control-icon">{btn === 'coin' ? <CoinIcon /> : <Icon size={28}
+                    name={btn === 'play' ? (ended ? 'refresh' : playing ? 'pause' : 'play') : btn === 'fav' ? 'star' : btn} />}</span>
+                  <span className="player-control-label">{label}</span>
+                  {value != null && <span className="player-control-value">{value}</span>}
+                  {btn === 'like' && likeRing && <svg className="like-ring" aria-hidden="true" width={likeRing.w + 8} height={likeRing.h + 8} style={{ left: -7, top: -7 }}>
+                    <rect className="like-ring-track" x="4" y="4" width={likeRing.w} height={likeRing.h} rx={likeRing.rx} />
+                    <rect className="like-ring-fill" x="4" y="4" width={likeRing.w} height={likeRing.h} rx={likeRing.rx}
+                      style={{ strokeDasharray: likeRing.perim, strokeDashoffset: likeRing.perim }} />
+                  </svg>}
+                </button>;
+              })}
+            </div>
+          ))}
         </div>
+        <div className="player-control-caption" aria-hidden="true">{focusArea === 'controls' ? `${controlLabel(CONTROLS[focusIdx])} ${controlValue(CONTROLS[focusIdx]) || ''}` : '\u00a0'}</div>
         </div>
 
         {/* Keep one grid mounted: a cropped preview grows into the shelf,
@@ -3215,49 +3271,25 @@ function PlayerPage({ video, onBack, onPlayNext, onRetry, autoRetryDelay }) {
         )}
       </div>
 
-      {/* 字幕/画质/倍速 popups — anchored above their own buttons, rendered at
-          the ROOT (the controls bar is overflow-y:auto and would clip them). */}
-      {showSubPanel && (
-        <div className="ctrl-popup" style={popupPos ? { left: popupPos.left, bottom: popupPos.bottom } : { right: 60, bottom: 120, transform: 'none' }}>
-          {subOptions.map((o, i) => (
-            <div key={o.key} className={`quality-option ${focusArea === 'subpanel' && focusIdx === i ? 'focused' : ''} ${(subLan || 'off') === o.key ? 'active' : ''}`}
-              onMouseEnter={() => { setFocusArea('subpanel'); setFocusIdx(i); }}
-              onClick={() => {
-                applySubOption(o);
-                setShowSubPanel(false);
-                setFocusArea('controls');
-                setFocusIdx(CONTROLS.indexOf('subtitle'));
-                hideControlsLater();
-              }}>
-              {o.label}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {showQuality && (
-        <div className="ctrl-popup quality-popup" style={popupPos ? { left: popupPos.left, bottom: popupPos.bottom, maxHeight: Math.max(120, 1080 - popupPos.bottom - 24) } : { right: 60, bottom: 120, maxHeight: 936, transform: 'none' }}>
-          {qualities.map((q, i) => (
-            <div key={q.qn} className={`quality-option ${focusArea === 'quality' && focusIdx === i ? 'focused' : ''} ${(q.qn === 'auto' ? autoQuality : !autoQuality && currentQuality === q.qn) ? 'active' : ''}`}
-              onMouseEnter={() => { setFocusArea('quality'); setFocusIdx(i); }}
-              onClick={() => { changeQuality(q.qn); setShowQuality(false); setFocusArea('controls'); setFocusIdx(CONTROLS.indexOf('quality')); hideControlsLater(); }}>
-              {q.label}{q.qn >= 112 ? <span className="vip-tag">{t('大会员')}</span> : null}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {showSpeedPanel && (
-        <div className="ctrl-popup" style={popupPos ? { left: popupPos.left, bottom: popupPos.bottom } : { right: 60, bottom: 120, transform: 'none' }}>
-          {SPEED_OPTIONS.map((s, i) => (
-            <div key={s} className={`quality-option ${focusArea === 'speed' && focusIdx === i ? 'focused' : ''} ${currentSpeed === s ? 'active' : ''}`}
-              onMouseEnter={() => { setFocusArea('speed'); setFocusIdx(i); }}
-              onClick={() => applySpeed(s)}>
-              {s === 1 ? t('正常') : `${s}x`}
-            </div>
-          ))}
-        </div>
-      )}
+      {showSubPanel && <PlayerSettingsControls title={t('字幕')} panelClassName="ctrl-popup subtitle-popup" rowClassName="quality-option"
+        items={subOptions.map(option => ({ id: option.key, label: option.label, icon: 'subtitle', active: (subLan || 'off') === option.key }))}
+        focusedId={focusArea === 'subpanel' ? subOptions[focusIdx]?.key : null}
+        onFocus={id => { setFocusArea('subpanel'); setFocusIdx(subOptions.findIndex(option => option.key === id)); }}
+        onAction={id => { applySubOption(subOptions.find(option => option.key === id)); returnToSettings('subtitle'); }}
+        onClose={() => returnToSettings('subtitle')} />}
+      {showQuality && <PlayerSettingsControls title={t('画质')} panelClassName="ctrl-popup quality-popup" rowClassName="quality-option"
+        items={qualities.map(q => ({ id: String(q.qn), label: q.label, icon: 'quality',
+          active: q.qn === 'auto' ? autoQuality : !autoQuality && currentQuality === q.qn,
+          value: q.qn >= 112 ? t('大会员') : undefined }))}
+        focusedId={focusArea === 'quality' ? String(qualities[focusIdx]?.qn) : null}
+        onFocus={id => { setFocusArea('quality'); setFocusIdx(qualities.findIndex(q => String(q.qn) === id)); }}
+        onAction={id => { const q = qualities.find(q => String(q.qn) === id); if (q) { changeQuality(q.qn); returnToSettings('quality'); } }}
+        onClose={() => returnToSettings('quality')} />}
+      {showSpeedPanel && <PlayerSettingsControls title={t('倍速')} panelClassName="ctrl-popup speed-popup" rowClassName="quality-option"
+        items={SPEED_OPTIONS.map(speed => ({ id: String(speed), label: speed === 1 ? t('正常') : `${speed}x`, icon: 'speed', active: currentSpeed === speed }))}
+        focusedId={focusArea === 'speed' ? String(SPEED_OPTIONS[focusIdx]) : null}
+        onFocus={id => { setFocusArea('speed'); setFocusIdx(SPEED_OPTIONS.indexOf(Number(id))); }}
+        onAction={id => applySpeed(Number(id))} onClose={() => returnToSettings('speed')} />}
 
       {playerToast && <div className="player-toast">{playerToast}</div>}
 

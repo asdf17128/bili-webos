@@ -20,6 +20,8 @@ const paths = {
   settings: 'M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8M10 2h4l1 3 3 1 3-1 2 4-2 2v3l2 2-2 4-3-1-3 1-1 3h-4l-1-3-3-1-3 1-2-4 2-2v-3L1 9l2-4 3 1 3-1Z',
   refresh: 'M20 7A9 9 0 1 0 21 15M21 2v6h-6',
   play: 'M7 3l14 9-14 9Z',
+  prev: 'M5 4v16M19 4L7 12l12 8Z',
+  next: 'M19 4v16M5 4l12 8-12 8Z',
   pause: 'M7 4v16M17 4v16',
   like: 'M8 10l5-8c3 0 3 3 2 7h5c2 0 2 2 1 5l-2 7H8ZM3 10h5v11H3Z',
   later: 'M12 3a9 9 0 1 1-9 9M12 7v5l3 2M2 5h6M5 2v6',

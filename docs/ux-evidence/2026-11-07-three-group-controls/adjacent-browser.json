@@ -1,0 +1,658 @@
+{
+  "boundary": "Real React with controlled media/decoder; trusted input, synthetic accounts, intercepted non-Vite HTTP/WS. No TV or actual account actions.",
+  "sources": {
+    "app/src/player/PlayerPage.jsx": "2330fdaddf3022a08da411e8276e4c6397a215cb22d4bf59dd9a145061409dce",
+    "app/src/player/adjacentVideo.js": "65f09d2f6fff51af43616f73eeaadf6e77f60bab8933f200dcf7b1a60b299a70",
+    "app/src/player/playIntent.js": "2a2c4cac679e9a9cab3bb4ad4a30f4adee44f215e5b8fdde37d174dd9beec74c",
+    "app/src/utils/library.js": "14ace595c759a585b5ddf9918a5ded32e3a04132741d1192d1345e23b101dcc5"
+  },
+  "sourcesEnd": {
+    "app/src/player/PlayerPage.jsx": "2330fdaddf3022a08da411e8276e4c6397a215cb22d4bf59dd9a145061409dce",
+    "app/src/player/adjacentVideo.js": "65f09d2f6fff51af43616f73eeaadf6e77f60bab8933f200dcf7b1a60b299a70",
+    "app/src/player/playIntent.js": "2a2c4cac679e9a9cab3bb4ad4a30f4adee44f215e5b8fdde37d174dd9beec74c",
+    "app/src/utils/library.js": "14ace595c759a585b5ddf9918a5ded32e3a04132741d1192d1345e23b101dcc5"
+  },
+  "sourcesStable": true,
+  "results": [
+    {
+      "name": "single video skips disabled previous and chooses first different recommendation",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "cid": 11,
+            "position": 47,
+            "mime": "application/dash+xml"
+          },
+          {
+            "cid": 22,
+            "position": null,
+            "mime": "application/dash+xml"
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 47
+          }
+        ],
+        "destroyed": 1,
+        "plays": 2,
+        "untrustedInput": 0
+      },
+      "calls": {
+        "streams": [
+          11,
+          22
+        ],
+        "views": [
+          "BVAdjacentA",
+          "BVAdjacentB"
+        ],
+        "pages": 0,
+        "pageArguments": [],
+        "unexpectedWrites": [],
+        "intercepted": 32
+      }
+    },
+    {
+      "name": "playlist previous and next preserve order and start from zero without wrapping",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "cid": 22,
+            "position": 47,
+            "mime": "application/dash+xml"
+          },
+          {
+            "cid": 11,
+            "position": null,
+            "mime": "application/dash+xml"
+          },
+          {
+            "cid": 22,
+            "position": null,
+            "mime": "application/dash+xml"
+          },
+          {
+            "cid": 33,
+            "position": null,
+            "mime": "application/dash+xml"
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 47
+          }
+        ],
+        "destroyed": 3,
+        "plays": 4,
+        "untrustedInput": 0
+      },
+      "calls": {
+        "streams": [
+          22,
+          11,
+          22,
+          33
+        ],
+        "views": [
+          "BVAdjacentB",
+          "BVAdjacentA",
+          "BVAdjacentB",
+          "BVAdjacentC"
+        ],
+        "pages": 0,
+        "pageArguments": [],
+        "unexpectedWrites": [],
+        "intercepted": 51
+      }
+    },
+    {
+      "name": "multi-part transport follows resolved resumed part rather than original card",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "cid": 12,
+            "position": 47,
+            "mime": "application/dash+xml"
+          },
+          {
+            "cid": 13,
+            "position": null,
+            "mime": "application/dash+xml"
+          },
+          {
+            "cid": 12,
+            "position": null,
+            "mime": "application/dash+xml"
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 47
+          }
+        ],
+        "destroyed": 2,
+        "plays": 3,
+        "untrustedInput": 0
+      },
+      "calls": {
+        "streams": [
+          11,
+          12,
+          13,
+          12
+        ],
+        "views": [
+          "BVAdjacentA",
+          "BVAdjacentA",
+          "BVAdjacentA"
+        ],
+        "pages": 0,
+        "pageArguments": [],
+        "unexpectedWrites": [],
+        "intercepted": 43
+      }
+    },
+    {
+      "name": "UGC collection transport follows its ordered episode list",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "cid": 22,
+            "position": 47,
+            "mime": "application/dash+xml"
+          },
+          {
+            "cid": 11,
+            "position": null,
+            "mime": "application/dash+xml"
+          },
+          {
+            "cid": 22,
+            "position": null,
+            "mime": "application/dash+xml"
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 47
+          }
+        ],
+        "destroyed": 2,
+        "plays": 3,
+        "untrustedInput": 0
+      },
+      "calls": {
+        "streams": [
+          22,
+          11,
+          22
+        ],
+        "views": [
+          "BVAdjacentB",
+          "BVAdjacentA",
+          "BVAdjacentB"
+        ],
+        "pages": 0,
+        "pageArguments": [],
+        "unexpectedWrites": [],
+        "intercepted": 41
+      }
+    },
+    {
+      "name": "PGC episode transport navigates both directions from zero",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "cid": 200,
+            "position": 47,
+            "mime": "application/dash+xml"
+          },
+          {
+            "cid": 100,
+            "position": null,
+            "mime": "application/dash+xml"
+          },
+          {
+            "cid": 200,
+            "position": null,
+            "mime": "application/dash+xml"
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 47
+          }
+        ],
+        "destroyed": 2,
+        "plays": 3,
+        "untrustedInput": 0
+      },
+      "calls": {
+        "streams": [
+          200,
+          100,
+          200
+        ],
+        "views": [],
+        "pages": 0,
+        "pageArguments": [],
+        "unexpectedWrites": [],
+        "intercepted": 22
+      }
+    },
+    {
+      "name": "pending next page cannot submit duplicate requests and preserves previous context",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "cid": 11,
+            "position": 47,
+            "mime": "application/dash+xml"
+          },
+          {
+            "cid": 22,
+            "position": null,
+            "mime": "application/dash+xml"
+          },
+          {
+            "cid": 11,
+            "position": null,
+            "mime": "application/dash+xml"
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 47
+          }
+        ],
+        "destroyed": 2,
+        "plays": 3,
+        "untrustedInput": 0
+      },
+      "calls": {
+        "streams": [
+          11,
+          22,
+          11
+        ],
+        "views": [
+          "BVAdjacentA",
+          "BVAdjacentB",
+          "BVAdjacentA"
+        ],
+        "pages": 1,
+        "pageArguments": [
+          {
+            "pn": 2,
+            "mediaId": "8"
+          }
+        ],
+        "unexpectedWrites": [],
+        "intercepted": 42
+      }
+    },
+    {
+      "name": "failed next page leaves current video and permits explicit retry",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "cid": 11,
+            "position": 47,
+            "mime": "application/dash+xml"
+          },
+          {
+            "cid": 22,
+            "position": null,
+            "mime": "application/dash+xml"
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 47
+          }
+        ],
+        "destroyed": 1,
+        "plays": 2,
+        "untrustedInput": 0
+      },
+      "calls": {
+        "streams": [
+          11,
+          22
+        ],
+        "views": [
+          "BVAdjacentA",
+          "BVAdjacentB"
+        ],
+        "pages": 2,
+        "pageArguments": [
+          {
+            "pn": 2,
+            "mediaId": "8"
+          },
+          {
+            "pn": 2,
+            "mediaId": "8"
+          }
+        ],
+        "unexpectedWrites": [],
+        "intercepted": 34
+      }
+    },
+    {
+      "name": "empty next page disables the action instead of looping or refetching",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "cid": 11,
+            "position": 47,
+            "mime": "application/dash+xml"
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 47
+          }
+        ],
+        "destroyed": 0,
+        "plays": 1,
+        "untrustedInput": 0
+      },
+      "calls": {
+        "streams": [
+          11
+        ],
+        "views": [
+          "BVAdjacentA"
+        ],
+        "pages": 1,
+        "pageArguments": [
+          {
+            "pn": 2,
+            "mediaId": "8"
+          }
+        ],
+        "unexpectedWrites": [],
+        "intercepted": 24
+      }
+    },
+    {
+      "name": "leaving during a next-page request never starts a late video",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "cid": 11,
+            "position": 47,
+            "mime": "application/dash+xml"
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 47
+          }
+        ],
+        "destroyed": 1,
+        "plays": 1,
+        "untrustedInput": 0
+      },
+      "calls": {
+        "streams": [
+          11
+        ],
+        "views": [
+          "BVAdjacentA"
+        ],
+        "pages": 1,
+        "pageArguments": [
+          {
+            "pn": 2,
+            "mediaId": "8"
+          }
+        ],
+        "unexpectedWrites": [],
+        "intercepted": 26
+      }
+    },
+    {
+      "name": "guest with no neighbors skips disabled actions without changing video",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "cid": 11,
+            "position": 47,
+            "mime": "application/dash+xml"
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 47
+          }
+        ],
+        "destroyed": 0,
+        "plays": 1,
+        "untrustedInput": 0
+      },
+      "calls": {
+        "streams": [
+          11
+        ],
+        "views": [
+          "BVAdjacentA"
+        ],
+        "pages": 0,
+        "pageArguments": [],
+        "unexpectedWrites": [],
+        "intercepted": 9
+      }
+    },
+    {
+      "name": "manual pending Next owns EOS instead of next",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "cid": 11,
+            "position": 47,
+            "mime": "application/dash+xml"
+          },
+          {
+            "cid": 22,
+            "position": null,
+            "mime": "application/dash+xml"
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 47
+          }
+        ],
+        "destroyed": 1,
+        "plays": 2,
+        "untrustedInput": 0
+      },
+      "calls": {
+        "streams": [
+          11,
+          22
+        ],
+        "views": [
+          "BVAdjacentA",
+          "BVAdjacentB"
+        ],
+        "pages": 1,
+        "pageArguments": [
+          {
+            "pn": 2,
+            "mediaId": "8"
+          }
+        ],
+        "unexpectedWrites": [],
+        "intercepted": 34
+      }
+    },
+    {
+      "name": "manual pending Next owns EOS instead of repeat",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "cid": 11,
+            "position": 47,
+            "mime": "application/dash+xml"
+          },
+          {
+            "cid": 22,
+            "position": null,
+            "mime": "application/dash+xml"
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 47
+          }
+        ],
+        "destroyed": 1,
+        "plays": 2,
+        "untrustedInput": 0
+      },
+      "calls": {
+        "streams": [
+          11,
+          22
+        ],
+        "views": [
+          "BVAdjacentA",
+          "BVAdjacentB"
+        ],
+        "pages": 1,
+        "pageArguments": [
+          {
+            "pn": 2,
+            "mediaId": "8"
+          }
+        ],
+        "unexpectedWrites": [],
+        "intercepted": 34
+      }
+    },
+    {
+      "name": "automatic EOS owns pagination before manual previous or next",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "cid": 22,
+            "position": 47,
+            "mime": "application/dash+xml"
+          },
+          {
+            "cid": 33,
+            "position": null,
+            "mime": "application/dash+xml"
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 47
+          }
+        ],
+        "destroyed": 1,
+        "plays": 2,
+        "untrustedInput": 0
+      },
+      "calls": {
+        "streams": [
+          22,
+          33
+        ],
+        "views": [
+          "BVAdjacentB",
+          "BVAdjacentC"
+        ],
+        "pages": 1,
+        "pageArguments": [
+          {
+            "pn": 2,
+            "mediaId": "8"
+          }
+        ],
+        "unexpectedWrites": [],
+        "intercepted": 34
+      }
+    },
+    {
+      "name": "manual pending EOS failure releases lock for retry without autoplay",
+      "pass": true,
+      "probe": {
+        "loads": [
+          {
+            "cid": 11,
+            "position": 47,
+            "mime": "application/dash+xml"
+          },
+          {
+            "cid": 22,
+            "position": null,
+            "mime": "application/dash+xml"
+          }
+        ],
+        "seeks": [
+          {
+            "load": 0,
+            "target": 47
+          }
+        ],
+        "destroyed": 1,
+        "plays": 2,
+        "untrustedInput": 0
+      },
+      "calls": {
+        "streams": [
+          11,
+          22
+        ],
+        "views": [
+          "BVAdjacentA",
+          "BVAdjacentB"
+        ],
+        "pages": 2,
+        "pageArguments": [
+          {
+            "pn": 2,
+            "mediaId": "8"
+          },
+          {
+            "pn": 2,
+            "mediaId": "8"
+          }
+        ],
+        "unexpectedWrites": [],
+        "intercepted": 35
+      }
+    }
+  ]
+}

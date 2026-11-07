@@ -1,0 +1,318 @@
+[
+  {
+    "opt": {
+      "language": "zh",
+      "width": 1920,
+      "height": 1080,
+      "scale": 1
+    },
+    "main": {
+      "panel": {
+        "left": 1420,
+        "top": 219.5625,
+        "right": 1880,
+        "bottom": 860.4375
+      },
+      "focused": "follow",
+      "focusedVisible": true,
+      "scroll": 0,
+      "position": "static",
+      "transform": "none",
+      "values": [
+        {
+          "text": "关",
+          "client": 350,
+          "scroll": 350,
+          "height": 24,
+          "font": "18px",
+          "whiteSpace": "normal"
+        },
+        {
+          "text": "English (United States, automatically translated)",
+          "client": 316,
+          "scroll": 316,
+          "height": 49,
+          "font": "18px",
+          "whiteSpace": "normal"
+        },
+        {
+          "text": "1.25x",
+          "client": 316,
+          "scroll": 316,
+          "height": 24,
+          "font": "18px",
+          "whiteSpace": "normal"
+        },
+        {
+          "text": "Dolby Vision · 3840 × 2160 · 60 fps",
+          "client": 316,
+          "scroll": 316,
+          "height": 24,
+          "font": "18px",
+          "whiteSpace": "normal"
+        }
+      ]
+    },
+    "nested": {
+      "panel": {
+        "left": 1420,
+        "top": 32,
+        "right": 1880,
+        "bottom": 1048
+      },
+      "focused": "12",
+      "focusedVisible": true,
+      "scroll": 0,
+      "position": "static",
+      "transform": "none",
+      "values": [
+        {
+          "text": "Selected · highest available quality",
+          "client": 350,
+          "scroll": 350,
+          "height": 24,
+          "font": "18px",
+          "whiteSpace": "normal"
+        }
+      ]
+    },
+    "pass": true
+  },
+  {
+    "opt": {
+      "language": "en",
+      "width": 1280,
+      "height": 720,
+      "scale": 1.4
+    },
+    "main": {
+      "panel": {
+        "left": 788,
+        "top": 32,
+        "right": 1248,
+        "bottom": 688
+      },
+      "focused": "follow",
+      "focusedVisible": true,
+      "scroll": 0,
+      "position": "static",
+      "transform": "none",
+      "values": [
+        {
+          "text": "Off",
+          "client": 354,
+          "scroll": 354,
+          "height": 34,
+          "font": "25.2px",
+          "whiteSpace": "normal"
+        },
+        {
+          "text": "English (United States, automatically translated)",
+          "client": 320,
+          "scroll": 320,
+          "height": 68,
+          "font": "25.2px",
+          "whiteSpace": "normal"
+        },
+        {
+          "text": "1.25x",
+          "client": 320,
+          "scroll": 320,
+          "height": 34,
+          "font": "25.2px",
+          "whiteSpace": "normal"
+        },
+        {
+          "text": "Dolby Vision · 3840 × 2160 · 60 fps",
+          "client": 320,
+          "scroll": 320,
+          "height": 68,
+          "font": "25.2px",
+          "whiteSpace": "normal"
+        }
+      ]
+    },
+    "nested": {
+      "panel": {
+        "left": 788,
+        "top": 32,
+        "right": 1248,
+        "bottom": 688
+      },
+      "focused": "12",
+      "focusedVisible": true,
+      "scroll": 0,
+      "position": "static",
+      "transform": "none",
+      "values": [
+        {
+          "text": "Selected · highest available quality",
+          "client": 354,
+          "scroll": 354,
+          "height": 68,
+          "font": "25.2px",
+          "whiteSpace": "normal"
+        }
+      ]
+    },
+    "pass": true
+  },
+  {
+    "opt": {
+      "language": "es",
+      "width": 1280,
+      "height": 720,
+      "scale": 1.4
+    },
+    "main": {
+      "panel": {
+        "left": 788,
+        "top": 32,
+        "right": 1248,
+        "bottom": 688
+      },
+      "focused": "follow",
+      "focusedVisible": true,
+      "scroll": 0,
+      "position": "static",
+      "transform": "none",
+      "values": [
+        {
+          "text": "No",
+          "client": 354,
+          "scroll": 354,
+          "height": 34,
+          "font": "25.2px",
+          "whiteSpace": "normal"
+        },
+        {
+          "text": "English (United States, automatically translated)",
+          "client": 320,
+          "scroll": 320,
+          "height": 68,
+          "font": "25.2px",
+          "whiteSpace": "normal"
+        },
+        {
+          "text": "1.25x",
+          "client": 320,
+          "scroll": 320,
+          "height": 34,
+          "font": "25.2px",
+          "whiteSpace": "normal"
+        },
+        {
+          "text": "Dolby Vision · 3840 × 2160 · 60 fps",
+          "client": 320,
+          "scroll": 320,
+          "height": 68,
+          "font": "25.2px",
+          "whiteSpace": "normal"
+        }
+      ]
+    },
+    "nested": {
+      "panel": {
+        "left": 788,
+        "top": 32,
+        "right": 1248,
+        "bottom": 688
+      },
+      "focused": "12",
+      "focusedVisible": true,
+      "scroll": 0,
+      "position": "static",
+      "transform": "none",
+      "values": [
+        {
+          "text": "Selected · highest available quality",
+          "client": 354,
+          "scroll": 354,
+          "height": 68,
+          "font": "25.2px",
+          "whiteSpace": "normal"
+        }
+      ]
+    },
+    "pass": true
+  },
+  {
+    "opt": {
+      "language": "en",
+      "width": 1280,
+      "height": 720,
+      "scale": 2
+    },
+    "main": {
+      "panel": {
+        "left": 788,
+        "top": 32,
+        "right": 1248,
+        "bottom": 688
+      },
+      "focused": "follow",
+      "focusedVisible": true,
+      "scroll": 0,
+      "position": "static",
+      "transform": "none",
+      "values": [
+        {
+          "text": "Off",
+          "client": 354,
+          "scroll": 354,
+          "height": 49,
+          "font": "36px",
+          "whiteSpace": "normal"
+        },
+        {
+          "text": "English (United States, automatically translated)",
+          "client": 320,
+          "scroll": 320,
+          "height": 194,
+          "font": "36px",
+          "whiteSpace": "normal"
+        },
+        {
+          "text": "1.25x",
+          "client": 320,
+          "scroll": 320,
+          "height": 49,
+          "font": "36px",
+          "whiteSpace": "normal"
+        },
+        {
+          "text": "Dolby Vision · 3840 × 2160 · 60 fps",
+          "client": 320,
+          "scroll": 320,
+          "height": 146,
+          "font": "36px",
+          "whiteSpace": "normal"
+        }
+      ]
+    },
+    "nested": {
+      "panel": {
+        "left": 788,
+        "top": 32,
+        "right": 1248,
+        "bottom": 688
+      },
+      "focused": "12",
+      "focusedVisible": true,
+      "scroll": 0,
+      "position": "static",
+      "transform": "none",
+      "values": [
+        {
+          "text": "Selected · highest available quality",
+          "client": 354,
+          "scroll": 354,
+          "height": 97,
+          "font": "36px",
+          "whiteSpace": "normal"
+        }
+      ]
+    },
+    "pass": true
+  }
+]

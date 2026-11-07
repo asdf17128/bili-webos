@@ -1,0 +1,28 @@
+
+> bili-webos-tv@1.0.0 build
+> vite build
+
+plugin-legacy overrode 'build.target'. You should pass 'targets' as an option to this plugin with the list of legacy browsers to support instead.
+vite v6.4.1 building for production...
+<script src="webOSTVjs-1.2.13/webOSTV.js"> in "/index.html" can't be bundled without type="module" attribute
+transforming...
+✓ 170 modules transformed.
+Browserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+rendering chunks...
+computing gzip size...
+dist/index.html                                         1.26 kB │ gzip:   0.67 kB
+dist/assets/NerdInfo-legacy-DfrN1dsm.js                 2.15 kB │ gzip:   1.12 kB
+dist/assets/LivePlayerPage-legacy-Cnh0J4qR.js          17.59 kB │ gzip:   6.48 kB
+dist/assets/polyfills-legacy-BiQ8HPCG.js              135.74 kB │ gzip:  50.80 kB
+dist/assets/react-vendor-legacy-B2h5bzJ7.js           139.60 kB │ gzip:  45.15 kB
+dist/assets/PlayerPage-legacy-CLN0GHV8.js             140.82 kB │ gzip:  46.85 kB
+dist/assets/index-legacy-uDD8gX3f.js                  375.06 kB │ gzip: 123.64 kB
+dist/assets/shaka-player.compiled-legacy-01vuRLq-.js  768.04 kB │ gzip: 243.04 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 7.87s

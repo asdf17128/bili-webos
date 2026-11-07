@@ -1,0 +1,166 @@
+[
+  {
+    "name": "subtitle lifecycle cancels obsolete translation: body",
+    "pass": true
+  },
+  {
+    "name": "subtitle lifecycle cancels obsolete translation: batches",
+    "pass": true
+  },
+  {
+    "name": "subtitle lifecycle cancels obsolete translation: success",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: exit",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: normal",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: newer-speed",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: new-video",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: quality",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: exit-unloading",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: normal-unloading",
+    "pass": true
+  },
+  {
+    "name": "native speed lifecycle: success",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: before-unload paused=false",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: before-unload paused=true",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: after-unload paused=false",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: after-unload paused=true",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: normal paused=false",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: normal paused=true",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: quality paused=false",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: quality paused=true",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: normal-before-metadata paused=false",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: normal-before-metadata paused=true",
+    "pass": true
+  },
+  {
+    "name": "native speed unload recovery: newer native supersedes waiting 1x",
+    "pass": true
+  },
+  {
+    "name": "native speed restores actual time after metadata paused=false",
+    "pass": true
+  },
+  {
+    "name": "native speed restores actual time after metadata paused=true",
+    "pass": true
+  },
+  {
+    "name": "native speed explicit detach honors exit",
+    "pass": true
+  },
+  {
+    "name": "native speed explicit detach honors newer-native",
+    "pass": true
+  },
+  {
+    "name": "player shelf separates progress, controls and recommendation tabs: layout-legacy scale=1",
+    "pass": true
+  },
+  {
+    "name": "player shelf separates progress, controls and recommendation tabs: layout-legacy scale=1.4",
+    "pass": true
+  },
+  {
+    "name": "player shelf separates progress, controls and recommendation tabs: layout-modern scale=1",
+    "pass": true
+  },
+  {
+    "name": "player shelf separates progress, controls and recommendation tabs: layout-modern scale=1.4",
+    "pass": true
+  },
+  {
+    "name": "creator follow from player settings menu",
+    "pass": true
+  },
+  {
+    "name": "settings focus survives delayed subtitle insertion: danmaku",
+    "pass": true
+  },
+  {
+    "name": "settings focus survives delayed subtitle insertion: danmakuSettings",
+    "pass": true
+  },
+  {
+    "name": "settings focus survives delayed subtitle insertion: follow",
+    "pass": true
+  },
+  {
+    "name": "failed quality load restores original stream with explicit DASH MIME",
+    "pass": true
+  },
+  {
+    "name": "quality voucher explains API refusal and preserves the playing stream",
+    "pass": true
+  },
+  {
+    "name": "missing requested quality keeps existing stream and never blames membership",
+    "pass": true
+  },
+  {
+    "name": "member default requests highest and supports explicit manual and automatic choices",
+    "pass": true
+  },
+  {
+    "name": "member full quality ladder scrolls with remote at large UI size",
+    "pass": true
+  },
+  {
+    "name": "remote media keys support play pause toggle and ignore held repeats",
+    "pass": true
+  },
+  {
+    "name": "Nerd info defaults hidden and keeps everyday quality controls",
+    "pass": true
+  }
+]

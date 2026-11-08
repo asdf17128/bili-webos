@@ -8,43 +8,27 @@
 
 This log collects the release history previously included in the README. For earlier versions, see GitHub Releases. Unreleased entries describe the test branch, not the published package.
 
-<a id="unreleased"></a>
+## v2.6.0 — 2026-11-09
 
-## 未发布 / Unreleased
+- **弹幕按你喜欢的方式显示**：可调整字号、不透明度、粗细、描边、显示区域、密度和速度，选择滚动、顶部／底部固定及彩色弹幕。点播和直播均可在播放中调整适用选项，即时生效。
+- **改善后半段弹幕覆盖**：按播放进度加载分段弹幕，快进后加载对应片段；支持反向滚动，并改善密集弹幕的排列与性能。
+- **智能防挡人物（实验）**：利用 B 站提供的人物遮罩避让画面中的人物，改善连续播放和切镜衔接。默认关闭，仅部分普通视频提供有效数据；不支持的片源使用普通弹幕，暂不支持番剧和直播，也不保证所有人物边缘都能避让。
+- **重新设计播放控制栏**：点赞／投币／收藏／稍后再看、上一个／播放／下一个、评论／设置分成三组；大图标、清晰焦点与统一主题配色，打开时默认选中播放／暂停。画质、倍速、字幕和弹幕等选项集中到播放设置。
+- **赞币藏操作更明确**：显示等待、成功、取消和失败结果，保留点亮状态与已投硬币枚数，避免连续按键重复提交。
+- **前后切换能沿原路返回**：修复点“下一个”后无法回到刚才视频的问题，进入合集或分 P 后也能正常往返；播放列表保留原有顺序和首尾边界。
+- **看完后重新打开从头播放**：修复重开后又跳回片尾的问题，未看完的视频仍可续播。
+- **界面细节修复**：修复大字号下侧栏提示遮挡设置入口、字幕信息晚到时设置焦点跳项，以及推荐封面加载失败时的裂图显示。
 
-- 已看完的视频再次打开从头播放；修复加载后又跳回片尾的问题。完成进度按分 P 即时保存，未看完的短视频及片尾进度仍可正常续播。
-- Finished videos restart from the beginning. Part-aware progress is saved immediately on completion; unfinished clips and positions near the ending still resume normally.
+### English
 
-- 点播主控制条固定分为三组，组间留白：左侧点赞／投币／收藏／稍后再看，中间上一个／播放或暂停／下一个，右侧评论／设置。打开时焦点落在播放／暂停；点赞短按、长按三连和互动计数保留在主层，时间与章节归入进度区。
-- 播放设置集中画质、倍速、字幕（有轨时）、弹幕开关、弹幕设置和关注 UP 主；子面板选择或返回后恢复设置原条目，再返回回到主控制条的设置按钮。播放结束或致命错误会关闭面板并取消未完成长按；两排推荐卡片与展开结构保持。
-- 上一个／下一个保留本次手动切换路径，点下一条后可返回刚才的视频，再向前仍沿同一路径；没有对应记录时按分 P、合集或番剧顺序切换。显式播放列表保留自己的顺序与首尾边界，手动切换从头播放。未登录互动及不可用的切换按钮由遥控方向键跳过。
-- VOD controls use three spaced groups: Like / Coin / Favorite / Watch Later on the left, Previous / Play or Pause / Next in the center, and Comments / Settings on the right. Focus starts on Play/Pause; engagement counts and hold-to-triple remain in the main row, with time and chapters beside the timeline.
-- Playback Settings contains quality, speed, subtitles when available, danmaku toggle and appearance, and creator follow. Nested panels restore focus to their setting; Back then returns to the main Settings button. Playback end or fatal error closes panels and cancels pending holds; the two-row recommendation shelf remains.
-- Previous/Next remembers the manual playback path, so Previous returns to the video just left and Next follows the same recorded path. Without a recorded neighbor, navigation follows the multi-part video, collection or series. Explicit playlists retain their own order and boundaries; manual changes start from zero. Remote navigation skips unavailable actions and signed-out engagement controls.
-- 修复字幕信息晚到时设置焦点跳项；手动切换与片尾自动连播共用切换状态，避免重复请求和跳转。
-- Settings focus stays on the same action when subtitles arrive late. Manual navigation and end-of-video autoplay share a switch gate to prevent duplicate page requests and transitions.
-- 主控制栏改用大图标与圆形按钮，聚焦时显示白底、清晰轮廓和功能名称；播放键保持默认焦点，长按三连进度环贴合圆形图标，互动计数保持稳定。
-- Larger circular playback icons use a high-contrast focus outline and a focused-action caption. Play/Pause remains the default focus; the hold-to-triple ring follows the icon while counts stay in place.
-- 赞／币／收藏增加明确操作反馈：等待时显示进度，成功后轻弹并保留点亮状态，投币显示已投枚数；取消和失败显示对应结果。防止等待期间重复提交，并避免迟到的关系查询覆盖刚完成的操作。
-- Like / Coin / Favorite show pending progress, confirmed success feedback and persistent active colors; Coin retains a contributed-count badge. Cancellation and failure have explicit results; pending actions block duplicate submissions, and stale relation reads cannot undo a later action.
-- 控制栏复用全局品牌粉与黑白焦点配色，去掉额外浅蓝描边、浅粉／深红色阶，以及点赞、收藏的重复对勾。
-- Controls reuse the app's brand accent and monochrome focus palette, removing extra blue/pink shades and redundant Like/Favorite checkmarks.
-- 播放器推荐卡片在封面加载失败时显示统一占位，避免裂图；兼容 `cover` 封面字段，并在图片恢复后清除失败状态。
-- Player recommendations show an unavailable-cover placeholder for failed images, support the `cover` field, and clear the fallback when an image recovers.
-
-- 实验性智能防挡人物：复用视频提供的人像遮罩，跟随画面选择轮廓并优化切镜衔接；改为直接更新矢量遮罩，修复连续播放时图片准备跟不上造成的弹幕闪烁。默认关闭，源数据缺失或加载失败时保留普通弹幕。
-- Experimental person-aware danmaku masking with frame-aligned selection and cut-transition handling. Stable vector masks fix flicker caused by per-frame image preparation during playback; off by default, with ordinary-danmaku fallback when source masks are missing or fail.
-
-- 点播「设置 → 弹幕设置」提供字号、密度、区域、透明度等调整，立即应用于当前视频，关闭后恢复设置条目焦点，不打断播放。
-- 直播控制栏新增弹幕设置：支持播放中即时调整外观、速度、区域、密度及滚动开关，与点播共用偏好；面板仅展示适用于直播的选项。
-- 弹幕密度联动轨道间距，拥塞项短暂重试；共享有界文字测量缓存，减少重复计算。
-- In-playback danmaku controls, density-aware safe lane spacing, bounded admission retries and text measurement caching.
-- Live in-playback danmaku settings apply immediately without reconnecting, preserve recorded-video preferences and restore remote focus on close.
-
-- 弹幕设置面板：预览与保存字号、不透明度、粗细、描边、显示区域、密度、速度和类型过滤。
-- 支持顶部／底部固定、反向及普通滚动弹幕；点播和直播共享外观设置，轨道避让和数量上限保护性能。
-- 修复点播后半段弹幕覆盖不足：按播放进度加载分段弹幕，预取下一段，限制缓存；跳转隔离过期响应，分段切换保留在屏弹幕，兼容登录后的较大响应。
-- Danmaku customization with preview, common comment types, bounded density and shared live appearance.
+- **Customize danmaku**: adjust text size, opacity, weight, outline, screen area, density and speed, with scrolling, top/bottom fixed and colored-comment filters. Applicable settings take effect during both recorded and live playback.
+- **Better coverage throughout videos**: segmented loading follows playback and seeking, improving sparse comments later in a video. Reverse scrolling, dense-comment spacing and rendering performance are also improved.
+- **Experimental person-aware danmaku**: uses masks supplied by Bilibili to avoid people in the picture, with smoother continuous playback and cut transitions. Off by default and available only on some regular videos; unsupported sources retain ordinary danmaku. Bangumi and live streams are not supported, and complete coverage of every person or edge is not guaranteed.
+- **Redesigned playback controls**: three groups separate engagement, Previous/Play/Next, and Comments/Settings. Larger icons and a consistent theme make focus clear; controls open on Play/Pause. Quality, speed, subtitles and danmaku options are grouped in Playback Settings.
+- **Clearer engagement feedback**: Like, Coin and Favorite show pending, success, cancellation and failure states, retain confirmed selections and coin counts, and prevent repeated submissions.
+- **Reliable Previous/Next navigation**: retrace the videos you just played, even when a recommendation enters a collection or multi-part video. Explicit playlists keep their order and boundaries.
+- **Finished videos restart from the beginning**, while unfinished videos retain resume behavior.
+- **UI fixes**: sidebar hints no longer cover Settings at large text sizes, late subtitle information no longer shifts settings focus, and failed recommendation covers show a readable placeholder.
 
 ## v2.5.2 — 2026-11-01
 

@@ -35,7 +35,7 @@ const NAV_ICON = { search: '搜索', recommend: '推荐', hot: '热门', live: '
 // One probe reads every field the tests assert on, in a single round-trip.
 const PROBE = `JSON.stringify({
   focus: document.querySelector('[data-focus-id].focused')?.getAttribute('data-focus-id') || null,
-  v: (function(){var v=document.querySelector('video');return v?{t:+v.currentTime.toFixed(1),ready:v.readyState,paused:v.paused}:null})(),
+  v: (function(){var v=document.querySelector('video');return v?{t:+v.currentTime.toFixed(1),ready:v.readyState,paused:v.paused,width:v.videoWidth,height:v.videoHeight,error:v.error?.code||0}:null})(),
   cards: document.querySelectorAll('.video-card').length,
   relatedCards: document.querySelectorAll('.related-card').length,
   commentCards: document.querySelectorAll('.comment-card').length,
@@ -55,6 +55,8 @@ const PROBE = `JSON.stringify({
   sidebar: Array.from(document.querySelectorAll('.sidebar-item')).map(function(e){return e.textContent}),
   btns: Array.from(document.querySelectorAll('.player-btn')).map(function(e){return e.textContent.trim()}),
   focusedBtn: (document.querySelector('.player-btn.focused')||{}).textContent||'',
+  focusedControl: document.querySelector('.player-controls-vod .player-control.focused')?.getAttribute('data-control') || null,
+  watchLaterPressed: document.querySelector('.player-controls-vod .player-control[data-control="later"]')?.getAttribute('aria-pressed') || null,
   chips: Array.from(document.querySelectorAll('.fav-chip')).map(function(e){return e.textContent.trim()}),
   cardTexts: Array.from(document.querySelectorAll('.video-card')).map(function(e){return (e.innerText||'').split(String.fromCharCode(10)).join(' ')}),
   holding: !!document.querySelector('.video-card.holding'),
@@ -623,12 +625,12 @@ async function main(call, relaunchApp) {
       let s = await waitFor(x => x.v && x.v.t > 0.2, { timeout: 22000 });
       if (!s.v) throw new Error('Fixture playback did not start');
       await key('up');
-      for (let i = 0; i < 15 && !(await probe()).focusedBtn.includes('稍后再看'); i++) await key('right');
+      for (let i = 0; i < 15 && (await probe()).focusedControl !== 'later'; i++) await key('right');
       s = await probe();
-      if (!s.focusedBtn.includes('稍后再看') || s.focusedBtn.includes('已稍后再看')) throw new Error('Fixture add button is not in the expected state');
+      if (s.focusedControl !== 'later' || s.watchLaterPressed !== 'false') throw new Error('Fixture add button is not in the expected state');
       await key('ok');
-      s = await waitFor(x => x.focusedBtn.includes('已稍后再看'), { timeout: 10000 });
-      check('Player confirms fixture added to Watch Later', s.focusedBtn.includes('已稍后再看'));
+      s = await waitFor(x => x.focusedControl === 'later' && x.watchLaterPressed === 'true', { timeout: 10000 });
+      check('Player confirms fixture added to Watch Later', s.focusedControl === 'later' && s.watchLaterPressed === 'true');
       const afterAdd = ids(await getList());
       check('Add changes only the absent fixture', afterAdd.includes(aid) && afterAdd.length === baseline.length + 1 && baseline.every(id => afterAdd.includes(id)));
       if (!afterAdd.includes(aid)) throw new Error('Fixture was not added');
@@ -694,20 +696,59 @@ async function main(call, relaunchApp) {
   }
 
   async function testBangumiPlayback() {
-    console.log('\n[番剧 / Bangumi (PGC) + HDR]');
+    console.log('\n[番剧 / Bangumi through the installed player]');
     const EPID = 433947; // JOJO 石之海 ep1 — issue #7 repro
-    const season = await serviceFetch('https://api.bilibili.com/pgc/view/web/season?ep_id=' + EPID);
-    const eps = season?.result?.episodes || season?.data?.episodes || [];
-    check('Season info loads (episode list)', season?.code === 0 && eps.length > 0, `${eps.length} eps`);
-    const ep = eps.find(e => String(e.id) === String(EPID)) || eps[0] || {};
-    const play = await serviceFetch(`https://api.bilibili.com/pgc/player/web/playurl?ep_id=${EPID}&cid=${ep.cid || ''}&qn=127&fnval=4048&fnver=0&fourk=1`);
-    const dash = (play?.result || play?.data || {}).dash;
-    const vcount = dash?.video?.length || 0;
-    check('PGC playurl returns DASH (bangumi playable)', play?.code === 0 && vcount > 0, `${vcount} video reps`);
-    const accept = (play?.result || play?.data || {}).accept_quality || [];
-    const hdrRep = (dash?.video || []).some(v => v.id === 125 || v.id === 126);
-    if (accept.includes(125) || accept.includes(126) || hdrRep) ok('HDR/Dolby rep present + selectable by id', `accept=${JSON.stringify(accept)}`);
-    else warn('HDR/Dolby rep present', `none for this title (needs VIP?) accept=${JSON.stringify(accept)}`);
+    const healthy = s => !!(s.v && s.v.t > 0.2 && s.v.ready >= 2
+      && s.v.width > 0 && s.v.height > 0 && !s.v.paused && !s.v.error);
+    let opened = false;
+    const shot = async name => {
+      const image = await call('Page.captureScreenshot', { format: 'png' });
+      writeFileSync(`${output}/${name}-private.png`, Buffer.from(image.data, 'base64'), { mode: 0o600 });
+    };
+    const saveFailure = async () => {
+      const s = await probe();
+      writeFileSync(`${output}/tv-pgc-failure-state.json`, JSON.stringify({ media: s.v }, null, 2), { mode: 0o600 });
+      await shot('tv-pgc-failure');
+    };
+    await exitPlayer();
+    try {
+      if ((await probe()).v) throw new Error('Previous player did not exit before the PGC check');
+      const season = await serviceFetch('https://api.bilibili.com/pgc/view/web/season?ep_id=' + EPID);
+      const info = season?.result || season?.data || {};
+      const eps = info.episodes || [];
+      check('Season info loads (episode list)', season?.code === 0 && eps.length > 0,
+        JSON.stringify({ code: season?.code, episodes: eps.length }));
+      const ep = eps.find(e => String(e.id) === String(EPID));
+      if (season?.code !== 0 || !ep?.cid) throw new Error('Requested PGC episode metadata is unavailable');
+
+      // The same App entry as a selected episode drives production WBI v2,
+      // response normalization, quality choice and the actual media decoder.
+      // No parallel legacy playurl request or synthetic media result is used.
+      const item = { isBangumi: true, epid: ep.id, cid: ep.cid, bvid: ep.bvid,
+        aid: ep.aid, seasonId: info.season_id, resumeMode: 'none' };
+      opened = true;
+      await evalJSON(`JSON.stringify(window.__openVideo(${JSON.stringify(item)}))`);
+      let s = await waitFor(healthy, { timeout: 60000, interval: 400 });
+      check('PGC player decodes real media', healthy(s), JSON.stringify(s.v));
+      if (!healthy(s)) { await saveFailure(); return; }
+
+      const first = s.v;
+      await sleep(1500);
+      s = await probe();
+      const advances = healthy(s) && s.v.t > first.t + 0.3;
+      check('PGC playback clock advances after decoding', advances,
+        JSON.stringify({ before: first, after: s.v }));
+      if (!advances) { await saveFailure(); return; }
+      await shot('tv-pgc');
+    } catch (error) {
+      if (opened) {
+        try { await saveFailure(); } catch {}
+      }
+      throw error;
+    } finally {
+      await exitPlayer();
+      check('PGC exit releases the video element', !(await probe()).v);
+    }
   }
 
   const tests = [

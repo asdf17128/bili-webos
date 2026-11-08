@@ -66,6 +66,7 @@ fi
 echo "OK: no inset shorthand"
 # C-PLAY-01: play-start policy (resume shipped broken twice before this suite)
 node tools/test-playintent.mjs || { echo "FAIL: play-intent policy"; exit 1; }
+node tools/test-adjacent-video.mjs || { echo "FAIL: previous/next playback navigation"; exit 1; }
 # C-TRI-02: 三连后的点亮状态(app/src/player/tripleState.js)。owner 2026-08-09
 # 「只有收藏的数字变色」——接口回的是"这次做了什么",不是"最终什么状态"。
 node tools/test-triplestate.mjs || { echo "FAIL: triple-state policy"; exit 1; }
@@ -174,6 +175,8 @@ if [ -n "$UX" ]; then
   node tools/test-manifest-mime.mjs
   node tools/test-player-loading.mjs
   node tools/test-player-controls.mjs
+  node tools/test-player-adjacent.mjs
+  node tools/test-player-resume.mjs
   node tools/test-author-followers.mjs
   node tools/test-danmaku-segments.mjs || exit 1
   node tools/test-danmaku-mask.mjs

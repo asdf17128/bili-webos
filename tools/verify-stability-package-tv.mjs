@@ -12,7 +12,7 @@ try {
  const s=await new Promise((r,j)=>c.sftp((e,v)=>e?j(e):r(v)));
  report.installedFiles={};
  for (const [file,hash] of Object.entries(report.files)) {
-  if(!file.startsWith('app/dist/assets/')&&!file.startsWith('service/'))continue;
+  if(!file.startsWith('app/dist/assets/')&&file!=='app/dist/appinfo.json'&&!file.startsWith('service/'))continue;
   const remote=file.startsWith('app/')?'/media/developer/apps/usr/palm/applications/com.biliwebos.app/'+file.slice('app/dist/'.length):'/media/developer/apps/usr/palm/services/'+file.slice('service/'.length);
   const bytes=await new Promise((r,j)=>s.readFile(remote,(e,d)=>e?j(e):r(d)));
   const installed=createHash('sha256').update(bytes).digest('hex');report.installedFiles[file]={sha256:installed,match:installed===hash};

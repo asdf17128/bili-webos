@@ -44,9 +44,10 @@ button, input { font-family: inherit; }
 .sidebar-item.active::before { content: ''; position: absolute; left: -20px; top: 13px; bottom: 13px; width: 4px; border-radius: 0 4px 4px 0; background: var(--tv-accent); }
 .sidebar-item.focused { background: var(--tv-focus); color: #191a1e; box-shadow: none; }
 .sidebar-divider { margin: 10px 28px; background: #303139; }
-.sidebar-user { position: relative; min-height: 66px; padding: 16px 34px 0; border-color: #303139; display: flex; flex-wrap: wrap; align-items: center; }
+.sidebar-user { position: relative; min-height: 66px; padding: 16px 34px 0; border-color: #303139; display: flex; align-items: center; }
+.sidebar[data-expanded="true"] .sidebar-user { flex-wrap: wrap; }
 .sidebar-user-avatar { width: 42px; height: 42px; border: 1px solid #5c5e69; background: #303139; flex: none; margin: 0; display: flex; align-items: center; justify-content: center; }
-.sidebar-user-name, .sidebar-user-login { opacity: 0; margin-left: 16px; white-space: nowrap; color: var(--tv-secondary); font-size: calc(18px * var(--ui-scale)); }
+.sidebar-user-name, .sidebar-user-login { flex: 1 1 0%; min-width: 0; overflow: hidden; text-overflow: ellipsis; opacity: 0; margin-left: 16px; white-space: nowrap; color: var(--tv-secondary); font-size: calc(18px * var(--ui-scale)); }
 .sidebar[data-expanded="true"] .sidebar-user-name, .sidebar[data-expanded="true"] .sidebar-user-login { opacity: 1; }
 .sidebar-help { display: none; }
 /* The hint sits in the normal flow above the account row, so the nav above it

@@ -26,12 +26,12 @@ BiliTV is a free, open-source Bilibili client made for LG webOS TVs. Pick up the
 
 | | What you can do |
 |---|---|
-| **Pick up where you left off** | Continue watching from the home screen, or find a video in your watch history. Save something for later with a long press. |
+| **Pick up where you left off** | Continue watching from the home screen, or find a video in your watch history. Finished videos reopen from the beginning. Save something for later with a long press. |
 | **Browse without losing your place** | A slim sidebar opens when you need it. Return from the sidebar or player to the card you were browsing. |
 | **Make the screen yours** | Choose **2, 3 or 4 videos per row**. Adjust the interface, subtitle and danmaku text sizes separately. |
 | **Find your next favorite** | Recommendations, trending videos, followed creators, favorites and six category shortcuts. Search with trending topics, suggestions and recent searches. |
 | **Enjoy the whole video** | Up to **4K / 8K, HDR and Dolby Vision**, playback speed controls, chapter markers and thumbnail previews while seeking. |
-| **Stay part of the conversation** | Watch with danmaku and subtitles, read comments and replies alongside the video, or drop into a live stream with chat. |
+| **Stay part of the conversation** | Adjust danmaku size, area, opacity, density and speed while watching. Read comments and replies alongside the video, or drop into a live stream with chat. Subtitles have separate settings. |
 
 Also included: **bangumi and episode lists**, favorites and Watch Later playlists, **QR-code login**, Magic Remote pointer and wheel support, and **DLNA casting** from compatible phone apps.
 
@@ -39,9 +39,14 @@ Use BiliTV in **English, Español or 中文**. English and Spanish interfaces al
 
 *Video quality and availability depend on the source, your Bilibili account, your TV and your region.*
 
-## What’s new in 2.5.2
+## What’s new in 2.6.0
 
-Updated regular-video and episode playback endpoints improve signed-in playback. Certain verification failures now get bounded device activation and one retry. Remote play/pause keys are supported, and Back-dismissed controls stay hidden despite pointer jitter. Diagnostics include quality-switch failures and recovery status, with easier remote navigation to the feedback QR code. See the [changelog](CHANGELOG.md).
+- **More danmaku options** during recorded and live playback, with improved comment coverage later in videos.
+- **Clearer playback controls** with separate engagement, playback and settings groups, larger icons, visible focus and explicit Like/Coin/Favorite feedback. Previous/Next retraces the path you just played.
+- **Experimental person-aware danmaku**, enabled manually in Danmaku Settings. Only some regular videos supply valid official masks; missing data falls back to ordinary danmaku. Bangumi and live streams are not supported, and some edges may remain uncovered.
+- **Playback and layout fixes**: finished videos restart from the beginning; large-text sidebar navigation and settings focus are more stable.
+
+See the [full release notes](docs/releases/v2.6.0.md) and [changelog](CHANGELOG.md).
 
 ## A closer look
 
@@ -81,6 +86,7 @@ Supports **webOS 5.0 and later**, with community-tested compatibility for **C9 /
 | Press OK on the current sidebar section | Refresh the list |
 | Press Left or Right during playback | Preview a seek position; OK confirms and Back cancels |
 | Press Up or Down during playback | Show the controls; Back closes overlays and controls before leaving playback |
+| With controls open | Focus starts on Play/Pause; Down expands two rows of recommendations, while Settings contains quality, subtitles and danmaku |
 
 ## Privacy
 
@@ -90,7 +96,7 @@ Login information is stored on your TV and used to access your Bilibili account.
 
 [Report an issue](https://github.com/asdf17128/bili-webos/issues) · [Changelog](CHANGELOG.md) · [Development guide](docs/DEVELOPMENT.md) · [Test cases](docs/TESTCASES.md)
 
-See the [premium playback guide](docs/DOLBY_VISION.md) for quality and device limits, or the [home-network testing guide](docs/NETWORK-TESTING.md) for network troubleshooting. See the [changelog](CHANGELOG.md) and [2.4.0 validation report](docs/RELEASE-2.4.0.md) for release scope and verification limits. Some technical documents are in Chinese.
+See the [premium playback guide](docs/DOLBY_VISION.md) for quality and device limits, or the [home-network testing guide](docs/NETWORK-TESTING.md) for network troubleshooting. See the [changelog](CHANGELOG.md) and [2.6.0 validation report](docs/RELEASE-2.6.0.md) for release scope and verification limits. Some technical documents are in Chinese.
 
 [Premium badges and automatic quality](docs/MEMBER-EXPERIENCE.md) (Chinese documentation).
 
@@ -100,6 +106,6 @@ See the [premium playback guide](docs/DOLBY_VISION.md) for quality and device li
 
 ## Playback verification failures
 
-Version 2.5.2 attempts bounded device activation for certain verification responses, then retries playback once. A five-minute activation cooldown survives service restarts. If playback still fails, open **Settings → Network diagnostics** before restarting or playing another video and share the report. Account repair remains available separately; repeated identity resets do not guarantee recovery.
+The app attempts bounded device activation for certain verification responses, then retries playback once. A five-minute activation cooldown survives service restarts. If playback still fails, open **Settings → Network diagnostics** before restarting or playing another video and share the report. Account repair remains available separately; repeated identity resets do not guarantee recovery.
 
 New diagnostic reports include the latest playback-URL failure in the current service session: HTTP/API codes, elapsed time, requested quality and recovery results. Open diagnostics before restarting and scan the QR code to submit. Nothing is uploaded automatically; cookies, voucher values, and full signed URLs are excluded.

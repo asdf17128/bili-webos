@@ -1,0 +1,243 @@
+{
+  "startedAt": "2026-11-08T17:32:09.991Z",
+  "boundary": "Real TV view API, playback and trusted remote navigation. Identities stay in page memory; report contains comparisons only. Account POSTs are blocked except ordinary playback heartbeats. Screenshots remain private.",
+  "checks": [
+    {
+      "name": "entry is foreground browse without active playback",
+      "pass": true
+    },
+    {
+      "name": "initial-A starts near the beginning with decoded dimensions",
+      "pass": true,
+      "detail": {
+        "time": 0.3,
+        "paused": false,
+        "ready": 4,
+        "width": 1920,
+        "height": 1080,
+        "error": 0,
+        "sequence": 1,
+        "navigationMetadata": {
+          "pageCount": 1,
+          "ugcSeason": {
+            "episodeCount": 0,
+            "currentIndex": -1
+          }
+        }
+      }
+    },
+    {
+      "name": "initial-A advances real media time",
+      "pass": true,
+      "detail": {
+        "advance": 0.7666869999999999,
+        "width": 1920,
+        "height": 1080,
+        "error": 0
+      }
+    },
+    {
+      "name": "fresh standalone entry has Previous disabled",
+      "pass": true
+    },
+    {
+      "name": "next-B starts near the beginning with decoded dimensions",
+      "pass": true,
+      "detail": {
+        "time": 0.533312,
+        "paused": false,
+        "ready": 4,
+        "width": 1920,
+        "height": 1080,
+        "error": 0,
+        "sequence": 2,
+        "navigationMetadata": {
+          "pageCount": 1,
+          "ugcSeason": {
+            "episodeCount": 20,
+            "currentIndex": 15
+          }
+        }
+      }
+    },
+    {
+      "name": "next-B advances real media time",
+      "pass": true,
+      "detail": {
+        "advance": 0.8,
+        "width": 1920,
+        "height": 1080,
+        "error": 0
+      }
+    },
+    {
+      "name": "Next changes to a different real video",
+      "pass": true
+    },
+    {
+      "name": "back-A starts near the beginning with decoded dimensions",
+      "pass": true,
+      "detail": {
+        "time": 0.2,
+        "paused": false,
+        "ready": 4,
+        "width": 1920,
+        "height": 1080,
+        "error": 0,
+        "sequence": 3,
+        "navigationMetadata": {
+          "pageCount": 1,
+          "ugcSeason": {
+            "episodeCount": 0,
+            "currentIndex": -1
+          }
+        }
+      }
+    },
+    {
+      "name": "back-A advances real media time",
+      "pass": true,
+      "detail": {
+        "advance": 0.833312,
+        "width": 1920,
+        "height": 1080,
+        "error": 0
+      }
+    },
+    {
+      "name": "Previous returns to the original video",
+      "pass": true
+    },
+    {
+      "name": "forward-B starts near the beginning with decoded dimensions",
+      "pass": true,
+      "detail": {
+        "time": 0.533312,
+        "paused": false,
+        "ready": 4,
+        "width": 1920,
+        "height": 1080,
+        "error": 0,
+        "sequence": 4,
+        "navigationMetadata": {
+          "pageCount": 1,
+          "ugcSeason": {
+            "episodeCount": 20,
+            "currentIndex": 15
+          }
+        }
+      }
+    },
+    {
+      "name": "forward-B advances real media time",
+      "pass": true,
+      "detail": {
+        "advance": 0.833375,
+        "width": 1920,
+        "height": 1080,
+        "error": 0
+      }
+    },
+    {
+      "name": "Next after returning reopens the same next video",
+      "pass": true
+    },
+    {
+      "name": "back-A-again starts near the beginning with decoded dimensions",
+      "pass": true,
+      "detail": {
+        "time": 0.2,
+        "paused": false,
+        "ready": 4,
+        "width": 1920,
+        "height": 1080,
+        "error": 0,
+        "sequence": 5,
+        "navigationMetadata": {
+          "pageCount": 1,
+          "ugcSeason": {
+            "episodeCount": 0,
+            "currentIndex": -1
+          }
+        }
+      }
+    },
+    {
+      "name": "back-A-again advances real media time",
+      "pass": true,
+      "detail": {
+        "advance": 0.733312,
+        "width": 1920,
+        "height": 1080,
+        "error": 0
+      }
+    },
+    {
+      "name": "a second Previous returns to the original video",
+      "pass": true
+    },
+    {
+      "name": "fresh-session-A starts near the beginning with decoded dimensions",
+      "pass": true,
+      "detail": {
+        "time": 0.266687,
+        "paused": false,
+        "ready": 4,
+        "width": 1920,
+        "height": 1080,
+        "error": 0,
+        "sequence": 6,
+        "navigationMetadata": {
+          "pageCount": 1,
+          "ugcSeason": {
+            "episodeCount": 0,
+            "currentIndex": -1
+          }
+        }
+      }
+    },
+    {
+      "name": "fresh-session-A advances real media time",
+      "pass": true,
+      "detail": {
+        "advance": 0.8333130000000001,
+        "width": 1920,
+        "height": 1080,
+        "error": 0
+      }
+    },
+    {
+      "name": "reopened entry is the original video with no previous-session history",
+      "pass": true
+    },
+    {
+      "name": "no uncaught page exceptions",
+      "pass": true,
+      "detail": {
+        "count": 0
+      }
+    }
+  ],
+  "pass": true,
+  "guard": {
+    "viewRequests": 6,
+    "viewReplies": 6,
+    "lastViewCode": 0,
+    "blocked": 0,
+    "heartbeatWrites": 6
+  },
+  "cleanup": {
+    "noPlayer": true,
+    "guardRemoved": true,
+    "visible": true
+  },
+  "pageErrors": [],
+  "network": {
+    "active": 0,
+    "media": 0,
+    "startedMedia": 72,
+    "completedMedia": 66,
+    "failedMedia": 6
+  },
+  "finishedAt": "2026-11-08T17:32:54.688Z"
+}

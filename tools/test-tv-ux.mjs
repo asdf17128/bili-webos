@@ -2,13 +2,17 @@
 // Start Vite first, then: node tools/test-tv-ux.mjs [--baseline]
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { decodeQr } from './_decode-qr.mjs';
 import { PNG } from 'pngjs';
 
 const baseline = process.argv.includes('--baseline');
 const baseUrl = process.env.UX_URL || 'http://127.0.0.1:5173';
 const output = process.env.UX_OUTPUT || '/tmp/bili-tv-ux';
+// Optional old stylesheet is served only inside isolated sidebar fixtures.
+// It never replaces production source while another verification is running.
+const sidebarBaselineCss = process.env.UX_SIDEBAR_BASELINE_CSS
+  ? await readFile(process.env.UX_SIDEBAR_BASELINE_CSS, 'utf8') : null;
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 let failed = 0;
@@ -20,7 +24,7 @@ const items = (prefix, count = 30) => Array.from({ length: count }, (_, i) => ({
 }));
 
 async function fixture(options = {}) {
-  const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, serviceWorkers: 'block' });
+  const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: options.outputScale || 1, serviceWorkers: 'block' });
   await context.routeWebSocket('**/*', socket => socket.close());
   await context.addInitScript(options => {
     // Keep Chromium's real geometry/scroll callbacks; remove only the API
@@ -42,6 +46,10 @@ async function fixture(options = {}) {
   await page.route('**/*', async route => {
     const url = new URL(route.request().url());
     if (url.origin === new URL(baseUrl).origin) {
+      if (sidebarBaselineCss && options.sidebarGeometry && url.pathname.endsWith('/tv-design.css')) {
+        return route.fulfill({ contentType: 'application/javascript', body:
+          `const css=${JSON.stringify(sidebarBaselineCss)};const style=document.createElement('style');style.textContent=css;document.head.appendChild(style);export default css;` });
+      }
       if (options.immediateFeed && url.pathname === '/src/api/client.js') {
         const response = await route.fetch();
         const source = await response.text();
@@ -61,7 +69,7 @@ async function fixture(options = {}) {
     }
     if (url.port === '9528') return route.abort();
     let body = { code: 0, data: {} };
-    if (url.pathname.endsWith('/nav')) body.data = { isLogin: !!options.auth, mid: 123, uname: 'UX Test', wbi_img: { img_url: 'https://example.com/abcdefghijklmnopqrstuvwxyz123456.png', sub_url: 'https://example.com/abcdefghijklmnopqrstuvwxyz123456.png' } };
+    if (url.pathname.endsWith('/nav')) body.data = { isLogin: !!options.auth, mid: 123, uname: options.accountName || 'UX Test', ...(options.premium ? {vip:{status:1,type:2}} : {}), wbi_img: { img_url: 'https://example.com/abcdefghijklmnopqrstuvwxyz123456.png', sub_url: 'https://example.com/abcdefghijklmnopqrstuvwxyz123456.png' } };
     if (url.pathname.endsWith('/x/relation')) {
       if (options.relationError) return route.abort();
       body.data = { attribute: calls.following ? 2 : 0 };
@@ -519,6 +527,49 @@ await test('design: reopening navigation keeps the bottom item visible', async (
   });
   assert.ok(geometry.top >= geometry.start && geometry.bottom <= geometry.end, JSON.stringify(geometry));
 }, { language: 'en', scale: 1.25 });
+
+// webOS declares a 1920x1080 logical canvas. A 2/3 device scale produces a
+// 1280x720 screenshot of that canvas; it is not a desktop responsive viewport.
+for (const outputScale of [1, 2 / 3]) for (const scale of [1, 1.12, 1.25]) for (const auth of [false, true]) {
+  const label = `${Math.round(1080 * outputScale)}p-${scale}-${auth ? 'member' : 'guest'}`;
+  await test(`design: sidebar help never covers focused Settings ${label}`, async ({ page }) => {
+    await ready(page); await page.waitForTimeout(400);
+    if (auth) await page.locator('.sidebar-user .membership-badge').waitFor({state:'attached'});
+    const geometry = () => page.evaluate(() => {
+      const box = selector => { const e=document.querySelector(selector),r=e.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,height:r.height,width:r.width,display:getComputedStyle(e).display}; };
+      const nav=document.querySelector('.sidebar-nav'),last=nav.querySelector('.sidebar-item:last-child');
+      return {expanded:document.querySelector('.sidebar').dataset.expanded,focused:last.classList.contains('focused'),last:box('.sidebar-nav .sidebar-item:last-child'),nav:box('.sidebar-nav'),help:box('.sidebar-help'),footer:box('.sidebar-user'),avatar:box('.sidebar-user-avatar'),label:box('.sidebar-user-name, .sidebar-user-login')};
+    });
+    // Start from a real remote focus, then traverse to the final navigation item.
+    await page.keyboard.press('Backspace');
+    for (let i=0;i<20;i++) {
+      if (await page.locator('.sidebar-item').last().evaluate(e=>e.classList.contains('focused'))) break;
+      await page.keyboard.press('ArrowDown');
+    }
+    await page.waitForTimeout(350);
+    const expanded=await geometry();
+    await page.screenshot({path:`${output}/sidebar-${label}.png`});
+    await writeFile(`${output}/sidebar-${label}.json`,JSON.stringify({baseline:!!sidebarBaselineCss,logicalViewport:{width:1920,height:1080},outputScale,scale,auth,expanded},null,2));
+    assert.equal(expanded.expanded,'true');assert.ok(expanded.focused,'remote reaches Settings');
+    assert.ok(expanded.last.top>=expanded.nav.top-1&&expanded.last.bottom<=expanded.nav.bottom+1,'Settings is inside the scrolled navigation viewport');
+    assert.ok(expanded.last.bottom<=expanded.help.top+1,'hint does not cover the focused Settings row');
+    assert.ok(expanded.help.bottom<=expanded.avatar.top+1,'hint stays above the account row');
+    assert.ok(expanded.label.top<expanded.avatar.bottom&&expanded.avatar.top<expanded.label.bottom,'account name remains alongside the avatar');
+    assert.ok(expanded.footer.bottom<=1080&&expanded.avatar.bottom<=expanded.footer.bottom,'account row stays on screen');
+    // Moving into Settings collapses the rail; returning must preserve the
+    // bottom focus, and the account avatar must not wrap onto a hidden row.
+    await page.keyboard.press('ArrowRight');await page.locator('.config-page').waitFor();await page.waitForTimeout(250);
+    const collapsed=await geometry();
+    await writeFile(`${output}/sidebar-${label}.json`,JSON.stringify({baseline:!!sidebarBaselineCss,logicalViewport:{width:1920,height:1080},outputScale,scale,auth,expanded,collapsed},null,2));
+    assert.equal(collapsed.expanded,'false');assert.equal(collapsed.help.display,'none');
+    assert.ok(collapsed.avatar.top>=collapsed.footer.top&&collapsed.avatar.bottom<=collapsed.footer.bottom,'collapsed avatar remains inside footer');
+    assert.ok(collapsed.footer.height<=90,'hidden account label must not make the collapsed footer grow');
+    await page.keyboard.press('Backspace');await page.waitForTimeout(250);
+    const reopened=await geometry();
+    assert.ok(reopened.focused&&reopened.last.bottom<=reopened.help.top+1,'reopened Settings remains visible above hint');
+    await writeFile(`${output}/sidebar-${label}.json`,JSON.stringify({baseline:!!sidebarBaselineCss,logicalViewport:{width:1920,height:1080},outputScale,scale,auth,expanded,collapsed,reopened},null,2));
+  },{sidebarGeometry:true,outputScale,scale,auth,premium:auth,accountName:'合成测试账号的很长昵称用于验证侧栏布局'});
+}
 await test('design: resume shelf uses unfinished history and supports remote navigation', async ({ page }) => {
   await ready(page); await page.locator('.resume-card').first().waitFor(); await page.waitForTimeout(400);
   assert.equal(await page.locator('.resume-card').count(), 3);

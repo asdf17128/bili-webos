@@ -1,0 +1,293 @@
+{
+  "startedAt": "2026-11-08T17:32:54.848Z",
+  "boundary": "Real TV media, DOM and trusted CDP keys; Like/Coin/Favorite/Triple and relation responses intercepted before Luna dispatch. Not real account-write acceptance or physical-screen confirmation.",
+  "checks": [
+    {
+      "name": "entry is foreground browse with no active player",
+      "pass": true
+    },
+    {
+      "name": "real playback is advancing with decoded dimensions",
+      "pass": true,
+      "detail": {
+        "paused": false,
+        "time": 1.5,
+        "duration": 304,
+        "width": 1920,
+        "height": 1080,
+        "ready": 4,
+        "error": 0
+      }
+    },
+    {
+      "name": "opening controls starts at Play/Pause",
+      "pass": true
+    },
+    {
+      "name": "primary order has all three requested groups",
+      "pass": true
+    },
+    {
+      "name": "engagement controls are available",
+      "pass": true
+    },
+    {
+      "name": "remote pause stops media time",
+      "pass": true
+    },
+    {
+      "name": "remote Play resumes media",
+      "pass": true
+    },
+    {
+      "name": "playback settings retain the main actions",
+      "pass": true,
+      "detail": [
+        "quality",
+        "speed",
+        "subtitle",
+        "danmaku",
+        "danmakuSettings",
+        "follow"
+      ]
+    },
+    {
+      "name": "Back restores Settings focus",
+      "pass": true
+    },
+    {
+      "name": "recommendation shelf uses full cards and displays two available rows",
+      "pass": true,
+      "detail": {
+        "cards": 12,
+        "rows": 3,
+        "visibleRows": 2,
+        "shared": true,
+        "card": {
+          "top": 344,
+          "bottom": 694.765625,
+          "width": 426.25,
+          "height": 350.765625,
+          "shared": true
+        },
+        "viewport": {
+          "top": 334,
+          "bottom": 1080
+        }
+      }
+    },
+    {
+      "name": "recommendation covers show loaded images or a readable failure placeholder",
+      "pass": true,
+      "detail": {
+        "covers": [
+          {
+            "hasImage": true,
+            "loaded": true,
+            "imageHidden": false,
+            "ready": true,
+            "fallbackVisible": false
+          },
+          {
+            "hasImage": true,
+            "loaded": true,
+            "imageHidden": false,
+            "ready": true,
+            "fallbackVisible": false
+          },
+          {
+            "hasImage": true,
+            "loaded": true,
+            "imageHidden": false,
+            "ready": true,
+            "fallbackVisible": false
+          },
+          {
+            "hasImage": true,
+            "loaded": true,
+            "imageHidden": false,
+            "ready": true,
+            "fallbackVisible": false
+          },
+          {
+            "hasImage": true,
+            "loaded": true,
+            "imageHidden": false,
+            "ready": true,
+            "fallbackVisible": false
+          },
+          {
+            "hasImage": true,
+            "loaded": true,
+            "imageHidden": false,
+            "ready": true,
+            "fallbackVisible": false
+          },
+          {
+            "hasImage": true,
+            "loaded": true,
+            "imageHidden": false,
+            "ready": true,
+            "fallbackVisible": false
+          },
+          {
+            "hasImage": true,
+            "loaded": true,
+            "imageHidden": false,
+            "ready": true,
+            "fallbackVisible": false
+          }
+        ],
+        "failedImages": 0
+      }
+    },
+    {
+      "name": "Back collapses recommendations and keeps playback",
+      "pass": true
+    },
+    {
+      "name": "pending like blocks repeated OK and another engagement action",
+      "pass": true
+    },
+    {
+      "name": "pending does not claim a successful like",
+      "pass": true
+    },
+    {
+      "name": "like success lights the focused button",
+      "pass": true
+    },
+    {
+      "name": "like stays lit without an extra check after temporary feedback",
+      "pass": true
+    },
+    {
+      "name": "like cancellation is explicit",
+      "pass": true
+    },
+    {
+      "name": "failed like leaves state and count unchanged",
+      "pass": true
+    },
+    {
+      "name": "explicit retry succeeds",
+      "pass": true
+    },
+    {
+      "name": "pending favorite submits once",
+      "pass": true
+    },
+    {
+      "name": "favorite success stays lit without an extra check",
+      "pass": true
+    },
+    {
+      "name": "favorite cancellation is explicit",
+      "pass": true
+    },
+    {
+      "name": "pending coin 1 submits once",
+      "pass": true
+    },
+    {
+      "name": "confirmed coin 1 remains visible",
+      "pass": true
+    },
+    {
+      "name": "pending coin 2 submits once",
+      "pass": true
+    },
+    {
+      "name": "confirmed coin 2 remains visible",
+      "pass": true
+    },
+    {
+      "name": "two-coin limit prevents another submission",
+      "pass": true
+    },
+    {
+      "name": "pending triple blocks separate actions",
+      "pass": true
+    },
+    {
+      "name": "triple success preserves active states without extra checks",
+      "pass": true
+    },
+    {
+      "name": "isolated engagement contract had no unexpected writes",
+      "pass": true,
+      "detail": {
+        "calls": {
+          "relation": 2,
+          "like": 4,
+          "folders": 2,
+          "fav": 2,
+          "coin": 2,
+          "triple": 1
+        },
+        "blocked": 0,
+        "heartbeatWrites": 3,
+        "violations": 0,
+        "pending": 0
+      }
+    },
+    {
+      "name": "no uncaught page exceptions",
+      "pass": true,
+      "detail": {
+        "count": 0
+      }
+    },
+    {
+      "name": "media remains healthy after control interactions",
+      "pass": true,
+      "detail": {
+        "paused": false,
+        "time": 42.4,
+        "duration": 304,
+        "width": 1920,
+        "height": 1080,
+        "ready": 4,
+        "error": 0
+      }
+    }
+  ],
+  "pass": true,
+  "guard": {
+    "calls": {
+      "relation": 2,
+      "like": 4,
+      "folders": 2,
+      "fav": 2,
+      "coin": 2,
+      "triple": 1
+    },
+    "blocked": 0,
+    "heartbeatWrites": 4,
+    "violations": 0,
+    "pending": 0
+  },
+  "mediaEnd": {
+    "paused": false,
+    "time": 42.4,
+    "duration": 304,
+    "width": 1920,
+    "height": 1080,
+    "ready": 4,
+    "error": 0
+  },
+  "cleanup": {
+    "noPlayer": true,
+    "guardRemoved": true,
+    "visible": true
+  },
+  "pageErrors": [],
+  "network": {
+    "active": 0,
+    "media": 0,
+    "startedMedia": 34,
+    "completedMedia": 34,
+    "failedMedia": 0
+  },
+  "finishedAt": "2026-11-08T17:33:44.289Z"
+}

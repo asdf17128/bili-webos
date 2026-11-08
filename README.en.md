@@ -43,7 +43,7 @@ Use BiliTV in **English, Español or 中文**. English and Spanish interfaces al
 
 - **More danmaku options** during recorded and live playback, with improved comment coverage later in videos.
 - **Clearer playback controls** with separate engagement, playback and settings groups, larger icons, visible focus and explicit Like/Coin/Favorite feedback. Previous/Next retraces the path you just played.
-- **Experimental person-aware danmaku**, enabled manually in Danmaku Settings. Only some regular videos supply valid official masks; missing data falls back to ordinary danmaku. Bangumi and live streams are not supported, and some edges may remain uncovered.
+- **Experimental person-aware danmaku** reduces comments covering people. Enable it in Danmaku Settings. Available only on some regular videos, with results varying by video; Bangumi and live streams are not supported.
 - **Playback and layout fixes**: finished videos restart from the beginning; large-text sidebar navigation and settings focus are more stable.
 
 See the [full release notes](docs/releases/v2.6.0.md) and [changelog](CHANGELOG.md).

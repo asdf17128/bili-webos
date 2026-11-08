@@ -1,0 +1,32 @@
+{
+  "verifiedAt": "2026-11-08T17:39:37.145Z",
+  "version": "2.6.0",
+  "releaseUrl": "https://github.com/asdf17128/bili-webos/releases/tag/v2.6.0",
+  "tag": "v2.6.0",
+  "title": "v2.6.0 — 弹幕自定义与播放控制改版",
+  "isDraft": false,
+  "isPrerelease": false,
+  "publishedAt": "2026-11-08T17:38:32Z",
+  "assets": [
+    {
+      "name": "com.biliwebos.app.manifest.json",
+      "size": 480,
+      "url": "https://github.com/asdf17128/bili-webos/releases/download/v2.6.0/com.biliwebos.app.manifest.json"
+    },
+    {
+      "name": "com.biliwebos.app_2.6.0_all.ipk",
+      "size": 745802,
+      "url": "https://github.com/asdf17128/bili-webos/releases/download/v2.6.0/com.biliwebos.app_2.6.0_all.ipk"
+    },
+    {
+      "name": "version.json",
+      "size": 20,
+      "url": "https://github.com/asdf17128/bili-webos/releases/download/v2.6.0/version.json"
+    }
+  ],
+  "localIpkSha256": "60cdd7a3e7982882a177ff2d0fbd118fa8df3ee4388f0695b6f6c4374358e02a",
+  "publicIpkSha256": "60cdd7a3e7982882a177ff2d0fbd118fa8df3ee4388f0695b6f6c4374358e02a",
+  "ipkHashMatches": true,
+  "homebrewVersion": "2.5.2",
+  "homebrewSource": "https://repo.webosbrew.org/api/apps/com.biliwebos.app/releases/latest.json"
+}

@@ -2,7 +2,7 @@
 
 日期：2026-11-09（Asia/Shanghai）。
 
-**状态：完整本地回归通过，退出码 0；最终候选已安装，电视后台自动化已完成。** 用户已授权本次正式发布；公开功能说明见 [2.6.0 更新说明](releases/v2.6.0.md)。线上发布与目录收录另行核对。
+**状态：2.6.0 已正式发布；完整本地回归通过，退出码 0，电视后台自动化已完成。** [GitHub Release](https://github.com/asdf17128/bili-webos/releases/tag/v2.6.0) 的三项资产与公开下载校验通过；Homebrew 目录等待同步。公开功能说明见 [2.6.0 更新说明](releases/v2.6.0.md)。
 
 ## 发布范围
 
@@ -18,10 +18,10 @@
 | 构建与语法 | Vite 构建成功；生产 JavaScript 产物通过 ES2016 解析；服务代码通过 ES5 解析 |
 | 旧服务运行时 | Docker 中真实 Node 0.12.2、Node 8.17.0 均完成服务检查 |
 | 电视安装 | 20 个受检文件与本地 SHA-256 一致，包括 `appinfo.json`；实际加载的入口 bundle 匹配 |
-| 当前候选 IPK | `com.biliwebos.app_2.6.0_all.ipk`，745,802 字节；SHA-256 为 `60cdd7a3e7982882a177ff2d0fbd118fa8df3ee4388f0695b6f6c4374358e02a` |
+| 正式 IPK | `com.biliwebos.app_2.6.0_all.ipk`，745,802 字节；SHA-256 为 `60cdd7a3e7982882a177ff2d0fbd118fa8df3ee4388f0695b6f6c4374358e02a` |
 | 设备观测环境 | Chrome 132、服务 Node 20.12.2；页内状态 visible、登录状态可用 |
 
-当前安装清单保存在本机 `/tmp/bili-release-260/package.json`，包含源文件与安装文件哈希。最终发布前须再次确认源码和发布 IPK 未偏离该记录。
+完整安装清单见[安装校验](ux-evidence/2026-11-09-release-260/installed-package.json)，包含源文件与安装文件哈希。发布前重新核对 147 个源文件及 IPK 均未偏离被测版本；标签 `v2.6.0` 对应源码提交 `c873a27`。
 
 ## 本轮本地回归
 
@@ -85,8 +85,8 @@
 - 分段弹幕已有 65 分钟中止与 20 分钟 4K 跳转专项的历史记录；它们不能合称连续 80 分钟验收通过。[历史长测记录](ux-evidence/2026-11-05-danmaku-segments/README.md)。本轮没有安排新的长时间电视稳定性测试。
 - 健康电视与本地网络不能替代其他用户、地区或旧机型的故障现场。现有网络／账号风险相关 issue 不因本轮发布自动视为已解决。
 
-## 发布渠道核对流程
+## 发布渠道核对
 
-发布前复核最终源码／IPK 对齐；发布后逐项核对 GitHub Release 的 IPK、`version.json`、Homebrew manifest，以及公开下载的 SHA-256。线上核对结果由发布执行者另行记录，本记录不预写成功。
+GitHub Release 为正式版且已设为 latest，IPK、`version.json`、Homebrew manifest 三项资产均可公开获取，两个版本元数据均为 2.6.0。另行下载公开 IPK，SHA-256 与被测安装包完全一致；见[线上校验记录](ux-evidence/2026-11-09-release-260/published-verification.json)。PR #68 已由 GitHub 标记为合并。
 
-当前 Homebrew 目录仍为 2.5.2。其官方抓取任务每 3 小时轮询，项目没有 `webosbrew/apps-repo` 的推送权限；GitHub 发布完成与 Homebrew 目录收录是两个独立结果，须分别检查实际版本。
+2026-11-09 01:39（Asia/Shanghai）核对时，Homebrew 目录仍为 2.5.2。其官方抓取任务每 3 小时轮询，项目没有 `webosbrew/apps-repo` 的推送权限；此次只确认 Homebrew 所需 manifest 已更新，未声称商店目录已同步。

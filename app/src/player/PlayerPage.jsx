@@ -7,7 +7,6 @@ import { requestedQuality } from '../utils/qualityPreference';
 import Icon from '../components/Icon';
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import './playerControls.css';
-import { thumbUrl } from '../utils/thumb';
 import { getLibraryPage, getPlayUrl, getDanmaku, getDanmakuSegment, getVideoInfo, getPlayerV2, reportHeartbeat, getRelated, getUpVideos, getBangumiPlayUrl, getBangumiInfo, castReportProgress, castReportState, getVideoshot, getSubtitleBody, gtxTranslate, getReplies, getReplyReplies, tripleVideo, likeVideo, coinVideo, favVideo, getFavFoldersFor, getVideoRelation, getHtml5PlayUrl, mediaProxyBase, addToView, delToView } from '../api/client';
 import { nextPlaylistItem } from '../utils/library';
 import { adjacentAvailability, resolveAdjacentVideo } from './adjacentVideo';
@@ -30,7 +29,9 @@ import { apiErrorHint } from '../utils/apiHint';
 import { mark, markAfterPaint } from '../utils/perf';
 import { holdPrefetch } from '../utils/perfFlags';
 const perfNow = () => ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now());
-import DanmakuLayer from './DanmakuLayer';
+import TimedDanmakuLayer from './TimedDanmakuLayer';
+import PlayerTimeline from './PlayerTimeline';
+import PlayerRecommendationGrid from './PlayerRecommendationGrid';
 import SubtitleLayer from './SubtitleLayer';
 import { parseSubtitleBody, pickCueIndex, isAiLan, subtitleLanName, mtLanName, findZhTrack, matchTrackByLan, AI_LEAD } from './subtitles';
 import { translateCues } from './subTranslate';
@@ -135,7 +136,7 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
     probeRequestsRef.current.forEach(xhr => xhr.abort());
     probeRequestsRef.current.clear();
   }, []);
-  const [currentTime, setCurrentTime] = useState(0);
+  const currentTime = videoRef.current?.currentTime || 0;
   const [duration, setDuration] = useState(0);
   const [showControls, setShowControls] = useState(false);
   const [qualities, setQualities] = useState([]);
@@ -152,9 +153,7 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
   // starting on (thanks @ponymuch, PR #2).
   const [danmakuEnabled, setDanmakuEnabled] = useState(() => storage.getSettings().danmaku !== false);
   danmakuEnabledRef.current = danmakuEnabled;
-  useEffect(() => {
-    danmakuLoaderRef.current?.update(currentTime, duration, danmakuEnabled);
-  }, [currentTime, duration, danmakuEnabled]);
+
   // Initialize appearance from storage; in-player danmaku changes apply live.
   const [showDanmakuSettings, setShowDanmakuSettings] = useState(false);
   const [showPlayerSettings, setShowPlayerSettings] = useState(false);
@@ -1110,7 +1109,7 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
               v.currentTime = 0;
               await v.play();
               if (!isActive()) return;
-              setCurrentTime(0);
+
               setEnded(false);
               setPlaying(true);
               return;
@@ -1426,7 +1425,7 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
       if (videoRef.current) {
         const nextCurrentTime = videoRef.current.currentTime;
         const nextDuration = videoRef.current.duration || 0;
-        setCurrentTime(nextCurrentTime);
+        danmakuLoaderRef.current?.update(nextCurrentTime, nextDuration, danmakuEnabledRef.current);
         setDuration(nextDuration);
         castReportProgress({
           duration: Math.floor(nextDuration),
@@ -2725,8 +2724,14 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
     return () => setCustomKeyHandler(null);
   }, [showPlayerSettings, focusedSettingId, closePlayerSettings, returnToSettings, endLikeHold, showDanmakuSettings, focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, showSpeedPanel, applySpeed, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, comments, loadUpVideos, loadComments, onBack, onPlayNext, openControls, hideControlsLater, openRelatedPanel, closeRelatedPanel, endRelHold, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody, pressControl, startLikeHold, pressComment, showCommentRail, recoverable, errorAction, retryPlayback]);
 
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
   const previewVideos = panelTab === 'parts' ? partsList : panelTab === 'up' ? upVideos : relatedVideos;
+  const chooseRecommendation = useCallback(rv => {
+    if (showRelated) onPlayNext?.(panelTab === 'parts' ? playPart(rv) : rv);
+  }, [showRelated, onPlayNext, panelTab]);
+  const hoverRecommendation = useCallback(i => {
+    setFocusArea('related'); setFocusIdx(i);
+    if (controlsTimer.current) clearTimeout(controlsTimer.current);
+  }, []);
   controlsPinnedRef.current = engagementFeedback?.state === 'pending' || adjacentBusy || showPlayerSettings || showDanmakuSettings || ended || showRelated || showQuality || showSubPanel || showSpeedPanel
     || showCommentRail || focusArea === 'scrub';
   if (focusArea === 'controls' && CONTROLS[focusIdx]) lastControlRef.current = CONTROLS[focusIdx];
@@ -2979,7 +2984,7 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
       />}
       {showDanmakuSettings && <DanmakuSettings maskStatus={maskStatus} onChange={setDanmakuSettings}
         onClose={() => returnToSettings('danmakuSettings')} />}
-      <DanmakuLayer preserveOnAppend videoRef={videoRef} maskSource={maskSource} onMaskStatus={setMaskStatus} settings={danmakuSettings} danmakus={danmakus} currentTime={currentTime} enabled={danmakuEnabled} fontScale={danmakuScale} paused={!playing}
+      <TimedDanmakuLayer preserveOnAppend videoRef={videoRef} maskSource={maskSource} onMaskStatus={setMaskStatus} settings={danmakuSettings} danmakus={danmakus} enabled={danmakuEnabled} fontScale={danmakuScale} paused={!playing}
         mtRef={dmMtActive ? dmMtRef : null} />
 
       <SubtitleLayer videoRef={videoRef} cues={subCues} enabled={subLan != null && !showRelated}
@@ -3160,40 +3165,8 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
             {aigcMsg && <span className="player-disclaimer">{titleMT(aigcMsg)}</span>}
           </div>
         )}
-        <div className="player-timeline-meta">
-          <span className="player-time">
-            {formatDuration(currentTime)} / {formatDuration(duration)}
-            {(() => {
-              const ch = chapters.find(c => currentTime >= c.from && currentTime < c.to);
-              return ch ? <span style={{ color: '#7ecbff', marginLeft: 10 }}>· {titleMT(ch.content)}</span> : null;
-            })()}
-          </span>
-        </div>
-        <div ref={progressElRef} className="player-progress-bar" style={{ cursor: 'pointer' }}
-          onClick={(e) => {
-            // Pointer click-to-seek: generous target courtesy of the row itself.
-            if (!(duration > 0)) return;
-            const rect = e.currentTarget.getBoundingClientRect();
-            const frac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-            queueOrApplySeek(frac * duration);
-            hideControlsLater();
-          }}>
-          <div className="player-progress-fill" style={{ width: `${progress}%` }} />
-          {/* Chapter boundaries (YouTube-style segment gaps) */}
-          {chapters.length > 1 && duration > 0 && chapters.slice(1).map((c, i) => (
-            <div key={i} style={{
-              position: 'absolute', left: `${(c.from / duration) * 100}%`, top: 0,
-              width: 3, height: '100%', background: 'rgba(0,0,0,0.85)',
-            }} />
-          ))}
-          {scrubTarget != null && duration > 0 && (
-            <div style={{
-              position: 'absolute', left: `${Math.min(100, Math.max(0, (scrubTarget / duration) * 100))}%`,
-              top: -7, width: 4, height: 20, background: '#fff',
-              transform: 'translateX(-50%)', borderRadius: 2, boxShadow: '0 0 6px rgba(0,0,0,0.8)',
-            }} />
-          )}
-        </div>
+        <PlayerTimeline videoRef={videoRef} visible={showControls} chapters={chapters} scrubTarget={scrubTarget}
+          progressElRef={progressElRef} queueOrApplySeek={queueOrApplySeek} hideControlsLater={hideControlsLater} />
         <div className="player-btns">
           {[['engagement', CONTROLS.slice(0, 4)], ['transport', CONTROLS.slice(4, 7)], ['tools', CONTROLS.slice(7)]].map(([group, buttons]) => (
             <div className={`player-control-group player-control-group-${group}`} key={group}>
@@ -3277,43 +3250,8 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
                 </div>;
               }
               return (
-                <div className="related-grid video-grid cols-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 24 }}>
-                  {list.map((rv, i) => {
-                    const thumb = thumbUrl(rv.pic || rv.cover || '', 4);
-                    const nowPlaying = panelTab === 'parts' && rv.cid === cidRef.current;
-                    const focused = focusArea === 'related' && focusIdx === i;
-                    return (
-                      <div key={rv.cid || rv.bvid || i} className={`related-card video-card${focused ? ' focused' : ''}`} role="button" aria-label={cleanTitle(rv.title)}
-                        onClick={() => { if (showRelated) onPlayNext?.(panelTab === 'parts' ? playPart(rv) : rv); }}
-                        onMouseMove={() => {
-                          setFocusArea('related'); setFocusIdx(i);
-                          if (controlsTimer.current) clearTimeout(controlsTimer.current);
-                        }}>
-                        <div className="video-card-thumb">
-                          {thumb && <span className="video-card-placeholder" aria-hidden="true">{t('封面暂不可用')}</span>}
-                          {thumb && <img src={thumb} alt="" decoding="async" loading={i < 8 ? 'eager' : 'lazy'}
-                            onLoad={e => { e.currentTarget.classList.add('image-ready'); e.currentTarget.style.visibility = ''; e.currentTarget.parentElement?.classList.remove('image-failed'); }}
-                            onError={e => { e.currentTarget.style.visibility = 'hidden'; e.currentTarget.parentElement?.classList.add('image-failed'); }} />}
-                          {!thumb && <span className="video-card-missing">{t('封面暂不可用')}</span>}
-                          {nowPlaying && <div className="video-card-live">{t('▶ 播放中')}</div>}
-                          {rv.duration != null && <span className="video-card-duration">
-                            {typeof rv.duration === 'number' ? formatDuration(rv.duration) : rv.duration}
-                          </span>}
-                        </div>
-                        <div className="video-card-info">
-                          <div className="video-card-title">{titleMT(cleanTitle(rv.title))}</div>
-                          <div className="video-card-meta">
-                            <div className="video-card-author"><span>{cleanTitle(rv.owner?.name)}</span></div>
-                            <div className="video-card-stats">
-                              {rv.stat?.view != null && <span>{formatCount(rv.stat.view)}{t('播放')}</span>}
-                              {rv.pubdate && <span>{formatTime(rv.pubdate)}</span>}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <PlayerRecommendationGrid list={list} panelTab={panelTab} currentCid={cidRef.current}
+                  focusedIndex={focusArea === 'related' ? focusIdx : -1} onChoose={chooseRecommendation} onHover={hoverRecommendation} />
               );
             })()}</div>
           </div>

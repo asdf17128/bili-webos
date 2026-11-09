@@ -13,7 +13,7 @@ const baseline = process.argv.includes('--baseline');
 const output = process.env.CONTROLS_OUTPUT || '/tmp/bili-player-controls';
 await mkdir(output, { recursive: true });
 const reports = [];
-const sourcePaths = ['app/src/player/PlayerPage.jsx', 'app/src/player/adjacentVideo.js', 'app/src/player/SubtitleLayer.jsx', 'app/src/player/playerControls.css', 'app/src/player/PlayerMoreControls.jsx', 'app/src/player/playerMoreControls.css', 'app/src/components/Icon.jsx', 'app/src/i18n/en.js', 'app/src/i18n/es.js', 'app/src/styles.css', 'app/src/tv-design.css', 'app/src/hooks/useAuthorFollowers.js', 'app/src/utils/authorFollowers.js'];
+const sourcePaths = ['app/src/player/PlayerTimeline.jsx', 'app/src/player/PlayerRecommendationGrid.jsx', 'app/src/player/TimedDanmakuLayer.jsx', 'app/src/player/useMediaClock.js', 'app/src/player/PlayerPage.jsx', 'app/src/player/adjacentVideo.js', 'app/src/player/SubtitleLayer.jsx', 'app/src/player/playerControls.css', 'app/src/player/PlayerMoreControls.jsx', 'app/src/player/playerMoreControls.css', 'app/src/components/Icon.jsx', 'app/src/i18n/en.js', 'app/src/i18n/es.js', 'app/src/styles.css', 'app/src/tv-design.css', 'app/src/hooks/useAuthorFollowers.js', 'app/src/utils/authorFollowers.js'];
 const hashSources = () => Promise.all(sourcePaths.map(async path => [path, createHash('sha256').update(await readFile(path)).digest('hex')])).then(Object.fromEntries);
 const sources = await hashSources();
 if (process.env.CONTROLS_ANALYZE_ONLY) {
@@ -110,6 +110,7 @@ async function fixture(options = {}) {
   const heldInteractions = [];
   const serverRelation = { like: false, coin: 0, favorite: false, ...options.interactions?.initial };
   await context.addInitScript(options => {
+    if (options.performance) window.__renderCounts = {};
     delete window.webOS; delete window.PalmServiceBridge;
     localStorage.clear();
     localStorage.setItem('bili_proxyUrl', JSON.stringify('http://127.0.0.1:9527'));
@@ -141,6 +142,19 @@ async function fixture(options = {}) {
     const request = route.request(), url = new URL(request.url());
     if (url.origin === viteOrigin) {
       if (url.pathname.includes('shaka-player')) return route.fulfill({ contentType: 'application/javascript', body: stub });
+      if (options.performance && /\/(PlayerPage|PlayerTimeline|PlayerRecommendationGrid)\.jsx$/.test(url.pathname)) {
+        const response = await route.fetch();
+        let body = await response.text();
+        const counters = [
+          ['const videoRef = useRef(null);', 'PlayerPage'],
+          ['const progress = duration > 0', 'PlayerTimeline'],
+          ['const thumb = thumbUrl', 'RecommendationCard'],
+        ];
+        for (const [needle, name] of counters) {
+          if (body.includes(needle)) body = body.replace(needle, `window.__renderCounts.${name} = (window.__renderCounts.${name} || 0) + 1;\n${needle}`);
+        }
+        return route.fulfill({response, body});
+      }
       return route.continue();
     }
     calls.interceptedHttp++;
@@ -221,10 +235,10 @@ async function fixture(options = {}) {
     return fulfill({ code: 0, data });
   });
   const page = await context.newPage(); page.setDefaultTimeout(6000);
-  const errors = []; page.on('pageerror', error => errors.push(error.message));
+  const errors = []; page.on('pageerror', error => { errors.push(error.message); if(options.performance) console.log('Browser error:', error.message); });
   page.on('framenavigated', frame => { if (frame === page.mainFrame()) calls.documents++; });
   await page.goto(baseUrl);
-  await page.waitForFunction(() => !!window.__openVideo);
+  await page.waitForFunction(() => !!window.__openVideo).catch(error => { throw new Error(error.message + ' browser errors: ' + errors.join('; ')); });
   await page.evaluate(pgc => window.__openVideo(pgc
     ? { isBangumi: true, epid: 123, cid: 456, aid: 700, title: '合成番剧互动测试', resumeMode: 'none' }
     : { bvid: 'BVControlsFixture', resumeMode: 'none' }), !!options.pgc);
@@ -329,6 +343,61 @@ async function run(name, options, fn) {
     await writeFile(`${output}/results.json`, JSON.stringify({ baseline, baseUrl, sources, boundary: 'Real React/API/controller with controlled Shaka and media events; every non-Vite HTTP request and every WebSocket is intercepted. New contexts use only synthetic account/video data. No real media decoding, television, desktop foreground, or phone interaction.', results: reports }, null, 2));
   }
 }
+
+await run('performance isolated playback clock and controls', {performance: true}, async f => {
+  const page = f.page;
+  await openControls(page);
+  const cdp = await f.context.newCDPSession(page);
+  await cdp.send('Emulation.setCPUThrottlingRate', {rate: 6});
+  await page.waitForTimeout(1200);
+  await page.evaluate(() => { window.__renderCounts = {}; });
+  const before = await page.locator('.player-time').textContent();
+  await page.waitForTimeout(2100);
+  const idle = await page.evaluate(() => ({...window.__renderCounts}));
+  const after = await page.locator('.player-time').textContent();
+  if (process.env.PERF_BASELINE) {
+    assert.ok(idle.PlayerPage >= 2 && idle.RecommendationCard >= 24, 'baseline must reproduce broad media-tick rendering');
+  }
+  assert.notEqual(before, after, 'timeline advances during playback');
+  if (!process.env.PERF_BASELINE) {
+    assert.equal(idle.PlayerPage || 0, 0, 'media clock must not render the whole player');
+    assert.equal(idle.RecommendationCard || 0, 0, 'clock must not render recommendations');
+    assert.ok(idle.PlayerTimeline >= 2, 'small timeline consumer receives ticks');
+  }
+  await page.evaluate(() => { window.__renderCounts = {}; });
+  const latencies = [];
+  for (let i=0;i<12;i++) {
+    const previous = await page.locator('.player-control.focused').getAttribute('data-control');
+    const start = performance.now();
+    await page.keyboard.press('ArrowRight');
+    await page.waitForFunction(previous => document.querySelector('.player-control.focused')?.dataset.control !== previous, previous);
+    latencies.push(performance.now() - start);
+  }
+  const navigation = await page.evaluate(() => ({...window.__renderCounts}));
+  if (!process.env.PERF_BASELINE) assert.equal(navigation.RecommendationCard || 0, 0, 'button navigation must not rebuild recommendation cards');
+  const buttons = await page.locator('.player-control:not(:disabled)').evaluateAll(nodes => nodes.map(node => node.dataset.control));
+  const initial = await page.locator('.player-control.focused').getAttribute('data-control');
+  for (let i=0;i<20;i++) await page.keyboard.down('ArrowRight');
+  await page.keyboard.up('ArrowRight');
+  const expected = buttons[(buttons.indexOf(initial) + 20) % buttons.length];
+  await page.waitForFunction(expected => document.querySelector('.player-control.focused')?.dataset.control === expected, expected);
+  await page.keyboard.press('ArrowUp');
+  await page.waitForTimeout(600);
+  await page.evaluate(() => { window.__renderCounts = {}; });
+  await page.waitForTimeout(1100);
+  const hidden = await page.evaluate(() => ({...window.__renderCounts}));
+  if (!process.env.PERF_BASELINE) {
+    assert.equal(hidden.PlayerPage || 0, 0, 'hidden playback clock must not render player');
+    assert.equal(hidden.PlayerTimeline || 0, 0, 'hidden timeline stops sampling');
+  }
+  await openControls(page);
+  assert.notEqual(await page.locator('.player-time').textContent(), after, 'reopening shows fresh media time');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowDown');
+  assert.ok(await page.evaluate(() => window.__renderCounts.RecommendationCard > 0), 'recommendation counter observes real card renders when entering shelf');
+  f.checkpoints = { performance: {cpuThrottle:6, idle, navigation, hidden, latencies, before, after, repeatedKeyCount:20} };
+  await cdp.send('Emulation.setCPUThrottlingRate', {rate:1});
+});
 
 for(const mask of ['failure','missing','mismatch']) await run('person mask metadata integration '+mask, {mask}, async f=>{
  await openControls(f.page);

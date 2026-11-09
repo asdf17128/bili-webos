@@ -1,0 +1,60 @@
+{
+  "baseline": {
+    "cpuThrottle": 6,
+    "idle": {
+      "PlayerPage": 4,
+      "PlayerTimeline": 4,
+      "RecommendationCard": 48
+    },
+    "navigation": {
+      "PlayerPage": 12,
+      "PlayerTimeline": 12,
+      "RecommendationCard": 144
+    },
+    "latencies": [
+      10.810750000000553,
+      13.856125000000247,
+      11.034249999999702,
+      10.212625000000116,
+      12.105749999999716,
+      9.870125000000371,
+      9.559959000000163,
+      14.121541999999863,
+      9.94158299999981,
+      10.663916000000427,
+      7.485625000000255,
+      6.612417000000278
+    ],
+    "before": "2:02 / 10:00",
+    "after": "2:04 / 10:00"
+  },
+  "after": {
+    "cpuThrottle": 6,
+    "idle": {
+      "PlayerTimeline": 4
+    },
+    "navigation": {
+      "PlayerPage": 13
+    },
+    "hidden": {},
+    "latencies": [
+      8.771832999999788,
+      9.62945899999977,
+      11.61304199999995,
+      6.156624999999622,
+      9.47900000000027,
+      7.073417000000518,
+      8.931958999999551,
+      6.101875000000291,
+      6.965917000000445,
+      8.158374999999978,
+      7.006749999999556,
+      6.628999999999905
+    ],
+    "before": "2:01 / 10:00",
+    "after": "2:03 / 10:00",
+    "repeatedKeyCount": 20
+  },
+  "baselineCommit": "51059d1",
+  "method": "Same synthetic media and 12 recommendations; browser CPU throttle 6; test-only counters injected into executed render bodies. Baseline served from archived commit. Counts measure render computations, not physical TV frames; timings include automation overhead and do not establish TV latency improvement."
+}

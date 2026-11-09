@@ -115,6 +115,8 @@
 }
 
 .player-controls-vod .player-btns {
+  /* Keep button layout changes inside this row; do not clip focus/hold rings. */
+  contain: layout style;
   --control-width: 96px;
   --control-disc: 72px;
   --control-icon: 44px;
@@ -208,6 +210,8 @@
   /* Switch contrast immediately; only scale interpolates during focus moves. */
   transition: transform .14s ease-out;
 }
+
+.player-controls-vod:not(.hidden) .player-control-icon { will-change: transform; }
 
 .player-controls-vod .player-control-icon > svg:not(.like-ring) {
   flex: none;

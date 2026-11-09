@@ -13,7 +13,7 @@ const baseline = process.argv.includes('--baseline');
 const output = process.env.CONTROLS_OUTPUT || '/tmp/bili-player-controls';
 await mkdir(output, { recursive: true });
 const reports = [];
-const sourcePaths = ['app/src/player/PlayerTimeline.jsx', 'app/src/player/PlayerRecommendationGrid.jsx', 'app/src/player/TimedDanmakuLayer.jsx', 'app/src/player/useMediaClock.js', 'app/src/player/PlayerPage.jsx', 'app/src/player/adjacentVideo.js', 'app/src/player/SubtitleLayer.jsx', 'app/src/player/playerControls.css', 'app/src/player/PlayerMoreControls.jsx', 'app/src/player/playerMoreControls.css', 'app/src/components/Icon.jsx', 'app/src/i18n/en.js', 'app/src/i18n/es.js', 'app/src/styles.css', 'app/src/tv-design.css', 'app/src/hooks/useAuthorFollowers.js', 'app/src/utils/authorFollowers.js'];
+const sourcePaths = ['app/src/player/PlayerPrimaryControls.jsx', 'app/src/player/controlFocus.js', 'app/src/player/PlayerTimeline.jsx', 'app/src/player/PlayerRecommendationGrid.jsx', 'app/src/player/TimedDanmakuLayer.jsx', 'app/src/player/useMediaClock.js', 'app/src/player/PlayerPage.jsx', 'app/src/player/adjacentVideo.js', 'app/src/player/SubtitleLayer.jsx', 'app/src/player/playerControls.css', 'app/src/player/PlayerMoreControls.jsx', 'app/src/player/playerMoreControls.css', 'app/src/components/Icon.jsx', 'app/src/i18n/en.js', 'app/src/i18n/es.js', 'app/src/styles.css', 'app/src/tv-design.css', 'app/src/hooks/useAuthorFollowers.js', 'app/src/utils/authorFollowers.js'];
 const hashSources = () => Promise.all(sourcePaths.map(async path => [path, createHash('sha256').update(await readFile(path)).digest('hex')])).then(Object.fromEntries);
 const sources = await hashSources();
 if (process.env.CONTROLS_ANALYZE_ONLY) {
@@ -344,6 +344,32 @@ async function run(name, options, fn) {
   }
 }
 
+await run('performance budget continuous controls', {}, async f => {
+  const page=f.page, cdp=await f.context.newCDPSession(page);
+  await openControls(page);
+  await cdp.send('Emulation.setCPUThrottlingRate',{rate:6});
+  await cdp.send('Performance.enable');
+  for(let i=0;i<12;i++) await page.keyboard.press('ArrowRight');
+  const metrics=async()=>Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map(m=>[m.name,m.value]));
+  const rounds=[];
+  const controls=await page.locator('.player-control:not(:disabled)').evaluateAll(nodes=>nodes.map(node=>node.dataset.control));
+  let index=controls.indexOf(await page.locator('.player-control.focused').getAttribute('data-control'));
+  for(let r=0;r<5;r++) {
+    const start=await metrics();
+    for(let i=0;i<48;i++) {
+      await page.keyboard.press('ArrowRight');
+      index=(index+1)%controls.length;
+      assert.equal(await page.evaluate(expected=>new Promise(resolve=>requestAnimationFrame(()=>resolve(document.querySelector('.player-control.focused')?.dataset.control===expected))),controls[index]),true,'each benchmark key must visibly reach its expected control');
+    }
+    await page.waitForTimeout(200);
+    const end=await metrics(), result={};
+    for(const key of ['TaskDuration','ScriptDuration','LayoutDuration','RecalcStyleDuration'])result[key]=(end[key]-start[key])*1000;
+    rounds.push(result);
+  }
+  f.checkpoints={budget:{cpuThrottle:6,keysPerRound:48,rounds}};
+  await cdp.send('Emulation.setCPUThrottlingRate',{rate:1});
+});
+
 await run('performance isolated playback clock and controls', {performance: true}, async f => {
   const page = f.page;
   await openControls(page);
@@ -374,7 +400,10 @@ await run('performance isolated playback clock and controls', {performance: true
     latencies.push(performance.now() - start);
   }
   const navigation = await page.evaluate(() => ({...window.__renderCounts}));
-  if (!process.env.PERF_BASELINE) assert.equal(navigation.RecommendationCard || 0, 0, 'button navigation must not rebuild recommendation cards');
+  if (!process.env.PERF_BASELINE) {
+    assert.equal(navigation.RecommendationCard || 0, 0, 'button navigation must not rebuild recommendation cards');
+    assert.equal(navigation.PlayerPage || 0, 0, 'button navigation must not render the player page');
+  }
   const buttons = await page.locator('.player-control:not(:disabled)').evaluateAll(nodes => nodes.map(node => node.dataset.control));
   const initial = await page.locator('.player-control.focused').getAttribute('data-control');
   for (let i=0;i<20;i++) await page.keyboard.down('ArrowRight');

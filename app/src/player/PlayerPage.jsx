@@ -31,6 +31,8 @@ import { holdPrefetch } from '../utils/perfFlags';
 const perfNow = () => ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now());
 import TimedDanmakuLayer from './TimedDanmakuLayer';
 import PlayerTimeline from './PlayerTimeline';
+import PlayerPrimaryControls, { PlayerControlToast } from './PlayerPrimaryControls';
+import { createControlFocus } from './controlFocus';
 import PlayerRecommendationGrid from './PlayerRecommendationGrid';
 import SubtitleLayer from './SubtitleLayer';
 import { parseSubtitleBody, pickCueIndex, isAiLan, subtitleLanName, mtLanName, findZhTrack, matchTrackByLan, AI_LEAD } from './subtitles';
@@ -82,16 +84,6 @@ function proxyImg(url) {
 const RAIL_W = 420;                       // comment rail width (= live chat rail)
 const RAIL_VIDEO_WIDTH = `calc(100% - ${RAIL_W}px)`;
 const RAIL_VIDEO_HEIGHT = `calc(56.25vw - ${RAIL_W * 9 / 16}px)`;
-
-function CoinIcon() {
-  return (
-    <svg className="coin-icon" width="19" height="19" viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="11" fill="#ffc331" />
-      <circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" strokeWidth="1.6" opacity="0.9" />
-      <text x="12" y="16.4" textAnchor="middle" fontSize="12" fontWeight="900" fill="#fff" fontFamily="Arial">B</text>
-    </svg>
-  );
-}
 
 // Remount the player, not the app: releases requests, decoder and transient
 // state while the page behind it keeps its focus and scroll position.
@@ -242,7 +234,14 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
   const commentDoneRef = useRef(false);
   // Focus: 'none' | 'controls' | 'quality' | 'tabs' | 'related' (=grid)
   const [focusArea, setFocusArea] = useState('none');
-  const [focusIdx, setFocusIdx] = useState(PRIMARY_CONTROLS.indexOf('play'));
+  const [controlFocus] = useState(() => createControlFocus(PRIMARY_CONTROLS.indexOf('play')));
+  const [, renderFocusIdx] = useState(PRIMARY_CONTROLS.indexOf('play'));
+  const focusIdx = controlFocus.getSnapshot();
+  const setFocusIdx = useCallback(value => {
+    const next = typeof value === 'function' ? value(controlFocus.getSnapshot()) : value;
+    controlFocus.set(next);
+    renderFocusIdx(next);
+  }, [controlFocus]);
   const controlsTimer = useRef(null);
   const controlsElRef = useRef(null), progressElRef = useRef(null);
   const shelfGestureUntilRef = useRef(0);
@@ -2336,6 +2335,7 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
   useEffect(() => {
     if (showDanmakuSettings) return;
     const handler = (e) => {
+      const focusIdx = controlFocus.getSnapshot();
       const mediaAction = mediaKeyAction(e);
       if (mediaAction) {
         e.preventDefault(); e.stopPropagation();
@@ -2486,7 +2486,7 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
           e.preventDefault();
           endLikeHold(true);
           const delta = e.key === 'ArrowLeft' ? -1 : 1;
-          setFocusIdx(prev => {
+          controlFocus.set(prev => {
             const list = controlsRef.current;
             for (let n = 1; n <= list.length; n++) {
               const index = (prev + delta * n + list.length) % list.length;
@@ -2840,19 +2840,6 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
     if (!controlsPinnedRef.current) hideControlsLater();
   }, [ended, showControls, showSubPanel, showQuality, hideControlsLater]);
 
-  const controlLabel = btn => btn === 'play' ? (ended ? t('重播') : playing ? t('暂停') : t('播放'))
-    : btn === 'like' ? t('点赞') : btn === 'coin' ? t('投币') : btn === 'fav' ? t('收藏')
-    : btn === 'later' ? t('稍后再看') : btn === 'prev' ? t('上一个') : btn === 'next' ? t('下一个')
-    : btn === 'comments' ? t('评论') : t('设置');
-  const controlValue = btn => btn === 'like' ? formatCount(stat.like) : btn === 'coin' ? formatCount(stat.coin)
-    : btn === 'fav' ? formatCount(stat.favorite) : btn === 'comments' && commentCount ? formatCount(commentCount) : null;
-  const controlStatus = btn => btn === 'like' && rel.liked ? t('已点赞')
-    : btn === 'fav' && rel.faved ? t('已收藏')
-    : btn === 'coin' && rel.coined > 0 ? t('已投 {n} 枚硬币', { n: rel.coined }) : null;
-  const focusedControl = focusArea === 'controls' ? CONTROLS[focusIdx] : null;
-  const focusedFeedback = focusedControl && engagementFeedback?.ids.includes(focusedControl) ? engagementFeedback : null;
-  const controlCaption = focusedFeedback ? focusedFeedback.message : focusedControl
-    ? `${controlStatus(focusedControl) || controlLabel(focusedControl)} ${controlValue(focusedControl) || ''}` : '\u00a0';
   const settingsOpen = showPlayerSettings || showQuality || showSubPanel || showSpeedPanel || showDanmakuSettings;
 
   return (
@@ -3167,49 +3154,12 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
         )}
         <PlayerTimeline videoRef={videoRef} visible={showControls} chapters={chapters} scrubTarget={scrubTarget}
           progressElRef={progressElRef} queueOrApplySeek={queueOrApplySeek} hideControlsLater={hideControlsLater} />
-        <div className="player-btns">
-          {[['engagement', CONTROLS.slice(0, 4)], ['transport', CONTROLS.slice(4, 7)], ['tools', CONTROLS.slice(7)]].map(([group, buttons]) => (
-            <div className={`player-control-group player-control-group-${group}`} key={group}>
-              {buttons.map(btn => {
-                const i = CONTROLS.indexOf(btn), label = controlLabel(btn);
-                const value = controlValue(btn);
-                const active = btn === 'like' ? rel.liked : btn === 'coin' ? rel.coined > 0 : btn === 'fav' ? rel.faved : btn === 'later' ? inToView : undefined;
-                const engagement = ['like', 'coin', 'fav'].includes(btn);
-                const feedback = engagementFeedback?.ids.includes(btn) ? engagementFeedback.state : null;
-                const handlers = btn === 'like' ? {
-                  onMouseDown: event => { if (event.button === 0 && !disabledControlsRef.current.has('like')) startLikeHold(); },
-                  onMouseUp: event => { if (event.button === 0) endLikeHold(false); },
-                  onMouseLeave: () => endLikeHold(true),
-                } : { onClick: () => pressControl(btn) };
-                return <button key={btn} type="button" data-control={btn}
-                  ref={el => { btnRefs.current[btn] = el; }} disabled={disabledControls.has(btn)} aria-disabled={disabledControls.has(btn)}
-                  aria-label={btn === 'later' && inToView ? t('已稍后再看') : label} aria-pressed={active}
-                  aria-busy={engagement ? feedback === 'pending' : undefined} data-feedback={feedback || undefined}
-                  aria-haspopup={btn === 'settings' ? 'dialog' : undefined}
-                  aria-expanded={btn === 'settings' ? settingsOpen : undefined}
-                  className={`player-btn player-control ${focusArea === 'controls' && focusIdx === i ? 'focused' : ''} ${active ? 'lit' : ''} ${feedback === 'success' ? 'triple-pop' : ''}`}
-                  onMouseMove={() => { if (focusArea !== 'controls' || focusIdx !== i) endLikeHold(true); setFocusArea('controls'); setFocusIdx(i); hideControlsLater(); }}
-                  {...handlers}>
-                  <span className="player-control-icon">{btn === 'coin' ? <CoinIcon /> : <Icon size={28}
-                    name={btn === 'play' ? (ended ? 'refresh' : playing ? 'pause' : 'play') : btn === 'fav' ? 'star' : btn} />}
-                  {feedback === 'pending' && <span className="player-control-spinner" aria-hidden="true" />}
-                  {engagement && ((btn === 'coin' && active) || feedback === 'error') && <span className="player-control-status" aria-hidden="true">
-                    {feedback === 'error' ? '!' : rel.coined}
-                  </span>}
-                  {btn === 'like' && likeRing && <svg className="like-ring" aria-hidden="true" width={likeRing.w + 8} height={likeRing.h + 8} style={{ left: -10, top: -10 }}>
-                    <rect className="like-ring-track" x="4" y="4" width={likeRing.w} height={likeRing.h} rx={likeRing.rx} />
-                    <rect className="like-ring-fill" x="4" y="4" width={likeRing.w} height={likeRing.h} rx={likeRing.rx}
-                      style={{ strokeDasharray: likeRing.perim, strokeDashoffset: likeRing.perim }} />
-                  </svg>}
-                  </span>
-                  <span className="player-control-label">{label}</span>
-                  {value != null && <span className="player-control-value">{value}</span>}
-                </button>;
-              })}
-            </div>
-          ))}
-        </div>
-        <div className={`player-control-caption ${focusedFeedback ? 'feedback-' + focusedFeedback.state : ''}`} role="status" aria-live="polite">{controlCaption}</div>
+        <PlayerPrimaryControls controlFocus={controlFocus} focusArea={focusArea} CONTROLS={CONTROLS}
+          rel={rel} stat={stat} commentCount={commentCount} inToView={inToView} engagementFeedback={engagementFeedback}
+          ended={ended} playing={playing} disabledControls={disabledControls} disabledControlsRef={disabledControlsRef}
+          btnRefs={btnRefs} startLikeHold={startLikeHold} endLikeHold={endLikeHold} pressControl={pressControl}
+          setFocusArea={setFocusArea} setFocusIdx={setFocusIdx} hideControlsLater={hideControlsLater}
+          settingsOpen={settingsOpen} likeRing={likeRing} lastControlRef={lastControlRef} />
         </div>
 
         {/* Keep one grid mounted: a cropped preview grows into the shelf,
@@ -3278,8 +3228,8 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
         onFocus={id => { setFocusArea('speed'); setFocusIdx(SPEED_OPTIONS.indexOf(Number(id))); }}
         onAction={id => applySpeed(Number(id))} onClose={() => returnToSettings('speed')} />}
 
-      {playerToast && (!focusedFeedback || playerToast !== focusedFeedback.message) &&
-        <div className={`player-toast ${playerToast === engagementFeedback?.message ? 'engagement-toast' : ''}`}>{playerToast}</div>}
+      {playerToast && <PlayerControlToast controlFocus={controlFocus} focusArea={focusArea} controls={CONTROLS}
+        feedback={engagementFeedback} toast={playerToast} />}
 
       {/* End screen */}
     </div>

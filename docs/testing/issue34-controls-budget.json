@@ -1,0 +1,221 @@
+{
+  "baselineCommit": "f00fcec",
+  "scenario": {
+    "viewport": [
+      1920,
+      1080
+    ],
+    "cpuThrottle": 6,
+    "keysPerRound": 48,
+    "roundsPerVariant": 10,
+    "order": [
+      "before-a",
+      "after-a",
+      "after-b",
+      "before-b"
+    ],
+    "media": "synthetic playing video; no physical TV or real decoding",
+    "input": "trusted ArrowRight; every key checked against expected enabled control"
+  },
+  "runs": {
+    "before-a": {
+      "cpuThrottle": 6,
+      "keysPerRound": 48,
+      "rounds": [
+        {
+          "TaskDuration": 244.398,
+          "ScriptDuration": 111.83100000000002,
+          "LayoutDuration": 8.677000000000001,
+          "RecalcStyleDuration": 23.487000000000002
+        },
+        {
+          "TaskDuration": 195.35600000000002,
+          "ScriptDuration": 86.60399999999998,
+          "LayoutDuration": 15.726999999999999,
+          "RecalcStyleDuration": 11.052
+        },
+        {
+          "TaskDuration": 254.11499999999998,
+          "ScriptDuration": 100.08600000000001,
+          "LayoutDuration": 15.120999999999999,
+          "RecalcStyleDuration": 22.361
+        },
+        {
+          "TaskDuration": 227.62199999999999,
+          "ScriptDuration": 98.61199999999998,
+          "LayoutDuration": 18.990000000000006,
+          "RecalcStyleDuration": 15.697999999999997
+        },
+        {
+          "TaskDuration": 251.39500000000004,
+          "ScriptDuration": 109.75599999999997,
+          "LayoutDuration": 12.767000000000001,
+          "RecalcStyleDuration": 19.000000000000004
+        }
+      ]
+    },
+    "before-b": {
+      "cpuThrottle": 6,
+      "keysPerRound": 48,
+      "rounds": [
+        {
+          "TaskDuration": 237.16299999999998,
+          "ScriptDuration": 104.97200000000001,
+          "LayoutDuration": 17.644,
+          "RecalcStyleDuration": 13.517999999999999
+        },
+        {
+          "TaskDuration": 231.29899999999998,
+          "ScriptDuration": 97.44899999999998,
+          "LayoutDuration": 12.698999999999998,
+          "RecalcStyleDuration": 21.644999999999996
+        },
+        {
+          "TaskDuration": 221.187,
+          "ScriptDuration": 87.13400000000001,
+          "LayoutDuration": 12.059000000000001,
+          "RecalcStyleDuration": 14.798000000000005
+        },
+        {
+          "TaskDuration": 167.2769999999999,
+          "ScriptDuration": 84.92299999999997,
+          "LayoutDuration": 8.452000000000002,
+          "RecalcStyleDuration": 10.064999999999998
+        },
+        {
+          "TaskDuration": 199.53900000000002,
+          "ScriptDuration": 80.49499999999998,
+          "LayoutDuration": 7.4590000000000005,
+          "RecalcStyleDuration": 23.414000000000005
+        }
+      ]
+    },
+    "after-a": {
+      "cpuThrottle": 6,
+      "keysPerRound": 48,
+      "rounds": [
+        {
+          "TaskDuration": 131.599,
+          "ScriptDuration": 37.265,
+          "LayoutDuration": 13.715000000000002,
+          "RecalcStyleDuration": 10.516000000000002
+        },
+        {
+          "TaskDuration": 116.88900000000002,
+          "ScriptDuration": 40.506,
+          "LayoutDuration": 6.023999999999998,
+          "RecalcStyleDuration": 12.326999999999998
+        },
+        {
+          "TaskDuration": 109.58099999999999,
+          "ScriptDuration": 25.959999999999997,
+          "LayoutDuration": 5.410000000000002,
+          "RecalcStyleDuration": 9.939000000000004
+        },
+        {
+          "TaskDuration": 134.722,
+          "ScriptDuration": 37.47800000000001,
+          "LayoutDuration": 10.149999999999995,
+          "RecalcStyleDuration": 11.245999999999999
+        },
+        {
+          "TaskDuration": 110.90500000000003,
+          "ScriptDuration": 28.414999999999996,
+          "LayoutDuration": 8.072000000000003,
+          "RecalcStyleDuration": 8.441999999999998
+        }
+      ]
+    },
+    "after-b": {
+      "cpuThrottle": 6,
+      "keysPerRound": 48,
+      "rounds": [
+        {
+          "TaskDuration": 173.641,
+          "ScriptDuration": 46.059000000000005,
+          "LayoutDuration": 14.249,
+          "RecalcStyleDuration": 14.605
+        },
+        {
+          "TaskDuration": 124.57600000000002,
+          "ScriptDuration": 34.089999999999996,
+          "LayoutDuration": 8.265999999999998,
+          "RecalcStyleDuration": 7.914999999999998
+        },
+        {
+          "TaskDuration": 189.68200000000002,
+          "ScriptDuration": 47.53899999999999,
+          "LayoutDuration": 12.795000000000002,
+          "RecalcStyleDuration": 15.375
+        },
+        {
+          "TaskDuration": 130.1779999999999,
+          "ScriptDuration": 29.96800000000002,
+          "LayoutDuration": 11.257999999999997,
+          "RecalcStyleDuration": 8.497000000000005
+        },
+        {
+          "TaskDuration": 126.40200000000002,
+          "ScriptDuration": 26.429999999999982,
+          "LayoutDuration": 11.722000000000003,
+          "RecalcStyleDuration": 8.498999999999999
+        }
+      ]
+    }
+  },
+  "sourceFiles": {
+    "PlayerPage.jsx": {
+      "before": "6a635ebfe9e742d6bae94465419d736b35a0c58804ec14a7e6e2022ff845093d",
+      "after": "e53a5def5883c9db90278e1ba48f73d3b0c51041e14cddf65c95578a0c1e2efe"
+    },
+    "PlayerPrimaryControls.jsx": {
+      "before": null,
+      "after": "5c1e5bd70262cbc6bf37e2bdf16d11340580d3aaf764a4ac171f074f4641ca73"
+    },
+    "controlFocus.js": {
+      "before": null,
+      "after": "f1f5bdc7d7ad584db964990ae23e8ba7fcf2c566be0cf08527a21eb87af06a5c"
+    },
+    "playerControls.css": {
+      "before": "5b16f38866093736363706db05fc70991141b0216321363a6ce4e0e4438793cc",
+      "after": "a05f70a2b063878c970d4fbed88bb1c75b041bcaf634c77e2a748d2719d40865"
+    }
+  },
+  "beforeMedianMs": {
+    "TaskDuration": 229.46049999999997,
+    "ScriptDuration": 98.03049999999999,
+    "LayoutDuration": 12.733,
+    "RecalcStyleDuration": 17.349
+  },
+  "afterMedianMs": {
+    "TaskDuration": 128.28999999999996,
+    "ScriptDuration": 35.677499999999995,
+    "LayoutDuration": 10.703999999999997,
+    "RecalcStyleDuration": 10.227500000000003
+  },
+  "reductionPercent": {
+    "TaskDuration": 44.09059511332016,
+    "ScriptDuration": 63.60571454802333,
+    "LayoutDuration": 15.934972119689029,
+    "RecalcStyleDuration": 41.0484754164505
+  },
+  "sourceNote": "Before was served from git archive f00fcec; before report workspace hashes identify the harness workspace, not the served archive. The explicit sourceFiles above record served baseline and final sources. After hashes match the unchanged measured implementation.",
+  "validation": {
+    "controls": {
+      "pass": 71,
+      "fail": 0
+    },
+    "adjacent": {
+      "pass": 20,
+      "fail": 0
+    },
+    "unit": {
+      "pass": 251,
+      "fail": 0,
+      "skip": 1
+    },
+    "productionBuild": true,
+    "ES2016": true,
+    "physicalTV": false
+  }
+}

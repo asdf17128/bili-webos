@@ -9,3 +9,15 @@ test('invalid profile and blocked repair do not dispatch',async function(t){var 
 test('cooldown persistence failure prevents network and late callback cannot commit twice',async function(t){var f=fixture(t);fs.mkdirSync(f.opts.stateFile);assert.ok(await run(f.create()));assert.equal(f.state.sends,0);fs.rmdirSync(f.opts.stateFile);var a=f.create(),p=run(a);f.state.finish(null,0);await p;var epoch=f.state.epoch;f.state.finish(null,0);assert.equal(f.state.epoch,epoch)});
 
 test('deadline cancels transport and rejects late successful response',async function(t){var f=fixture(t),cancelled=false;f.opts.timeoutMs=10;var send=f.opts.send;f.opts.send=function(c,p,v,cb){send(c,p,v,cb);return function(){cancelled=true}};var a=f.create();assert.match((await run(a)).message,/timeout/);assert.equal(cancelled,true);f.state.finish(null,0);assert.equal(f.state.cookies._uuid,undefined);assert.equal(a.status().state,'timeout')});
+
+test('missing legacy timezone and core count still activates without invented fields',async function(t){
+ var f=fixture(t),p=Object.assign({},profile);delete p.timezone;delete p.cores;
+ var pending=run(f.create(),p);
+ assert.equal(f.state.sends,1);
+ assert.equal(Object.prototype.hasOwnProperty.call(f.state.payload['3c43'],'6aa9'),false);
+ assert.equal(Object.prototype.hasOwnProperty.call(f.state.payload['3c43'],'0bd0'),false);
+ f.state.finish(null,0);assert.equal(await pending,null);assert.ok(f.state.cookies._uuid);
+});
+test('optional capabilities still reject malformed supplied values',function(){
+ for(var bad of [{cores:0},{cores:'4'},{timezone:'bad\r\n'}])assert.equal(activation.profile(Object.assign({},profile,bad)),null);
+});

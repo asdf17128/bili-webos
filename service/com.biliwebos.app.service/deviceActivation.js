@@ -2,10 +2,19 @@
 var crypto = require('crypto');
 function profile(p) {
   if (!p || typeof p !== 'object') return null;
-  var out = {}, strings = {ua:512,platform:80,language:40,timezone:80};
+  var out = {}, strings = {ua:512,platform:80,language:40};
   for (var k in strings) { if (typeof p[k] !== 'string' || !p[k] || p[k].length > strings[k] || /[\r\n\x00]/.test(p[k])) return null; out[k]=p[k]; }
-  var limits={width:[1,16384],height:[1,16384],availWidth:[1,16384],availHeight:[1,16384],depth:[1,64],cores:[1,256],offset:[-840,840]};
+  var limits={width:[1,16384],height:[1,16384],availWidth:[1,16384],availHeight:[1,16384],depth:[1,64],offset:[-840,840]};
   for (k in limits) { if(typeof p[k]!=='number'||!isFinite(p[k])||Math.floor(p[k])!==p[k]||p[k]<limits[k][0]||p[k]>limits[k][1])return null;out[k]=p[k]; }
+  // Missing optional browser capabilities are omitted, never fabricated.
+  if (p.timezone != null && p.timezone !== '') {
+    if(typeof p.timezone!=='string'||p.timezone.length>80||/[\r\n\x00]/.test(p.timezone))return null;
+    out.timezone=p.timezone;
+  }
+  if (p.cores != null) {
+    if(typeof p.cores!=='number'||!isFinite(p.cores)||Math.floor(p.cores)!==p.cores||p.cores<1||p.cores>256)return null;
+    out.cores=p.cores;
+  }
   return out;
 }
 function atomic(fs,file,value) {
@@ -32,6 +41,8 @@ exports.create=function(o){
     attempt=now();try{atomic(o.fs,o.stateFile,{attempt:attempt});}catch(e){state='persistence';done(new Error('Activation persistence failed'));return;}
     busy=true;state='pending';listeners=[done];
     var payload={df35:uuid,'39c8':'333.1007.fp.risk','5062':now(),'3c43':{b8ce:p.ua,adca:p.platform,'07a4':p.language,'5766':p.depth,'748e':[p.height,p.width],d61f:[p.availHeight,p.availWidth],fc9d:p.offset,'6aa9':p.timezone,'0bd0':p.cores}};
+    if(p.timezone==null)delete payload['3c43']['6aa9'];
+    if(p.cores==null)delete payload['3c43']['0bd0'];
     // No login cookie, fabricated buvid_fp/b_nut or fixed desktop fingerprint.
     var cookies={buvid3:current.buvid3,buvid4:current.buvid4,_uuid:uuid};
     var settled=false,cancel=null;

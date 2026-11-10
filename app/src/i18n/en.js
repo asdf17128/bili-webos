@@ -2,6 +2,8 @@
 // ADDING A LANGUAGE: copy this file to <code>.js, translate values, register
 // it in index.js DICTS. That's all.
 export default {
+  "播放进度": "Playback progress",
+  "松开后跳转 · 返回取消": "Release to seek · Back to cancel",
   '播放设置': 'Playback settings',
   '上一个': 'Previous',
   '下一个': 'Next',

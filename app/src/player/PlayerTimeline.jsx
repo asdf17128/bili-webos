@@ -1,23 +1,28 @@
 import React, { memo } from 'react';
 import { useMediaClock } from './useMediaClock';
+import { t } from '../i18n';
 import { formatDuration } from '../utils/format';
 import { titleMT, useTitlesMT } from '../utils/titlemt';
 
 export default memo(function PlayerTimeline({ videoRef, visible, chapters, scrubTarget, progressElRef, queueOrApplySeek, hideControlsLater }) {
   useTitlesMT();
   const { currentTime, duration } = useMediaClock(videoRef, visible);
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const selecting = scrubTarget != null;
+  const displayTime = selecting ? scrubTarget : currentTime;
+  const progress = duration > 0 ? Math.min(100, Math.max(0, displayTime / duration * 100)) : 0;
   return <>
         <div className="player-timeline-meta">
           <span className="player-time">
-            {formatDuration(currentTime)} / {formatDuration(duration)}
+            {formatDuration(displayTime)} / {formatDuration(duration)}
             {(() => {
               const ch = chapters.find(c => currentTime >= c.from && currentTime < c.to);
               return ch ? <span style={{ color: '#7ecbff', marginLeft: 10 }}>· {titleMT(ch.content)}</span> : null;
             })()}
           </span>
         </div>
-        <div ref={progressElRef} className="player-progress-bar" style={{ cursor: 'pointer' }}
+        <div ref={progressElRef} className={`player-progress-bar ${selecting ? 'scrubbing focused' : ''}`} style={{ cursor: 'pointer' }}
+          role="slider" aria-label={t('播放进度')} aria-valuemin={0} aria-valuemax={Math.floor(duration) || 0}
+          aria-valuenow={Math.floor(displayTime)} aria-valuetext={formatDuration(displayTime)} tabIndex={-1}
           onClick={(e) => {
             // Pointer click-to-seek: generous target courtesy of the row itself.
             if (!(duration > 0)) return;
@@ -35,11 +40,7 @@ export default memo(function PlayerTimeline({ videoRef, visible, chapters, scrub
             }} />
           ))}
           {scrubTarget != null && duration > 0 && (
-            <div style={{
-              position: 'absolute', left: `${Math.min(100, Math.max(0, (scrubTarget / duration) * 100))}%`,
-              top: -7, width: 4, height: 20, background: '#fff',
-              transform: 'translateX(-50%)', borderRadius: 2, boxShadow: '0 0 6px rgba(0,0,0,0.8)',
-            }} />
+            <div className="player-progress-cursor" style={{ left: `${progress}%` }} />
           )}
         </div>
   </>;

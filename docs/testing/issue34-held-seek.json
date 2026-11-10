@@ -1,0 +1,38 @@
+{
+  "baselineCommit": "f00fcec",
+  "scenario": "Synthetic video and sprite sheets; 100 trusted held-key events with 20ms spacing; gap while key remains held; release then settle. No physical TV or real media decoding.",
+  "before": {
+    "expectedFailure": "holding never fetches successive sprite sheets\n\n14 !== 0\n",
+    "spriteRequestsDuringHold": 14
+  },
+  "after": {
+    "pass": true,
+    "spriteRequestsIncludingSettledPreview": 1,
+    "seeks": [
+      300
+    ]
+  },
+  "limit": "This proves avoidable requests exist and are suppressed, not that previews are the dominant bottleneck on the reporting TV.",
+  "validation": {
+    "controls": {
+      "passed": 75,
+      "total": 75
+    },
+    "resume": {
+      "passed": 19,
+      "total": 19
+    },
+    "adjacent": {
+      "passed": 20,
+      "total": 20
+    },
+    "unit": {
+      "passed": 254,
+      "skipped": 1,
+      "failed": 0
+    },
+    "i18n": "393 source keys covered in en/es",
+    "bundleSyntax": "7 JavaScript bundles parse as ES2016",
+    "physicalTVTested": false
+  }
+}

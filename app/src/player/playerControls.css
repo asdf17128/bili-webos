@@ -512,3 +512,32 @@
   .player-controls-vod.with-comment-rail .player-control[data-feedback="pending"] .player-control-icon { transform: scale(.96); }
   .player-controls-vod.with-comment-rail .player-control-status { width: 24px; height: 24px; font-size: 16px; }
 }
+
+/* Keep the timeline's total row height unchanged when selecting a position. */
+.player-controls-vod .player-control-deck > .player-progress-bar.scrubbing {
+  height: 10px;
+  margin-top: 6px;
+  margin-bottom: 10px;
+  background: rgba(255,255,255,.65);
+  box-shadow: 0 0 0 2px rgba(0,0,0,.8), 0 0 0 4px var(--tv-focus);
+}
+.player-controls-vod .player-progress-cursor {
+  position: absolute;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--tv-focus);
+  border: 3px solid var(--tv-accent);
+  box-shadow: 0 0 0 2px rgba(0,0,0,.85);
+}
+.player-scrub-hint {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(0,0,0,.88);
+  color: #fff;
+  font-size: calc(16px * var(--ui-scale));
+}

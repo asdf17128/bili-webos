@@ -13,7 +13,7 @@ const baseline = process.argv.includes('--baseline');
 const output = process.env.CONTROLS_OUTPUT || '/tmp/bili-player-controls';
 await mkdir(output, { recursive: true });
 const reports = [];
-const sourcePaths = ['app/src/player/PlayerPrimaryControls.jsx', 'app/src/player/controlFocus.js', 'app/src/player/PlayerTimeline.jsx', 'app/src/player/PlayerRecommendationGrid.jsx', 'app/src/player/TimedDanmakuLayer.jsx', 'app/src/player/useMediaClock.js', 'app/src/player/PlayerPage.jsx', 'app/src/player/adjacentVideo.js', 'app/src/player/SubtitleLayer.jsx', 'app/src/player/playerControls.css', 'app/src/player/PlayerMoreControls.jsx', 'app/src/player/playerMoreControls.css', 'app/src/components/Icon.jsx', 'app/src/i18n/en.js', 'app/src/i18n/es.js', 'app/src/styles.css', 'app/src/tv-design.css', 'app/src/hooks/useAuthorFollowers.js', 'app/src/utils/authorFollowers.js'];
+const sourcePaths = ['app/src/player/remoteRepeat.js', 'app/src/player/PlayerPrimaryControls.jsx', 'app/src/player/controlFocus.js', 'app/src/player/PlayerTimeline.jsx', 'app/src/player/PlayerRecommendationGrid.jsx', 'app/src/player/TimedDanmakuLayer.jsx', 'app/src/player/useMediaClock.js', 'app/src/player/PlayerPage.jsx', 'app/src/player/adjacentVideo.js', 'app/src/player/SubtitleLayer.jsx', 'app/src/player/playerControls.css', 'app/src/player/PlayerMoreControls.jsx', 'app/src/player/playerMoreControls.css', 'app/src/components/Icon.jsx', 'app/src/i18n/en.js', 'app/src/i18n/es.js', 'app/src/styles.css', 'app/src/tv-design.css', 'app/src/hooks/useAuthorFollowers.js', 'app/src/utils/authorFollowers.js'];
 const hashSources = () => Promise.all(sourcePaths.map(async path => [path, createHash('sha256').update(await readFile(path)).digest('hex')])).then(Object.fromEntries);
 const sources = await hashSources();
 if (process.env.CONTROLS_ANALYZE_ONLY) {
@@ -219,6 +219,14 @@ async function fixture(options = {}) {
     if (url.pathname.endsWith('/v2') && options.mask && options.mask !== 'missing') data.dm_mask = {cid:options.mask === 'mismatch'?999:2,mask_url:'https://a.bilivideo.com/cmaskboss/test.webmask'};
     if (url.pathname.endsWith('/test.webmask')) { (calls.maskRanges ||= []).push(request.headers().range); return route.fulfill({status:503,body:'unavailable',headers:{'access-control-allow-origin':'*'}}); }
     if (url.pathname.endsWith('/controls-subtitle.json')) return fulfill({ body: [{ from: 0, to: 600, content: '字幕保持可读，不应被控制栏遮挡' }] });
+    if (options.scrubSprites && url.pathname.endsWith('/videoshot')) {
+      calls.spriteMetadata = (calls.spriteMetadata || 0) + 1;
+      return fulfill({code:0,data:{image:Array.from({length:60},(_,i)=>`https://fixture.invalid/sprite-fixture-${i}.svg`),img_x_len:1,img_y_len:1,img_x_size:160,img_y_size:90,index:Array.from({length:60},(_,i)=>i*10)}});
+    }
+    if (url.pathname.includes('sprite-fixture-')) {
+      (calls.spriteRequests ||= []).push(url.pathname);
+      return route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="160" height="90"><rect width="160" height="90" fill="blue"/></svg>'});
+    }
     if (url.pathname.endsWith('/list.so')) return route.fulfill({ contentType: 'text/xml', body: '<i></i>' });
     if (url.pathname.endsWith('/archive/related')) {
       calls.related++;
@@ -344,6 +352,69 @@ async function run(name, options, fn) {
   }
 }
 
+for (const size of [{width:1920,height:1080,scale:1},{width:1280,height:720,scale:1.4}]) await run('selected progress stays clear '+size.height, {...size,scrubSprites:true},async f=>{
+  const page=f.page;await page.keyboard.press('Enter');
+  const start=(await state(page)).media.time;
+  await page.keyboard.down('ArrowRight');await page.waitForTimeout(450);
+  const bar=page.getByRole('slider',{name:'播放进度'});
+  assert.equal(await bar.getAttribute('aria-valuenow'),String(Math.floor(start+10)));
+  assert.ok((await bar.getAttribute('class')).includes('focused'));
+  assert.equal(await bar.evaluate(el=>parseFloat(getComputedStyle(el).height)),10);
+  const cursor=await page.locator('.player-progress-cursor').boundingBox();
+  assert.ok(cursor.width>=24 && cursor.x>=0 && cursor.x+cursor.width<=size.width);
+  const preview=await page.locator('.player-scrub-preview').boundingBox();
+  assert.ok(preview.y>=0 && preview.y+preview.height<=size.height,'time preview and hint fit the screen');
+  const title=await page.locator('.player-title').boundingBox();
+  assert.ok(preview.y+preview.height<=title.y-8,'preview does not obscure video metadata');
+  assert.equal(await page.locator('.subtitle-text').count(),0,'seek preview does not compete with old-position subtitles');
+  assert.equal((await state(page)).probe.seeks.length,0);
+  await shot(f,'selected-progress-'+size.height);
+  await page.keyboard.up('ArrowRight');await page.keyboard.press('Escape');await page.waitForTimeout(1200);
+  assert.equal(await page.locator('.player-progress-cursor').count(),0);
+  assert.equal((await state(page)).probe.seeks.length,0);
+});
+
+await run('held seek defers media and sprite loads until release', {scrubSprites:true}, async f => {
+  const page=f.page;
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(1200);
+  assert.equal(f.calls.spriteMetadata,1,'sprite metadata is available for this test');
+  const start=(await state(page)).media.time;
+  const began=Date.now();
+  for(let i=0;i<100;i++) {
+    await page.keyboard.down('ArrowRight');
+    await page.waitForTimeout(20);
+  }
+  const elapsed=Date.now()-began;
+  assert.equal((await state(page)).probe.seeks.length,0,'holding never assigns media currentTime');
+  assert.equal((f.calls.spriteRequests||[]).length,0,'holding never fetches successive sprite sheets');
+  // Even with no repeats delivered for >1s, a still-held key must not load media.
+  await page.waitForTimeout(1100);
+  assert.equal((await state(page)).probe.seeks.length,0,'held key prevents premature commit during a repeat gap');
+  await page.keyboard.up('ArrowRight');
+  await page.waitForTimeout(400);
+  assert.equal((await state(page)).probe.seeks.length,0,'release retains the settle window');
+  assert.equal((f.calls.spriteRequests||[]).length,1,'only the settled preview sheet is fetched');
+  await page.waitForTimeout(800);
+  const seeks=(await state(page)).probe.seeks;
+  assert.equal(seeks.length,1,'settling commits exactly one media seek');
+  assert.ok(seeks[0]>start && seeks[0]-start<=10*(Math.ceil(elapsed/120)+1),'no count-based acceleration or replayed burst');
+  assert.ok(seeks[0]<599,'a short hold does not jump to the end');
+});
+
+await run('rapid seek taps stay ten seconds and Back cancels pending preview', {scrubSprites:true}, async f=>{
+  const page=f.page;await page.keyboard.press('Enter');await page.waitForTimeout(1200);
+  const start=(await state(page)).media.time;
+  for(let i=0;i<5;i++)await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('Enter');
+  assert.equal((await state(page)).probe.seeks.at(-1),start+50,'each deliberate tap stays ten seconds');
+  await page.waitForTimeout(1400);await page.keyboard.press('ArrowRight');await page.keyboard.press('Escape');
+  const count=(await state(page)).probe.seeks.length,sprites=(f.calls.spriteRequests||[]).length;
+  await page.waitForTimeout(1300);
+  assert.equal((await state(page)).probe.seeks.length,count);
+  assert.equal((f.calls.spriteRequests||[]).length,sprites,'cancelled preview does not fetch later');
+});
+
 await run('performance budget continuous controls', {}, async f => {
   const page=f.page, cdp=await f.context.newCDPSession(page);
   await openControls(page);
@@ -406,7 +477,7 @@ await run('performance isolated playback clock and controls', {performance: true
   }
   const buttons = await page.locator('.player-control:not(:disabled)').evaluateAll(nodes => nodes.map(node => node.dataset.control));
   const initial = await page.locator('.player-control.focused').getAttribute('data-control');
-  for (let i=0;i<20;i++) await page.keyboard.down('ArrowRight');
+  for (let i=0;i<20;i++) { await page.keyboard.down('ArrowRight'); await page.waitForTimeout(140); }
   await page.keyboard.up('ArrowRight');
   const expected = buttons[(buttons.indexOf(initial) + 20) % buttons.length];
   await page.waitForFunction(expected => document.querySelector('.player-control.focused')?.dataset.control === expected, expected);

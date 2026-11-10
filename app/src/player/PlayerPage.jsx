@@ -33,6 +33,7 @@ import TimedDanmakuLayer from './TimedDanmakuLayer';
 import PlayerTimeline from './PlayerTimeline';
 import PlayerPrimaryControls, { PlayerControlToast } from './PlayerPrimaryControls';
 import { createControlFocus } from './controlFocus';
+import { createRemoteRepeat } from './remoteRepeat';
 import PlayerRecommendationGrid from './PlayerRecommendationGrid';
 import SubtitleLayer from './SubtitleLayer';
 import { parseSubtitleBody, pickCueIndex, isAiLan, subtitleLanName, mtLanName, findZhTrack, matchTrackByLan, AI_LEAD } from './subtitles';
@@ -199,10 +200,13 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
   const adjacentBusyRef = useRef(false);
   // YouTube-style deferred seek (scrub): arrows move a GHOST playhead with a
   // time bubble + videoshot thumbnail; the video only jumps on OK or ~1s after
-  // the last press. Repeated presses accelerate 10s → 30s → 60s.
+  // the last press. Held keys are rate-limited; every accepted move stays 10s.
   const [scrubTarget, setScrubTarget] = useState(null); // seconds | null
   const scrubTargetRef = useRef(null);
-  const scrubStreakRef = useRef({ n: 0, last: 0 });
+  const repeatGateRef = useRef(null);
+  if (!repeatGateRef.current) repeatGateRef.current = createRemoteRepeat();
+  const scrubPreviewTimerRef = useRef(null);
+  const [scrubPreviewTarget, setScrubPreviewTarget] = useState(null);
   const scrubTimerRef = useRef(null);
   const [videoshot, setVideoshot] = useState(null); // {images,xLen,yLen,w,h,index}
   // YouTube-style chapters (B站 view_points): [{from,to,content}] — segment
@@ -247,7 +251,7 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
   const shelfGestureUntilRef = useRef(0);
   const shelfWheelRef = useRef({ at: 0, target: 0, direction: 0, delta: 0 });
   const controlsPinnedRef = useRef(false), lastControlRef = useRef('play');
-  const [controlsGeometry, setControlsGeometry] = useState({ lift: 190, progressBottom: 104 });
+  const [controlsGeometry, setControlsGeometry] = useState({ lift: 190, progressBottom: 104, previewBottom: 220 });
   const timeUpdateRef = useRef(null);
   const cidRef = useRef(null);
   const dolbyRuntimeRef = useRef(null);
@@ -1600,6 +1604,8 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
   const clearScrub = useCallback(() => {
     if (scrubTimerRef.current) { clearTimeout(scrubTimerRef.current); scrubTimerRef.current = null; }
     scrubTargetRef.current = null;
+    if (scrubPreviewTimerRef.current) clearTimeout(scrubPreviewTimerRef.current);
+    setScrubPreviewTarget(null);
     setScrubTarget(null);
   }, []);
 
@@ -1620,15 +1626,30 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
   }, [clearScrub]);
   commitScrubRef.current = commitScrub;
 
+  const scheduleScrubCommit = useCallback(function schedule() {
+    if (scrubTimerRef.current) clearTimeout(scrubTimerRef.current);
+    scrubTimerRef.current = setTimeout(() => {
+      if (scrubTargetRef.current == null) return;
+      if (repeatGateRef.current.isHeld()) { schedule(); return; }
+      commitScrubRef.current?.();
+    }, 1000);
+  }, []);
+  const scheduleScrubPreview = useCallback(() => {
+    if (scrubPreviewTimerRef.current) clearTimeout(scrubPreviewTimerRef.current);
+    scrubPreviewTimerRef.current = setTimeout(() => {
+      if (!repeatGateRef.current.isHeld()) setScrubPreviewTarget(scrubTargetRef.current);
+    }, 200);
+  }, []);
+  useEffect(() => () => {
+    if (scrubPreviewTimerRef.current) clearTimeout(scrubPreviewTimerRef.current);
+    if (scrubTimerRef.current) clearTimeout(scrubTimerRef.current);
+  }, []);
+
   const scrubBy = useCallback((dir) => {
     pointerDismissedRef.current = false;
     const v = videoRef.current;
     if (!v || !v.duration || isNaN(v.duration)) return;
-    const now = Date.now();
-    const st = scrubStreakRef.current;
-    st.n = (now - st.last < 800) ? st.n + 1 : 1;
-    st.last = now;
-    const step = st.n < 4 ? 10 : st.n < 10 ? 30 : 60; // accelerate like YouTube
+    const step = 10;
     const base = scrubTargetRef.current != null ? scrubTargetRef.current : v.currentTime;
     const target = Math.max(0, Math.min(v.duration - 1, base + dir * step));
     scrubTargetRef.current = target;
@@ -1636,9 +1657,9 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
     setShowControls(true);
     setFocusArea('scrub');
     if (controlsTimer.current) clearTimeout(controlsTimer.current); // don't auto-hide mid-scrub
-    if (scrubTimerRef.current) clearTimeout(scrubTimerRef.current);
-    scrubTimerRef.current = setTimeout(() => commitScrubRef.current && commitScrubRef.current(), 1000);
-  }, []);
+    scheduleScrubPreview();
+    scheduleScrubCommit();
+  }, [scheduleScrubPreview, scheduleScrubCommit]);
 
   // Auto-hide controls
   const hideControlsLater = useCallback(() => {
@@ -1856,13 +1877,18 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
   const relPlayRef = useRef(null);   // 由 Enter 分支填:这次短按该播谁
   useEffect(() => {
     const up = (e) => {
+      repeatGateRef.current.release(e.key);
+      if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && scrubTargetRef.current != null) {
+        scheduleScrubPreview(); scheduleScrubCommit();
+      }
       if (e.key !== 'Enter') return;
       if (endRelHold(relPlayRef.current)) return;   // 相关推荐的这次 OK 已消费
       endLikeHold(false);
     };
-    window.addEventListener('keyup', up);
-    return () => window.removeEventListener('keyup', up);
-  }, [endLikeHold, endRelHold]);
+    const blur = () => { repeatGateRef.current.release(); clearScrub(); };
+    window.addEventListener('keyup', up); window.addEventListener('blur', blur);
+    return () => { window.removeEventListener('keyup', up); window.removeEventListener('blur', blur); };
+  }, [endLikeHold, endRelHold, clearScrub, scheduleScrubPreview, scheduleScrubCommit]);
   useEffect(() => () => { if (holdRef.current.timer) clearTimeout(holdRef.current.timer); }, []);
 
   // Terminal playback UI owns input. Do not leave an action sheet in front
@@ -2421,6 +2447,15 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
         return true;
       }
 
+      if (['none', 'scrub', 'controls'].includes(focusArea) && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+        const result = repeatGateRef.current.inspect(e, performance.now(), Date.now());
+        if (result !== 'accept') {
+          e.preventDefault();
+          if (result === 'repeat' && scrubTargetRef.current != null) scheduleScrubCommit();
+          return true;
+        }
+      }
+
       // === No controls visible (focusArea === 'none') ===
       if (focusArea === 'none') {
         if (e.key === 'ArrowLeft') {
@@ -2768,9 +2803,11 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
       const targetTranslate = shelf && !showRelated
         ? shelf.getBoundingClientRect().height - parseFloat(css.getPropertyValue('--preview-height')) : 0;
       const remaining = box.top - (page.top + el.offsetTop + targetTranslate);
-      const next = { lift: Math.max(0, page.bottom - box.top + remaining - 56 + 12),
+      const title = el.querySelector('.player-title');
+      const next = { previewBottom: Math.max(104, page.bottom - (title || el).getBoundingClientRect().top + remaining + 12),
+        lift: Math.max(0, page.bottom - box.top + remaining - 56 + 12),
         progressBottom: Math.max(104, page.bottom - progressEl.getBoundingClientRect().top + remaining + 18) };
-      setControlsGeometry(previous => previous.lift === next.lift && previous.progressBottom === next.progressBottom ? previous : next);
+      setControlsGeometry(previous => previous.lift === next.lift && previous.progressBottom === next.progressBottom && previous.previewBottom === next.previewBottom ? previous : next);
     };
     measure();
     window.addEventListener('resize', measure);
@@ -2974,7 +3011,7 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
       <TimedDanmakuLayer preserveOnAppend videoRef={videoRef} maskSource={maskSource} onMaskStatus={setMaskStatus} settings={danmakuSettings} danmakus={danmakus} enabled={danmakuEnabled} fontScale={danmakuScale} paused={!playing}
         mtRef={dmMtActive ? dmMtRef : null} />
 
-      <SubtitleLayer videoRef={videoRef} cues={subCues} enabled={subLan != null && !showRelated}
+      <SubtitleLayer videoRef={videoRef} cues={subCues} enabled={subLan != null && !showRelated && scrubTarget == null}
         lead={(isAiLan(subLan) || subLan === 'x-mt') ? AI_LEAD : 0}
         liftPixels={showControls ? controlsGeometry.lift : 0} rightInset={showCommentRail ? RAIL_W : 0} fontScale={subtitleScale} />
 
@@ -3022,7 +3059,7 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
         const bubblePct = Math.min(88, Math.max(12, pct));
         const delta = Math.round(scrubTarget - currentTime);
         let thumb = null;
-        if (videoshot) {
+        if (videoshot && scrubPreviewTarget === scrubTarget) {
           const per = videoshot.xLen * videoshot.yLen;
           const total = videoshot.images.length * per;
           let f;
@@ -3038,7 +3075,7 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
           // Frame size varies per video (160/480 wide). Cap upscaling at 1.5x —
           // a 160px frame stretched to 320px is visibly mushy (#11); large
           // 480px frames still downscale to a sharp 320px.
-          const SC = Math.min(320 / videoshot.w, 1.5);
+          const SC = Math.min(320 / videoshot.w, 1.5, Math.max(48, window.innerHeight - controlsGeometry.previewBottom - 120) / videoshot.h);
           thumb = {
             url: proxyImgRaw(videoshot.images[sheet]),
             w: Math.round(videoshot.w * SC), h: Math.round(videoshot.h * SC),
@@ -3048,10 +3085,10 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
         }
         const ch = chapters.find(c => scrubTarget >= c.from && scrubTarget < c.to);
         return (
-          <div style={{
+          <div className="player-scrub-preview" data-scrub-target={scrubTarget} style={{
             position: 'absolute',
             left: `calc(60px + ${bubblePct} * (100% - 120px) / 100)`,
-            bottom: controlsGeometry.progressBottom, transform: 'translateX(-50%)',
+            bottom: controlsGeometry.previewBottom, transform: 'translateX(-50%)',
             textAlign: 'center', pointerEvents: 'none', zIndex: 80,
           }}>
             {thumb && (
@@ -3073,15 +3110,16 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
             )}
             <div>
               <span style={{
-                fontSize: 22, color: '#fff', fontWeight: 600,
-                background: 'rgba(0,0,0,0.75)', padding: '4px 14px', borderRadius: 6,
+                fontSize: 28, color: '#fff', fontWeight: 700,
+                background: 'rgba(0,0,0,0.88)', padding: '8px 16px', borderRadius: 8,
               }}>
                 {formatDuration(scrubTarget)}
-                <span style={{ color: '#7ecbff', marginLeft: 8, fontSize: 18 }}>
+                <span style={{ color: 'var(--tv-accent)', marginLeft: 12, fontSize: 22 }}>
                   {delta >= 0 ? `+${delta}s` : `${delta}s`}
                 </span>
               </span>
             </div>
+            <div className="player-scrub-hint">{t('松开后跳转 · 返回取消')}</div>
           </div>
         );
       })()}

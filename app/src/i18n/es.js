@@ -1,5 +1,7 @@
 // Spanish dictionary. Keys are the Chinese source strings (see index.js).
 export default {
+  "播放进度": "Progreso de reproducción",
+  "松开后跳转 · 返回取消": "Suelta para saltar · Atrás para cancelar",
   '播放设置': 'Ajustes de reproducción',
   '上一个': 'Anterior',
   '下一个': 'Siguiente',

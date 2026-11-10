@@ -1,0 +1,1819 @@
+{
+  "baselineCommit": "1dc68fa",
+  "sourceHashes": {
+    "app/src/player/remoteRepeat.js": "1eac5ba930035e7de347432f3fd8064d0b8d163f7fae6419cfb651feaff62008",
+    "app/src/player/PlayerPrimaryControls.jsx": "5c1e5bd70262cbc6bf37e2bdf16d11340580d3aaf764a4ac171f074f4641ca73",
+    "app/src/player/controlFocus.js": "f1f5bdc7d7ad584db964990ae23e8ba7fcf2c566be0cf08527a21eb87af06a5c",
+    "app/src/player/PlayerTimeline.jsx": "0824227d5af474c936750e48c32b8a8a7abf1558c5effde81e0e3a8ba75f99be",
+    "app/src/player/PlayerRecommendationGrid.jsx": "a3d0bd140305828f27bbae1acd723eb45c21ded9f0de94b464283e1f3899d619",
+    "app/src/player/TimedDanmakuLayer.jsx": "866b0cf9f7b51c97c38cfdf1c0bcc911761bd4926875d185f649247bac8cee0e",
+    "app/src/player/useMediaClock.js": "74593209328717fa43954f03c81196545e2d03e1300e8982f7731e5f4ef63262",
+    "app/src/player/PlayerPage.jsx": "52fc9a2fbdf0802d35a7dbdf4c555709dcf5fa3ecdd3c62010e6e6393d3fee3e",
+    "app/src/player/adjacentVideo.js": "f86a1fdfc7df91ce7bc524887d0030460c9d479e72cb5d96fd596be7edbe7475",
+    "app/src/player/SubtitleLayer.jsx": "130b03b27e3bad26493978ccc298afe98f5c8b508e955ec427fc68ddf63119f5",
+    "app/src/player/playerControls.css": "741818e318ea3477a236bce53094402aac4fc601890694290dd9e3294f762178",
+    "app/src/player/PlayerMoreControls.jsx": "868946a2c0c1160b6036718ab8a1a296b5bff1291cf1f6f320dd13daf131816e",
+    "app/src/player/playerMoreControls.css": "cee32c7ef0624ccb97d4b8123e2ce75f8e0c49a72eb7e0d78fe92ccd0491ac9f",
+    "app/src/components/Icon.jsx": "e6ed7ef4fdd9f26b4cd161c0e66589fa72deff376c102008a3a24b2e08deb2d4",
+    "app/src/i18n/en.js": "b4ea4907a17e3948cf149c7cd2fde9ecf14dc21303259b60847a79fbe7c4a1b2",
+    "app/src/i18n/es.js": "70ae552877fb95b4adef10dddceae36ba9687163c68660fb21455c594b10859c",
+    "app/src/styles.css": "af2e9f38471c0f69626b4bfa779c4a0d729faa52ec6a9680042562987401b785",
+    "app/src/tv-design.css": "72589f3934f2aa02ec67cb7a13e344da5e5c4a87c6fe3bfc4f2c521e17041433",
+    "app/src/hooks/useAuthorFollowers.js": "3fc6805b08055604da1259cab330c34ac4344cd05e652f4c80b702eedd6e482b",
+    "app/src/utils/authorFollowers.js": "aed07affbf7392fc6e3fbbc99fdee2af39982b241be98295db7b8ea376c203f3"
+  },
+  "scenario": "24 trusted right-arrow taps, 160ms spacing, 6x CPU throttle, synthetic playback, fresh context per variant; forward/reverse order",
+  "results": [
+    {
+      "pass": true,
+      "variant": "baseline",
+      "costs": {
+        "TaskDuration": 285.57400000000007,
+        "ScriptDuration": 34.421,
+        "LayoutDuration": 14.967999999999998,
+        "RecalcStyleDuration": 19.716
+      },
+      "paints": 0,
+      "drawLayers": [
+        {
+          "width": 0,
+          "height": 0
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1144
+        },
+        {
+          "width": 1812,
+          "height": 1127
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 82,
+          "height": 82
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        }
+      ],
+      "inputToTwoAnimationFramesMs": [
+        22.40000009536743,
+        17.100000023841858,
+        17.5,
+        27.200000047683716,
+        26.799999952316284,
+        26.800000071525574,
+        27,
+        25.399999976158142,
+        25.100000023841858,
+        23,
+        24.800000071525574,
+        26.899999976158142,
+        25.700000047683716,
+        26.100000023841858,
+        24.200000047683716,
+        27.799999952316284,
+        29.799999952316284,
+        28.59999990463257,
+        27.399999976158142,
+        28.199999928474426,
+        27.799999952316284,
+        25.699999928474426,
+        27.799999952316284,
+        28.600000023841858
+      ],
+      "limitation": "Synthetic media, modern desktop compositor. Two rAF callbacks do not measure physical display latency or TV GPU cost.",
+      "paint-baseline": {
+        "controls": {
+          "x": 0,
+          "y": 602.125,
+          "width": 1920,
+          "height": 1143.875,
+          "bottom": 1746,
+          "visibleBottom": 1080,
+          "right": 1920,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) linear-gradient(rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.1) 18%, rgba(0, 0, 0, 0.24) 40%, rgba(0, 0, 0, 0.4) 70%, rgba(0, 0, 0, 0.58) 100%) repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "video": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "bottom": 1080,
+          "visibleBottom": 1080,
+          "right": 1920,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) linear-gradient(125deg, rgb(255, 252, 228), rgb(237, 246, 250) 40%, rgb(255, 255, 255)) repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(243, 243, 245)"
+        },
+        "progress": {
+          "x": 64,
+          "y": 756.90625,
+          "width": 1792,
+          "height": 6,
+          "bottom": 762.90625,
+          "visibleBottom": 762.90625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(255, 255, 255, 0.38) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "buttons": {
+          "x": 64,
+          "y": 774.90625,
+          "width": 1792,
+          "height": 116.5,
+          "bottom": 891.40625,
+          "visibleBottom": 891.40625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "title": {
+          "x": 64,
+          "y": 642.125,
+          "width": 1792,
+          "height": 37.5,
+          "bottom": 679.625,
+          "visibleBottom": 679.625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "subtitle": {
+          "x": 685,
+          "y": 528.7031860351562,
+          "width": 550,
+          "height": 61.296875,
+          "bottom": 590.0000610351562,
+          "visibleBottom": 590.0000610351562,
+          "right": 1235,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0.55) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "tabs": null,
+        "card": {
+          "x": 64,
+          "y": 1006,
+          "width": 430,
+          "height": 352.875,
+          "bottom": 1358.875,
+          "visibleBottom": 1080,
+          "right": 494,
+          "opacity": "1",
+          "background": "rgb(32, 33, 38) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(243, 243, 245)"
+        },
+        "preview": {
+          "x": 64,
+          "y": 944,
+          "width": 1792,
+          "height": 802,
+          "bottom": 1746,
+          "visibleBottom": 1080,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "focused": "暂停",
+        "relatedCards": 12,
+        "visibleControls": true,
+        "expanded": false,
+        "controlsScroll": 0,
+        "media": {
+          "paused": false,
+          "time": 125.25
+        },
+        "input": {
+          "keydown": 25,
+          "keyup": 25,
+          "click": 0,
+          "mousedown": 0,
+          "mouseup": 0,
+          "mousemove": 0,
+          "untrusted": 0
+        },
+        "probe": {
+          "loads": 1,
+          "destroyed": 0,
+          "mimes": [
+            "application/dash+xml"
+          ],
+          "seeks": [],
+          "plays": 1,
+          "pauses": 0,
+          "menus": 0
+        }
+      }
+    },
+    {
+      "pass": true,
+      "variant": "shadows",
+      "costs": {
+        "TaskDuration": 255.731,
+        "ScriptDuration": 33.04899999999999,
+        "LayoutDuration": 12.484,
+        "RecalcStyleDuration": 20.534
+      },
+      "paints": 0,
+      "drawLayers": [
+        {
+          "width": 0,
+          "height": 0
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1144
+        },
+        {
+          "width": 1812,
+          "height": 1127
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 82,
+          "height": 82
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        }
+      ],
+      "inputToTwoAnimationFramesMs": [
+        16.199999928474426,
+        28.800000071525574,
+        28.5,
+        26,
+        25.799999952316284,
+        23.399999976158142,
+        21.399999976158142,
+        19.799999952316284,
+        16.90000009536743,
+        15.899999976158142,
+        29,
+        30.5,
+        26.300000071525574,
+        24.899999976158142,
+        28.199999928474426,
+        27.700000047683716,
+        27.399999976158142,
+        28.5,
+        28.5,
+        28.100000023841858,
+        28.200000047683716,
+        28.899999976158142,
+        28.899999976158142,
+        29.699999928474426
+      ],
+      "limitation": "Synthetic media, modern desktop compositor. Two rAF callbacks do not measure physical display latency or TV GPU cost.",
+      "paint-shadows": {
+        "controls": {
+          "x": 0,
+          "y": 602.125,
+          "width": 1920,
+          "height": 1143.875,
+          "bottom": 1746,
+          "visibleBottom": 1080,
+          "right": 1920,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) linear-gradient(rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.1) 18%, rgba(0, 0, 0, 0.24) 40%, rgba(0, 0, 0, 0.4) 70%, rgba(0, 0, 0, 0.58) 100%) repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "video": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "bottom": 1080,
+          "visibleBottom": 1080,
+          "right": 1920,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) linear-gradient(125deg, rgb(255, 252, 228), rgb(237, 246, 250) 40%, rgb(255, 255, 255)) repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(243, 243, 245)"
+        },
+        "progress": {
+          "x": 64,
+          "y": 756.90625,
+          "width": 1792,
+          "height": 6,
+          "bottom": 762.90625,
+          "visibleBottom": 762.90625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(255, 255, 255, 0.38) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "buttons": {
+          "x": 64,
+          "y": 774.90625,
+          "width": 1792,
+          "height": 116.5,
+          "bottom": 891.40625,
+          "visibleBottom": 891.40625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "title": {
+          "x": 64,
+          "y": 642.125,
+          "width": 1792,
+          "height": 37.5,
+          "bottom": 679.625,
+          "visibleBottom": 679.625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "subtitle": {
+          "x": 685,
+          "y": 528.703125,
+          "width": 550,
+          "height": 61.296875,
+          "bottom": 590,
+          "visibleBottom": 590,
+          "right": 1235,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0.55) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "tabs": null,
+        "card": {
+          "x": 64,
+          "y": 1006,
+          "width": 430,
+          "height": 352.875,
+          "bottom": 1358.875,
+          "visibleBottom": 1080,
+          "right": 494,
+          "opacity": "1",
+          "background": "rgb(32, 33, 38) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(243, 243, 245)"
+        },
+        "preview": {
+          "x": 64,
+          "y": 944,
+          "width": 1792,
+          "height": 802,
+          "bottom": 1746,
+          "visibleBottom": 1080,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "focused": "暂停",
+        "relatedCards": 12,
+        "visibleControls": true,
+        "expanded": false,
+        "controlsScroll": 0,
+        "media": {
+          "paused": false,
+          "time": 125
+        },
+        "input": {
+          "keydown": 25,
+          "keyup": 25,
+          "click": 0,
+          "mousedown": 0,
+          "mouseup": 0,
+          "mousemove": 0,
+          "untrusted": 0
+        },
+        "probe": {
+          "loads": 1,
+          "destroyed": 0,
+          "mimes": [
+            "application/dash+xml"
+          ],
+          "seeks": [],
+          "plays": 1,
+          "pauses": 0,
+          "menus": 0
+        }
+      }
+    },
+    {
+      "pass": true,
+      "variant": "motion",
+      "costs": {
+        "TaskDuration": 171.7,
+        "ScriptDuration": 19.712,
+        "LayoutDuration": 12.248,
+        "RecalcStyleDuration": 6.763000000000001
+      },
+      "paints": 0,
+      "drawLayers": [
+        {
+          "width": 0,
+          "height": 0
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1144
+        },
+        {
+          "width": 1812,
+          "height": 1127
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 82,
+          "height": 82
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        }
+      ],
+      "inputToTwoAnimationFramesMs": [
+        20.700000047683716,
+        22.5,
+        21.899999976158142,
+        22.700000047683716,
+        21.700000047683716,
+        22.700000047683716,
+        23.700000047683716,
+        24.200000047683716,
+        25.5,
+        26.899999976158142,
+        27.399999976158142,
+        29.700000047683716,
+        16,
+        17.59999990463257,
+        17.799999952316284,
+        19.600000023841858,
+        20.200000047683716,
+        21.100000023841858,
+        20.700000047683716,
+        23,
+        22.399999976158142,
+        20.699999928474426,
+        18.600000023841858,
+        17.5
+      ],
+      "limitation": "Synthetic media, modern desktop compositor. Two rAF callbacks do not measure physical display latency or TV GPU cost.",
+      "paint-motion": {
+        "controls": {
+          "x": 0,
+          "y": 602.125,
+          "width": 1920,
+          "height": 1143.875,
+          "bottom": 1746,
+          "visibleBottom": 1080,
+          "right": 1920,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) linear-gradient(rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.1) 18%, rgba(0, 0, 0, 0.24) 40%, rgba(0, 0, 0, 0.4) 70%, rgba(0, 0, 0, 0.58) 100%) repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "video": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "bottom": 1080,
+          "visibleBottom": 1080,
+          "right": 1920,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) linear-gradient(125deg, rgb(255, 252, 228), rgb(237, 246, 250) 40%, rgb(255, 255, 255)) repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(243, 243, 245)"
+        },
+        "progress": {
+          "x": 64,
+          "y": 756.90625,
+          "width": 1792,
+          "height": 6,
+          "bottom": 762.90625,
+          "visibleBottom": 762.90625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(255, 255, 255, 0.38) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "buttons": {
+          "x": 64,
+          "y": 774.90625,
+          "width": 1792,
+          "height": 116.5,
+          "bottom": 891.40625,
+          "visibleBottom": 891.40625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "title": {
+          "x": 64,
+          "y": 642.125,
+          "width": 1792,
+          "height": 37.5,
+          "bottom": 679.625,
+          "visibleBottom": 679.625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "subtitle": {
+          "x": 685,
+          "y": 528.7031860351562,
+          "width": 550,
+          "height": 61.296875,
+          "bottom": 590.0000610351562,
+          "visibleBottom": 590.0000610351562,
+          "right": 1235,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0.55) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "tabs": null,
+        "card": {
+          "x": 64,
+          "y": 1006,
+          "width": 430,
+          "height": 352.875,
+          "bottom": 1358.875,
+          "visibleBottom": 1080,
+          "right": 494,
+          "opacity": "1",
+          "background": "rgb(32, 33, 38) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(243, 243, 245)"
+        },
+        "preview": {
+          "x": 64,
+          "y": 944,
+          "width": 1792,
+          "height": 802,
+          "bottom": 1746,
+          "visibleBottom": 1080,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "focused": "暂停",
+        "relatedCards": 12,
+        "visibleControls": true,
+        "expanded": false,
+        "controlsScroll": 0,
+        "media": {
+          "paused": false,
+          "time": 125
+        },
+        "input": {
+          "keydown": 25,
+          "keyup": 25,
+          "click": 0,
+          "mousedown": 0,
+          "mouseup": 0,
+          "mousemove": 0,
+          "untrusted": 0
+        },
+        "probe": {
+          "loads": 1,
+          "destroyed": 0,
+          "mimes": [
+            "application/dash+xml"
+          ],
+          "seeks": [],
+          "plays": 1,
+          "pauses": 0,
+          "menus": 0
+        }
+      }
+    },
+    {
+      "pass": true,
+      "variant": "shelf",
+      "costs": {
+        "TaskDuration": 229.72299999999998,
+        "ScriptDuration": 38.205999999999996,
+        "LayoutDuration": 7.639,
+        "RecalcStyleDuration": 19.526
+      },
+      "paints": 0,
+      "drawLayers": [
+        {
+          "width": 0,
+          "height": 0
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1144
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 82,
+          "height": 82
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        }
+      ],
+      "inputToTwoAnimationFramesMs": [
+        16.200000047683716,
+        28.300000071525574,
+        29.699999928474426,
+        27.90000009536743,
+        27.399999976158142,
+        29.600000023841858,
+        29.700000047683716,
+        29.700000047683716,
+        29.59999990463257,
+        26.899999976158142,
+        29.199999928474426,
+        29.799999952316284,
+        29.699999928474426,
+        28,
+        29.899999976158142,
+        27.700000047683716,
+        28,
+        31,
+        29.200000047683716,
+        28.699999928474426,
+        28.700000047683716,
+        31.5,
+        32.40000009536743,
+        30.100000023841858
+      ],
+      "limitation": "Synthetic media, modern desktop compositor. Two rAF callbacks do not measure physical display latency or TV GPU cost.",
+      "paint-shelf": {
+        "controls": {
+          "x": 0,
+          "y": 602.125,
+          "width": 1920,
+          "height": 1143.875,
+          "bottom": 1746,
+          "visibleBottom": 1080,
+          "right": 1920,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) linear-gradient(rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.1) 18%, rgba(0, 0, 0, 0.24) 40%, rgba(0, 0, 0, 0.4) 70%, rgba(0, 0, 0, 0.58) 100%) repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "video": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "bottom": 1080,
+          "visibleBottom": 1080,
+          "right": 1920,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) linear-gradient(125deg, rgb(255, 252, 228), rgb(237, 246, 250) 40%, rgb(255, 255, 255)) repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(243, 243, 245)"
+        },
+        "progress": {
+          "x": 64,
+          "y": 756.90625,
+          "width": 1792,
+          "height": 6,
+          "bottom": 762.90625,
+          "visibleBottom": 762.90625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(255, 255, 255, 0.38) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "buttons": {
+          "x": 64,
+          "y": 774.90625,
+          "width": 1792,
+          "height": 116.5,
+          "bottom": 891.40625,
+          "visibleBottom": 891.40625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "title": {
+          "x": 64,
+          "y": 642.125,
+          "width": 1792,
+          "height": 37.5,
+          "bottom": 679.625,
+          "visibleBottom": 679.625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "subtitle": {
+          "x": 685,
+          "y": 528.703125,
+          "width": 550,
+          "height": 61.296875,
+          "bottom": 590,
+          "visibleBottom": 590,
+          "right": 1235,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0.55) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "tabs": null,
+        "card": {
+          "x": 64,
+          "y": 1006,
+          "width": 430,
+          "height": 352.875,
+          "bottom": 1358.875,
+          "visibleBottom": 1080,
+          "right": 494,
+          "opacity": "1",
+          "background": "rgb(32, 33, 38) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(243, 243, 245)"
+        },
+        "preview": {
+          "x": 64,
+          "y": 944,
+          "width": 1792,
+          "height": 802,
+          "bottom": 1746,
+          "visibleBottom": 1080,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "focused": "暂停",
+        "relatedCards": 12,
+        "visibleControls": true,
+        "expanded": false,
+        "controlsScroll": 0,
+        "media": {
+          "paused": false,
+          "time": 125
+        },
+        "input": {
+          "keydown": 25,
+          "keyup": 25,
+          "click": 0,
+          "mousedown": 0,
+          "mouseup": 0,
+          "mousemove": 0,
+          "untrusted": 0
+        },
+        "probe": {
+          "loads": 1,
+          "destroyed": 0,
+          "mimes": [
+            "application/dash+xml"
+          ],
+          "seeks": [],
+          "plays": 1,
+          "pauses": 0,
+          "menus": 0
+        }
+      }
+    },
+    {
+      "pass": true,
+      "variant": "shelf",
+      "costs": {
+        "TaskDuration": 204.97299999999998,
+        "ScriptDuration": 26.029,
+        "LayoutDuration": 12.171,
+        "RecalcStyleDuration": 14.973
+      },
+      "paints": 0,
+      "drawLayers": [
+        {
+          "width": 0,
+          "height": 0
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1144
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 82,
+          "height": 82
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        }
+      ],
+      "inputToTwoAnimationFramesMs": [
+        19.100000023841858,
+        28.5,
+        28.600000023841858,
+        29.200000047683716,
+        29.899999976158142,
+        28.399999976158142,
+        28.799999952316284,
+        29.799999952316284,
+        30.799999952316284,
+        30,
+        29.899999976158142,
+        28.200000047683716,
+        29.799999952316284,
+        31.700000047683716,
+        17.5,
+        15.600000023841858,
+        29.199999928474426,
+        28.899999976158142,
+        30.299999952316284,
+        27.899999976158142,
+        28.700000047683716,
+        29,
+        29.09999990463257,
+        28.90000009536743
+      ],
+      "limitation": "Synthetic media, modern desktop compositor. Two rAF callbacks do not measure physical display latency or TV GPU cost.",
+      "paint-shelf": {
+        "controls": {
+          "x": 0,
+          "y": 602.125,
+          "width": 1920,
+          "height": 1143.875,
+          "bottom": 1746,
+          "visibleBottom": 1080,
+          "right": 1920,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) linear-gradient(rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.1) 18%, rgba(0, 0, 0, 0.24) 40%, rgba(0, 0, 0, 0.4) 70%, rgba(0, 0, 0, 0.58) 100%) repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "video": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "bottom": 1080,
+          "visibleBottom": 1080,
+          "right": 1920,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) linear-gradient(125deg, rgb(255, 252, 228), rgb(237, 246, 250) 40%, rgb(255, 255, 255)) repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(243, 243, 245)"
+        },
+        "progress": {
+          "x": 64,
+          "y": 756.90625,
+          "width": 1792,
+          "height": 6,
+          "bottom": 762.90625,
+          "visibleBottom": 762.90625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(255, 255, 255, 0.38) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "buttons": {
+          "x": 64,
+          "y": 774.90625,
+          "width": 1792,
+          "height": 116.5,
+          "bottom": 891.40625,
+          "visibleBottom": 891.40625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "title": {
+          "x": 64,
+          "y": 642.125,
+          "width": 1792,
+          "height": 37.5,
+          "bottom": 679.625,
+          "visibleBottom": 679.625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "subtitle": {
+          "x": 685,
+          "y": 528.7030639648438,
+          "width": 550,
+          "height": 61.296875,
+          "bottom": 589.9999389648438,
+          "visibleBottom": 589.9999389648438,
+          "right": 1235,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0.55) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "tabs": null,
+        "card": {
+          "x": 64,
+          "y": 1006,
+          "width": 430,
+          "height": 352.875,
+          "bottom": 1358.875,
+          "visibleBottom": 1080,
+          "right": 494,
+          "opacity": "1",
+          "background": "rgb(32, 33, 38) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(243, 243, 245)"
+        },
+        "preview": {
+          "x": 64,
+          "y": 944,
+          "width": 1792,
+          "height": 802,
+          "bottom": 1746,
+          "visibleBottom": 1080,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "focused": "暂停",
+        "relatedCards": 12,
+        "visibleControls": true,
+        "expanded": false,
+        "controlsScroll": 0,
+        "media": {
+          "paused": false,
+          "time": 125
+        },
+        "input": {
+          "keydown": 25,
+          "keyup": 25,
+          "click": 0,
+          "mousedown": 0,
+          "mouseup": 0,
+          "mousemove": 0,
+          "untrusted": 0
+        },
+        "probe": {
+          "loads": 1,
+          "destroyed": 0,
+          "mimes": [
+            "application/dash+xml"
+          ],
+          "seeks": [],
+          "plays": 1,
+          "pauses": 0,
+          "menus": 0
+        }
+      }
+    },
+    {
+      "pass": true,
+      "variant": "motion",
+      "costs": {
+        "TaskDuration": 198.816,
+        "ScriptDuration": 28.783,
+        "LayoutDuration": 7.44,
+        "RecalcStyleDuration": 10.543999999999999
+      },
+      "paints": 0,
+      "drawLayers": [
+        {
+          "width": 0,
+          "height": 0
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1144
+        },
+        {
+          "width": 1812,
+          "height": 1127
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 82,
+          "height": 82
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        }
+      ],
+      "inputToTwoAnimationFramesMs": [
+        24.5,
+        22,
+        19.399999976158142,
+        19.600000023841858,
+        19.799999952316284,
+        16.799999952316284,
+        28.399999976158142,
+        29.700000047683716,
+        28.100000023841858,
+        26.600000023841858,
+        26.800000071525574,
+        30.5,
+        29.800000071525574,
+        29.100000023841858,
+        26.899999976158142,
+        27.700000047683716,
+        28.799999952316284,
+        30.100000023841858,
+        31.300000071525574,
+        30.600000023841858,
+        29.600000023841858,
+        28.600000023841858,
+        25.100000023841858,
+        24.700000047683716
+      ],
+      "limitation": "Synthetic media, modern desktop compositor. Two rAF callbacks do not measure physical display latency or TV GPU cost.",
+      "paint-motion": {
+        "controls": {
+          "x": 0,
+          "y": 602.125,
+          "width": 1920,
+          "height": 1143.875,
+          "bottom": 1746,
+          "visibleBottom": 1080,
+          "right": 1920,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) linear-gradient(rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.1) 18%, rgba(0, 0, 0, 0.24) 40%, rgba(0, 0, 0, 0.4) 70%, rgba(0, 0, 0, 0.58) 100%) repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "video": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "bottom": 1080,
+          "visibleBottom": 1080,
+          "right": 1920,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) linear-gradient(125deg, rgb(255, 252, 228), rgb(237, 246, 250) 40%, rgb(255, 255, 255)) repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(243, 243, 245)"
+        },
+        "progress": {
+          "x": 64,
+          "y": 756.90625,
+          "width": 1792,
+          "height": 6,
+          "bottom": 762.90625,
+          "visibleBottom": 762.90625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(255, 255, 255, 0.38) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "buttons": {
+          "x": 64,
+          "y": 774.90625,
+          "width": 1792,
+          "height": 116.5,
+          "bottom": 891.40625,
+          "visibleBottom": 891.40625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "title": {
+          "x": 64,
+          "y": 642.125,
+          "width": 1792,
+          "height": 37.5,
+          "bottom": 679.625,
+          "visibleBottom": 679.625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "subtitle": {
+          "x": 685,
+          "y": 528.703125,
+          "width": 550,
+          "height": 61.296875,
+          "bottom": 590,
+          "visibleBottom": 590,
+          "right": 1235,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0.55) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "tabs": null,
+        "card": {
+          "x": 64,
+          "y": 1006,
+          "width": 430,
+          "height": 352.875,
+          "bottom": 1358.875,
+          "visibleBottom": 1080,
+          "right": 494,
+          "opacity": "1",
+          "background": "rgb(32, 33, 38) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(243, 243, 245)"
+        },
+        "preview": {
+          "x": 64,
+          "y": 944,
+          "width": 1792,
+          "height": 802,
+          "bottom": 1746,
+          "visibleBottom": 1080,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "focused": "暂停",
+        "relatedCards": 12,
+        "visibleControls": true,
+        "expanded": false,
+        "controlsScroll": 0,
+        "media": {
+          "paused": false,
+          "time": 125
+        },
+        "input": {
+          "keydown": 25,
+          "keyup": 25,
+          "click": 0,
+          "mousedown": 0,
+          "mouseup": 0,
+          "mousemove": 0,
+          "untrusted": 0
+        },
+        "probe": {
+          "loads": 1,
+          "destroyed": 0,
+          "mimes": [
+            "application/dash+xml"
+          ],
+          "seeks": [],
+          "plays": 1,
+          "pauses": 0,
+          "menus": 0
+        }
+      }
+    },
+    {
+      "pass": true,
+      "variant": "shadows",
+      "costs": {
+        "TaskDuration": 278.621,
+        "ScriptDuration": 36.365,
+        "LayoutDuration": 11.314,
+        "RecalcStyleDuration": 24.682
+      },
+      "paints": 0,
+      "drawLayers": [
+        {
+          "width": 0,
+          "height": 0
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1144
+        },
+        {
+          "width": 1812,
+          "height": 1127
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 82,
+          "height": 82
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        }
+      ],
+      "inputToTwoAnimationFramesMs": [
+        13.100000023841858,
+        26.100000023841858,
+        26,
+        24.100000023841858,
+        20.800000071525574,
+        22.699999928474426,
+        21.899999976158142,
+        19.299999952316284,
+        14.100000023841858,
+        27.699999928474426,
+        26.399999976158142,
+        28.200000047683716,
+        24.899999976158142,
+        26.399999976158142,
+        26.699999928474426,
+        28.299999952316284,
+        27.100000023841858,
+        29.100000023841858,
+        29.40000009536743,
+        27,
+        27.59999990463257,
+        28.600000023841858,
+        29.600000023841858,
+        29.200000047683716
+      ],
+      "limitation": "Synthetic media, modern desktop compositor. Two rAF callbacks do not measure physical display latency or TV GPU cost.",
+      "paint-shadows": {
+        "controls": {
+          "x": 0,
+          "y": 602.125,
+          "width": 1920,
+          "height": 1143.875,
+          "bottom": 1746,
+          "visibleBottom": 1080,
+          "right": 1920,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) linear-gradient(rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.1) 18%, rgba(0, 0, 0, 0.24) 40%, rgba(0, 0, 0, 0.4) 70%, rgba(0, 0, 0, 0.58) 100%) repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "video": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "bottom": 1080,
+          "visibleBottom": 1080,
+          "right": 1920,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) linear-gradient(125deg, rgb(255, 252, 228), rgb(237, 246, 250) 40%, rgb(255, 255, 255)) repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(243, 243, 245)"
+        },
+        "progress": {
+          "x": 64,
+          "y": 756.90625,
+          "width": 1792,
+          "height": 6,
+          "bottom": 762.90625,
+          "visibleBottom": 762.90625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(255, 255, 255, 0.38) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "buttons": {
+          "x": 64,
+          "y": 774.90625,
+          "width": 1792,
+          "height": 116.5,
+          "bottom": 891.40625,
+          "visibleBottom": 891.40625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "title": {
+          "x": 64,
+          "y": 642.125,
+          "width": 1792,
+          "height": 37.5,
+          "bottom": 679.625,
+          "visibleBottom": 679.625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "subtitle": {
+          "x": 685,
+          "y": 528.703125,
+          "width": 550,
+          "height": 61.296875,
+          "bottom": 590,
+          "visibleBottom": 590,
+          "right": 1235,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0.55) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "tabs": null,
+        "card": {
+          "x": 64,
+          "y": 1006,
+          "width": 430,
+          "height": 352.875,
+          "bottom": 1358.875,
+          "visibleBottom": 1080,
+          "right": 494,
+          "opacity": "1",
+          "background": "rgb(32, 33, 38) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(243, 243, 245)"
+        },
+        "preview": {
+          "x": 64,
+          "y": 944,
+          "width": 1792,
+          "height": 802,
+          "bottom": 1746,
+          "visibleBottom": 1080,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "focused": "暂停",
+        "relatedCards": 12,
+        "visibleControls": true,
+        "expanded": false,
+        "controlsScroll": 0,
+        "media": {
+          "paused": false,
+          "time": 125
+        },
+        "input": {
+          "keydown": 25,
+          "keyup": 25,
+          "click": 0,
+          "mousedown": 0,
+          "mouseup": 0,
+          "mousemove": 0,
+          "untrusted": 0
+        },
+        "probe": {
+          "loads": 1,
+          "destroyed": 0,
+          "mimes": [
+            "application/dash+xml"
+          ],
+          "seeks": [],
+          "plays": 1,
+          "pauses": 0,
+          "menus": 0
+        }
+      }
+    },
+    {
+      "pass": true,
+      "variant": "baseline",
+      "costs": {
+        "TaskDuration": 266.84799999999996,
+        "ScriptDuration": 31.903000000000002,
+        "LayoutDuration": 13.156999999999998,
+        "RecalcStyleDuration": 14.259
+      },
+      "paints": 0,
+      "drawLayers": [
+        {
+          "width": 0,
+          "height": 0
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1144
+        },
+        {
+          "width": 1812,
+          "height": 1127
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 82,
+          "height": 82
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        },
+        {
+          "width": 72,
+          "height": 72
+        }
+      ],
+      "inputToTwoAnimationFramesMs": [
+        21.299999952316284,
+        18,
+        19,
+        16.800000071525574,
+        33.200000047683716,
+        27.5,
+        27.90000009536743,
+        26.200000047683716,
+        26.59999990463257,
+        29.100000023841858,
+        29.200000047683716,
+        28.5,
+        29.5,
+        29,
+        28.299999952316284,
+        28.800000071525574,
+        28.699999928474426,
+        27.699999928474426,
+        27.899999976158142,
+        28.5,
+        30,
+        27.899999976158142,
+        26.5,
+        27.700000047683716
+      ],
+      "limitation": "Synthetic media, modern desktop compositor. Two rAF callbacks do not measure physical display latency or TV GPU cost.",
+      "paint-baseline": {
+        "controls": {
+          "x": 0,
+          "y": 602.125,
+          "width": 1920,
+          "height": 1143.875,
+          "bottom": 1746,
+          "visibleBottom": 1080,
+          "right": 1920,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) linear-gradient(rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.1) 18%, rgba(0, 0, 0, 0.24) 40%, rgba(0, 0, 0, 0.4) 70%, rgba(0, 0, 0, 0.58) 100%) repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "video": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "bottom": 1080,
+          "visibleBottom": 1080,
+          "right": 1920,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) linear-gradient(125deg, rgb(255, 252, 228), rgb(237, 246, 250) 40%, rgb(255, 255, 255)) repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(243, 243, 245)"
+        },
+        "progress": {
+          "x": 64,
+          "y": 756.90625,
+          "width": 1792,
+          "height": 6,
+          "bottom": 762.90625,
+          "visibleBottom": 762.90625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(255, 255, 255, 0.38) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "buttons": {
+          "x": 64,
+          "y": 774.90625,
+          "width": 1792,
+          "height": 116.5,
+          "bottom": 891.40625,
+          "visibleBottom": 891.40625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "title": {
+          "x": 64,
+          "y": 642.125,
+          "width": 1792,
+          "height": 37.5,
+          "bottom": 679.625,
+          "visibleBottom": 679.625,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "subtitle": {
+          "x": 685,
+          "y": 528.7030639648438,
+          "width": 550,
+          "height": 61.296875,
+          "bottom": 589.9999389648438,
+          "visibleBottom": 589.9999389648438,
+          "right": 1235,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0.55) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "tabs": null,
+        "card": {
+          "x": 64,
+          "y": 1006,
+          "width": 430,
+          "height": 352.875,
+          "bottom": 1358.875,
+          "visibleBottom": 1080,
+          "right": 494,
+          "opacity": "1",
+          "background": "rgb(32, 33, 38) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(243, 243, 245)"
+        },
+        "preview": {
+          "x": 64,
+          "y": 944,
+          "width": 1792,
+          "height": 802,
+          "bottom": 1746,
+          "visibleBottom": 1080,
+          "right": 1856,
+          "opacity": "1",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "color": "rgb(255, 255, 255)"
+        },
+        "focused": "暂停",
+        "relatedCards": 12,
+        "visibleControls": true,
+        "expanded": false,
+        "controlsScroll": 0,
+        "media": {
+          "paused": false,
+          "time": 125
+        },
+        "input": {
+          "keydown": 25,
+          "keyup": 25,
+          "click": 0,
+          "mousedown": 0,
+          "mouseup": 0,
+          "mousemove": 0,
+          "untrusted": 0
+        },
+        "probe": {
+          "loads": 1,
+          "destroyed": 0,
+          "mimes": [
+            "application/dash+xml"
+          ],
+          "seeks": [],
+          "plays": 1,
+          "pauses": 0,
+          "menus": 0
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Desktop compositor does not reproduce old webOS GPU/driver behavior.",
+    "Two requestAnimationFrame callbacks are a scheduling proxy, not physical display latency.",
+    "layerPainted events were not emitted; zero events is not zero repaint work.",
+    "Layer sizes are diagnostic geometry, not measured VRAM.",
+    "Hiding shelf is diagnostic only and is not shipped."
+  ]
+}

@@ -28,11 +28,8 @@
     rgba(0, 0, 0, .40) 70%,
     rgba(0, 0, 0, .58) 100%);
   color: #fff;
-  /* A crisp one-pixel dark edge separates white glyphs from bright footage.
-     Small directional shadows preserve the fill, unlike an inset text stroke;
-     no backdrop blur or extra opaque panel is needed. */
-  text-shadow: -1px 0 0 rgba(0, 0, 0, .9), 1px 0 0 rgba(0, 0, 0, .9),
-    0 -1px 0 rgba(0, 0, 0, .9), 0 1px 0 #000, 0 2px 3px #000;
+  /* One dark text edge keeps metadata legible without five shadow passes. */
+  text-shadow: 0 1px 2px #000;
 }
 
 /* Keep the same card geometry above/below the screen edge. Transform-only
@@ -207,11 +204,11 @@
   background: rgba(0, 0, 0, .28);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22);
   white-space: nowrap;
-  /* Switch contrast immediately; only scale interpolates during focus moves. */
-  transition: transform .14s ease-out;
+  /* Focus changes contrast immediately, without per-key scaling/raster work. */
+  transition: none;
 }
 
-.player-controls-vod:not(.hidden) .player-control-icon { will-change: transform; }
+.player-controls-vod .player-control-icon { will-change: auto; }
 
 .player-controls-vod .player-control-icon > svg:not(.like-ring) {
   flex: none;
@@ -258,7 +255,8 @@
 }
 
 .player-controls-vod .player-control-icon > svg:not(.like-ring) {
-  filter: drop-shadow(0 1px 1px #000) drop-shadow(0 0 2px rgba(0, 0, 0, .9));
+  /* The dark icon disc supplies contrast; avoid SVG filter surfaces. */
+  filter: none;
 }
 
 .player-controls-vod .player-control.focused .player-control-icon > svg:not(.like-ring) {
@@ -278,12 +276,12 @@
 }
 
 .player-controls-vod .player-control.focused .player-control-icon {
-  --control-rest-scale: 1.06;
+  --control-rest-scale: 1;
   background: var(--tv-focus);
   color: var(--tv-rail);
   text-shadow: none;
   box-shadow: 0 0 0 3px var(--tv-focus), 0 0 0 5px rgba(0, 0, 0, .82);
-  transform: scale(1.06);
+  transform: none;
 }
 
 /* Reuse the app palette for both focus and confirmed account state. */
@@ -506,8 +504,8 @@
   .player-controls-vod.with-comment-rail .player-control[data-control="play"] { flex-basis: 72px; width: 72px; }
   .player-controls-vod.with-comment-rail .player-control[data-control="play"] .player-control-icon { width: 72px; height: 72px; }
   .player-controls-vod.with-comment-rail .player-control.focused .player-control-icon {
-    --control-rest-scale: 1.04;
-    transform: scale(1.04);
+    --control-rest-scale: 1;
+    transform: none;
   }
   .player-controls-vod.with-comment-rail .player-control[data-feedback="pending"] .player-control-icon { transform: scale(.96); }
   .player-controls-vod.with-comment-rail .player-control-status { width: 24px; height: 24px; font-size: 16px; }

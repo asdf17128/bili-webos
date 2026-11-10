@@ -415,6 +415,67 @@ await run('rapid seek taps stay ten seconds and Back cancels pending preview', {
   assert.equal((f.calls.spriteRequests||[]).length,sprites,'cancelled preview does not fetch later');
 });
 
+// Opt-in rendering experiment: diagnostic variants never alter shipped UI.
+if (process.env.CONTROLS_PAINT_COMPARE) {
+  const variants = {
+    baseline: '',
+    shadows: `.player-controls.player-controls-vod { text-shadow: 0 1px 2px #000; }
+      .player-controls-vod .player-control-icon > svg:not(.like-ring) { filter: none; }`,
+    motion: `.player-controls-vod .player-control-icon { transition: none; will-change: auto; }
+      .player-controls-vod .player-control.focused .player-control-icon { transform: none; }`,
+    shelf: `.player-controls-vod:not(.recommendations-open) .player-related-panel { visibility: hidden; }`,
+  };
+  for (const variant of ['baseline','shadows','motion','shelf','shelf','motion','shadows','baseline']) {
+    await run('paint comparison '+variant, {}, async f => {
+      const page=f.page, cdp=await f.context.newCDPSession(page);
+      await openControls(page);
+      if(variants[variant]) await page.addStyleTag({content:variants[variant]});
+      await cdp.send('Emulation.setCPUThrottlingRate',{rate:6});
+      let layers=[], paints=0;
+      cdp.on('LayerTree.layerTreeDidChange',e=>{layers=e.layers||[];});
+      cdp.on('LayerTree.layerPainted',()=>{paints++;});
+      await cdp.send('LayerTree.enable'); await cdp.send('Performance.enable');
+      await page.waitForTimeout(500);
+      await page.evaluate(()=>{
+        window.__paintInputs=[];
+        document.addEventListener('keydown',e=>{
+          if(e.key!=='ArrowRight')return;
+          const at=performance.now();
+          requestAnimationFrame(()=>requestAnimationFrame(()=>window.__paintInputs.push(performance.now()-at)));
+        },true);
+      });
+      const metrics=async()=>Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map(m=>[m.name,m.value]));
+      const start=await metrics();paints=0;
+      const controls=await page.locator('.player-control:not(:disabled)').evaluateAll(ns=>ns.map(n=>n.dataset.control));
+      let index=controls.indexOf(await page.locator('.player-control.focused').getAttribute('data-control'));
+      for(let i=0;i<24;i++) {
+        await page.keyboard.press('ArrowRight'); index=(index+1)%controls.length;
+        await page.waitForTimeout(160);
+        assert.equal(await page.locator('.player-control.focused').getAttribute('data-control'),controls[index]);
+      }
+      const end=await metrics(), costs={};
+      for(const k of ['TaskDuration','ScriptDuration','LayoutDuration','RecalcStyleDuration'])costs[k]=(end[k]-start[k])*1000;
+      f.checkpoints={variant,costs,paints,drawLayers:layers.filter(l=>l.drawsContent).map(l=>({width:l.width,height:l.height})),
+        inputToTwoAnimationFramesMs:await page.evaluate(()=>window.__paintInputs),
+        limitation:'Synthetic media, modern desktop compositor. Two rAF callbacks do not measure physical display latency or TV GPU cost.'};
+      await shot(f,'paint-'+variant);
+    });
+  }
+}
+
+await run('lightweight focus keeps contrast without scaling or SVG filters', {}, async f => {
+  const page=f.page;await openControls(page);
+  const before=await page.locator('.player-control.focused').getAttribute('data-control');
+  await page.keyboard.press('ArrowRight');
+  assert.notEqual(await page.locator('.player-control.focused').getAttribute('data-control'),before);
+  const style=await page.locator('.player-control.focused .player-control-icon').evaluate(el=>{
+    const css=getComputedStyle(el);return {transform:css.transform,transition:css.transitionDuration,shadow:css.boxShadow,background:css.backgroundColor,filter:getComputedStyle(el.querySelector('svg')).filter,willChange:css.willChange};
+  });
+  assert.equal(style.transform,'none');assert.equal(style.transition,'0s');assert.equal(style.filter,'none');assert.equal(style.willChange,'auto');
+  assert.notEqual(style.shadow,'none');assert.notEqual(style.background,'rgba(0, 0, 0, 0)');
+  await shot(f,'lightweight-focused-controls');
+});
+
 await run('performance budget continuous controls', {}, async f => {
   const page=f.page, cdp=await f.context.newCDPSession(page);
   await openControls(page);

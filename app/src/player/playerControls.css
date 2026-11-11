@@ -37,7 +37,9 @@
 .player-controls-vod.has-recommendations:not(.recommendations-open) {
   transform: translateY(calc(var(--shelf-height) - var(--preview-height)));
 }
-.player-controls-vod:not(.hidden) { will-change: transform; }
+/* Let the transition promote the panel only while it moves. Keeping the
+   entire offscreen shelf promoted also costs a large surface during playback. */
+.player-controls-vod { will-change: auto; }
 
 .player-controls-vod .player-control-deck {
   display: block;

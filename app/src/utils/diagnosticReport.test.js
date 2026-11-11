@@ -96,3 +96,8 @@ test('control scheduling diagnostics only export bounded numeric samples',()=>{
  assert.match(text,/controls-playing: keys=120 stale=2 coalesced=5 ageMax=301 frameMax=480 frames=40/);
  assert.match(text,/controls-paused: keys=4 frameMax=16/);assert.doesNotMatch(text,/PRIVATE|Infinity|url=/);
 });
+
+test('paired scheduling and handler metrics stay numeric and bounded',()=>{
+ const text=diagnosticReportText({...base,controls:{playing:{keys:2,timerMax:1200,timers:2,handlerMax:3,frameMax:1400},paused:{timerMax:Infinity,timers:999,handlerMax:-1}}});
+ assert.match(text,/timerMax=1200 timers=2 handlerMax=3/);assert.doesNotMatch(text,/Infinity|timers=999|handlerMax=-1/);
+});

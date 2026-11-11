@@ -110,7 +110,7 @@ export function buildDiagnosticReport({ version: appVersion, chromeMajor, nodeVe
     for (const mode of ['playing', 'paused']) {
       if (!controls[mode] || typeof controls[mode] !== 'object') continue;
       const row = {};
-      for (const key of ['keys', 'stale', 'coalesced', 'ageMax', 'frameMax', 'frames']) {
+      for (const key of ['keys', 'stale', 'coalesced', 'ageMax', 'frameMax', 'frames', 'timerMax', 'timers', 'handlerMax']) {
         const value = number(controls[mode][key], 0, key.endsWith('Max') ? 60000 : 120);
         if (value !== null) row[key] = value;
       }

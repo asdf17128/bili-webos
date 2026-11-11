@@ -1,0 +1,302 @@
+{
+  "baselineCommit": "d24167c",
+  "sourcesStable": true,
+  "sources": {
+    "app/src/player/controlTiming.js": "10c7859b04c7bd4daea5cac2574bf801af1d6d051a35b2aaacbfc998bbb4786b",
+    "app/src/utils/diagnosticReport.js": "7c8d5b2cf854a51b7286e1217c8c01558279d5821989635197490e0ff018af2e",
+    "app/src/components/DiagPanel.jsx": "a794d313dd50f6512f9663342462581ccde3e42673a6b19cd54288085c2f7c86",
+    "app/src/player/progressReporter.js": "4deb976ff5b1b1af45b8c01f6e618dedea2e0bbe25688ad5102780cc4e681c42",
+    "app/src/player/remoteRepeat.js": "1eac5ba930035e7de347432f3fd8064d0b8d163f7fae6419cfb651feaff62008",
+    "app/src/player/PlayerPrimaryControls.jsx": "5c1e5bd70262cbc6bf37e2bdf16d11340580d3aaf764a4ac171f074f4641ca73",
+    "app/src/player/controlFocus.js": "f1f5bdc7d7ad584db964990ae23e8ba7fcf2c566be0cf08527a21eb87af06a5c",
+    "app/src/player/PlayerTimeline.jsx": "46a6b21ab6d008ec8c589d76e98bb1b2e42a83dcf5f234c9cc1b8090e589d9a3",
+    "app/src/player/PlayerRecommendationGrid.jsx": "a3d0bd140305828f27bbae1acd723eb45c21ded9f0de94b464283e1f3899d619",
+    "app/src/player/TimedDanmakuLayer.jsx": "866b0cf9f7b51c97c38cfdf1c0bcc911761bd4926875d185f649247bac8cee0e",
+    "app/src/player/useMediaClock.js": "bfb45dc29505389b9912c9ca785a4142929c20844ee08f04f65ab832f246b172",
+    "app/src/player/PlayerPage.jsx": "eeb36536e9433ebcd8d194a39fc456c3ae4ddeea8ac037257492747b7e5991b5",
+    "app/src/player/adjacentVideo.js": "f86a1fdfc7df91ce7bc524887d0030460c9d479e72cb5d96fd596be7edbe7475",
+    "app/src/player/SubtitleLayer.jsx": "130b03b27e3bad26493978ccc298afe98f5c8b508e955ec427fc68ddf63119f5",
+    "app/src/player/playerControls.css": "d10cef16b1a69e6a3819186e88be984c965046ab17287632cf03c0219b60acba",
+    "app/src/player/PlayerMoreControls.jsx": "868946a2c0c1160b6036718ab8a1a296b5bff1291cf1f6f320dd13daf131816e",
+    "app/src/player/playerMoreControls.css": "cee32c7ef0624ccb97d4b8123e2ce75f8e0c49a72eb7e0d78fe92ccd0491ac9f",
+    "app/src/components/Icon.jsx": "e6ed7ef4fdd9f26b4cd161c0e66589fa72deff376c102008a3a24b2e08deb2d4",
+    "app/src/i18n/en.js": "8201bc7597acc84bfb61cbef442622b70fbc5568aeb481b73e052c3a476d43e8",
+    "app/src/i18n/es.js": "73906886611d15c48420874130fc091a679e096a98c45f4d7cdef4513b6ce6ea",
+    "app/src/styles.css": "af2e9f38471c0f69626b4bfa779c4a0d729faa52ec6a9680042562987401b785",
+    "app/src/tv-design.css": "72589f3934f2aa02ec67cb7a13e344da5e5c4a87c6fe3bfc4f2c521e17041433",
+    "app/src/hooks/useAuthorFollowers.js": "3fc6805b08055604da1259cab330c34ac4344cd05e652f4c80b702eedd6e482b",
+    "app/src/utils/authorFollowers.js": "aed07affbf7392fc6e3fbbc99fdee2af39982b241be98295db7b8ea376c203f3"
+  },
+  "scenario": "Synthetic playing media, 6x CPU throttle, 24 trusted arrow taps per run; baseline/panel/panel/baseline",
+  "results": [
+    {
+      "variant": "baseline",
+      "costs": {
+        "TaskDuration": 179.90399999999997,
+        "ScriptDuration": 26.644,
+        "LayoutDuration": 11.394,
+        "RecalcStyleDuration": 4.497
+      },
+      "drawLayers": [
+        {
+          "width": 0,
+          "height": 0
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1144
+        },
+        {
+          "width": 1812,
+          "height": 1127
+        },
+        {
+          "width": 1792,
+          "height": 25
+        },
+        {
+          "width": 1792,
+          "height": 6
+        },
+        {
+          "width": 1792,
+          "height": 117
+        }
+      ],
+      "inputToTwoAnimationFramesMs": [
+        21.700000047683716,
+        22.399999976158142,
+        21.699999928474426,
+        22.100000023841858,
+        24.100000023841858,
+        22.299999952316284,
+        22.200000047683716,
+        16.799999952316284,
+        29.800000071525574,
+        25.5,
+        26.299999952316284,
+        24.899999976158142,
+        24,
+        24.399999976158142,
+        24.40000009536743,
+        26.100000023841858,
+        24.800000071525574,
+        28,
+        24.700000047683716,
+        24.699999928474426,
+        27.600000023841858,
+        26.899999976158142,
+        25.700000047683716,
+        27.800000071525574
+      ]
+    },
+    {
+      "variant": "panel",
+      "costs": {
+        "TaskDuration": 163.96,
+        "ScriptDuration": 27.252,
+        "LayoutDuration": 8.17,
+        "RecalcStyleDuration": 8.705
+      },
+      "drawLayers": [
+        {
+          "width": 0,
+          "height": 0
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1746
+        },
+        {
+          "width": 1812,
+          "height": 1127
+        },
+        {
+          "width": 1792,
+          "height": 25
+        },
+        {
+          "width": 1792,
+          "height": 6
+        },
+        {
+          "width": 1792,
+          "height": 117
+        }
+      ],
+      "inputToTwoAnimationFramesMs": [
+        18.800000071525574,
+        31.09999990463257,
+        16,
+        30.399999976158142,
+        31,
+        29.799999952316284,
+        17.399999976158142,
+        18.09999990463257,
+        15.800000071525574,
+        16.899999976158142,
+        16.199999928474426,
+        31.399999976158142,
+        16.899999976158142,
+        29.299999952316284,
+        16.300000071525574,
+        19.100000023841858,
+        19.899999976158142,
+        22.299999952316284,
+        22.699999928474426,
+        22.799999952316284,
+        25.200000047683716,
+        26.100000023841858,
+        26.899999976158142,
+        28
+      ]
+    },
+    {
+      "variant": "panel",
+      "costs": {
+        "TaskDuration": 172.76200000000003,
+        "ScriptDuration": 24.814,
+        "LayoutDuration": 7.505999999999999,
+        "RecalcStyleDuration": 6.680000000000001
+      },
+      "drawLayers": [
+        {
+          "width": 0,
+          "height": 0
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1746
+        },
+        {
+          "width": 1812,
+          "height": 1127
+        },
+        {
+          "width": 1792,
+          "height": 25
+        },
+        {
+          "width": 1792,
+          "height": 6
+        },
+        {
+          "width": 1792,
+          "height": 117
+        }
+      ],
+      "inputToTwoAnimationFramesMs": [
+        26.799999952316284,
+        27.5,
+        28.200000047683716,
+        30.199999928474426,
+        29,
+        27.600000023841858,
+        27.700000047683716,
+        25.300000071525574,
+        26.800000071525574,
+        25.899999976158142,
+        30.5,
+        30.200000047683716,
+        31.200000047683716,
+        31.799999952316284,
+        16.09999990463257,
+        16.800000071525574,
+        31.299999952316284,
+        32,
+        14.399999976158142,
+        26.399999976158142,
+        28.300000071525574,
+        28.700000047683716,
+        30,
+        30.700000047683716
+      ]
+    },
+    {
+      "variant": "baseline",
+      "costs": {
+        "TaskDuration": 165.59799999999998,
+        "ScriptDuration": 27.282999999999998,
+        "LayoutDuration": 10.212,
+        "RecalcStyleDuration": 6.77
+      },
+      "drawLayers": [
+        {
+          "width": 0,
+          "height": 0
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "width": 1920,
+          "height": 1144
+        },
+        {
+          "width": 1812,
+          "height": 1127
+        },
+        {
+          "width": 1792,
+          "height": 25
+        },
+        {
+          "width": 1792,
+          "height": 6
+        },
+        {
+          "width": 1792,
+          "height": 117
+        }
+      ],
+      "inputToTwoAnimationFramesMs": [
+        31.5,
+        28.600000023841858,
+        30.200000047683716,
+        28.899999976158142,
+        26.700000047683716,
+        26.59999990463257,
+        27,
+        30.100000023841858,
+        22.800000071525574,
+        21.100000023841858,
+        23.09999990463257,
+        25.399999976158142,
+        27.299999952316284,
+        28.799999952316284,
+        29.799999952316284,
+        30.799999952316284,
+        16.200000047683716,
+        31.59999990463257,
+        16,
+        15.800000071525574,
+        31.299999952316284,
+        15.300000071525574,
+        29.299999952316284,
+        26.799999952316284
+      ]
+    }
+  ],
+  "limits": "Modern desktop compositor only; layer dimensions are not measured GPU memory and timing is not physical TV latency. No stable large CPU reduction observed."
+}

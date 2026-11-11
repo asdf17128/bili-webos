@@ -419,13 +419,14 @@ await run('rapid seek taps stay ten seconds and Back cancels pending preview', {
 if (process.env.CONTROLS_PAINT_COMPARE) {
   const variants = {
     baseline: '',
+    panel: `.player-controls.player-controls-vod { will-change: auto; }`,
     shadows: `.player-controls.player-controls-vod { text-shadow: 0 1px 2px #000; }
       .player-controls-vod .player-control-icon > svg:not(.like-ring) { filter: none; }`,
     motion: `.player-controls-vod .player-control-icon { transition: none; will-change: auto; }
       .player-controls-vod .player-control.focused .player-control-icon { transform: none; }`,
     shelf: `.player-controls-vod:not(.recommendations-open) .player-related-panel { visibility: hidden; }`,
   };
-  for (const variant of ['baseline','shadows','motion','shelf','shelf','motion','shadows','baseline']) {
+  for (const variant of (process.env.CONTROLS_PAINT_VARIANTS || 'baseline,shadows,motion,shelf,shelf,motion,shadows,baseline').split(',')) {
     await run('paint comparison '+variant, {}, async f => {
       const page=f.page, cdp=await f.context.newCDPSession(page);
       await openControls(page);
@@ -511,6 +512,8 @@ await run('control timing separates playing and paused input without private dat
   const samples=await page.evaluate(async()=> (await import('/src/player/controlTiming.js')).controlTiming.snapshot());
   assert.ok(samples.playing.keys>=1);assert.ok(samples.paused.keys>=1);
   assert.ok(samples.playing.frames>=1&&samples.paused.frames>=1);
+  assert.ok(samples.playing.timers>=1&&samples.paused.timers>=1);
+  assert.ok(samples.playing.handlerMax>=0&&samples.paused.handlerMax>=0);
   for(const row of Object.values(samples)) assert.ok(Object.values(row).every(Number.isFinite));
   f.checkpoints={controlTiming:samples};
 });
@@ -524,6 +527,22 @@ await run('compact danmaku spacing persists and restores remote navigation', {},
  await page.keyboard.press('Escape');await openSettings(page,'danmakuSettings');await page.keyboard.press('Enter');
  assert.match(await page.locator('.dm-setting-row').filter({hasText:'弹幕行间距'}).textContent(),/紧凑/);
  await page.keyboard.press('Escape');
+});
+
+await run('scheduling diagnostic detects queued work separately from handler time', {}, async f=>{
+ const page=f.page;await openControls(page);await page.waitForTimeout(500);
+ await page.evaluate(async()=>{
+  (await import('/src/player/controlTiming.js')).controlTiming.reset();
+  window.addEventListener('keydown',()=>{
+    Promise.resolve().then(()=>{const until=performance.now()+100;while(performance.now()<until){};});
+  },{once:true});
+ });
+ await page.keyboard.press('ArrowRight');await page.waitForTimeout(250);
+ const sample=await page.evaluate(async()=>(await import('/src/player/controlTiming.js')).controlTiming.snapshot().playing);
+ assert.ok(sample.timerMax>=80,'timer sees deliberately queued main-thread work');
+ assert.ok(sample.frameMax>=80,'frame sees deliberately queued main-thread work');
+ assert.ok(sample.handlerMax<sample.timerMax,'queued microtask is not attributed to synchronous key handler');
+ f.checkpoints={syntheticBlockMs:100,sample};
 });
 
 await run('performance budget continuous controls', {}, async f => {

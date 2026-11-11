@@ -2361,7 +2361,7 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
   // ========== Keyboard handler ==========
   useEffect(() => {
     if (showDanmakuSettings) return;
-    const handler = (e) => {
+    const handleKey = (e) => {
       const focusIdx = controlFocus.getSnapshot();
       const mediaAction = mediaKeyAction(e);
       if (mediaAction) {
@@ -2759,6 +2759,13 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
       return false;
     };
 
+    const handler = e => {
+      const measured = ['none', 'scrub', 'controls'].includes(focusArea) && (e.key === 'ArrowLeft' || e.key === 'ArrowRight');
+      if (!measured) return handleKey(e);
+      const started = performance.now(), paused = !!videoRef.current?.paused;
+      try { return handleKey(e); }
+      finally { controlTiming.handled(performance.now() - started, paused); }
+    };
     setCustomKeyHandler(handler);
     return () => setCustomKeyHandler(null);
   }, [showPlayerSettings, focusedSettingId, closePlayerSettings, returnToSettings, endLikeHold, showDanmakuSettings, focusArea, focusIdx, qualities, showControls, showQuality, showRelated, showSubPanel, showSpeedPanel, applySpeed, ended, endNextIn, relatedVideos, partsList, isMultiP, panelTab, upVideos, comments, loadUpVideos, loadComments, onBack, onPlayNext, openControls, hideControlsLater, openRelatedPanel, closeRelatedPanel, endRelHold, changeQuality, scrubBy, commitScrub, clearScrub, subTracks, subLan, subOptions, applySubOption, fetchSubBody, pressControl, startLikeHold, pressComment, showCommentRail, recoverable, errorAction, retryPlayback]);

@@ -13,7 +13,7 @@ const baseline = process.argv.includes('--baseline');
 const output = process.env.CONTROLS_OUTPUT || '/tmp/bili-player-controls';
 await mkdir(output, { recursive: true });
 const reports = [];
-const sourcePaths = ['app/src/player/remoteRepeat.js', 'app/src/player/PlayerPrimaryControls.jsx', 'app/src/player/controlFocus.js', 'app/src/player/PlayerTimeline.jsx', 'app/src/player/PlayerRecommendationGrid.jsx', 'app/src/player/TimedDanmakuLayer.jsx', 'app/src/player/useMediaClock.js', 'app/src/player/PlayerPage.jsx', 'app/src/player/adjacentVideo.js', 'app/src/player/SubtitleLayer.jsx', 'app/src/player/playerControls.css', 'app/src/player/PlayerMoreControls.jsx', 'app/src/player/playerMoreControls.css', 'app/src/components/Icon.jsx', 'app/src/i18n/en.js', 'app/src/i18n/es.js', 'app/src/styles.css', 'app/src/tv-design.css', 'app/src/hooks/useAuthorFollowers.js', 'app/src/utils/authorFollowers.js'];
+const sourcePaths = ['app/src/player/controlTiming.js', 'app/src/utils/diagnosticReport.js', 'app/src/components/DiagPanel.jsx', 'app/src/player/progressReporter.js', 'app/src/player/remoteRepeat.js', 'app/src/player/PlayerPrimaryControls.jsx', 'app/src/player/controlFocus.js', 'app/src/player/PlayerTimeline.jsx', 'app/src/player/PlayerRecommendationGrid.jsx', 'app/src/player/TimedDanmakuLayer.jsx', 'app/src/player/useMediaClock.js', 'app/src/player/PlayerPage.jsx', 'app/src/player/adjacentVideo.js', 'app/src/player/SubtitleLayer.jsx', 'app/src/player/playerControls.css', 'app/src/player/PlayerMoreControls.jsx', 'app/src/player/playerMoreControls.css', 'app/src/components/Icon.jsx', 'app/src/i18n/en.js', 'app/src/i18n/es.js', 'app/src/styles.css', 'app/src/tv-design.css', 'app/src/hooks/useAuthorFollowers.js', 'app/src/utils/authorFollowers.js'];
 const hashSources = () => Promise.all(sourcePaths.map(async path => [path, createHash('sha256').update(await readFile(path)).digest('hex')])).then(Object.fromEntries);
 const sources = await hashSources();
 if (process.env.CONTROLS_ANALYZE_ONLY) {
@@ -474,6 +474,45 @@ await run('lightweight focus keeps contrast without scaling or SVG filters', {},
   assert.equal(style.transform,'none');assert.equal(style.transition,'0s');assert.equal(style.filter,'none');assert.equal(style.willChange,'auto');
   assert.notEqual(style.shadow,'none');assert.notEqual(style.background,'rgba(0, 0, 0, 0)');
   await shot(f,'lightweight-focused-controls');
+});
+
+await run('playing timeline avoids width layout and paused clock stays idle', {performance:true}, async f=>{
+  const page=f.page;await openControls(page);await page.waitForTimeout(1200);
+  await page.evaluate(()=>{
+    window.__timelineStyles=[];
+    const el=document.querySelector('.player-progress-fill');
+    window.__timelineObserver=new MutationObserver(()=>window.__timelineStyles.push({width:el.style.width,transform:el.style.transform}));
+    window.__timelineObserver.observe(el,{attributes:true,attributeFilter:['style']});
+    window.__renderCounts={};
+  });
+  await page.waitForTimeout(2200);
+  const moving=await page.evaluate(()=>({styles:window.__timelineStyles,counts:window.__renderCounts}));
+  assert.ok(moving.styles.length>=1,'playing progress advances');
+  assert.ok(moving.styles.every(x=>x.width==='100%'&&x.transform.startsWith('scaleX(')),'no per-tick width changes');
+  assert.ok(moving.counts.PlayerTimeline>=1&&moving.counts.PlayerTimeline<=3,'timeline renders at integer-second precision');
+  assert.equal(moving.counts.PlayerPage||0,0,'playback clock does not redraw player');
+  await page.keyboard.press('Enter');await page.waitForTimeout(150);
+  const paused=await page.locator('.player-time').textContent();
+  await page.evaluate(()=>{window.__renderCounts={};});await page.waitForTimeout(1200);
+  assert.equal(await page.locator('.player-time').textContent(),paused);
+  assert.equal(await page.evaluate(()=>window.__renderCounts.PlayerTimeline||0),0,'paused timeline has no polling renders');
+  await page.evaluate(()=>{const v=document.querySelector('video');v.currentTime=75;v.dispatchEvent(new Event('seeked'));});
+  await page.waitForFunction(()=>document.querySelector('.player-time').textContent.includes('1:15'));
+  await page.keyboard.press('Enter');await page.waitForTimeout(1300);
+  assert.notEqual(await page.locator('.player-time').textContent(),paused);
+  await shot(f,'playing-isolated-timeline');
+});
+
+await run('control timing separates playing and paused input without private data', {}, async f=>{
+  const page=f.page;await openControls(page);
+  await page.keyboard.press('ArrowRight');await page.waitForTimeout(100);
+  await page.evaluate(()=>document.querySelector('video').pause());
+  await page.keyboard.press('ArrowLeft');await page.waitForTimeout(100);
+  const samples=await page.evaluate(async()=> (await import('/src/player/controlTiming.js')).controlTiming.snapshot());
+  assert.ok(samples.playing.keys>=1);assert.ok(samples.paused.keys>=1);
+  assert.ok(samples.playing.frames>=1&&samples.paused.frames>=1);
+  for(const row of Object.values(samples)) assert.ok(Object.values(row).every(Number.isFinite));
+  f.checkpoints={controlTiming:samples};
 });
 
 await run('performance budget continuous controls', {}, async f => {

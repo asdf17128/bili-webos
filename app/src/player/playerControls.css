@@ -539,3 +539,12 @@
   color: #fff;
   font-size: calc(16px * var(--ui-scale));
 }
+
+/* Small, independent surfaces keep ticking progress and button focus separate
+   from the much larger recommendation shelf. No extra fullscreen layer. */
+.player-controls-vod:not(.hidden) .player-btns,
+.player-controls-vod:not(.hidden) .player-timeline-meta,
+.player-controls-vod:not(.hidden) .player-progress-fill {
+  will-change: transform;
+  transform: translateZ(0);
+}

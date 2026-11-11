@@ -3,6 +3,7 @@ import qrcode from 'qrcode-generator';
 import { apiFetch, wbiFetch, getPlayUrl, probeLegacyPlayUrl, getRecommend, getServiceDiagnostics, mediaProxyBase } from '../api/client';
 import { diagnosticUrls, probeRange } from '../player/cdnProbe';
 import { getPlaybackReport } from '../player/playbackHealth';
+import { controlTiming } from '../player/controlTiming';
 import { getErrors } from '../utils/errlog';
 import { storage } from '../utils/storage';
 import { BUILD_VERSION } from '../version';
@@ -227,7 +228,7 @@ export default function DiagPanel() {
       const chrome = /Chrome\/(\d+)/.exec(navigator.userAgent);
       const report = { version: BUILD_VERSION, chromeMajor: chrome ? Number(chrome[1]) : null,
         nodeVersion: svc?.nodeVersion, platform: window.PalmServiceBridge ? 'tv' : 'browser',
-        route, checks: results, startup: lastPlayback?.startup, qualitySwitch: lastPlayback?.qualitySwitch, service: svc,
+        route, controls: controlTiming.snapshot(), checks: results, startup: lastPlayback?.startup, qualitySwitch: lastPlayback?.qualitySwitch, service: svc,
         errors: [...(svc?.recentErrors || []).slice(-4), ...getErrors().slice(-4)] };
       if (!dead) { setReportText(diagnosticReportText(report)); setReportUrl(diagnosticIssueUrl(report)); }
 

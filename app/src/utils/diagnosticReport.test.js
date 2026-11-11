@@ -90,3 +90,9 @@ test('startup trace observes API failures without changing playback return value
   trace.dispose(); const saved=latest;
   await trace.measure('url',()=>({code:-352})); assert.deepEqual(latest,saved);
 });
+
+test('control scheduling diagnostics only export bounded numeric samples',()=>{
+ const text=diagnosticReportText({...base,controls:{playing:{keys:120,stale:2,coalesced:5,ageMax:301,frameMax:480,frames:40,url:secret},paused:{keys:4,frameMax:16,ageMax:Infinity},[secret]:{keys:1}}});
+ assert.match(text,/controls-playing: keys=120 stale=2 coalesced=5 ageMax=301 frameMax=480 frames=40/);
+ assert.match(text,/controls-paused: keys=4 frameMax=16/);assert.doesNotMatch(text,/PRIVATE|Infinity|url=/);
+});

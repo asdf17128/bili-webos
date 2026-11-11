@@ -34,6 +34,8 @@ import PlayerTimeline from './PlayerTimeline';
 import PlayerPrimaryControls, { PlayerControlToast } from './PlayerPrimaryControls';
 import { createControlFocus } from './controlFocus';
 import { createRemoteRepeat } from './remoteRepeat';
+import { createProgressReporter } from './progressReporter';
+import { controlTiming } from './controlTiming';
 import PlayerRecommendationGrid from './PlayerRecommendationGrid';
 import SubtitleLayer from './SubtitleLayer';
 import { parseSubtitleBody, pickCueIndex, isAiLan, subtitleLanName, mtLanName, findZhTrack, matchTrackByLan, AI_LEAD } from './subtitles';
@@ -1424,19 +1426,18 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
 
   // Time update
   useEffect(() => {
+    controlTiming.reset();
+    const castProgress = createProgressReporter(castReportProgress);
     timeUpdateRef.current = setInterval(() => {
       if (videoRef.current) {
         const nextCurrentTime = videoRef.current.currentTime;
         const nextDuration = videoRef.current.duration || 0;
         danmakuLoaderRef.current?.update(nextCurrentTime, nextDuration, danmakuEnabledRef.current);
         setDuration(nextDuration);
-        castReportProgress({
-          duration: Math.floor(nextDuration),
-          position: Math.floor(nextCurrentTime),
-        }).catch(() => {});
+        castProgress.update(nextDuration, nextCurrentTime);
       }
     }, 500);
-    return () => clearInterval(timeUpdateRef.current);
+    return () => { clearInterval(timeUpdateRef.current); castProgress.dispose(); };
   }, []);
 
   useEffect(() => {
@@ -2448,7 +2449,10 @@ function PlayerPage({ video, navigation, onBack, onPlayNext, onRetry, autoRetryD
       }
 
       if (['none', 'scrub', 'controls'].includes(focusArea) && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
-        const result = repeatGateRef.current.inspect(e, performance.now(), Date.now());
+        const now = performance.now(), wallNow = Date.now();
+        const result = repeatGateRef.current.inspect(e, now, wallNow);
+        const stamp = Number(e.timeStamp);
+        controlTiming.record(result, stamp > 0 ? (stamp > 1e12 ? wallNow : now) - stamp : NaN, !!videoRef.current?.paused);
         if (result !== 'accept') {
           e.preventDefault();
           if (result === 'repeat' && scrubTargetRef.current != null) scheduleScrubCommit();

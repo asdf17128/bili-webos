@@ -1,0 +1,55 @@
+{
+  "baselineCommit": "d08f610",
+  "scenario": "Same local synthetic playback fixture, 2.1 second idle observation under 6x CPU throttle; no actual decoding or physical display measurement",
+  "before": {
+    "cpuThrottle": 6,
+    "idle": {
+      "PlayerTimeline": 4
+    },
+    "navigation": {},
+    "hidden": {},
+    "latencies": [
+      7.082416999997804,
+      4.722334000001865,
+      6.481415999998717,
+      5.618708000001789,
+      6.127833999998984,
+      5.223250000002736,
+      3.1397499999984575,
+      5.706374999997934,
+      3.6955420000012964,
+      3.0819590000028256,
+      4.5009160000008706,
+      4.435457999999926
+    ],
+    "before": "2:01 / 10:00",
+    "after": "2:03 / 10:00",
+    "repeatedKeyCount": 20
+  },
+  "after": {
+    "cpuThrottle": 6,
+    "idle": {
+      "PlayerTimeline": 2
+    },
+    "navigation": {},
+    "hidden": {},
+    "latencies": [
+      5.908458000001701,
+      5.924416999998357,
+      4.786791999998968,
+      5.510792000000947,
+      3.094334000001254,
+      4.7604580000006536,
+      5.942541999997047,
+      4.636915999999474,
+      3.782666999999492,
+      4.355082999998558,
+      3.213999999999942,
+      3.8566250000003492
+    ],
+    "before": "2:01 / 10:00",
+    "after": "2:03 / 10:00",
+    "repeatedKeyCount": 20
+  },
+  "limits": "Render count reduction is not a CPU/GPU percentage or proof that the reporter latency is fixed."
+}

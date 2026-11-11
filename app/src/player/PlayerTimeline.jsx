@@ -6,7 +6,7 @@ import { titleMT, useTitlesMT } from '../utils/titlemt';
 
 export default memo(function PlayerTimeline({ videoRef, visible, chapters, scrubTarget, progressElRef, queueOrApplySeek, hideControlsLater }) {
   useTitlesMT();
-  const { currentTime, duration } = useMediaClock(videoRef, visible);
+  const { currentTime, duration } = useMediaClock(videoRef, visible && scrubTarget == null, true);
   const selecting = scrubTarget != null;
   const displayTime = selecting ? scrubTarget : currentTime;
   const progress = duration > 0 ? Math.min(100, Math.max(0, displayTime / duration * 100)) : 0;
@@ -31,7 +31,7 @@ export default memo(function PlayerTimeline({ videoRef, visible, chapters, scrub
             queueOrApplySeek(frac * duration);
             hideControlsLater();
           }}>
-          <div className="player-progress-fill" style={{ width: `${progress}%` }} />
+          <div className="player-progress-fill" style={{ width: '100%', transformOrigin: 'left center', transform: `scaleX(${progress / 100})` }} />
           {/* Chapter boundaries (YouTube-style segment gaps) */}
           {chapters.length > 1 && duration > 0 && chapters.slice(1).map((c, i) => (
             <div key={i} style={{

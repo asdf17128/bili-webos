@@ -94,7 +94,7 @@ export function diagnosticDetail(row) {
   return Object.keys(safe).map(key => key + '=' + (typeof safe[key] === 'boolean' ? (safe[key] ? 'yes' : 'no') : safe[key])).join(' ');
 }
 
-export function buildDiagnosticReport({ version: appVersion, chromeMajor, nodeVersion, platform, route, checks, startup, qualitySwitch, errors, service } = {}) {
+export function buildDiagnosticReport({ version: appVersion, chromeMajor, nodeVersion, platform, route, checks, startup, qualitySwitch, errors, service, controls } = {}) {
   const report = {
     schema: 1, version: buildVersion(appVersion),
     context: diagnosticContextLines(service),
@@ -105,6 +105,18 @@ export function buildDiagnosticReport({ version: appVersion, chromeMajor, nodeVe
       return row ? { stage, status: allowed(row.status, STATUSES, 'fail'), ...fields(row) } : null;
     }).filter(Boolean),
   };
+  if (controls && typeof controls === 'object') {
+    report.controls = {};
+    for (const mode of ['playing', 'paused']) {
+      if (!controls[mode] || typeof controls[mode] !== 'object') continue;
+      const row = {};
+      for (const key of ['keys', 'stale', 'coalesced', 'ageMax', 'frameMax', 'frames']) {
+        const value = number(controls[mode][key], 0, key.endsWith('Max') ? 60000 : 120);
+        if (value !== null) row[key] = value;
+      }
+      report.controls[mode] = row;
+    }
+  }
   if (qualitySwitch && typeof qualitySwitch === 'object') {
     report.qualitySwitch = {
       state: allowed(qualitySwitch.state, ['loading', 'ready', 'failed'], 'unknown'),
@@ -139,6 +151,7 @@ export function diagnosticReportText(input) {
   const lines = ['diag=1 app=' + r.version,
     'env chromeMajor=' + (r.environment.chromeMajor ?? '?') + ' node=' + r.environment.node + ' platform=' + r.environment.platform,
     'route=' + r.route];
+  for (const [mode, row] of Object.entries(r.controls || {})) lines.push('controls-' + mode + ': ' + Object.entries(row).map(([k,v]) => k + '=' + v).join(' '));
   if (r.qualitySwitch) lines.push('quality-switch: ' + Object.entries(r.qualitySwitch).map(([k, v]) => k + '=' + v).join(' '));
   lines.push(...r.context);
   for (const row of r.checks) lines.push('[' + row.status + '] ' + row.stage + ' ' + diagnosticDetail(row));

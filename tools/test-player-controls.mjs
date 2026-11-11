@@ -515,6 +515,17 @@ await run('control timing separates playing and paused input without private dat
   f.checkpoints={controlTiming:samples};
 });
 
+await run('compact danmaku spacing persists and restores remote navigation', {}, async f=>{
+ const page=f.page;await openControls(page);await openSettings(page,'danmakuSettings');await page.keyboard.press('Enter');
+ const row=page.locator('.dm-setting-row').filter({hasText:'弹幕行间距'});await row.click();
+ await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
+ assert.match(await row.textContent(),/紧凑/);
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('bili_settings')).danmakuGap),2);
+ await page.keyboard.press('Escape');await openSettings(page,'danmakuSettings');await page.keyboard.press('Enter');
+ assert.match(await page.locator('.dm-setting-row').filter({hasText:'弹幕行间距'}).textContent(),/紧凑/);
+ await page.keyboard.press('Escape');
+});
+
 await run('performance budget continuous controls', {}, async f => {
   const page=f.page, cdp=await f.context.newCDPSession(page);
   await openControls(page);

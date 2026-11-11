@@ -80,6 +80,24 @@ await test('fixed, reverse and colored types respect filters and area bounds',as
  assert.deepEqual(await page.locator('.danmaku-item').allTextContents(),['reverse']);
  assert.equal(await page.locator('.danmaku-reverse').count(),1);
 });
+await test('compact spacing fits more safe lanes without raising density cap',async()=>{
+ const result=await page.evaluate(async()=>{
+  const m=await import('/src/player/danmakuSettings.js');const rows=[];
+  for(const scale of [.8,1,1.3,1.6])for(const outline of [0,1,2]){
+   const regular=m.danmakuLaneHeight({danmakuDensity:48,danmakuScale:scale,danmakuOutline:outline});
+   const compact=m.danmakuLaneHeight({danmakuDensity:48,danmakuScale:scale,danmakuOutline:outline,danmakuGap:2});
+   rows.push({regular,compact,min:Math.ceil(36*scale*1.25)+2*outline+2});
+  }
+  await window.__draw({enabled:true,paused:false,fontScale:1.6,settings:{danmakuDensity:48,danmakuOutline:2,danmakuGap:2},danmakus:Array.from({length:60},(_,i)=>({time:0,text:'紧凑弹幕 '+i,size:36,mode:5})),currentTime:0});
+  const bounds=[...document.querySelectorAll('.danmaku-item')].map(e=>({top:parseFloat(e.style.top),height:e.offsetHeight}));
+  return {rows,bounds,normal:m.normalizeDanmaku({}).danmakuGap,invalid:m.normalizeDanmaku({danmakuGap:-2}).danmakuGap};
+ });
+ assert.ok(result.rows.every(r=>r.compact<r.regular&&r.compact>=r.min));assert.equal(result.normal,8);assert.equal(result.invalid,8);
+ assert.ok(result.bounds.length>1&&result.bounds.length<=48);
+ for(let i=1;i<result.bounds.length;i++)assert.ok(result.bounds[i].top>=result.bounds[i-1].top+result.bounds[i-1].height+4,'large outlined comments do not overlap');
+ await page.screenshot({path:output+'/compact-spacing.png'});
+ results.push({measurement:'compact lane geometry',value:result});
+});
 await test('density caps and speed are applied; invalid options fall back safely',async()=>{
  const counts=[];
  for(const density of [12,24,48]){

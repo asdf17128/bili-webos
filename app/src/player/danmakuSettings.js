@@ -6,6 +6,7 @@ export const DANMAKU_FIELDS = [
   ['danmakuOutline', '弹幕描边', [0, 1, 2], ['关', '标准', '加粗'], 1],
   ['danmakuArea', '弹幕显示区域', [0.25, 0.5, 0.75, 1], ['顶部四分之一', '顶部半屏', '顶部四分之三', '全屏'], 1],
   ['danmakuDensity', '弹幕密度', [12, 24, 48], ['稀疏', '标准', '密集'], 24],
+  ['danmakuGap', '弹幕行间距', [8, 2], ['标准', '紧凑'], 8],
   ['danmakuSpeed', '弹幕速度', [0.75, 1, 1.5], ['慢', '标准', '快'], 1],
   ['danmakuScroll', '滚动弹幕', [false, true], ['关', '开'], true],
   ['danmakuTop', '顶部固定弹幕', [false, true], ['关', '开'], true],
@@ -27,7 +28,7 @@ export function danmakuLaneHeight(settings) {
   const s = normalizeDanmaku(settings);
   // Reserve the largest supported source glyph, line box and outline so a
   // later large comment cannot collide with a smaller one on the next lane.
-  const minimum = Math.ceil(36 * s.danmakuScale * 1.25) + 2 * s.danmakuOutline + 8;
+  const minimum = Math.ceil(36 * s.danmakuScale * 1.25) + 2 * s.danmakuOutline + s.danmakuGap;
   return Math.ceil(minimum * (s.danmakuDensity === 12 ? 1.6 : s.danmakuDensity === 48 ? 1 : 1.25));
 }
 export function danmakuMeasureStats() { return { cached: measurements.size, limit: 512 }; }

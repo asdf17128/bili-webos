@@ -15,6 +15,8 @@ export default {
   "弹幕粗细": "Font weight",
   "弹幕描边": "Outline",
   "弹幕显示区域": "Display area",
+  "弹幕行间距": "Line spacing",
+  "紧凑": "Compact",
   "弹幕密度": "Density",
   "弹幕速度": "Speed",
   "滚动弹幕": "Scrolling comments",

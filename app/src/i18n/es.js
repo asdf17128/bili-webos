@@ -13,6 +13,8 @@ export default {
   "弹幕粗细": "Grosor de letra",
   "弹幕描边": "Contorno",
   "弹幕显示区域": "Área de visualización",
+  "弹幕行间距": "Espaciado entre líneas",
+  "紧凑": "Compacto",
   "弹幕密度": "Densidad",
   "弹幕速度": "Velocidad",
   "滚动弹幕": "Comentarios deslizantes",

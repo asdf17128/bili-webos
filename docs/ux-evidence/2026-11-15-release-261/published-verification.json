@@ -1,0 +1,13 @@
+{
+  "verifiedAt": "2026-11-15T05:12:39.451981+00:00",
+  "tag": "v2.6.1",
+  "commit": "253d62a",
+  "latest": "v2.6.1",
+  "draft": false,
+  "prerelease": false,
+  "versionJson": "2.6.1",
+  "manifestVersion": "2.6.1",
+  "publicIpkSha256": "c1064ef7e3a77307d6a7408713ac31e6bbc9b431bf4dd06cd3cb08589a6fca76",
+  "matchesTestedIpk": true,
+  "homebrewCatalogVersion": "2.6.0"
+}

@@ -72,3 +72,9 @@
 [安装校验](ux-evidence/2026-11-15-release-261/installed-package.json) · [真机脱敏结果](ux-evidence/2026-11-15-release-261/tv-results.json)。真实媒体及账号截图仅保留本机。
 
 [本地结果摘要](ux-evidence/2026-11-15-release-261/local-results.json)。发布前再次核对 161 个应用／服务源文件未偏离被测内容，IPK 与电视安装校验所用包一致。
+
+## 发布渠道
+
+[2.6.1 正式版](https://github.com/asdf17128/bili-webos/releases/tag/v2.6.1) 已发布并设为 latest，标签对应 `253d62a`。IPK、`version.json` 和 Homebrew manifest 三项资产均已公开；版本元数据为 2.6.1，另行下载公开 IPK 的 SHA-256 与电视被测包一致。[公开下载校验](ux-evidence/2026-11-15-release-261/published-verification.json)。
+
+发布后核对 Homebrew 商店目录仍为 2.6.0，尚待目录同步；仅确认提供给商店的 manifest 已更新，没有宣称商店已经上架 2.6.1。#34、#66 已补充正式版链接与验证范围，继续保留原设备待确认问题。

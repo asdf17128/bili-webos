@@ -31,7 +31,7 @@ BiliTV is a free, open-source Bilibili client made for LG webOS TVs. Pick up the
 | **Make the screen yours** | Choose **2, 3 or 4 videos per row**. Adjust the interface, subtitle and danmaku text sizes separately. |
 | **Find your next favorite** | Recommendations, trending videos, followed creators, favorites and six category shortcuts. Search with trending topics, suggestions and recent searches. |
 | **Enjoy the whole video** | Up to **4K / 8K, HDR and Dolby Vision**, playback speed controls, chapter markers and thumbnail previews while seeking. |
-| **Stay part of the conversation** | Adjust danmaku size, area, opacity, density and speed while watching. Read comments and replies alongside the video, or drop into a live stream with chat. Subtitles have separate settings. |
+| **Stay part of the conversation** | Adjust danmaku size, area, opacity, line spacing, density and speed while watching. Read comments and replies alongside the video, or drop into a live stream with chat. Subtitles have separate settings. |
 
 Also included: **bangumi and episode lists**, favorites and Watch Later playlists, **QR-code login**, Magic Remote pointer and wheel support, and **DLNA casting** from compatible phone apps.
 
@@ -39,14 +39,17 @@ Use BiliTV in **English, Español or 中文**. English and Spanish interfaces al
 
 *Video quality and availability depend on the source, your Bilibili account, your TV and your region.*
 
-## What’s new in 2.6.0
+## What’s new in 2.6.1
 
-- **More danmaku options** during recorded and live playback, with improved comment coverage later in videos.
-- **Clearer playback controls** with separate engagement, playback and settings groups, larger icons, visible focus and explicit Like/Coin/Favorite feedback. Previous/Next retraces the path you just played.
-- **Experimental person-aware danmaku** reduces comments covering people. Enable it in Danmaku Settings. Available only on some regular videos, with results varying by video; Bangumi and live streams are not supported.
-- **Playback and layout fixes**: finished videos restart from the beginning; large-text sidebar navigation and settings focus are more stable.
+- **Better playback compatibility on older TVs**: fixes playback and automatic recovery failures affecting some older devices after sign-in.
+- **Clearer seeking**: highlights the selected timeline, cursor and target time. Seek in 10-second steps; holding a direction commits after release, reducing repeated loading and unintended large jumps.
+- **Lighter playback controls**: improves focus and recommendation navigation while reducing unnecessary interface updates during playback.
+- **Compact danmaku spacing**: choose Standard or Compact line spacing independently of density, with immediate updates in recorded playback, live streams and the settings preview.
+- **More useful diagnostics**: control-response information helps investigate device-specific delays.
 
-See the [full release notes](docs/releases/v2.6.0.md) and [changelog](CHANGELOG.md).
+Some older TVs still experience delayed controls during video playback. Investigation continues in [#34](https://github.com/asdf17128/bili-webos/issues/34).
+
+See the [full release notes](docs/releases/v2.6.1.md) and [changelog](CHANGELOG.md).
 
 ## A closer look
 
@@ -96,7 +99,7 @@ Login information is stored on your TV and used to access your Bilibili account.
 
 [Report an issue](https://github.com/asdf17128/bili-webos/issues) · [Changelog](CHANGELOG.md) · [Development guide](docs/DEVELOPMENT.md) · [Test cases](docs/TESTCASES.md)
 
-See the [premium playback guide](docs/DOLBY_VISION.md) for quality and device limits, or the [home-network testing guide](docs/NETWORK-TESTING.md) for network troubleshooting. See the [changelog](CHANGELOG.md) and [2.6.0 validation report](docs/RELEASE-2.6.0.md) for release scope and verification limits. Some technical documents are in Chinese.
+See the [premium playback guide](docs/DOLBY_VISION.md) for quality and device limits, or the [home-network testing guide](docs/NETWORK-TESTING.md) for network troubleshooting. See the [changelog](CHANGELOG.md) and [2.6.0 validation report](docs/RELEASE-2.6.1.md) for release scope and verification limits. Some technical documents are in Chinese.
 
 [Premium badges and automatic quality](docs/MEMBER-EXPERIENCE.md) (Chinese documentation).
 

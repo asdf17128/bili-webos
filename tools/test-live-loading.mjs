@@ -68,12 +68,18 @@ await test('live danmaku settings apply immediately without reconnect and restor
  await actual.waitFor();assert.equal(await actual.evaluate(e=>getComputedStyle(e).fontSize),'28px');
  await page.keyboard.press('ArrowDown');for(let i=0;i<3;i++)await page.keyboard.press('ArrowRight');await page.keyboard.press('Enter');
  await page.getByRole('dialog',{name:'弹幕设置'}).waitFor();
- assert.equal(await page.locator('.dm-setting-row').count(),8);
+ assert.equal(await page.locator('.dm-setting-row').count(),9);
+ assert.equal(await page.getByRole('button',{name:/弹幕行间距/}).count(),1);
  assert.equal(await page.getByRole('status').count(),0,'no unsupported mask loading status in live');
  await page.keyboard.press('Enter');await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.bili_settings).danmakuScale),1.3);
  await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');await page.keyboard.press('ArrowUp');await page.keyboard.press('Escape');
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.bili_settings).danmakuOpacity),1,'cancel does not save');
+ // Line spacing is independent of density and must apply without reconnecting.
+ await page.getByRole('button',{name:/弹幕行间距/}).click();
+ await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.bili_settings).danmakuGap),2);
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.bili_settings).danmakuDensity),24);
  const saved=await page.evaluate(()=>JSON.parse(localStorage.bili_settings));
  for(const key of ['danmakuTop','danmakuBottom','danmakuColor'])assert.equal(saved[key],false,'live preserves hidden VOD preference');assert.equal(saved.danmakuMask,true);
  await page.waitForTimeout(1500);

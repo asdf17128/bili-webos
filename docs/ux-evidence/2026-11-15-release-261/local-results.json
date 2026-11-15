@@ -1,0 +1,28 @@
+{
+  "local": {
+    "unit": {
+      "pass": 259,
+      "fail": 0,
+      "skip": 1
+    },
+    "ux": 87,
+    "sessionProxy": 10,
+    "recommendationMenu": 62,
+    "accountRepair": 26,
+    "playerLoading": 87,
+    "controls": 81,
+    "adjacent": 20,
+    "resume": 19,
+    "danmakuSegments": 7,
+    "maskParser": 5,
+    "playbackEnd": 26,
+    "liveLoading": 16,
+    "legacyRuntimes": [
+      "0.12.2",
+      "8.17.0"
+    ],
+    "remainingGates": "playback health, automatic CDN, CDN diagnostics, diagnostic privacy and region probe passed",
+    "pipelineBoundary": "First run failed at stale media fixture; second run failed at stale live settings count. Corrected complete live suite and remaining gates rerun with exit code 0. No application sources changed during verification."
+  },
+  "controlsSourcesStable": true
+}

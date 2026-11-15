@@ -1,0 +1,204 @@
+{
+  "files": {
+    "app/dist/appinfo.json": "d5dca60452353b6b4995706752b946e80bb5366a8035d12560cf8a29a28ab6ed",
+    "service/com.biliwebos.app.service/accountRepair.js": "a232b64784e785887bf05ec2aca9e84fab55352d1aeab27190d99056f023460c",
+    "service/com.biliwebos.app.service/biliReferer.js": "80244e49d0a9e8ac3d0f3b64ce3c3fcd193a6b9ff5d8e4d197e2bd84341ee4f1",
+    "service/com.biliwebos.app.service/compat.js": "0f59e15ca5f40e26f09ef1c363f982493150969cf0d4de01e1402191d9187174",
+    "service/com.biliwebos.app.service/danmaku.js": "0d2acd8c32e34abe50258d4e0a580437682882c0a23c8e9439ee2b73e4ef31a4",
+    "service/com.biliwebos.app.service/deviceActivation.js": "238b2d6670566c02d6298f0e4695277a600d2af32466930019ea814245331395",
+    "service/com.biliwebos.app.service/httpBody.js": "30a5bed293cea599031ef3b366bbf33e64ac8c2b450c1193e2a46862cd72a207",
+    "service/com.biliwebos.app.service/playbackDiagnostics.js": "00cb6fd835b348a232a0c7a5c86249879bc02c37612ee4d500b7c73fa2ad48d7",
+    "service/com.biliwebos.app.service/playurlBody.js": "d87cc2ffda0843d6fbc3cfdd2b459b9efd262788b0af084fa6bc2366f61b2c6a",
+    "service/com.biliwebos.app.service/requestDeadline.js": "97721e9425df247bd4bf13223889ce09d5b2172cdb4e799791fd8a7797d2e6cd",
+    "service/com.biliwebos.app.service/service.js": "144494e6f4b059fdb163896ac6df54ff67b74ce2964aed76d55ed8d6092c7a25",
+    "service/com.biliwebos.app.service/upstreamRequest.js": "d18f9859f82d05e9fe129870e9117db37d768e6394cb47267bc7e9394a78e2a7",
+    "service/com.biliwebos.app.service/wsLegacyLimits.js": "590759b69d296dd394f0ff14f209cba2fdf8a8c37eb51b9264534a663ba53648",
+    "app/dist/assets/LivePlayerPage-legacy-C4WBllqp.js": "e24e9d5e48a9a50a7ff7edcf0c61b45bac489b1d0fee4611fe56f085e79a6248",
+    "app/dist/assets/NerdInfo-legacy-CuRxYAC3.js": "c036eda094aa66ccd4b51db3cdaed308569735e9145c36b5e35d018dc17fa044",
+    "app/dist/assets/PlayerPage-legacy-BI60H3vJ.js": "473cd81099a0f8ebf4519d161aa98258d97c76dc09965fc8e3810aac7eec25dc",
+    "app/dist/assets/index-legacy-C8HTF05j.js": "b5404753a46372d9cb3066518f6b66cfcbf5d29492c76d813217b125a205dff8",
+    "app/dist/assets/polyfills-legacy-BFCf6p64.js": "cb89f411c882f04610dc21625bd4ed4f1c5a892d18c641856e4c38a33fc5137b",
+    "app/dist/assets/react-vendor-legacy-B2h5bzJ7.js": "35b6eec340e5d94be0db7cb0978d708b51ed326b6b5144b1afb1d9a2d28cad7c",
+    "app/dist/assets/shaka-player.compiled-legacy-01vuRLq-.js": "e7555409c7b44282543f08a2c96f3b10f4925540208e22735c90e90c84138b0f",
+    "service/com.biliwebos.app.service/cast/castController.js": "586b90c32bbf1fc1f5de1470b16d2300b19233d2ea35184a242b1da22283a2cd",
+    "service/com.biliwebos.app.service/cast/deviceProfile.js": "0b3569fbb461099e58194e3aa73a804d448b797f609542567a74eefb49429756",
+    "service/com.biliwebos.app.service/cast/nvaSession.js": "9a3013d7883d2c79c75449dbc385e7ddab760e006cb9147a28b25278f38f19e5",
+    "service/com.biliwebos.app.service/cast/ssdpServer.js": "b43bd2a31fd9ff0a1f64634cd7b2f50ca16612dfc155db522e8cda2c905bcce1",
+    "service/com.biliwebos.app.service/test/accountRepair.test.js": "6844b764e1db8d38444ba5786b3d129b407e62f7aa94c7cf0763795fe566c77f",
+    "service/com.biliwebos.app.service/test/cast-controller.test.js": "f1b7ce211bd2f84a7f9371e645ef42102f7bed17411ff4ad067e328d857de47d",
+    "service/com.biliwebos.app.service/test/device-profile.test.js": "314850e56f11b39f7bbd495321fb0c93e16fdec7d135b462e252b55104e8163b",
+    "service/com.biliwebos.app.service/test/deviceActivation.test.js": "94deeeff60c2486a61c2174e6af97760a9b6c2d1a3f4fb86a6ebcd5481b5de0b",
+    "service/com.biliwebos.app.service/test/http-body.test.js": "baacdab638d791212cd331aa0c39c5eebe4c4a700ecd9951f6668ef30202dce5",
+    "service/com.biliwebos.app.service/test/nva-session.test.js": "636166ee3f6cf4fe8e01392154d0a7f2d20b83ea9f9a168081a2e297f88b2931",
+    "service/com.biliwebos.app.service/test/pgcV2.test.js": "a1a49170f388e9c833c2896e36b75187608f56c2081322df75f6163f433fb043",
+    "service/com.biliwebos.app.service/test/playbackDiagnostics.test.js": "cedb4d8370f0ac3ae50a7a74b1916ae5c16d9e92b32fc41e2edc6b9b60cebe94",
+    "service/com.biliwebos.app.service/test/requestDeadline.test.js": "fa8408fe3b0374622d7dc2c42b980951879575177425bd46d58e1e60d2a5d1ff",
+    "service/com.biliwebos.app.service/test/upstreamRequest.test.js": "cf5b3e2fb496e337d7c0c61e796de8912e5c2de17579c40538f077e593474c57",
+    "service/com.biliwebos.app.service/test/wsLegacyLimits.test.js": "85681b39b085e29ce684a1840f5807c462c82afc6aa85ed1070f687e0706a785"
+  },
+  "version": "2.6.1",
+  "ipkBytes": 749874,
+  "ipkSha256": "c1064ef7e3a77307d6a7408713ac31e6bbc9b431bf4dd06cd3cb08589a6fca76",
+  "installedFiles": {
+    "app/dist/appinfo.json": {
+      "sha256": "d5dca60452353b6b4995706752b946e80bb5366a8035d12560cf8a29a28ab6ed",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/accountRepair.js": {
+      "sha256": "a232b64784e785887bf05ec2aca9e84fab55352d1aeab27190d99056f023460c",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/biliReferer.js": {
+      "sha256": "80244e49d0a9e8ac3d0f3b64ce3c3fcd193a6b9ff5d8e4d197e2bd84341ee4f1",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/compat.js": {
+      "sha256": "0f59e15ca5f40e26f09ef1c363f982493150969cf0d4de01e1402191d9187174",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/danmaku.js": {
+      "sha256": "0d2acd8c32e34abe50258d4e0a580437682882c0a23c8e9439ee2b73e4ef31a4",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/deviceActivation.js": {
+      "sha256": "238b2d6670566c02d6298f0e4695277a600d2af32466930019ea814245331395",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/httpBody.js": {
+      "sha256": "30a5bed293cea599031ef3b366bbf33e64ac8c2b450c1193e2a46862cd72a207",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/playbackDiagnostics.js": {
+      "sha256": "00cb6fd835b348a232a0c7a5c86249879bc02c37612ee4d500b7c73fa2ad48d7",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/playurlBody.js": {
+      "sha256": "d87cc2ffda0843d6fbc3cfdd2b459b9efd262788b0af084fa6bc2366f61b2c6a",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/requestDeadline.js": {
+      "sha256": "97721e9425df247bd4bf13223889ce09d5b2172cdb4e799791fd8a7797d2e6cd",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/service.js": {
+      "sha256": "144494e6f4b059fdb163896ac6df54ff67b74ce2964aed76d55ed8d6092c7a25",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/upstreamRequest.js": {
+      "sha256": "d18f9859f82d05e9fe129870e9117db37d768e6394cb47267bc7e9394a78e2a7",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/wsLegacyLimits.js": {
+      "sha256": "590759b69d296dd394f0ff14f209cba2fdf8a8c37eb51b9264534a663ba53648",
+      "match": true
+    },
+    "app/dist/assets/LivePlayerPage-legacy-C4WBllqp.js": {
+      "sha256": "e24e9d5e48a9a50a7ff7edcf0c61b45bac489b1d0fee4611fe56f085e79a6248",
+      "match": true
+    },
+    "app/dist/assets/NerdInfo-legacy-CuRxYAC3.js": {
+      "sha256": "c036eda094aa66ccd4b51db3cdaed308569735e9145c36b5e35d018dc17fa044",
+      "match": true
+    },
+    "app/dist/assets/PlayerPage-legacy-BI60H3vJ.js": {
+      "sha256": "473cd81099a0f8ebf4519d161aa98258d97c76dc09965fc8e3810aac7eec25dc",
+      "match": true
+    },
+    "app/dist/assets/index-legacy-C8HTF05j.js": {
+      "sha256": "b5404753a46372d9cb3066518f6b66cfcbf5d29492c76d813217b125a205dff8",
+      "match": true
+    },
+    "app/dist/assets/polyfills-legacy-BFCf6p64.js": {
+      "sha256": "cb89f411c882f04610dc21625bd4ed4f1c5a892d18c641856e4c38a33fc5137b",
+      "match": true
+    },
+    "app/dist/assets/react-vendor-legacy-B2h5bzJ7.js": {
+      "sha256": "35b6eec340e5d94be0db7cb0978d708b51ed326b6b5144b1afb1d9a2d28cad7c",
+      "match": true
+    },
+    "app/dist/assets/shaka-player.compiled-legacy-01vuRLq-.js": {
+      "sha256": "e7555409c7b44282543f08a2c96f3b10f4925540208e22735c90e90c84138b0f",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/cast/castController.js": {
+      "sha256": "586b90c32bbf1fc1f5de1470b16d2300b19233d2ea35184a242b1da22283a2cd",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/cast/deviceProfile.js": {
+      "sha256": "0b3569fbb461099e58194e3aa73a804d448b797f609542567a74eefb49429756",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/cast/nvaSession.js": {
+      "sha256": "9a3013d7883d2c79c75449dbc385e7ddab760e006cb9147a28b25278f38f19e5",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/cast/ssdpServer.js": {
+      "sha256": "b43bd2a31fd9ff0a1f64634cd7b2f50ca16612dfc155db522e8cda2c905bcce1",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/test/accountRepair.test.js": {
+      "sha256": "6844b764e1db8d38444ba5786b3d129b407e62f7aa94c7cf0763795fe566c77f",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/test/cast-controller.test.js": {
+      "sha256": "f1b7ce211bd2f84a7f9371e645ef42102f7bed17411ff4ad067e328d857de47d",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/test/device-profile.test.js": {
+      "sha256": "314850e56f11b39f7bbd495321fb0c93e16fdec7d135b462e252b55104e8163b",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/test/deviceActivation.test.js": {
+      "sha256": "94deeeff60c2486a61c2174e6af97760a9b6c2d1a3f4fb86a6ebcd5481b5de0b",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/test/http-body.test.js": {
+      "sha256": "baacdab638d791212cd331aa0c39c5eebe4c4a700ecd9951f6668ef30202dce5",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/test/nva-session.test.js": {
+      "sha256": "636166ee3f6cf4fe8e01392154d0a7f2d20b83ea9f9a168081a2e297f88b2931",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/test/pgcV2.test.js": {
+      "sha256": "a1a49170f388e9c833c2896e36b75187608f56c2081322df75f6163f433fb043",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/test/playbackDiagnostics.test.js": {
+      "sha256": "cedb4d8370f0ac3ae50a7a74b1916ae5c16d9e92b32fc41e2edc6b9b60cebe94",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/test/requestDeadline.test.js": {
+      "sha256": "fa8408fe3b0374622d7dc2c42b980951879575177425bd46d58e1e60d2a5d1ff",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/test/upstreamRequest.test.js": {
+      "sha256": "cf5b3e2fb496e337d7c0c61e796de8912e5c2de17579c40538f077e593474c57",
+      "match": true
+    },
+    "service/com.biliwebos.app.service/test/wsLegacyLimits.test.js": {
+      "sha256": "85681b39b085e29ce684a1840f5807c462c82afc6aa85ed1070f687e0706a785",
+      "match": true
+    }
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.6834.207 Safari/537.36 WebAppManager",
+    "visible": "visible",
+    "node": "v20.12.2",
+    "uptime": 429,
+    "loggedIn": true,
+    "castSubscribers": 1,
+    "danmakuSubscribers": 0,
+    "danmakuActive": false,
+    "scripts": [
+      "webOSTV.js",
+      "polyfills-legacy-BFCf6p64.js"
+    ],
+    "loadedBundles": [
+      "index-legacy-C8HTF05j.js",
+      "PlayerPage-legacy-BI60H3vJ.js"
+    ]
+  },
+  "loadedEntryMatches": true,
+  "installedAt": "2026-11-15T05:06:39.648Z"
+}

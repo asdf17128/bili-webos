@@ -34,7 +34,9 @@ const stub = `class Player {
  }
  if(window.__mode==='native-speed-paused-boundary'&&window.__nativeClock){window.__nativeClock.position=stalePausedNative?0:position||0;Object.defineProperty(this.video,'currentTime',{configurable:true,get:()=>window.__nativeClock.position,set:value=>window.__nativeClock.position=value});}else Object.defineProperty(this.video,'currentTime',{configurable:true,get:()=>1,set:()=>{}});
  Object.defineProperty(this.video,'duration',{configurable:true,get:()=>100});
- const ready=()=>{Object.defineProperty(this.video,'readyState',{configurable:true,get:()=>4});this.video.dispatchEvent(new Event('loadeddata'));if(window.__mode==='native-speed-paused-boundary')this.video.dispatchEvent(new Event('loadedmetadata'));};
+ // Match the normal media lifecycle: metadata arrives before frame data.
+ // The paused-native mode deliberately delays metadata to exercise recovery.
+ const ready=()=>{Object.defineProperty(this.video,'readyState',{configurable:true,get:()=>4});if(window.__mode!=='native-speed-paused-boundary'&&window.__mode!=='trace-media')this.video.dispatchEvent(new Event('loadedmetadata'));this.video.dispatchEvent(new Event('loadeddata'));if(window.__mode==='native-speed-paused-boundary')this.video.dispatchEvent(new Event('loadedmetadata'));};
  if(window.__mode.startsWith('frame-'))window.__releaseFrame=ready;else ready();
  }
  async destroy(){this.reject?.(Object.assign(new Error('load interrupted'),{code:7000}));window.__probe.destroyed++}

@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import {mkdirSync,writeFileSync} from 'node:fs';
+import {connectTv,sleep} from '<repo>/tools/_tv-stability.mjs';
+import {DANMAKU_FIELDS} from '<repo>/app/src/player/danmakuSettings.js';
+const out='/tmp/bili-261-spacing-tv';mkdirSync(out,{recursive:true});
+const tv=await connectTv();let original;const checks=[];
+const check=(name,value)=>{checks.push({name,pass:!!value});assert.ok(value,name);console.log('PASS',name)};
+const click=async selector=>{
+ const p=await tv.evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)return null;const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`);assert.ok(p,selector);
+ await tv.call('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...p});
+ await tv.call('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,...p});await sleep(150);
+};
+try{
+ original=await tv.evaluate("localStorage.getItem('bili_settings')");
+ await tv.call('Page.reload');await tv.wait("typeof window.__openVideo==='function'");
+ await tv.evaluate("window.__openVideo({bvid:'BV1xx411c7Xg',resumeMode:'none'})");
+ await tv.wait("document.querySelector('video')?.currentTime>0.5 && document.querySelector('video').readyState>=2",45000);
+ await tv.key('ArrowUp');await click('.player-btns [data-control="settings"]');
+ await click('.player-more-panel [data-control="danmakuSettings"]');
+ await tv.wait("!!document.querySelector('.dm-settings')");
+ const index=DANMAKU_FIELDS.findIndex(x=>x[0]==='danmakuGap');
+ // Remote navigation brings the row into view and exercises the TV key handler.
+ for(let i=0;i<index;i++)await tv.key('ArrowDown',60);
+ await tv.key('Enter');await tv.key('ArrowDown');await tv.key('Enter');
+ const stored=await tv.evaluate("JSON.parse(localStorage.getItem('bili_settings'))");
+ check('compact spacing saved through remote',stored.danmakuGap===2);
+ const before=JSON.parse(original||'{}');check('density preserved',stored.danmakuDensity===(before.danmakuDensity??24));
+ await tv.wait("document.querySelectorAll('.dm-preview .danmaku-item').length>0");
+ const shot=await tv.call('Page.captureScreenshot',{format:'png'});writeFileSync(out+'/compact.png',Buffer.from(shot.data,'base64'));
+ const time=await tv.evaluate("document.querySelector('video').currentTime");await sleep(2000);
+ check('video continues during settings',await tv.evaluate(`document.querySelector('video').currentTime>${time} && !document.querySelector('video').error`));
+ await tv.call('Page.reload');await tv.wait("typeof window.__openVideo==='function'");
+ check('compact spacing survives reload',await tv.evaluate("JSON.parse(localStorage.getItem('bili_settings')).danmakuGap===2"));
+}finally{
+ if(original!==undefined){await tv.evaluate(`(()=>{const v=${JSON.stringify(original)};if(v===null)localStorage.removeItem('bili_settings');else localStorage.setItem('bili_settings',v)})()`);await tv.call('Page.reload');}
+ writeFileSync(out+'/results.json',JSON.stringify(checks,null,2));tv.close();
+}
